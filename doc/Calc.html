@@ -206,27 +206,61 @@ to &#960; (or -180 to 180 in DEG mode)</li>
   <ul>
     <li>&#931;+ : Add x and y to statistics</li>
     <li>&#931;- : Subtract x and y from statistics</li>
+    <li>clear: Clear statistics</li>
     <li>Results</li>
     <ul>
-      <li><span style="text-decoration: overline;">x</span>,<span
- style="text-decoration: overline;">y</span>: Calculate mean x and
-mean y values</li>
-      <li>s<sub>x</sub>,s<sub>y</sub>: Calculate standard deviation of
-x and y values</li>
-      <li>L.R.: Linear regression, y=intersection, x=slope</li>
-      <li>y<sup>*</sup>,r: Calculate estimated y for current x, and
-correlation coefficient (r)</li>
-      <li>n: Recall number of statistics entered </li>
+      <li>average</li>
+      <ul>
+        <li><span style="text-decoration: overline;">x</span>,<span
+        style="text-decoration: overline;">y</span>: Calculate mean x
+        and mean y values, i.e. &#931;x/n</li>
+        <li><span style="text-decoration: overline;">x</span>w:
+        Calculate mean of x values weighted by the y values,
+        i.e. &#931;xy/&#931;y</li>
+        <li>s<sub>x</sub>,s<sub>y</sub>: Calculate sample standard
+        of x and y values, i.e. &#931;(x-<span
+        style="text-decoration: overline;">x</span>)²/(n-1)</li>
+        <li>S<sub>x</sub>,S<sub>y</sub>: Calculate population standard
+        deviation of x and y values, i.e. &#931;(x-<span
+        style="text-decoration: overline;">x</span>)²/n</li>
+      </ul>
+      <li>Linear regression: y=ax+b</li>
+      <ul>
+        <li>a,b: Calculate coefficients, x=a, y=b</li>
+        <li>y<sup>*</sup>: Calculate estimated y for current x</li>
+        <li>x<sup>*</sup>: Calculate estimated x for current y</li>
+        <li>r: Calculate correlation coefficient</li>
+      </ul>
+      <li>Curve fitting: y=a·<em>ln</em>x+b</li>
+      <ul>
+        <li>a,b, y<sup>*</sup>, x<sup>*</sup>, r: (see linear regression)
+      </ul>
+      <li>Curve fitting: y=be<sup>ax</sup></li>
+      <ul>
+        <li>a,b, y<sup>*</sup>, x<sup>*</sup>, r: (see linear regression)
+      </ul>
+      <li>Curve fitting: y=bx<sup>a</sup></li>
+      <ul>
+        <li>a,b, y<sup>*</sup>, x<sup>*</sup>, r: (see linear regression)
+      </ul>
     </ul>
-    <li>Registers</li>
+    <li>Sums</li>
     <ul>
+      <li>n: Recall number of statistics entered</li>
       <li>&#931;x: Recall sum of x'es</li>
       <li>&#931;x²: Recall sum of squared x'es</li>
       <li>&#931;y: Recall sum of y's</li>
       <li>&#931;y²: Recall sum of squared y's</li>
       <li>&#931;xy: Recall sum of x·y product</li>
+      <li>&#931;<em>ln</em>x: Recall sum of <em>ln</em>x</li>
+      <li>&#931;<em>ln</em>²x: Recall sum of <em>ln</em>²x</li>
+      <li>&#931;<em>ln</em>y: Recall sum of <em>ln</em>y</li>
+      <li>&#931;<em>ln</em>²y: Recall sum of <em>ln</em>²y</li>
+      <li>&#931;x<em>ln</em>y: Recall sum of x·<em>ln</em>y</li>
+      <li>&#931;y<em>ln</em>x: Recall sum of y·<em>ln</em>x</li>
+      <li>&#931;<em>ln</em>x<em>ln</em>y: Recall sum of
+      <em>ln</em>x·<em>ln</em>y</li>
     </ul>
-    <li>clear: Clear statistics</li>
   </ul>
   <li>Integer operations</li>
   <ul>
