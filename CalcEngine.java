@@ -28,10 +28,10 @@ public final class CalcEngine
   public static final int MUL            =  22;
   public static final int DIV            =  23;
   public static final int NEG            =  24;
-  public static final int ABS            =  25;
-  public static final int RECIP          =  26;
-  public static final int SQR            =  27;
-  public static final int SQRT           =  28;
+  public static final int RECIP          =  25;
+  public static final int SQR            =  26;
+  public static final int SQRT           =  27;
+  public static final int PERCENT_CHG    =  28;
   public static final int YPOWX          =  29;
   public static final int XRTY           =  30;
   public static final int LN             =  31;
@@ -112,16 +112,15 @@ public final class CalcEngine
   public static final int BASE_OCT       = 106;
   public static final int BASE_DEC       = 107;
   public static final int BASE_HEX       = 108;
-  public static final int TRIG_DEG       = 109;
-  public static final int TRIG_RAD       = 110;
-  public static final int TO_DEG         = 111;
-  public static final int TO_RAD         = 112;
-  public static final int RANDOM         = 113;
-  public static final int TO_DHMS        = 114;
-  public static final int TO_H           = 115;
-  public static final int DHMS_PLUS      = 116;
-  public static final int TIME           = 117;
-  public static final int DATE           = 118;
+  public static final int TRIG_DEGRAD    = 109;
+  public static final int TO_DEG         = 110;
+  public static final int TO_RAD         = 111;
+  public static final int RANDOM         = 112;
+  public static final int TO_DHMS        = 113;
+  public static final int TO_H           = 114;
+  public static final int DHMS_PLUS      = 115;
+  public static final int TIME           = 116;
+  public static final int DATE           = 117;
   public static final int FINALIZE       = 500;
 
   private static final Real Real180 = new Real(180);
@@ -488,6 +487,12 @@ public final class CalcEngine
       case BIC:   y.bic(x);                break;
       case YUPX:  y.scalbn(x.toInteger()); break;
       case YDNX:  y.scalbn(-x.toInteger());break;
+      case PERCENT_CHG:
+        x.sub(y);
+        x.div(y);
+        y.assign(100);
+        y.mul(x);
+        break;
       case DHMS_PLUS:
         x.fromDHMS();
         y.fromDHMS();
@@ -531,7 +536,6 @@ public final class CalcEngine
     lastx.assign(x);
     switch (cmd) {
       case NEG:   x.neg();   break;
-      case ABS:   x.abs();   break;
       case RECIP: x.recip(); break;
       case SQR:   x.sqr();   break;
       case SQRT:  x.sqrt();  break;
@@ -781,6 +785,7 @@ public final class CalcEngine
           binary(cmd);
         break;
       case ADD:   case SUB:   case MUL:   case DIV:
+      case PERCENT_CHG:
       case YPOWX: case XRTY:
       case ATAN2: case HYPOT:
       case PYX:   case CYX:
@@ -789,7 +794,7 @@ public final class CalcEngine
       case DHMS_PLUS:
         binary(cmd);
         break;
-      case NEG:   case ABS:   case RECIP: case SQR:   case SQRT:
+      case NEG:   case RECIP: case SQR:   case SQRT:
       case LN:    case EXP:   case LOG10: case EXP10: case LOG2: case EXP2:
       case FACT:  case GAMMA:
       case SIN:   case COS:   case TAN:
@@ -1020,15 +1025,10 @@ public final class CalcEngine
           clearStrings();
         }
         break;
-      case TRIG_DEG:
+      case TRIG_DEGRAD:
         if (inputInProgress)
           parseInput();
-        degrees = true;
-        break;
-      case TRIG_RAD:
-        if (inputInProgress)
-          parseInput();
-        degrees = false;
+        degrees = !degrees;
         break;
       case FINALIZE:
         if (inputInProgress)

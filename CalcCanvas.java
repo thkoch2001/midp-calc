@@ -10,7 +10,7 @@ public class CalcCanvas
 //               ENTER  +  0-9a-f  .  -/E  clear  menu
 // Menu:
 //   basic    ->            -      *      /      +/-
-//   math     -> simple  -> abs    1/x    x^2    x^1/2
+//   math     -> simple  -> 1/x    x^2    x^1/2  %chg
 //            -> pow     -> y^x    y^1/x  ln     e^x
 //            -> prob    -> Py,x   Cy,x   x!     random
 //            -> pow10/2 -> log    10^x   log2   2^x
@@ -19,7 +19,7 @@ public class CalcCanvas
 //            -> arc     -> asin   acos   atan
 //            -> hyp     -> sinh   cosh   tanh
 //            -> archyp  -> asinh  acosh  atanh
-//            -> more    -> RAD    DEG    ->RAD  ->DEG  pi
+//            -> more    -> RAD/DEG ->RAD  ->DEG  pi
 //   bitop*   ->            and    or     xor    bic
 //   bitop2*  ->            not    y<<x   y>>x
 //   special  -> stack   -> x<->y  clear  x<->st# RCL st#  LASTx  ( -> # )
@@ -210,10 +210,10 @@ public class CalcCanvas
 
   private static final Menu math = new Menu("math",new Menu[] {
     new Menu("simple",new Menu[] {
-      new Menu("abs",CalcEngine.ABS),
+      new Menu("Qx",CalcEngine.SQRT),
       new Menu("x^2",CalcEngine.SQR),
       new Menu("1/x",CalcEngine.RECIP),
-      new Menu("Qx",CalcEngine.SQRT),
+      new Menu("%chg",CalcEngine.PERCENT_CHG),
     }),
     new Menu("pow",new Menu[] {
       new Menu("e^x",CalcEngine.EXP),
@@ -262,8 +262,7 @@ public class CalcCanvas
       new Menu("atanh",CalcEngine.ATANH),
     }),
     new Menu("more",new Menu[] {
-      new Menu("RAD",CalcEngine.TRIG_RAD),
-      new Menu("DEG",CalcEngine.TRIG_DEG),
+      new Menu("RAD/DEG",CalcEngine.TRIG_DEGRAD),
       new Menu("\\RAD",CalcEngine.TO_RAD),
       new Menu("\\DEG",CalcEngine.TO_DEG),
       new Menu("¶",CalcEngine.PI),
