@@ -19,7 +19,7 @@
 
 <img src="/~roarl/Calc.jpg" align=right alt="">
 
-<b>Current version: 1.17</b> <font size=-1><a
+<b>Current version: 1.18</b> <font size=-1><a
 href="/~roarl/Calc-log.html">change-log</a></font><br>
 
 Copyright: Roar Lauritzsen, email: <a
@@ -49,7 +49,7 @@ Using my <a href="Real.html">Real</a> Java floating point library,
 Calc has 63 bits internal precision, which amounts to approximately 19
 decimal digits accuracy, considerably <i>more</i> than normal
 calculators and computers. The exponent is 31 bits, which allows for
-numbers up to 4.197e323228496. Handy when you want to calculate the
+numbers up to 4.197·10<sup>323228496</sup>. Handy when you want to calculate the
 factorial of 40000000.<br>
 
 <h2><font color="800000">Disclaimer</font></h2>
@@ -140,7 +140,13 @@ of the devices that have not been tested and also devices not on my list.
     <dt><a href="Calc.html#Memory">Memory</a></dt>
     <dt><a href="Calc.html#Statistical">Statistical</a></dt>
     <dt><a href="Calc.html#Financial">Financial</a></dt>
-    <dt><a href="Calc.html#Time">Time and date</a></dt>
+    <dt><a href="Calc.html#Conversions">Conversions and
+    constants</a></dt>
+    <dd><dl>
+      <dt><a href="Calc.html#Time">Time and date</a></dt>
+      <dt><a href="Calc.html#Const">Constants</a></dt>
+      <dt><a href="Calc.html#Metric">Metric conversions</a></dt>
+    </dl></dd>
   </dl></dd>
   <dt><a href="Calc.html#Mode">Mode</a></dt>
   <dd><dl>
@@ -156,8 +162,9 @@ of the devices that have not been tested and also devices not on my list.
   <dt><a href="Calc.html#AbnormalNote">Abnormal results</a></dt>
   <dt><a href="Calc.html#ComplexNote">Complex results</a></dt>
   <dt><a href="Calc.html#FinancialNote">Financial calculation</a></dt>
-  <dt><a href="Calc.html#BinaryNote">Binary representation</a></dt>
   <dt><a href="Calc.html#DateNote">Date calculation</a></dt>
+  <dt><a href="Calc.html#ConstNote">Constants</a></dt>
+  <dt><a href="Calc.html#BinaryNote">Binary representation</a></dt>
 </dl></dd>
 </dl>
 
@@ -199,10 +206,10 @@ keys 1-6 until the digit changes.
 <h2><a id="Setup" name="Setup">Setup</a></h2>
 
 To be able to use Calc on devices with fewer keys than the T610 (most
-Nokias, that is), a couple of setup dialogs may appear the first time
-Calc is started. If you don't answer these dialogs correctly the first
-time, I'm afraid the only option is to delete the application and
-download it again (I may fix this in the future).<br>
+Nokias, that is), a couple of setup dialogs <em>may</em> appear the
+first time Calc is started. If you don't answer these dialogs
+correctly the first time, I'm afraid the only option is to delete the
+application and download it again (I may fix this in the future).<br>
 
 <br>
 First, to make sure that "ENTER" and "+" is immediately available,
@@ -444,7 +451,7 @@ The following operations are available through the menu system:
     (x=re,&nbspy=im) to complex number
   </ul>
   <li>Complex numbers (available instead of coordinate menu if x or y
-  is complex)
+  is complex) <a href="Calc.html#ComplexNote"><b>(*)</b></a>
   <ul>
     <li><b>cplx&rarr;r</b>: Convert complex number to rectangular
   coordinates (x=re,&nbsp;y=im)
@@ -625,7 +632,8 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
       <i>ln</i>x·<i>ln</i>y
     </ul>
   </ul>
-  <li><a id="Financial" name="Financial">Financial</a>
+  <li><a id="Financial" name="Financial">Financial</a> <a
+    href="Calc.html#FinancialNote"><b>(*)</b></a>
   <ul>
     <li><b>STO</b>: Store x in financial register (pv, fv, np, pmt, ir%)
     <li><b>RCL</b>: Recall financial register (pv, fv, np, pmt, ir%)
@@ -648,19 +656,145 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
     <li><b>y%/x</b>: Interest divide. Convert from effective annual interest
   rate to nominal x-times-a-year rate
   </ul>
-  <li><a id="Time" name="Time">Time and date</a>
+  <li><a id="Conversions" name="Conversions">Conversions and constants</a>
   <ul>
-    <li><b>&rarr;H</b>: Convert x, interpreted as date, hours, minutes and
-  seconds (format yyyymmddHH.MMSS) to hours. If year (yyyy) is zero,
-  the format is instead understood as ddddHH.MMSS, where dddd is
-  number of days.
-    <li><b>&rarr;DH.MS</b>: Convert x from hours to date, hours, minutes and
-  seconds. If x&nbsp;&#8804;&nbsp;8784 hours, it is instead converted
-  to the format ddddHH.MMSS, where dddd is the number of days. 
-    <li><b>date</b>: Get current date in DH.MS format
-    <li><b>time</b>: Get current time in DH.MS format (inaccurate on early
-  versions of T610 software)
-    <li><b>DH.MS+</b>: Add x and y as date, hours, minutes and seconds
+    <li><a id="Time" name="Time">Time and date</a> <a
+      href="Calc.html#DateNote"><b>(*)</b></a>
+    <ul>
+      <li><b>&rarr;H</b>: Convert x, interpreted as date, hours, minutes and
+    seconds (format yyyymmddHH.MMSS) to hours. If year (yyyy) is zero,
+    the format is instead understood as ddddHH.MMSS, where dddd is
+    number of days.
+      <li><b>&rarr;DH.MS</b>: Convert x from hours to date, hours, minutes and
+    seconds. If x&nbsp;&#8804;&nbsp;8784 hours, it is instead converted
+    to the format ddddHH.MMSS, where dddd is the number of days. 
+      <li><b>date</b>: Get current date in DH.MS format
+      <li><b>time</b>: Get current time in DH.MS format (inaccurate on early
+    versions of T610 software)
+      <li><b>DH.MS+</b>: Add x and y as date, hours, minutes and seconds
+    </ul>
+    <li><a id="Metric" name="Metric">Metric conversions</a> <a
+      href="Calc.html#ConstNote"><b>(*)</b></a>
+    <ul>
+      <li>Length
+      <ul>
+        <li><b>cm/in</b>: Enter the length of one inch in centimeters
+          &equiv;&nbsp;2.54
+        <li><b>m/ft</b>: Enter the length of one foot in meters
+          &equiv;&nbsp;0.3048
+        <li><b>m/yd</b>: Enter the length of one yard in meters
+          &equiv;&nbsp;0.9144
+        <li><b>km/mi</b>: Enter the length of one mile in kilometers
+          &equiv;&nbsp;1.609344
+        <li><b>km/n.m.</b>: Enter the length of one nautical mile in
+          kilometers &equiv;&nbsp;1.852
+      </ul>
+      <li>Weight
+      <ul>
+        <li><b>g/oz</b>: Enter the weight of one U.S. ounce in grams
+          &equiv;&nbsp;28.349523125
+        <li><b>kg/lb</b>: Enter the weight of one U.S. pound in kilos
+          &equiv;&nbsp;0.45359237
+        <li><b>kg/ton</b>: Enter the weight of one U.S. short ton in
+          kilos &equiv;&nbsp;907.18474
+        <li><b>mg/gr</b>: Enter the weight of one U.S. grain in
+          milligrams &equiv;&nbsp;64.79891
+      </ul>
+      <li>Volume
+      <ul>
+        <li><b>l/cup</b>: Enter the volume of one U.S. cup in litres
+          &equiv;&nbsp;0.2365882365
+        <li><b>l/gal</b>: Enter the volume of one U.S. gallon in litres
+          &equiv;&nbsp;3.785411784
+        <li><b>l/pt</b>: Enter the volume of one U.S. pint in litres
+          &equiv;&nbsp;0.473176473
+        <li><b>ml/fl.oz</b>: Enter the volume of one U.S. fluid ounce in
+          millilitres &equiv;&nbsp;29.5735295625
+      </ul>
+      <li>Energy
+      <ul>
+        <li><b>J/cal</b>: Enter the energy of one international calorie in
+          Joules &cong;&nbsp;4.1868
+        <li><b>J/Btu</b>: Enter the energy of one British thermal unit in
+          Joules &cong;&nbsp;1055.06
+        <li><b>W/hp</b>: Enter the value of one horsepower in Watts
+          &cong;&nbsp;745.7
+      </ul>
+      <li>Temperature
+      <ul>
+        <li><b>°C&rarr;°F</b>: Convert from degrees Celsius to degrees
+          Fahrenheit, i.e. calculate x*1.8+32. This operation and the
+          next are different from the others in the "metric
+          conversions" module because they work as a function changing
+          the x value instead of just entering a value on the stack.
+        <li><b>°F&rarr;°C</b>: Convert from degrees Fahrenheit to
+          degrees Celsius, i.e. calculate (x-32)/1.8
+        <li><b>°K-°C</b>: Enter the difference between degrees Kelvin and
+          degrees Celsius &equiv;&nbsp;273.15 
+      </ul>
+    </ul>
+    <li><a id="Const" name="Const">Scientific constants</a>
+    <ul>
+      <li>Universal
+      <ul>
+        <li><b>c</b>: Enter the speed of light in a vacuum
+          &equiv;&nbsp;299792458&nbsp;m/s
+        <li><b>h</b>: Enter the Planck constant
+          &cong;&nbsp;6.6260693·10<sup>-34</sup>&nbsp;J&nbsp;s
+        <li><b>µ<sub>0</sub></b>: Enter the permeability of a vacuum,
+          &equiv;&nbsp;1.256637061435917...·10<sup>-6</sup>&nbsp;N/A²
+        <li><b>&#949;<sub>0</sub></b>: Enter the permittivity of a vacuum
+          &equiv;&nbsp;8.854187817620390...·10<sup>-12</sup>&nbsp;F/m
+      </ul>
+      <li>Chemical
+      <ul>
+        <li><b>N<sub>A</sub></b>: Enter the Avogadro constant
+          &cong;&nbsp;6.0221415·10<sup>23</sup>&nbsp;mol<sup>-1</sup>
+        <li><b>R</b>: Enter the molar gas constant
+          &cong;&nbsp;8.314472&nbsp;J/mol&nbsp;K
+        <li><b>k</b>: Enter the Boltzmann constant
+          &cong;&nbsp;1.3806505·10<sup>-23</sup>&nbsp;J/K
+        <li><b>F</b>: Enter the Faraday constant
+          &cong;&nbsp;96485.3383&nbsp;C/mol
+      </ul>
+      <li>Physical and electromagnetic
+      <ul>
+        <li><b>&#945;</b>: Enter the fine-structure constant
+          &cong;&nbsp;0.007297352568
+        <li><b>R<sub>&infin;</sub></b>: Enter the Rydberg constant
+          &cong;&nbsp;10973731.568525&nbsp;m<sup>-1</sup>
+        <li><b>a<sub>0</sub></b>: Enter the Bohr radius
+          &cong;&nbsp;5.291772108·10<sup>-11</sup>&nbsp;m
+        <li><b>µ<sub>B</sub></b>: Enter the Bohr magneton
+          &cong;&nbsp;9.27400949·10<sup>-24</sup>&nbsp;J/T
+      </ul>
+      <li>Atomic
+      <ul>
+        <li><b>e</b>: Enter the elementary charge
+          &cong;&nbsp;1.60217653·10<sup>-19</sup>&nbsp;C
+        <li><b>m<sub>e</sub></b>: Enter the mass of an electron
+          &cong;&nbsp;9.1093826·10<sup>-31</sup>&nbsp;kg
+        <li><b>m<sub>p</sub></b>: Enter the mass of a proton
+          &cong;&nbsp;1.67262171·10<sup>-27</sup>&nbsp;kg
+        <li><b>m<sub>n</sub></b>: Enter the mass of a neutron
+          &cong;&nbsp;1.67492728·10<sup>-27</sup>&nbsp;kg
+        <li><b>m<sub>u</sub></b>: Enter the unified atomic mass unit
+          &cong;&nbsp;1.66053886·10<sup>-27</sup>&nbsp;kg
+      </ul>
+      <li>Astronomical
+      <ul>
+        <li><b>G</b>: Enter the Newtonian constant of gravitation
+          &cong;&nbsp;6.6742·10<sup>-11</sup>&nbsp;N&nbsp;m²/kg²
+        <li><b>g<sub>n</sub></b>: Enter the standard acceleration of gravity
+          &equiv;&nbsp;9.80665&nbsp;m/s²
+        <li><b>A.U.</b>: Enter the length of one astronomical unit
+          &equiv;&nbsp;149597870691&nbsp;m
+        <li><b>l.y.</b>: Enter the length of one light year
+          &equiv;&nbsp;9460730472580800&nbsp;m
+        <li><b>pc</b>: Enter the length of one parsec
+          &equiv;&nbsp;3.085677581305729...·10<sup>16</sup>&nbsp;m
+      </ul>
+    </ul>
   </ul>
 </ul>
 
@@ -697,7 +831,8 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
       <li><b>none</b>: Display no thousands separator
     </ul>
   </ul>
-  <li><a id="Base" name="Base">Base</a>
+  <li><a id="Base" name="Base">Base</a> <a
+    href="Calc.html#BinaryNote"><b>(*)</b></a>
   <ul>
     <li><b>DEC</b>: Set decimal (base-10) number mode
     <li><b>HEX</b>: Set hexadecimal (base-16) number mode
@@ -829,38 +964,6 @@ If you solve repeatedly and successively for each of the financial
 registers, the values may start to drift away from the original values
 because of inaccuracies during the calculations.<br>
 
-<h3><a id="BinaryNote" name="BinaryNote">Binary representation</a></h3>
-
-In binary modes (HEX, OCT and BIN), fractional numbers are not
-displayed as integers, but are instead displayed with the fraction
-visible in exactly the same manner as decimal numbers, depending on
-the number format (normal, FIX, SCI and ENG). If a number is displayed
-with an exponent, the exponent itself is still displayed in decimal
-form.<br>
-
-<br>
-Negative numbers are displayed as a generalized form of "twos
-complement", with the following interpretation: Negating the number
-inverts all bits, including an infinite number of 1-bits before the
-radix point and an infinite number of 1-bits after the radix
-point. The infinite number of 1-bits before the radix is represented
-by an "f" prefix (or 7 or 1 in OCT and BIN modes). The infinite number
-of 1-bits after the radix is rounded upwards producing an infinite
-number of 0-bits, until the first 0-bit is encountered which will be
-switched to a 1 (rounded or not, these two forms are mathematically
-equivalent). For example, the number "1", inverted, will become (in
-binary mode) ...1111110.111111.... Rounding of the infinite number of
-1's after the radix gives the number ...1111111.000000..., which is
-exactly the way we usually see "-1" as two's complement.<br>
-
-<br>
-Bitwise operations with negative numbers (and, or, xor and bic) use
-the generalized "twos complement" representation of the number when
-interpreting the bits. However, beware that normal rounding that
-occurs when the display cannot display all the significant digits of a
-number may cause inexact values to appear different in the display
-than their internal representation.<br>
-
 <h3><a id="DateNote" name="DateNote">Date calculation</a></h3>
 
 The calendar implemented by the DH.MS operations is strictly
@@ -969,6 +1072,48 @@ The Modified Julian Day is the number of days elapsed since midnight
 (00:00 UTC) on November 17, 1858. To convert from a date to Modified
 Julian Day, convert first to hours using "&rarr;H", divide by 24 to
 get days, and subtract 678941.<br>
+
+<h3><a id="ConstNote" name="ConstNote">Constants</a></h3>
+
+The constants were found at <a href="http://physics.nist.gov/cuu/Constants">http://physics.nist.gov/cuu/Constants</a>
+and the metric conversions at <a
+href="http://www.free-definition.com">http://www.free-definition.com</a>.
+Constants given using "&equiv;" are as accurate as the internal precision
+of Calc. Constants given using "&cong;" are not precisely known by
+science, but are as up-to-date as the CODATA internationally
+recommended values of 2002.
+
+<h3><a id="BinaryNote" name="BinaryNote">Binary representation</a></h3>
+
+In binary modes (HEX, OCT and BIN), fractional numbers are not
+displayed as integers, but are instead displayed with the fraction
+visible in exactly the same manner as decimal numbers, depending on
+the number format (normal, FIX, SCI and ENG). If a number is displayed
+with an exponent, the exponent itself is still displayed in decimal
+form.<br>
+
+<br>
+Negative numbers are displayed as a generalized form of "twos
+complement", with the following interpretation: Negating the number
+inverts all bits, including an infinite number of 1-bits before the
+radix point and an infinite number of 1-bits after the radix
+point. The infinite number of 1-bits before the radix is represented
+by an "f" prefix (or 7 or 1 in OCT and BIN modes). The infinite number
+of 1-bits after the radix is rounded upwards producing an infinite
+number of 0-bits, until the first 0-bit is encountered which will be
+switched to a 1 (rounded or not, these two forms are mathematically
+equivalent). For example, the number "1", inverted, will become (in
+binary mode) ...1111110.111111.... Rounding of the infinite number of
+1's after the radix gives the number ...1111111.000000..., which is
+exactly the way we usually see "-1" as two's complement.<br>
+
+<br>
+Bitwise operations with negative numbers (and, or, xor and bic) use
+the generalized "twos complement" representation of the number when
+interpreting the bits. However, beware that normal rounding that
+occurs when the display cannot display all the significant digits of a
+number may cause inexact values to appear different in the display
+than their internal representation.<br>
 
 </body>
 </html>

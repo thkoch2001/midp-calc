@@ -53,6 +53,69 @@ public class CalcCanvas
 //
 // Extensions:
 //   spceial  -> stat    -> S_xw s_xw
+//            -> conv    -> time   ->  ->DH.MS ->H DH.MS+ time date
+//                       -> const  ->  univ chem phys atom astro
+//                       -> metric ->  length weight volume energy temp
+
+// Physical constants:
+// Universal
+//   Speed of light in vacuum          c == 299792458 m/s
+//   Planck constant                   h = 6.6260693e-34 J·s
+//   Permeability of a vacuum          µ_0 = 12.5663706e-7 N/A²
+//   Permittivity of a vacuum          eps_0 = 8.8541878e-12 F/m
+// Chemical
+//   Avogadro constant                 N_A = 6.0221415e23 mol^-1
+//   Molar gas constant                R = 8.314472 J/mol·K
+//   Boltzmann constant                k = 1.3806505e-23 J/K
+//   Faraday constant                  F = 96485.3383 C/mol
+// Physical and electromagnetic
+//   Fine-structure constant           alpha = 7.297352568e-3
+//   Bohr radius                       a_0 = 5.291772108e-11 m
+//   Rydberg constant                  R_inf=10973731.568525m^-1
+//   Bohr magneton                     µ_B = 9.27400949e-24 J/T
+// Atomic
+//   Elementary charge                 e = 1.60217653e-19 C
+//   Mass of electron                  m_e = 9.1093826e-31 kg
+//   Mass of proton                    m_p = 1.67262171e-27 kg
+//   Mass of neutron                   m_n = 1.67492728e-27 kg
+//   Unified atomic mass unit          m_u = 1.66053886e-27 kg
+// Astronomical
+//   Newtonian constant of gravitation G = 6.6742e-11 N·m²/kg²
+//   Standard acceleration of gravity  g_n == 9.80665 m/s²
+//   Light year                        l.y. == 365.25*24*60*60 * c
+//   Astronomical unit                 A.U. == 149597870691 m
+//   Parsec                            pc == 360*60*60/2·pi * A.U.
+
+// Metric conversions:
+// Length
+//   Inch in centimeters               cm/in == 2.54         (def)
+//   Foot in meters                    m/ft == 0.3048        (ft = 12 in)
+//   Yard in meters                    m/yd == 0.9144        (yd = 3 ft)
+//   Mile in kilometers                km/mi == 1.609344     (mi = 5280 ft)
+//   Nautical mile in kilometers       km/n.m. == 1.852      (def)
+// Weight
+//   U.S. ounce in grams               g/oz == 28.349523125  (oz = 1/16 lb)
+//   U.S. pound in kilos               kg/lb == 0.45359237   (def)
+//   U.S. short ton in kilos           kg/ton == 907.18474   (ton = 2000 lb)
+//   U.S. grain in milligrams          mg/gr == 64.79891     (gr = 1/7000 lb)
+// Volume
+//   U.S. cup in litres                l/cup == 0.2365882365 (cup = 1/2 pt)
+//   U.S. gallon in litres             l/gal == 3.785411784  (gal = 231 in³)
+//   U.S. pint in litres               l/pt == 0.473176473   (pt = 1/8 gal)
+//   U.S. fluid ounce in millilitres   ml/fl.oz==29.5735295625(fl.oz=gal/128)
+// Temperature
+//   Celsius to Fahrenheit             °C->°F == x*1.8+32    (def)
+//   Fahrenheit to Celsius             °F->°C == (x-32)/1.8  (def)
+//   Kelvin minus Celsius              °K-°C == 273.15       (def)
+// Energy
+//   International calorie in Joules   J/cal = 4.1868
+//   British thermal unit in Joules    J/Btu = 1055.06
+//   Horsepower in Watts               W/hp  = 745.7
+//
+// Sources: http://physics.nist.gov/cuu/Constants
+//          http://www.free-definition.com
+// (== means "equals exactly" or "equals by definition")
+
 //
 ///  special  -> run                                                -> #
 ///  mode     -> prog    -> new                                     -> #
@@ -234,12 +297,79 @@ public class CalcCanvas
         }),
         new Menu("clear",CalcEngine.FINANCE_CLEAR),
       }),
-      new Menu("time",new Menu[] {
-        new Menu("\\DH.MS",CalcEngine.TO_DHMS),
-        new Menu("\\H",CalcEngine.TO_H),
-        new Menu("time",CalcEngine.TIME),
-        new Menu("DH.MS+",CalcEngine.DHMS_PLUS),
-        new Menu("date",CalcEngine.DATE),
+      new Menu("conv",new Menu [] {
+        new Menu("time",new Menu[] {
+          new Menu("\\DH.MS",CalcEngine.TO_DHMS),
+          new Menu("\\H",CalcEngine.TO_H),
+          new Menu("time",CalcEngine.TIME),
+          new Menu("DH.MS+",CalcEngine.DHMS_PLUS),
+          new Menu("date",CalcEngine.DATE),
+        }),
+        new Menu("metric",new Menu [] {
+          new Menu("length",new Menu [] {
+            new Menu("km/mi",CalcEngine.CONST_km_mi),
+            new Menu("cm/in",CalcEngine.CONST_cm_in),
+            new Menu("m/yd",CalcEngine.CONST_m_yd),
+            new Menu("km/n.m.",CalcEngine.CONST_km_nm),
+            new Menu("m/ft",CalcEngine.CONST_m_ft),
+          }),
+          new Menu("weight",new Menu [] {
+            new Menu("g/oz",CalcEngine.CONST_g_oz),
+            new Menu("kg/lb",CalcEngine.CONST_kg_lb),
+            new Menu("mg/gr",CalcEngine.CONST_mg_gr),
+            new Menu("kg/ton",CalcEngine.CONST_kg_ton),
+          }),
+          new Menu("temp",new Menu [] {
+            new Menu("°C\\°F",CalcEngine.CONV_C_F),
+            new Menu("°F\\°C",CalcEngine.CONV_F_C),
+            new Menu("°K-°C",CalcEngine.CONST_K_C),
+          }),
+          new Menu("energy",new Menu [] {
+            new Menu("J/cal",CalcEngine.CONST_J_cal),
+            new Menu("J/Btu",CalcEngine.CONST_J_Btu),
+            new Menu("W/hp",CalcEngine.CONST_W_hp),
+          }),
+          new Menu("vol",new Menu [] {
+            new Menu("l/pt",CalcEngine.CONST_l_pt),
+            new Menu("l/cup",CalcEngine.CONST_l_cup),
+            new Menu("l/gal",CalcEngine.CONST_l_gal),
+            new Menu("ml/fl.oz",CalcEngine.CONST_ml_floz),
+          }),
+        }),
+        new Menu("const",new Menu [] {
+          new Menu("univ",new Menu [] {
+            new Menu("c",CalcEngine.CONST_c),
+            new Menu("h",CalcEngine.CONST_h),
+            new Menu("µ_0",CalcEngine.CONST_mu_0),
+            new Menu("è_0",CalcEngine.CONST_eps_0),
+          }),
+          new Menu("chem",new Menu [] {
+            new Menu("N_A",CalcEngine.CONST_NA),
+            new Menu("R",CalcEngine.CONST_R),
+            new Menu("k",CalcEngine.CONST_k),
+            new Menu("F",CalcEngine.CONST_F),
+          }),
+          new Menu("phys",new Menu [] {
+            new Menu("à",CalcEngine.CONST_alpha),
+            new Menu("a_0",CalcEngine.CONST_a_0),
+            new Menu("R_»",CalcEngine.CONST_R_inf),
+            new Menu("µ_B",CalcEngine.CONST_mu_B),
+          }),
+          new Menu("atom",new Menu [] {
+            new Menu("e",CalcEngine.CONST_e),
+            new Menu("m_e",CalcEngine.CONST_m_e),
+            new Menu("m_p",CalcEngine.CONST_m_p),
+            new Menu("m_n",CalcEngine.CONST_m_n),
+            new Menu("m_u",CalcEngine.CONST_m_u),
+          }),
+          new Menu("astro",new Menu [] {
+            new Menu("G",CalcEngine.CONST_G),
+            new Menu("g_n",CalcEngine.CONST_g_n),
+            new Menu("l.y.",CalcEngine.CONST_ly),
+            new Menu("A.U.",CalcEngine.CONST_AU),
+            new Menu("pc",CalcEngine.CONST_pc),
+          }),
+        }),
       }),
     }),
     new Menu("mode",new Menu[] {
@@ -557,7 +687,7 @@ public class CalcCanvas
 
   private boolean plainLabel(String label) {
     for (int i=0; i<label.length(); i++)
-      if ("^~_\\=QZ$¶".indexOf(label.charAt(i))>=0)
+      if ("^~_\\=QZ$¶»àè".indexOf(label.charAt(i))>=0)
         return false;
     return true;
   }
@@ -577,6 +707,13 @@ public class CalcCanvas
         ; // overline... no font change
       else if ("\\=QZ$¶".indexOf(c)>=0)
         width += font.charWidth('O');
+      else if (c=='»')
+        width += font.charWidth('o')*(6+4)/6;
+      else if (c=='à') {
+        int h2 = (font.getBaselinePosition()*2/3+1)&~1;
+        width += h2/2+5+(h2<10?0:1);
+      } else if (c=='è')
+        width += font.charWidth('e')*67/112 + 1;
       else
         width += font.charWidth(c);
     }
@@ -605,7 +742,7 @@ public class CalcCanvas
         }
       } else if (c=='~') {
         overline = !overline;
-      } else if ("\\=QZ$¶".indexOf(c)>=0) {
+      } else if ("\\=QZ$¶»àè".indexOf(c)>=0) {
         int w = font.charWidth('O');
         int h = font.getBaselinePosition();
         switch (c) {
@@ -665,6 +802,47 @@ public class CalcCanvas
             g.drawLine(x,y+h/3,x,y+h/3+1);
             g.drawLine(x+5,y+h/3,x+5,y+h-1);
             g.drawLine(x+6,y+h/3,x+6,y+h-1);
+            break;
+          case '»':
+            g.drawChar('o',x,y+normalFont.getHeight()-
+                       smallFont.getBaselinePosition(),g.TOP|g.LEFT);
+            g.drawChar('o',x+font.charWidth('o')*4/6,
+                       y+normalFont.getHeight()-
+                       smallFont.getBaselinePosition(),g.TOP|g.LEFT);
+            w = font.charWidth('o')*(6+4)/6;
+            break;
+          case 'à':
+            int h2 = (h*2/3+1)&~1;
+            w = h2/2+5+(h2<10?0:1);
+            int x2 = x+w-h2/2;
+            int y2 = y+h-h2;
+            g.drawLine(x+w-2,y2,x2,y+h-3);
+            g.drawLine(x+w-3,y2,x2-1,y+h-3);
+            g.drawLine(x2-2,y+h-3,x2-1,y+h-2);
+            g.fillRect(x2-4,y+h-2,3,2);
+            g.drawLine(x2-5,y+h-2,x2-4,y+h-3);
+            if (h2<10) {
+              g.fillRect(x2-6,y2+2,2,y+h-y2-4);
+            } else {
+              int h3 = (h2-1)/4;
+              g.fillRect(x2-6,y2+2,2,h3);
+              g.fillRect(x2-7,y2+2+h3,2,y+h-y2-4-2*h3);
+              g.fillRect(x2-6,y+h-2-h3,2,h3);
+            }
+            g.drawLine(x2-5,y2+1,x2-4,y2+2);
+            g.fillRect(x2-4,y2,2,2);
+            g.drawLine(x2-2,y2+2,x2-2,y2+1);
+            g.drawLine(x2-1,y2+2,x+w-3,y+h-1);
+            g.drawLine(x+w-2,y+h-1,x+w-2,y+h-2);
+            g.drawLine(x+w-1,y+h-2,x+w-1,y+h-3);
+            break;
+          case 'è':
+            g.drawChar('e',x,y,g.TOP|g.LEFT);
+            x += font.charWidth('e')*67/112;
+            g.setColor(menuColor[menuStackPtr]);
+            g.fillRect(x,y,w,h);
+            g.setColor(0);
+            w = 1;
             break;
         }
         x += w;

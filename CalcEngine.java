@@ -171,12 +171,53 @@ public final class CalcEngine
   public static final int XCHGST         = 162;
   public static final int ROLLDN         = 163;
   public static final int ROLLUP         = 164;
+  public static final int CONST_c        = 165;
+  public static final int CONST_h        = 166;
+  public static final int CONST_mu_0     = 167;
+  public static final int CONST_eps_0    = 168;
+  public static final int CONST_NA       = 169;
+  public static final int CONST_R        = 170;
+  public static final int CONST_k        = 171;
+  public static final int CONST_F        = 172;
+  public static final int CONST_alpha    = 173;
+  public static final int CONST_a_0      = 174;
+  public static final int CONST_R_inf    = 175;
+  public static final int CONST_mu_B     = 176;
+  public static final int CONST_e        = 177;
+  public static final int CONST_m_e      = 178;
+  public static final int CONST_m_p      = 179;
+  public static final int CONST_m_n      = 180;
+  public static final int CONST_m_u      = 181;
+  public static final int CONST_G        = 182;
+  public static final int CONST_g_n      = 183;
+  public static final int CONST_ly       = 184;
+  public static final int CONST_AU       = 185;
+  public static final int CONST_pc       = 186;
+  public static final int CONST_km_mi    = 187;
+  public static final int CONST_m_ft     = 188;
+  public static final int CONST_cm_in    = 189;
+  public static final int CONST_km_nm    = 190;
+  public static final int CONST_m_yd     = 191;
+  public static final int CONST_g_oz     = 192;
+  public static final int CONST_kg_lb    = 193;
+  public static final int CONST_mg_gr    = 194;
+  public static final int CONST_kg_ton   = 195;
+  public static final int CONST_J_cal    = 196;
+  public static final int CONST_J_Btu    = 197;
+  public static final int CONST_W_hp     = 198;
+  public static final int CONST_l_pt     = 199;
+  public static final int CONST_l_cup    = 200;
+  public static final int CONST_l_gal    = 201;
+  public static final int CONST_ml_floz  = 202;
+  public static final int CONST_K_C      = 203;
+  public static final int CONV_C_F       = 204;
+  public static final int CONV_F_C       = 205;
   // These commands are handled from CalcCanvas
-  public static final int AVG_DRAW       = 200;
-  public static final int LIN_DRAW       = 201;
-  public static final int LOG_DRAW       = 202;
-  public static final int EXP_DRAW       = 203;
-  public static final int POW_DRAW       = 204;
+  public static final int AVG_DRAW       = 300;
+  public static final int LIN_DRAW       = 301;
+  public static final int LOG_DRAW       = 302;
+  public static final int EXP_DRAW       = 303;
+  public static final int POW_DRAW       = 304;
   // Special commands
   public static final int FINALIZE       = 500;
   public static final int FREE_MEM       = 501;
@@ -1327,7 +1368,18 @@ public final class CalcEngine
       case TO_RAD:  x.mul(Real.PI); x.div(Real180); break;
       case TO_DHMS: x.toDHMS(); break;
       case TO_H:    x.fromDHMS(); break;
-
+      case CONV_C_F:
+      case CONV_F_C:
+        rTmp.assign(0, 0x40000000, 0x7333333333333333L);
+        rTmp2.assign(32);
+        if (cmd == CONV_C_F) {
+          x.mul(rTmp);
+          x.add(rTmp2);
+        } else {
+          x.sub(rTmp2);
+          x.div(rTmp);
+        }
+        break;
       case LIN_YEST:
         allocStat();
         statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
@@ -2478,10 +2530,167 @@ public final class CalcEngine
       case TO_DEG: case TO_RAD: case TO_DHMS: case TO_H:
       case LIN_YEST: case LIN_XEST: case LOG_YEST: case LOG_XEST:
       case EXP_YEST: case EXP_XEST: case POW_YEST: case POW_XEST:
+      case CONV_C_F: case CONV_F_C:
         unary(cmd,param);
         break;
       case PI:
         push(Real.PI,null);
+        break;
+      case CONST_c:
+        rTmp.assign(0, 0x4000001c, 0x4779e12800000000L);
+        push(rTmp,null);
+        break;
+      case CONST_h:
+        rTmp.assign(0, 0x3fffff91, 0x6e182e8b16bd5f42L);
+        push(rTmp,null);
+        break;
+      case CONST_mu_0:
+        rTmp.assign(0, 0x3fffffec, 0x5454dc3e67db2c21L);
+        push(rTmp,null);
+        break;
+      case CONST_eps_0:
+        rTmp.assign(0, 0x3fffffdb, 0x4de1dbc537b4c1b4L);
+        push(rTmp,null);
+        break;
+      case CONST_NA:
+        rTmp.assign(0, 0x4000004e, 0x7f86183045affe27L);
+        push(rTmp,null);
+        break;
+      case CONST_R:
+        rTmp.assign(0, 0x40000003, 0x428409e55c0fcb4fL);
+        push(rTmp,null);
+        break;
+      case CONST_k:
+        rTmp.assign(0, 0x3fffffb4, 0x42c3a0166b61ae01L);
+        push(rTmp,null);
+        break;
+      case CONST_F:
+        rTmp.assign(0, 0x40000010, 0x5e3955a6b50b0f28L);
+        push(rTmp,null);
+        break;
+      case CONST_alpha:
+        rTmp.assign(0, 0x3ffffff8, 0x778f50a81fcfba71L);
+        push(rTmp,null);
+        break;
+      case CONST_a_0:
+        rTmp.assign(0, 0x3fffffdd, 0x745e07537412adf4L);
+        push(rTmp,null);
+        break;
+      case CONST_R_inf:
+        rTmp.assign(0, 0x40000017, 0x53b911c8c56d5cfbL);
+        push(rTmp,null);
+        break;
+      case CONST_mu_B:
+        rTmp.assign(0, 0x3fffffb3, 0x59b155d92797eb1eL);
+        push(rTmp,null);
+        break;
+      case CONST_e:
+        rTmp.assign(0, 0x3fffffc1, 0x5e93683d3137633fL);
+        push(rTmp,null);
+        break;
+      case CONST_m_e:
+        rTmp.assign(0, 0x3fffff9c, 0x49e7728ced335c92L);
+        push(rTmp,null);
+        break;
+      case CONST_m_p:
+        rTmp.assign(0, 0x3fffffa7, 0x42426639a512e22fL);
+        push(rTmp,null);
+        break;
+      case CONST_m_n:
+        rTmp.assign(0, 0x3fffffa7, 0x4259c7d3bd6cba4fL);
+        push(rTmp,null);
+        break;
+      case CONST_m_u:
+        rTmp.assign(0, 0x3fffffa7, 0x41c7dd5a667f9950L);
+        push(rTmp,null);
+        break;
+      case CONST_G:
+        rTmp.assign(0, 0x3fffffde, 0x496233f0f7af9494L);
+        push(rTmp,null);
+        break;
+      case CONST_g_n:
+        rTmp.assign(0, 0x40000003, 0x4e7404ea4a8c154dL);
+        push(rTmp,null);
+        break;
+      case CONST_ly:
+        rTmp.assign(0, 0x40000035, 0x4338f7ee448d8000L);
+        push(rTmp,null);
+        break;
+      case CONST_AU:
+        rTmp.assign(0, 0x40000025, 0x45a974b4c6000000L);
+        push(rTmp,null);
+        break;
+      case CONST_pc:
+        rTmp.assign(0, 0x40000036, 0x6da012f9404b0988L);
+        push(rTmp,null);
+        break;
+      case CONST_km_mi:
+        rTmp.assign(0, 0x40000000, 0x66ff7dfa00e27e0fL);
+        push(rTmp,null);
+        break;
+      case CONST_m_ft:
+        rTmp.assign(0, 0x3ffffffe, 0x4e075f6fd21ff2e5L);
+        push(rTmp,null);
+        break;
+      case CONST_cm_in:
+        rTmp.assign(0, 0x40000001, 0x5147ae147ae147aeL);
+        push(rTmp,null);
+        break;
+      case CONST_km_nm:
+        rTmp.assign(0, 0x40000000, 0x76872b020c49ba5eL);
+        push(rTmp,null);
+        break;
+      case CONST_m_yd:
+        rTmp.assign(0, 0x3fffffff, 0x750b0f27bb2fec57L);
+        push(rTmp,null);
+        break;
+      case CONST_g_oz:
+        rTmp.assign(0, 0x40000004, 0x7165e963dc486ad3L);
+        push(rTmp,null);
+        break;
+      case CONST_kg_lb:
+        rTmp.assign(0, 0x3ffffffe, 0x741ea12add794261L);
+        push(rTmp,null);
+        break;
+      case CONST_mg_gr:
+        rTmp.assign(0, 0x40000006, 0x40cc855da272862fL);
+        push(rTmp,null);
+        break;
+      case CONST_kg_ton:
+        rTmp.assign(0, 0x40000009, 0x7165e963dc486ad3L);
+        push(rTmp,null);
+        break;
+      case CONST_J_cal:
+        rTmp.assign(0, 0x40000002, 0x42fd21ff2e48e8a7L);
+        push(rTmp,null);
+        break;
+      case CONST_J_Btu:
+        rTmp.assign(0, 0x4000000a, 0x41f0f5c28f5c28f6L);
+        push(rTmp,null);
+        break;
+      case CONST_W_hp:
+        rTmp.assign(0, 0x40000009, 0x5d36666666666666L);
+        push(rTmp,null);
+        break;
+      case CONST_l_pt:
+        rTmp.assign(0, 0x3ffffffe, 0x792217e4c58958fcL);
+        push(rTmp,null);
+        break;
+      case CONST_l_cup:
+        rTmp.assign(0, 0x3ffffffd, 0x792217e4c58958fcL);
+        push(rTmp,null);
+        break;
+      case CONST_l_gal:
+        rTmp.assign(0, 0x40000001, 0x792217e4c58958fcL);
+        push(rTmp,null);
+        break;
+      case CONST_ml_floz:
+        rTmp.assign(0, 0x40000004, 0x764b4b5568e820e6L);
+        push(rTmp,null);
+        break;
+      case CONST_K_C:
+        rTmp.assign(0, 0x40000008, 0x444999999999999aL);
+        push(rTmp,null);
         break;
       case RANDOM:
         rTmp.random();

@@ -1,4 +1,4 @@
-VERSION = 1.17
+VERSION = 1.18
 TARGETS = Calc.jar Calc.jad
 
 WTK_HOME = /home/roarl/ant/WTK104
@@ -44,6 +44,7 @@ Calc.jar: $(JAVAFILES) Calc.jad
 	rm -rf ral
 	gcj $(JFLAGS) $(JAVAFILES)
 #	javac $(JFLAGS) $(JAVAFILES)
+#	jar cf Calc.jar ral/*
 	ant -buildfile build.xml -Dwtk.home=${WTK_HOME} make-jar
 
 clean:
