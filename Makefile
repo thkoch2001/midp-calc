@@ -1,5 +1,5 @@
 VERSION = 2.03
-TARGETS = Calc.jar Calc.jad
+TARGETS = Calc.jar Calc.jad CalcApplet.jar
 
 WTK_HOME = /home/roarl/WTK104
 JFLAGS = --bootclasspath=$(WTK_HOME)/lib/midpapi.zip --encoding="ISO 8859-1" -Wall -C -d . -O2
@@ -70,11 +70,11 @@ Calc.jar: $(JAVAFILES) Calc.jad Calc.png
 	ant -buildfile build.xml -lib $(WTK_HOME)/lib -Dwtk.home=${WTK_HOME} make-jar
 
 CalcApplet.jar: CalcApplet.java $(JAVAFILES) $(MIDPFILES)
-	gcj --encoding="ISO 8859-1" -Wall -C -d . -O2 CalcApplet.java $(JAVAFILES) $(MIDPFILES)
-	jar cf CalcApplet.jar ral/* javax/*
+	gcj --encoding="ISO 8859-1" -Wall -C -d midp -O2 CalcApplet.java $(JAVAFILES) $(MIDPFILES)
+	cd midp && jar cf ../CalcApplet.jar ral javax
 
 clean:
-	rm -rf $(TARGETS) ral javax Real.java GFontBase.java pgm2java *~ .\#*
+	rm -rf $(TARGETS) midp/ral midp/javax Real.java GFontBase.java pgm2java *~ .\#*
 
-publish: Calc.jad Calc.jar Real.java
-	scp Calc.jad Calc.jar Calc.html Calc-log.html Calc-prog.html Real.html Real.java Real.jpp gridbug:public_html
+publish: Calc.jad Calc.jar Real.java CalcApplet.jar
+	scp Calc.jad Calc.jar Calc.html Calc-log.html Calc-prog.html Real.html Real.java Real.jpp CalcApplet.jar CalcApplet.html gridbug:public_html
