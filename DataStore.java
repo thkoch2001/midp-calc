@@ -19,7 +19,7 @@ public final class DataStore
       rs = RecordStore.openRecordStore(name,true);
     } catch (Exception e) {
       // Fatal error.
-      System.out.println(e);
+      //System.out.println(e);
       return null;
     }
     return new DataStore(rs);
@@ -83,7 +83,7 @@ public final class DataStore
       }
       RecordStore.deleteRecordStore(recordStoreName);
     } catch (Exception e) {
-      System.out.println(e);
+	//System.out.println(e);
     }
   }
 }
