@@ -63,6 +63,9 @@
 //   atanh()
 //   fact()
 //   gamma()
+//   toDHMS()
+//   fromDHMS()
+//   random()
 //
 // Binary functions:
 //   hypot(Real)
@@ -1817,10 +1820,12 @@ public final class Real
     return (year*100+month)*100+day;
   }
 
-  public void toHMS() {
-    // Actually, it converts to YYYYMMDDhh.mmss
+  public void toDHMS() {
+    // Actually, it converts to YYYYMMDDhh.mmss if input>240072
     if (!isFiniteNonZero())
       return;
+    boolean negative = sign != 0;
+    abs();
 
     int YMD,D,m;
     long h;
@@ -1834,18 +1839,26 @@ public final class Real
 
     D = (int)(h/24);
     h %= 24;
-    YMD = jd_to_gregorian(D);
+    if (D > 10003)
+      YMD = jd_to_gregorian(D);
+    else
+      YMD = D;
 
     tmp1.assign(((YMD*100L+h)*100L+m)*100L);
     add(tmp1);
     tmp1.assign(10000);
     div(tmp1);
+
+    if (negative)
+      neg();
   }
 
-  public void fromHMS() {
-    // Actually, it converts from YYYYMMDDhh.mmss
+  public void fromDHMS() {
+    // Actually, it converts from YYYYMMDDhh.mmss, if input>=1000000
     if (!isFiniteNonZero())
       return;
+    boolean negative = sign != 0;
+    abs();
 
     int Y,M,D,m,s;
     long h;
@@ -1859,20 +1872,25 @@ public final class Real
 
     D = (int)(h/100);
     h %= 100;
-    D += h/24;
-    h %= 24;
-    M = D/100;
-    D %= 100;
-    if (D==0) D=1;
-    Y = M/100;
-    M %= 100;
-    if (M==0) M=1;
-    D = gregorian_to_jd(Y,M,D);
+    if (D>=10000) {
+      D += (int)(h/24);
+      h %= 24;
+      M = D/100;
+      D %= 100;
+      if (D==0) D=1;
+      Y = M/100;
+      M %= 100;
+      if (M==0) M=1;
+      D = gregorian_to_jd(Y,M,D);
+    }
 
     tmp1.assign(((D*24L+h)*60L+m)*60L);
     add(tmp1);
     tmp1.assign(3600);
     div(tmp1);
+
+    if (negative)
+      neg();
   }
 
   public void time() {
@@ -1896,14 +1914,14 @@ public final class Real
     assign(now);
     tmp1.assign(719528*24); // 1970-01-01 era
     add(tmp1);
-    toHMS();
+    toDHMS();
   }
   
 //*****************************************************************************
 
-  public static long seedA = 0x6487ed5110b4611aL; // Something to start with
-  public static long seedB = 0x56fc2a2c515da54dL; // (mantissas of pi and e)
-  private static int bitPos = 0;
+  public static long randSeedA = 0x6487ed5110b4611aL;// Something to start with
+  public static long randSeedB = 0x56fc2a2c515da54dL;// (mantissas of pi and e)
+  private static int randBitPos = 0;
 
   // 64 Bit Linear Congruential Generators with Prime Addend.
   // Multipliers 27bb2ee687b0b0fd, 369dea0f31a53f85 suggested by
@@ -1916,12 +1934,12 @@ public final class Real
   // skipping bits from one generator whenever the other generator
   // produces a 0-bit.
   private static void advanceBit() {
-    bitPos++;
-    if (bitPos>=64) {
+    randBitPos++;
+    if (randBitPos>=64) {
       // Rehash seeds
-      seedA = (seedA * 0x369dea0f31a53f85L + 3184845299L);
-      seedB = (seedB * 0x27bb2ee687b0b0fdL + 2295936121L);
-      bitPos = 0;
+      randSeedA = (randSeedA * 0x369dea0f31a53f85L + 3184845299L);
+      randSeedB = (randSeedB * 0x27bb2ee687b0b0fdL + 2295936121L);
+      randBitPos = 0;
     }
   }
 
@@ -1929,9 +1947,9 @@ public final class Real
   public static long nextBits(int bits) {
     long answer = 0;
     while (bits-- > 0) {
-      while (((int)(seedA>>>bitPos)&1) == 0)
+      while (((int)(randSeedA>>>randBitPos)&1) == 0)
         advanceBit();
-      answer = (answer<<1) + ((int)(seedB>>>bitPos)&1);
+      answer = (answer<<1) + ((int)(randSeedB>>>randBitPos)&1);
       advanceBit();
     }
     return answer;
@@ -1939,15 +1957,15 @@ public final class Real
 
   // Accumulate randomness from seed, e.g. System.currentTimeMillis()
   public static void accumulateRandomness(long seed) {
-    seedA ^= seed & 0x5555555555555555L;
-    seedB ^= seed & 0xaaaaaaaaaaaaaaaaL;
-    bitPos = 63; // Force rehash
+    randSeedA ^= seed & 0x5555555555555555L;
+    randSeedB ^= seed & 0xaaaaaaaaaaaaaaaaL;
+    randBitPos = 63; // Force rehash
     advanceBit();
   }
 
   public void random() {
     sign = 0;
-    exponent = 0x40000000;
+    exponent = 0x3fffffff;
     mantissa = nextBits(63);
     normalize();
   }
