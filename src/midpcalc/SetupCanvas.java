@@ -233,7 +233,8 @@ public class SetupCanvas
       return;
     }
     if (query == COMMAND_QUERY) {
-      nextCommandArrangement();
+      if (alertText == null)
+        nextCommandArrangement();
       return;
     } else if (query == BGR_QUERY) {
       return;

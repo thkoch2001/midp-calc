@@ -63,7 +63,7 @@ public class CalcApplet
     return "Runs Calc in a simulated MIDP device";
   }
 
-  public void start() {
+  public void init() {
     currentApplet = this;
     addKeyListener(this);
     addMouseListener(this);
@@ -72,8 +72,10 @@ public class CalcApplet
     calc.startApp();
   }
 
-  public void stop() {
+  public void destroy() {
     calc.destroyApp(true);
+    removeMouseListener(this);
+    removeKeyListener(this);
   }
 
   public static CalcApplet getCurrentApplet() {

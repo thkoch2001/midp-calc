@@ -2746,7 +2746,7 @@ public final class CalcEngine
         (cmd >= PROG_MINMAX && cmd < PROG_MINMAX+NUM_PROGS))
       return; // Such commands cannot be recorded
     if (progCounter == prog[currentProg].length) {
-      short [] prog2 = new short[progCounter*2];
+      short [] prog2 = new short[prog[currentProg].length*2];
       System.arraycopy(prog[currentProg],0,prog2,0,progCounter);
       prog[currentProg] = prog2;
     }
@@ -2755,7 +2755,7 @@ public final class CalcEngine
 
   private void recordPush(Real x) {
     if (progCounter+6 > prog[currentProg].length) {
-      short [] prog2 = new short[progCounter*2];
+      short [] prog2 = new short[prog[currentProg].length*2];
       System.arraycopy(prog[currentProg],0,prog2,0,progCounter);
       prog[currentProg] = prog2;
     }
