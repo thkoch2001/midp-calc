@@ -20,15 +20,15 @@ public final class CalcCanvas
 //            -> prob    -> Py,x   Cy,x   x!      erfc
 //            -> misc    -> mod    div    random  factorize
 //            -> coord   -> r->p   p->r   atan2   hypot   ->cplx
-//            -> cplx    -> split  abs    arg     conj
+//            -> cplx*   -> split  abs    arg     conj
 //   trig     -> normal  -> sin    cos    tan
 //            -> arc     -> asin   acos   atan
 //            -> hyp     -> sinh   cosh   tanh
 //            -> archyp  -> asinh  acosh  atanh
 //            -> more    -> RAD/DEG ->RAD  ->DEG  pi
-//   bitop*   -> and    or     xor     bic
-//   bitop2*  -> not    y<<x   y>>x
-//                          int -> round ceil floor trunc frac
+//   bitop**  -> and     or     xor     bic
+//   bitop2** -> not     y<<x   y>>x
+//               int     -> round ceil floor trunc frac
 //   special  -> stack   -> x<->y  clear  LASTx   undo
 //                       -> more   -> rolldn rollup RCLst# x<->st#     ( -> # )
 //            -> mem     -> STO#   STO+#  RCL#    x<->mem#               -> #
@@ -48,8 +48,8 @@ public final class CalcCanvas
 //                                 -> more -> unix -> DH.MS->unix unix->DH.MS
 //                                         -> JD   -> DH.MS->JD   JD->DH.MS
 //                                         -> MJD  -> DH.MS->MJD  MJD->DH.MS
-//                       -> metric -> length weight vol energy temp
-//                       -> const  -> univ chem phys atom astro
+//                       -> metric -> length weight vol  energy temp
+//                       -> const  -> univ   chem   phys atom   astro
 //   mode     -> number  -> normal FIX#   SCI#   ENG#                  ( -> # )
 //                       -> sepr   -> decimal  -> dot comma remove keep
 //                                 -> thousand -> dot/comma space ' none
@@ -66,15 +66,14 @@ public final class CalcCanvas
 //                       -> util   -> abs max min sgn select
 //                       -> purge
 //                       -> mem    -> RCL[x] STO[x] STO+[x]
-//            -> base    -> dec    hex    oct    bin
+//            -> base    -> dec    hex    oct      bin
 //            -> monitor -> mem    stat   finance  off                 ( -> # )
 //            -> sys     -> font   -> small  medium large  system
 //                       -> exit
 //                       -> reset
 //
-// * replaces math/trig in hex/oct/bin mode
-//
-// Extensions:
+// *  replaces coord if x or y are complex
+// ** replaces math/trig in hex/oct/bin mode
 
 // Complex operations:
 //   + - * / +/- 1/x x² sqrt
@@ -659,6 +658,7 @@ public final class CalcCanvas
   private int offX, offY, nDigits, nLines, numberWidth, numberHeight;
   private int offY2, offYMonitor, nLinesMonitor;
   private boolean evenFrame = true;
+  private int menuX,menuY,menuW,menuH;
 
   private Menu [] menuStack;
   private int menuStackPtr;
@@ -701,6 +701,24 @@ public final class CalcCanvas
 
     menuStack = new Menu[6]; // One too many, I think
     menuStackPtr = -1;
+
+    // Menu position
+    menuW = 21+4*2;
+    if (menuW<boldMenuFont.stringWidth("m/ft")+3*2)
+      menuW = boldMenuFont.stringWidth("m/ft")+3*2;
+    menuW = boldMenuFont.stringWidth("acosh")*2+3*2+menuW;
+    if (menuW<(menuFont.stringWidth("thousand")+2*2)*2)
+      menuW = (menuFont.stringWidth("thousand")+2*2)*2;
+    if (menuW>getWidth()) menuW = getWidth();
+    menuH = menuFont.getHeight()*2+3*2+5*2+21;
+    if (menuH>getHeight()) menuH = getHeight();
+    menuX = (getWidth()-menuW)/2;
+    menuY = smallMenuFont.getHeight()+
+      (getHeight()-menuH-smallMenuFont.getHeight())/2;
+    if (menuY-menuFont.getHeight()-1<smallMenuFont.getHeight())
+      menuY = smallMenuFont.getHeight()+menuFont.getHeight()+1;
+    if (menuY+menuH > getHeight())
+      menuY = getHeight()-menuH;
 
     numRepaintLines = 100;
     checkRepaint();
@@ -1004,22 +1022,10 @@ public final class CalcCanvas
   }
 
   private void drawMenu(Graphics g) {
-    int w = 21+4*2;
-    if (w<boldMenuFont.stringWidth("m/ft")+3*2)
-      w = boldMenuFont.stringWidth("m/ft")+3*2;
-    w = boldMenuFont.stringWidth("acosh")*2+3*2+w;
-    if (w<(menuFont.stringWidth("thousand")+2*2)*2)
-      w = (menuFont.stringWidth("thousand")+2*2)*2;
-    if (w>getWidth()) w = getWidth();
-    int h = menuFont.getHeight()*2+3*2+5*2+21;
-    if (h>getHeight()) h = getHeight();
-    int x = (getWidth()-w)/2;
-    int y = smallMenuFont.getHeight()+
-      (getHeight()-h-smallMenuFont.getHeight())/2;
-    if (y-menuFont.getHeight()-1<smallMenuFont.getHeight())
-      y = smallMenuFont.getHeight()+menuFont.getHeight()+1;
-    if (y+h > getHeight())
-      y = getHeight()-h;
+    int w = menuW;
+    int h = menuH;
+    int x = menuX;
+    int y = menuY;
     int ym = ((y+h-3)-menuFont.getHeight()+(y+3))/2;
     // Draw menu title
     g.setColor(menuColor[menuStackPtr]/4);
@@ -1441,6 +1447,23 @@ public final class CalcCanvas
         break;
     }
     repeating = true;
+    checkRepaint();
+  }
+
+  protected void pointerPressed(int x, int y) {
+    int menuIndex, q=0;
+
+    x = x-menuX-menuW/2; if (x<0) { x = -x; q += 1; }
+    y = y-menuY-menuH/2; if (y<0) { y = -y; q += 2; }
+
+    if (x*6 < menuW && y*6 < menuH) {
+      menuIndex = 4;
+    } else if ((x-y)*6 > menuW-menuH) {
+      menuIndex = (q&1)==0 ? 2/*RIGHT*/: 1/*LEFT*/;
+    } else {
+      menuIndex = (q&2)==0 ? 3/*DOWN*/ : 0/*UP*/;
+    }
+    menuAction(menuIndex);
     checkRepaint();
   }
 
