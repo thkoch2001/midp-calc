@@ -902,7 +902,9 @@ public final class Real
     byte s;
     int e;
     long m;
-    if ((sign!=0 && exponent <= a.exponent) || exponent >= a.exponent) {
+    if ((sign!=0   && exponent <= a.exponent) ||
+        (a.sign==0 && exponent >= a.exponent))
+    {
       s = a.sign;
       e = a.exponent;
       m = a.mantissa;
