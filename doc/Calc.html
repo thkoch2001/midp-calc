@@ -87,7 +87,7 @@ usability with the application:
   <li><b>Sony Ericsson T630</b>: Tested OK
   <li><b>Sony Ericsson Z600</b>: Tested OK
   <li><b>Sony Ericsson Z1010</b>: Tested OK
-  <li><b>Sony Ericsson K700</b>: Tested OK
+  <li><b>Sony Ericsson K700i</b>: Tested OK
   <li><b>Sony Ericsson Z500, T616, P800, P900</b>: Not
   tested. Probably works OK
   <li><b>Nokia 6100</b>: Tested OK
@@ -120,7 +120,7 @@ of the devices that have not been tested and also devices not on my list.
 <h1>User manual</h1>
 
 <dl>
-<dt><b>Table of contents</b></dt>
+<dt><b>Table of contents:</b></dt>
 <dt><a href="Calc.html#Keys">Keys</a></dt>
 <dt><a href="Calc.html#Setup">Setup</a></dt>
 <dt><a href="Calc.html#RPN">RPN logic</a></dt>
@@ -174,7 +174,7 @@ configurable keys below the display). The keys are mapped as follows:
 
 <ul>
   <li><b>0-9</b>: The number keys are used to enter numbers and as shortcuts
-when executing commands that take a number argument (STO, FIX,
+when activating operations that take a number argument ("STO", "FIX",
 etc). In hexadecimal mode, you can enter the digits A-F by holding down the
 keys 1-6 until the digit changes. 
   <li><b>*</b> : This key is used to enter the decimal point.
@@ -227,7 +227,7 @@ clear key, and "*" will be used to magically enter both minus sign,
 decimal point and exponent marker.<br>
 
 <br>
-Third, for color devices, Calc uses sub-pixel antialiasing to improve
+Third, for color devices, Calc uses sub-pixel anti-aliasing to improve
 the visibility of numbers displayed on screen. However, some phones
 uses different pixel ordering (BGR instead of RGB), and then the
 numbers may look strange. Select the font that looks best on your
@@ -316,7 +316,7 @@ menu as you proceed. The following illustration shows the main menu
 subsequent sub-menus activated by the right joystick button are
 shown. Sub-menu entries are displayed in normal text and actual
 operations are displayed in bold text. Through this hierarchical system,
-more than 100 operations can be reached.<br>
+almost 200 operations can be reached.<br>
 
 <br>
 <table cellpadding="1" cellspacing="1" border="0">
@@ -374,6 +374,12 @@ can reach the most used "ENTER" and "<b>+</b>" operations in one
 keyclick (they are not on the menu, but on soft-keys), and the rest
 of the most basic operations, "<b>-</b>", "<b>*</b>", "<b>/</b>",
 "<b>+/-</b>" and "<b>%</b>" in just two keyclicks.<br>
+
+<br>Some operations require a number argument ("STO", "FIX",
+etc). When such an operation is activated, a two-level number menu is
+entered, enabling the selection of a number between 0 and 15. When
+this number menu is active, you can access the numbers 0-9 directly
+using the number keys.<br>
 
 <br>Since the middle joystick button can be a bit difficult to press,
 care has been taken not to place the most used functions and sub-menus
@@ -666,8 +672,7 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
     seconds. If x&nbsp;&#8804;&nbsp;8784 hours, it is instead converted
     to the format ddddHH.MMSS, where dddd is the number of days. 
       <li><b>date</b>: Get current date in DH.MS format
-      <li><b>time</b>: Get current time in DH.MS format (inaccurate on early
-    versions of T610 software)
+      <li><b>time</b>: Get current time in DH.MS format
       <li><b>DH.MS+</b>: Add x and y as date, hours, minutes and seconds
     </ul>
     <li><a id="Metric" name="Metric">Metric conversions</a> <a
@@ -699,14 +704,14 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
       </ul>
       <li>Volume
       <ul>
-        <li><b>l/cup</b>: Enter the volume of one U.S. cup in litres
+        <li><b>l/cup</b>: Enter the volume of one U.S. cup in liters
           &equiv;&nbsp;0.2365882365
-        <li><b>l/gal</b>: Enter the volume of one U.S. gallon in litres
+        <li><b>l/gal</b>: Enter the volume of one U.S. gallon in liters
           &equiv;&nbsp;3.785411784
-        <li><b>l/pt</b>: Enter the volume of one U.S. pint in litres
+        <li><b>l/pt</b>: Enter the volume of one U.S. pint in liters
           &equiv;&nbsp;0.473176473
         <li><b>ml/fl.oz</b>: Enter the volume of one U.S. fluid ounce in
-          millilitres &equiv;&nbsp;29.5735295625
+          milliliters &equiv;&nbsp;29.5735295625
       </ul>
       <li>Energy
       <ul>
@@ -905,7 +910,7 @@ implemented for complex numbers, i.e. all basic operations, all simple
 operations except "%chg", all power operations and all trigonometric
 operations. For convenience, integer operations (rounding and
 truncation) work on the real and imaginary part of the complex number
-separately.
+separately.<br>
 
 <br>
 All stack and memory operations also handle complex numbers. Financial
@@ -917,9 +922,9 @@ input(s).<br>
 
 <br>
 If either x or y contains a complex number, any operation in the
-"coord" submenu is undefined (the submenu dealing with
-rectangular/polar coordinates). In this case the "coord" submenu is
-exchanged with a submenu called "cplx" for dealing with complex
+"coord" sub-menu is undefined (the sub-menu dealing with
+rectangular/polar coordinates). In this case the "coord" sub-menu is
+exchanged with a sub-menu called "cplx" for dealing with complex
 numbers.<br>
 
 <br>
@@ -927,7 +932,7 @@ Complex operations work strictly in radians, so when the input is
 complex (i.e. it has a non-zero imaginary part), operations involving
 the angle of the complex number (i.e. most trigonometric and
 power functions) will automatically cause a switch from degrees (DEG)
-to radians (RAD).
+to radians (RAD).<br>
 
 <br>
 Complex numbers are displayed on one line as e.g. 2+3i. Since two
