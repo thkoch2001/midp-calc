@@ -71,45 +71,47 @@ The following operations are available through the menu system:
   <li>Simple</li>
   <ul>
     <li>abs: Makes x positive</li>
-    <li>x<sup>2</sup>: Calculates the square of x</li>
     <li>1/x: Calculates the reciprocal of x</li>
-    <li>sqrt(x): Calculates the square root of x</li>
+    <li>x²: Calculates the square of x</li>
+    <li>&#8730;<span style="text-decoration: overline;">x</span>: Calculates the square root of x</li>
   </ul>
-  <li>Pow</li>
+  <li>Power</li>
   <ul>
     <li>e<sup>x</sup>: Calculates the natural exponential</li>
     <li>ln: Calculates the natural logarithm</li>
     <li>y<sup>x</sup>: Calculates y to the power of x</li>
-    <li>x-root(y): Calculates the x'th root of y. Works with negative
+    <li><sup>x</sup>&#8730;<span style="text-decoration: overline;">y</span>: Calculates the x'th root of y. Works with negative
 values of y if x is an odd integer.</li>
   </ul>
-  <li>Pow<sub>2,10</sub></li>
+  <li>Powers of 10 and 2</li>
   <ul>
-    <li>2<sup>x</sup>: Calculates 2 to the power of x</li>
-    <li>log<sub>2</sub>: Calculates base-2 logarithm of x</li>
     <li>10<sup>x</sup>: Calculates 10 to the power of x</li>
     <li>log<sub>10</sub>: Calculates base-10 logarithm of x</li>
+    <li>2<sup>x</sup>: Calculates 2 to the power of x</li>
+    <li>log<sub>2</sub>: Calculates base-2 logarithm of x</li>
   </ul>
-  <li>Pol</li>
+  <li>Probability</li>
   <ul>
-    <li>atan<sub>2</sub>: Calculates the angle of y/x, in the range -pi
-to pi (or -180 to 180 in DEG mode)</li>
-    <li>hypot: Calculates sqrt(x<sup>2</sup>+y<sup>2</sup>)</li>
-    <li>r-&gt;p: Convert rectangular coordinates (x,y) to polar
-(x=radius, y=angle)</li>
-    <li>p-&gt;r: Convert polar coordinates (x=radius, y=angle) to
-rectangular (x,y)</li>
-  </ul>
-  <li>Prob</li>
-  <ul>
-    <li>P y,x: Calculates permulations of x elements taken from y</li>
-    <li>C y,x: Calculates combinations of x elements taken from y</li>
+    <li>P y,x: Calculates permutations of x elements taken from a
+    population of y</li>
+    <li>C y,x: Calculates combinations of x elements taken from a
+    population of y</li>
     <li>x! : Calculates the factorial of x. For non-integral values,
-calculates Gamma(x+1)</li>
+calculates &#915;(x+1)</li>
     <li>random: Calculates a random number between 0 and 1</li>
   </ul>
+  <li>Polar</li>
+  <ul>
+    <li>r&rarr;p: Convert rectangular coordinates (x,y) to polar
+(x=radius, y=angle)</li>
+    <li>p&rarr;r: Convert polar coordinates (x=radius, y=angle) to
+rectangular (x,y)</li>
+    <li>atan<sub>2</sub>: Calculates the arctangent of y/x, in the range -&#960;
+to &#960; (or -180 to 180 in DEG mode)</li>
+    <li>hypot: Calculates &#8730;<span style="text-decoration: overline;">x²+y²</span></li>
+  </ul>
 </ul>
-<h3>Trig</h3>
+<h3>Trigonometric</h3>
 <ul>
   <li>Normal</li>
   <ul>
@@ -123,25 +125,25 @@ calculates Gamma(x+1)</li>
     <li>acos: Calculates the arc cosine of x</li>
     <li>atan: Calculates the arc tangent of x</li>
   </ul>
-  <li>Hyp</li>
+  <li>Hyperbolic</li>
   <ul>
     <li>sinh: Calculates the hyperbolic sine of x</li>
     <li>cosh: Calculates the hyperbolic cosine of x</li>
     <li>tanh: Calculates the hyperbolic tangent of x</li>
   </ul>
-  <li>Archyp</li>
+  <li>Arc hyperbolic</li>
   <ul>
-    <li>asinh: Calculates the hyperbolic arc sine of x</li>
-    <li>acosh: Calculates the hyperbolic arc cosine of x</li>
-    <li>atanh: Calculates the hyperbolic arc tangent of x</li>
+    <li>asinh: Calculates the arc hyperbolic sine of x</li>
+    <li>acosh: Calculates the arc hyperbolic cosine of x</li>
+    <li>atanh: Calculates the arc hyperbolic tangent of x</li>
   </ul>
   <li>More</li>
   <ul>
-    <li>RAD: Sets radians as measure of angles (2*pi is full circle)</li>
+    <li>RAD: Sets radians as measure of angles (2&#960; is full circle)</li>
     <li>DEG: Sets degrees as measure of angles (360 is full circle)</li>
-    <li>-&gt;RAD: Converts from degrees to radians</li>
-    <li>-&gt;DEG: Converts from radians to degrees</li>
-    <li>pi: Enters the number pi</li>
+    <li>&rarr;RAD: Converts from degrees to radians</li>
+    <li>&rarr;DEG: Converts from radians to degrees</li>
+    <li>&#960;: Enters the number &#960;</li>
   </ul>
 </ul>
 <h3>Special</h3>
@@ -149,24 +151,24 @@ calculates Gamma(x+1)</li>
   <li>Stack</li>
   <ul>
     <li>LAST x: Recall value of x before last operation</li>
-    <li>x&lt;-&gt;y: Exchange x and y elements of the stack</li>
-    <li>x&lt;-&gt;st#: Exchange x with any element on the stack</li>
+    <li>x&harr;y: Exchange x and y elements of the stack</li>
+    <li>x&harr;st#: Exchange x with any element on the stack</li>
     <li>RCL st#: Copy any stack location</li>
     <li>clear: Clear the stack</li>
   </ul>
-  <li>Mem</li>
+  <li>Memory</li>
   <ul>
     <li>STO: Store x in memory location</li>
-    <li>STO+: Add x to memoty location</li>
+    <li>STO+: Add x to memory location</li>
     <li>RCL: Recall memory location</li>
-    <li>x&lt;-&gt;mem: Exchange x with any memory location</li>
+    <li>x&harr;mem: Exchange x with any memory location</li>
     <li>clear: Clear memory</li>
   </ul>
-  <li>Stat</li>
+  <li>Statistical</li>
   <ul>
-    <li>SUM+ : Add x and y to statistics</li>
-    <li>SUM- : Subtract x and y from statistics</li>
-    <li>Result</li>
+    <li>&#931;+ : Add x and y to statistics</li>
+    <li>&#931;- : Subtract x and y from statistics</li>
+    <li>Results</li>
     <ul>
       <li><span style="text-decoration: overline;">x</span>,<span
  style="text-decoration: overline;">y</span>: Calculate mean x and
@@ -178,17 +180,17 @@ x and y values</li>
 correlation coefficient</li>
       <li>n: Recall number of statistics entered </li>
     </ul>
-    <li>Regs</li>
+    <li>Registers</li>
     <ul>
-      <li>SUMx: Recall sum of x'es</li>
-      <li>SUMx<sup>2</sup>: Recall sum of squared x'es</li>
-      <li>SUMy: Recall sum of y's</li>
-      <li>SUMy<sup>2</sup>: Recall sum of squared y's</li>
-      <li>SUMxy: Recall sum of xy product</li>
+      <li>&#931;x: Recall sum of x'es</li>
+      <li>&#931;x²: Recall sum of squared x'es</li>
+      <li>&#931;y: Recall sum of y's</li>
+      <li>&#931;y²: Recall sum of squared y's</li>
+      <li>&#931;xy: Recall sum of x·y product</li>
     </ul>
     <li>clear: Clear statistics</li>
   </ul>
-  <li>Int</li>
+  <li>Integer operations</li>
   <ul>
     <li>round: Round x to nearest integer</li>
     <li>trunc: Remove fractional part of x</li>
@@ -198,10 +200,11 @@ correlation coefficient</li>
   </ul>
   <li>Time</li>
   <ul>
-    <li>-&gt;DH.MS: Convert x from hours to date, hours, minutes and
-seconds. Date format is yyyymmddHH.MMSS. If x&lt;24000, it is converted
+    <li>&rarr;DH.MS: Convert x from hours to date, hours, minutes and
+seconds. Date format is yyyymmddHH.MMSS. If x&nbsp;&#8804;&nbsp;24000,
+it is converted
 to the format ddddHH.MMSS, where dddd is the number of days.</li>
-    <li>-&gt;H: Convert date, hours, minues and seconds to hours. If
+    <li>&rarr;H: Convert date, hours, minues and seconds to hours. If
 yyyy is zero, format is understood as ddddHH.MMSS, where dddd is number
 of days.</li>
     <li>date: Get current date in DH.MS format</li>
@@ -222,12 +225,12 @@ scientific format</li>
     <li>ENG: Set eng number mode, shows a fixed number of digits after
 the decimal point in engineering mode.</li>
   </ul>
-  <li>Sepr</li>
+  <li>Separators</li>
   <ul>
     <li>point</li>
     <ul>
       <li>. : Display the decimal point as a period</li>
-      <li>, : Display the decimal ponit as a comma</li>
+      <li>, : Display the decimal point as a comma</li>
       <li>keep: Keep the decimal point even if no fraction is shown</li>
       <li>remove: Remove the decimal point if no fraction is shown</li>
     </ul>
