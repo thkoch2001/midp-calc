@@ -12,7 +12,7 @@ public final class CalcCanvas
 // Modes:
 //               DEG/RAD   FIX/SCI/ENG   BIN/OCT/HEX   BGN   PRG/RUN
 // Menu:
-//   basic    ->            -      *      /       +/-     %
+//   basic    -> -  *  /  +/-  %
 //   math     -> simple  -> 1/x    x^2    sqrt    %chg
 //                       -> int -> round ceil floor trunc frac
 //            -> pow     -> y^x    y^1/x  ln      e^x
@@ -26,12 +26,12 @@ public final class CalcCanvas
 //            -> hyp     -> sinh   cosh   tanh
 //            -> archyp  -> asinh  acosh  atanh
 //            -> more    -> RAD/DEG ->RAD  ->DEG  pi
-//   bitop*   ->            and    or     xor     bic
-//   bitop2*  ->            not    y<<x   y>>x
+//   bitop*   -> and    or     xor     bic
+//   bitop2*  -> not    y<<x   y>>x
 //                          int -> round ceil floor trunc frac
-//   special  -> stack   -> x<->y  clear  LASTx   undo     ( -> # )
-//                       -> more   -> rolldn rollup RCLst# x<->st#
-//            -> mem     -> STO#   STO+#  RCL#    x<->mem#          -> #
+//   special  -> stack   -> x<->y  clear  LASTx   undo
+//                       -> more   -> rolldn rollup RCLst# x<->st#     ( -> # )
+//            -> mem     -> STO#   STO+#  RCL#    x<->mem#               -> #
 //            -> stat    -> SUM+   SUM-   clear
 //                       -> result -> avg    -> x,y sx,sy dx,dy xw draw
 //                                 -> ax+b   -> a,b x* y* r draw
@@ -44,27 +44,27 @@ public final class CalcCanvas
 //                                 -> xy     -> SUMxy SUMxlny SUMylnx SUMlnxlny
 //            -> finance -> STO RCL solve -> pv fv np pmt ir
 //                       -> clear
-//            -> conv    -> time   ->  ->DH.MS ->H DH.MS+ now
-//                                     more -> unix -> DH.MS->unix unix->DH.MS
-//                                             JD   -> DH.MS->JD   JD->DH.MS
-//                                             MJD  -> DH.MS->MJD  MJD->DH.MS
-//                       -> metric ->  length weight vol energy temp
-//                       -> const  ->  univ chem phys atom astro
-//   mode     -> number  -> normal FIX#   SCI#   ENG#             ( -> # )
+//            -> conv    -> time   -> ->DH.MS ->H DH.MS+ now
+//                                 -> more -> unix -> DH.MS->unix unix->DH.MS
+//                                         -> JD   -> DH.MS->JD   JD->DH.MS
+//                                         -> MJD  -> DH.MS->MJD  MJD->DH.MS
+//                       -> metric -> length weight vol energy temp
+//                       -> const  -> univ chem phys atom astro
+//   mode     -> number  -> normal FIX#   SCI#   ENG#                  ( -> # )
 //                       -> sepr   -> decimal  -> dot comma remove keep
 //                                 -> thousand -> dot/comma space ' none
-//               prog[1] -> run     -> a b c d e
-//                       -> new     -> name?
-//                       -> clear   -> a b c d e
-//                       -> draw    -> a b c d e
-//               prog[2] -> finish
-//                       -> cond    -> x=y? x!=y? x<y? x<=y? x>y?
-//                       -> util    -> abs max min select sgn
+//            -> prog[1] -> run    -> a b c d e
+//                       -> new    -> name?
+//                       -> clear  -> a b c d e
+//                       -> draw   -> a b c d e
+//            -> prog[2] -> finish
+//                       -> cond   -> x=y? x!=y? x<y? x<=y? x>y?
+//                       -> util   -> abs max min sgn select
 //                       -> purge
-//                       -> mem     -> RCL[x] STO[x] STO+[x]
+//                       -> mem    -> RCL[x] STO[x] STO+[x]
 //            -> base    -> dec    hex    oct    bin
-//            -> monitor -> mem    stat   finance                 ( -> # )
-//            -> sys     -> font    -> small  medium large  system
+//            -> monitor -> mem    stat   finance  off                 ( -> # )
+//            -> sys     -> font   -> small  medium large  system
 //                       -> exit
 //                       -> reset
 //
@@ -72,9 +72,9 @@ public final class CalcCanvas
 //
 // Extensions:
 //   spceial  -> stat    -> result  -> avg -> S_xw s_xw
-//   prog[1]  -> solve   -> a b c d e
-//               diff    -> a b c d e
-//               int     -> a b c d e
+//   prog[1]  -> more    -> solve   -> a b c d e
+//                       -> diff    -> a b c d e
+//                       -> int     -> a b c d e
 
 // Complex operations:
 //   + - * / +/- 1/x x² sqrt
