@@ -73,6 +73,7 @@
 //   hypot(Real)
 //   atan2(Real x)
 //   pow(Real)
+//   pow(int)
 //   nroot(Real)
 //
 // Integral values:
@@ -1323,20 +1324,8 @@ public final class Real
   public void makeExp10(int power) {
     // Calculate power of 10 by successive squaring for increased accuracy
     // It is not so accurate for large arguments, but better than exp10()
-    boolean recp=false;
-    if (power < 0) {
-      power = -power; // Also works for 0x80000000 (but will underflow)
-      recp = true;
-    }
-    assign(ONE);
-    expTmp.assign(TEN);
-    for (; power!=0; power>>>=1) {
-      if ((power & 1) != 0)
-        mul(expTmp);
-      expTmp.sqr();
-    }
-    if (recp)
-      recip();
+    assign(TEN);
+    pow(power);
   }
   
   private void lnInternal() {
@@ -1474,6 +1463,24 @@ public final class Real
     return e;
   }
 
+  private void pow(int power) {
+    // Calculate power of integer by successive squaring
+    boolean recp=false;
+    if (power < 0) {
+      power = -power; // Also works for 0x80000000
+      recp = true;
+    }
+    expTmp.assign(this);
+    assign(ONE);
+    for (; power!=0; power>>>=1) {
+      if ((power & 1) != 0)
+        mul(expTmp);
+      expTmp.sqr();
+    }
+    if (recp)
+      recip();
+  }
+
   public void pow(final Real exp) {
     // Special cases:
     // if y is 0.0 or -0.0 then result is 1.0
@@ -1578,6 +1585,12 @@ public final class Real
       }
       return;
     }
+
+    if (exp.isIntegral() && exp.exponent <= 0x4000001e) {
+      pow(exp.toInteger());
+      return;
+    }
+    
     byte s=0;
     if (sign!=0) {
       if (exp.isIntegral()) {
