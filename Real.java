@@ -122,6 +122,7 @@
 //   TEN      = 10
 //   HALF     = 1/2
 //   THIRD    = 1/3
+//   PERCENT  = 1/100
 //   SQRT2    = sqrt(2)
 //   SQRT1_2  = sqrt(1/2)
 //   PI2      = PI*2
@@ -157,8 +158,10 @@ public final class Real
   public static final Real THREE  = new Real(0,0x40000001,0x6000000000000000L);
   public static final Real FIVE   = new Real(0,0x40000002,0x5000000000000000L);
   public static final Real TEN    = new Real(0,0x40000003,0x5000000000000000L);
+  public static final Real HUNDRED= new Real(0,0x40000006,0x6400000000000000L);
   public static final Real HALF   = new Real(0,0x3fffffff,0x4000000000000000L);
   public static final Real THIRD  = new Real(0,0x3ffffffe,0x5555555555555555L);
+  public static final Real PERCENT= new Real(0,0x3ffffff9,0x51eb851eb851eb85L);
 //public static final Real DIV2_3 = new Real(0,0x3fffffff,0x5555555555555555L);
   public static final Real SQRT2  = new Real(0,0x40000000,0x5a827999fcef3242L);
   public static final Real SQRT1_2= new Real(0,0x3fffffff,0x5a827999fcef3242L);
@@ -1836,6 +1839,8 @@ public final class Real
       makeNan();
       return;
     }
+    if (isZero() && x.isZero())
+      return;
 
     byte s = sign;
     sign = 0;
@@ -2559,7 +2564,9 @@ public final class Real
           precision = 1000;
           if (format.fse == NumberFormat.FSE_FIX)
             precision = format.precision+1;
-          if (tmp4.exponent+1 > width-tmp4.exponent/digitsPerThousand-prefix ||
+          if (tmp4.exponent+1 >
+                width-(tmp4.exponent+prefix)/digitsPerThousand-prefix+
+                (format.removePoint ? 1:0) ||
               tmp4.exponent+1 > accurateDigits ||
               -tmp4.exponent >= width ||
               -tmp4.exponent >= precision)
@@ -2569,7 +2576,9 @@ public final class Real
             pointPos = tmp4.exponent;
             precision += tmp4.exponent;
             if (tmp4.exponent > 0)
-              width -= tmp4.exponent/digitsPerThousand;
+              width -= (tmp4.exponent+prefix)/digitsPerThousand;
+            if (format.removePoint && tmp4.exponent == width-prefix)
+              width++; // Add  1 for the decimal point that will be removed
           }
           break;
       }
@@ -2602,6 +2611,9 @@ public final class Real
     ftoaBuf.setLength(0);
     if (tmp4.sign!=0 && format.base == 10)
       ftoaBuf.append('-');
+
+    // Save pointPos for hex/oct/bin prefixing with thousands-sep
+    int pointPos2 = pointPos;
 
     // Add leading zeros (or f/7/1)
     char prefixChar = (format.base==10 || tmp4.sign==0) ? '0' :
@@ -2643,8 +2655,15 @@ public final class Real
 
     // In case hex/oct/bin number, prefix with 0's or f/7/1's
     if (format.base!=10) {
-      while (ftoaBuf.length()<format.maxwidth)
-        ftoaBuf.insert(0,prefixChar);
+      while (ftoaBuf.length()<format.maxwidth) {
+        pointPos2++;
+        if (pointPos2>0 && pointPos2%digitsPerThousand==0)
+          ftoaBuf.insert(0,format.thousand);
+        if (ftoaBuf.length()<format.maxwidth)
+          ftoaBuf.insert(0,prefixChar);
+      }
+      if (ftoaBuf.charAt(0) == format.thousand)
+        ftoaBuf.deleteCharAt(0);
     }
 
     return ftoaBuf.toString();
