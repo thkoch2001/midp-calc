@@ -3,13 +3,15 @@
 // Constructors/assignment:
 //   Real()                                 <==  0
 //   Real(Real)                             <==  Real
-//   Real(int)                              <==  integer
+//   Real(int)                              <==  int
+//   Real(long)                             <==  long
 //   Real(String)                           <==  "-1.234E+56"
 //   Real(String, int base)                 <==  "-1.234E+56"
 //   Real(int s, int e, long m)             <==  -1^s * m * 2^e
 //   Real(byte[] data, int offset)          <==  data[offset]..data[offset+11]
 //   assign(Real)
 //   assign(int)
+//   assign(long)
 //   assign(String)
 //   assign(String, int base)
 //   assign(int s, int e, long m)
@@ -19,7 +21,8 @@
 //   String toString()                      ==>  "-1.234E+56"
 //   String toString(int base)              ==>  "-1.234E+56" / "-f.feE+56"
 //   String toString(NumberFormat)          ==>  e.g. "-1 234 567,8900"
-//   int toInteger()                        ==>  integer
+//   int toInteger()                        ==>  int
+//   long toLong()                          ==>  long
 //   void toBytes(byte[] data, int offset)  ==>  data[offset]..data[offset+11]
 //
 // Binary operators:
@@ -99,7 +102,7 @@
 //   boolean isNan()
 //   boolean isFinite()
 //   boolean isFiniteNonZero()
-//   boolean isInteger()
+//   boolean isIntegral()
 //   boolean isOdd()
 //   boolean isNegative()
 //
@@ -180,6 +183,10 @@ public final class Real
     assign(a);
   }
 
+  public Real(long a) {
+    assign(a);
+  }
+
   public Real(final String a) {
     assign(a,10);
   }
@@ -210,6 +217,17 @@ public final class Real
     }
     exponent = 0x4000001E;
     mantissa = ((long)a)<<32;
+    normalize();
+  }
+
+  public void assign(long a) {
+    sign = 0;
+    if (a<0) {
+      sign = 1;
+      a = -a; // Also works for 0x8000000000000000
+    }
+    exponent = 0x4000003E;
+    mantissa = a;
     normalize();
   }
 
@@ -545,7 +563,28 @@ public final class Real
     return (sign==0) ? (int)(mantissa>>>shift) : -(int)(mantissa>>>shift);
   }
 
-  public boolean isInteger() {
+  public long toLong() {
+    if (isZero() || isNan())
+      return 0;
+    if (isInfinity()) {
+      if (sign==0)
+        return 0x7fffffffffffffff;
+      else
+        return 0x8000000000000001; // So that you can take -x.toLong()
+    }
+    if (exponent < 0x40000000)
+      return 0;
+    int shift = 0x4000003e-exponent;
+    if (shift < 0) {
+      if (sign==0)
+        return 0x7fffffffffffffff;
+      else
+        return 0x8000000000000001; // So that you can take -x.toLong()
+    }
+    return (sign==0) ? (mantissa>>>shift) : -(mantissa>>>shift);
+  }
+
+  public boolean isIntegral() {
     if (isNan())
       return false;
     if (isZero() || isInfinity())
@@ -1303,7 +1342,7 @@ public final class Real
         else
           makeInfinity(0);
       } else {
-        if (exp.isInteger() && exp.isOdd()) {
+        if (exp.isIntegral() && exp.isOdd()) {
           if (exp.sign==0)
             makeZero(1);
           else
@@ -1324,7 +1363,7 @@ public final class Real
         else
           makeZero(0);
       } else {
-        if (exp.isInteger()) {
+        if (exp.isIntegral()) {
           if (exp.isOdd()) {
             if (exp.sign==0)
               makeInfinity(1);
@@ -1344,7 +1383,7 @@ public final class Real
     }
     byte s=0;
     if (sign!=0) {
-      if (exp.isInteger()) {
+      if (exp.isIntegral()) {
         if (exp.isOdd())
           s = 1;
       } else {
@@ -1364,7 +1403,7 @@ public final class Real
 
   public void nroot(Real root) {
     boolean negative = false;
-    if (isNegative() && root.isInteger() && root.isOdd()) {
+    if (isNegative() && root.isIntegral() && root.isOdd()) {
       negative = true;
       abs();
     }
@@ -1652,7 +1691,7 @@ public final class Real
       return;
 
     tmp1.assign(25);
-    if (!isInteger() || this.lessThan(ZERO) || this.greaterThan(tmp1))
+    if (!isIntegral() || this.lessThan(ZERO) || this.greaterThan(tmp1))
     {
       // x<0, x>25 or not integer: fact(x) = gamma(x+1)
       add(ONE);
@@ -1719,6 +1758,200 @@ public final class Real
       mul(tmp5); tmp5.mul(PI); tmp5.sin(); mul(tmp5); recip(); mul(PI); neg();
     }
   }
+
+//*****************************************************************************
+
+  private static int floorDiv(int a, int b) {
+    if (a>=0)
+      return a/b;
+    return -((-a+b-1)/b);
+  }
+  private static int floorMod(int a, int b) {
+    if (a>=0)
+      return a%b;
+    return a+((-a+b-1)/b)*b;
+  }
+
+  private static boolean leap_gregorian(int year) {
+    return ((year % 4) == 0) &&
+      (!(((year % 100) == 0) && ((year % 400) != 0)));
+  }
+
+  //  GREGORIAN_TO_JD -- Determine Julian day number from Gregorian
+  //  calendar date -- Except that we use 1/1-0 as day 0
+  public static int gregorian_to_jd(int year, int month, int day) {
+    return ((366 - 1) +
+            (365 * (year - 1)) +
+            (floorDiv(year - 1, 4)) +
+            (-floorDiv(year - 1, 100)) +
+            (floorDiv(year - 1, 400)) +
+            ((((367 * month) - 362) / 12) +
+             ((month <= 2) ? 0 : (leap_gregorian(year) ? -1 : -2)) + day));
+  }
+
+  //  JD_TO_GREGORIAN -- Calculate Gregorian calendar date from Julian
+  //  day -- Except that we use 1/1-0 as day 0
+  public static int jd_to_gregorian(int jd) {
+    int wjd, depoch, quadricent, dqc, cent, dcent, quad, dquad,
+        yindex, dyindex, year, yearday, leapadj, month, day;
+
+    wjd = jd;
+    depoch = wjd - 366;
+    quadricent = floorDiv(depoch, 146097);
+    dqc = floorMod(depoch, 146097);
+    cent = floorDiv(dqc, 36524);
+    dcent = floorMod(dqc, 36524);
+    quad = floorDiv(dcent, 1461);
+    dquad = floorMod(dcent, 1461);
+    yindex = floorDiv(dquad, 365);
+    year = (quadricent * 400) + (cent * 100) + (quad * 4) + yindex;
+    if (!((cent == 4) || (yindex == 4)))
+      year++;
+    yearday = wjd - gregorian_to_jd(year, 1, 1);
+    leapadj = ((wjd < gregorian_to_jd(year, 3, 1)) ? 0
+               : (leap_gregorian(year) ? 1 : 2));
+    month = floorDiv(((yearday + leapadj) * 12) + 373, 367);
+    day = (wjd - gregorian_to_jd(year, month, 1)) + 1;
+
+    return (year*100+month)*100+day;
+  }
+
+  public void toHMS() {
+    // Actually, it converts to YYYYMMDDhh.mmss
+    if (!isFiniteNonZero())
+      return;
+
+    int YMD,D,m;
+    long h;
+    h = toLong();
+    frac();
+    tmp1.assign(60);
+    mul(tmp1);
+    m = toInteger();
+    frac();
+    mul(tmp1);
+
+    D = (int)(h/24);
+    h %= 24;
+    YMD = jd_to_gregorian(D);
+
+    tmp1.assign(((YMD*100L+h)*100L+m)*100L);
+    add(tmp1);
+    tmp1.assign(10000);
+    div(tmp1);
+  }
+
+  public void fromHMS() {
+    // Actually, it converts from YYYYMMDDhh.mmss
+    if (!isFiniteNonZero())
+      return;
+
+    int Y,M,D,m,s;
+    long h;
+    h = toLong();
+    frac();
+    tmp1.assign(100);
+    mul(tmp1);
+    m = toInteger();
+    frac();
+    mul(tmp1);
+
+    D = (int)(h/100);
+    h %= 100;
+    D += h/24;
+    h %= 24;
+    M = D/100;
+    D %= 100;
+    if (D==0) D=1;
+    Y = M/100;
+    M %= 100;
+    if (M==0) M=1;
+    D = gregorian_to_jd(Y,M,D);
+
+    tmp1.assign(((D*24L+h)*60L+m)*60L);
+    add(tmp1);
+    tmp1.assign(3600);
+    div(tmp1);
+  }
+
+  public void time() {
+    long now = System.currentTimeMillis();
+    int h,m,s;
+    now /= 1000;
+    s = (int)(now % 60);
+    now /= 60;
+    m = (int)(now % 60);
+    now /= 60;
+    h = (int)(now % 24);
+    assign((h*100+m)*100+s);
+    tmp1.assign(10000);
+    div(tmp1);
+  }
+
+  public void date() {
+    long now = System.currentTimeMillis();
+    now /= 86400000; // days
+    now *= 24;       // hours
+    assign(now);
+    tmp1.assign(719528*24); // 1970-01-01 era
+    add(tmp1);
+    toHMS();
+  }
+  
+//*****************************************************************************
+
+  public static long seedA = 0x6487ed5110b4611aL; // Something to start with
+  public static long seedB = 0x56fc2a2c515da54dL; // (mantissas of pi and e)
+  private static int bitPos = 0;
+
+  // 64 Bit Linear Congruential Generators with Prime Addend.
+  // Multipliers 27bb2ee687b0b0fd, 369dea0f31a53f85 suggested by
+  // L'cuyer in his table of multipliers:
+  // http://www.iro.umontreal.ca/~lecuyer/myftp/papers/latrules.ps
+  // Prime numbers are randomly generated with Unix command "primes".
+  //
+  // The generators used here are not cryptographically secure, but
+  // two weak generators are combined into one strong generator by
+  // skipping bits from one generator whenever the other generator
+  // produces a 0-bit.
+  private static void advanceBit() {
+    bitPos++;
+    if (bitPos>=64) {
+      // Rehash seeds
+      seedA = (seedA * 0x369dea0f31a53f85L + 3184845299L);
+      seedB = (seedB * 0x27bb2ee687b0b0fdL + 2295936121L);
+      bitPos = 0;
+    }
+  }
+
+  // Get next bits from the pseudo-random sequence
+  public static long nextBits(int bits) {
+    long answer = 0;
+    while (bits-- > 0) {
+      while (((int)(seedA>>>bitPos)&1) == 0)
+        advanceBit();
+      answer = (answer<<1) + ((int)(seedB>>>bitPos)&1);
+      advanceBit();
+    }
+    return answer;
+  }
+
+  // Accumulate randomness from seed, e.g. System.currentTimeMillis()
+  public static void accumulateRandomness(long seed) {
+    seedA ^= seed & 0x5555555555555555L;
+    seedB ^= seed & 0xaaaaaaaaaaaaaaaaL;
+    bitPos = 63; // Force rehash
+    advanceBit();
+  }
+
+  public void random() {
+    sign = 0;
+    exponent = 0x40000000;
+    mantissa = nextBits(63);
+    normalize();
+  }
+
+//*****************************************************************************
 
   private int digit(char a, int base) {
     int digit = -1;
@@ -1807,6 +2040,8 @@ public final class Real
     }
     sign = tmpSign;
   }
+
+//*****************************************************************************
 
   private void normalizeBCD() {
     if (mantissa == 0) {
@@ -1924,17 +2159,6 @@ public final class Real
       mantissa = (1L<<(64-bitsPerDigit));
       exponent++;
     }
-  }
-
-  private int floorDiv(int a, int b) {
-    if (a>=0)
-      return a/b;
-    return -((-a+b-1)/b);
-  }
-  private int floorMod(int a, int b) {
-    if (a>=0)
-      return a%b;
-    return a+((-a+b-1)/b)*b;
   }
 
   public static class NumberFormat
