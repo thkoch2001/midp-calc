@@ -87,41 +87,64 @@ public final class CalcEngine
   public static final int SUMMI          =  81;
   public static final int CLST           =  82;
   public static final int AVG            =  83;
-  public static final int S              =  84;
-  public static final int LR             =  85;
-  public static final int YR             =  86;
-  public static final int N              =  87;
-  public static final int SUMX           =  88;
-  public static final int SUMXX          =  89;
-  public static final int SUMY           =  90;
-  public static final int SUMYY          =  91;
-  public static final int SUMXY          =  92;
-  public static final int NORM           =  93;
-  public static final int FIX            =  94;
-  public static final int SCI            =  95;
-  public static final int ENG            =  96;
-  public static final int POINT_DOT      =  97;
-  public static final int POINT_COMMA    =  98;
-  public static final int POINT_REMOVE   =  99;
-  public static final int POINT_KEEP     = 100;
-  public static final int THOUSAND_DOT   = 101;
-  public static final int THOUSAND_SPACE = 102;
-  public static final int THOUSAND_QUOTE = 103;
-  public static final int THOUSAND_NONE  = 104;
-  public static final int BASE_BIN       = 105;
-  public static final int BASE_OCT       = 106;
-  public static final int BASE_DEC       = 107;
-  public static final int BASE_HEX       = 108;
-  public static final int TRIG_DEGRAD    = 109;
-  public static final int TO_DEG         = 110;
-  public static final int TO_RAD         = 111;
-  public static final int RANDOM         = 112;
-  public static final int TO_DHMS        = 113;
-  public static final int TO_H           = 114;
-  public static final int DHMS_PLUS      = 115;
-  public static final int TIME           = 116;
-  public static final int DATE           = 117;
-  public static final int FACTORIZE      = 118;
+  public static final int AVGXW          =  84;
+  public static final int STDEV          =  85;
+  public static final int PSTDEV         =  86;
+  public static final int LIN_AB         =  87;
+  public static final int LIN_YEST       =  88;
+  public static final int LIN_XEST       =  89;
+  public static final int LIN_R          =  90;
+  public static final int LOG_AB         =  91;
+  public static final int LOG_YEST       =  92;
+  public static final int LOG_XEST       =  93;
+  public static final int LOG_R          =  94;
+  public static final int EXP_AB         =  95;
+  public static final int EXP_YEST       =  96;
+  public static final int EXP_XEST       =  97;
+  public static final int EXP_R          =  98;
+  public static final int POW_AB         =  99;
+  public static final int POW_YEST       = 100;
+  public static final int POW_XEST       = 101;
+  public static final int POW_R          = 102;
+  public static final int N              = 103;
+  public static final int SUMX           = 104;
+  public static final int SUMXX          = 105;
+  public static final int SUMLNX         = 106;
+  public static final int SUMLN2X        = 107;
+  public static final int SUMY           = 108;
+  public static final int SUMYY          = 109;
+  public static final int SUMLNY         = 110;
+  public static final int SUMLN2Y        = 111;
+  public static final int SUMXY          = 112;
+  public static final int SUMXLNY        = 113;
+  public static final int SUMYLNX        = 114;
+  public static final int SUMLNXLNY      = 115;
+  public static final int NORM           = 116;
+  public static final int FIX            = 117;
+  public static final int SCI            = 118;
+  public static final int ENG            = 119;
+  public static final int POINT_DOT      = 120;
+  public static final int POINT_COMMA    = 121;
+  public static final int POINT_REMOVE   = 122;
+  public static final int POINT_KEEP     = 123;
+  public static final int THOUSAND_DOT   = 124;
+  public static final int THOUSAND_SPACE = 125;
+  public static final int THOUSAND_QUOTE = 126;
+  public static final int THOUSAND_NONE  = 127;
+  public static final int BASE_BIN       = 128;
+  public static final int BASE_OCT       = 129;
+  public static final int BASE_DEC       = 130;
+  public static final int BASE_HEX       = 131;
+  public static final int TRIG_DEGRAD    = 132;
+  public static final int TO_DEG         = 133;
+  public static final int TO_RAD         = 134;
+  public static final int RANDOM         = 135;
+  public static final int TO_DHMS        = 136;
+  public static final int TO_H           = 137;
+  public static final int DHMS_PLUS      = 138;
+  public static final int TIME           = 139;
+  public static final int DATE           = 140;
+  public static final int FACTORIZE      = 141;
   public static final int FINALIZE       = 500;
 
   private static final Real Real180 = new Real(180);
@@ -131,12 +154,13 @@ public final class CalcEngine
   public Real [] stack;
   public String [] strStack;
   public Real [] mem;
-  public Real [] stat;
+  public Real SUM1,SUMx,SUMx2,SUMy,SUMy2,SUMxy;
+  public Real SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMxlny,SUMylnx,SUMlnxlny;
   public Real lastx;
   public boolean degrees;
   public StringBuffer inputBuf;
   public boolean inputInProgress;
-  private Real calcTmp;
+  private Real rTmp,rTmp2,rTmp3;
   private int repaintLines;
 
   public CalcEngine()
@@ -150,11 +174,26 @@ public final class CalcEngine
     mem = new Real[16];
     for (i=0; i<mem.length; i++)
       mem[i] = new Real();
-    stat = new Real[6];
-    for (i=0; i<stat.length; i++)
-      stat[i] = new Real();
+
+    // Statistical accumulators
+    SUM1      = new Real();
+    SUMx      = new Real();
+    SUMx2     = new Real();
+    SUMy      = new Real();
+    SUMy2     = new Real();
+    SUMxy     = new Real();
+    SUMlnx    = new Real();
+    SUMln2x   = new Real();
+    SUMlny    = new Real();
+    SUMln2y   = new Real();
+    SUMxlny   = new Real();
+    SUMylnx   = new Real();
+    SUMlnxlny = new Real();
+    
     lastx = new Real();
-    calcTmp = new Real();
+    rTmp = new Real();
+    rTmp2 = new Real();
+    rTmp3 = new Real();
     inputBuf = new StringBuffer(40);
     degrees = false;
     clearStack();
@@ -192,8 +231,19 @@ public final class CalcEngine
   private void clearStat() {
     if (inputInProgress)
       parseInput();
-    for (int i=0; i<stat.length; i++)
-      stat[i].assign(Real.ZERO);
+    SUM1.assign(Real.ZERO);
+    SUMx.assign(Real.ZERO);
+    SUMx2.assign(Real.ZERO);
+    SUMy.assign(Real.ZERO);
+    SUMy2.assign(Real.ZERO);
+    SUMxy.assign(Real.ZERO);
+    SUMlnx.assign(Real.ZERO);
+    SUMln2x.assign(Real.ZERO);
+    SUMlny.assign(Real.ZERO);
+    SUMln2y.assign(Real.ZERO);
+    SUMxlny.assign(Real.ZERO);
+    SUMylnx.assign(Real.ZERO);
+    SUMlnxlny.assign(Real.ZERO);
   }
 
   private static final byte PROPERTY_SETTINGS = 10;
@@ -213,9 +263,20 @@ public final class CalcEngine
       mem[i].toBytes(buf, i*12+1);
     propertyStore.setProperty(buf,mem.length*12+1);
     buf[0] = PROPERTY_STAT;
-    for (i=0; i<stat.length; i++)
-      stat[i].toBytes(buf, i*12+1);
-    propertyStore.setProperty(buf,stat.length*12+1);
+    SUM1     .toBytes(buf, 0*12+1);
+    SUMx     .toBytes(buf, 1*12+1);
+    SUMx2    .toBytes(buf, 2*12+1);
+    SUMy     .toBytes(buf, 3*12+1);
+    SUMy2    .toBytes(buf, 4*12+1);
+    SUMxy    .toBytes(buf, 5*12+1);
+    SUMlnx   .toBytes(buf, 6*12+1);
+    SUMln2x  .toBytes(buf, 7*12+1);
+    SUMlny   .toBytes(buf, 8*12+1);
+    SUMln2y  .toBytes(buf, 9*12+1);
+    SUMxlny  .toBytes(buf,10*12+1);
+    SUMylnx  .toBytes(buf,11*12+1);
+    SUMlnxlny.toBytes(buf,12*12+1);
+    propertyStore.setProperty(buf,13*12+1);
     // Settings
     for (i=0; i<stack.length; i++)
       if (strStack[i] == empty)
@@ -265,9 +326,21 @@ public final class CalcEngine
         mem[i].assign(buf, i*12+1);
     buf[0] = PROPERTY_STAT;
     length = propertyStore.getProperty(buf);
-    if (length >= stat.length*12+1)
-      for (i=0; i<stat.length; i++)
-        stat[i].assign(buf, i*12+1);
+    if (length >= 13*12+1) {
+      SUM1     .assign(buf, 0*12+1);
+      SUMx     .assign(buf, 1*12+1);
+      SUMx2    .assign(buf, 2*12+1);
+      SUMy     .assign(buf, 3*12+1);
+      SUMy2    .assign(buf, 4*12+1);
+      SUMxy    .assign(buf, 5*12+1);
+      SUMlnx   .assign(buf, 6*12+1);
+      SUMln2x  .assign(buf, 7*12+1);
+      SUMlny   .assign(buf, 8*12+1);
+      SUMln2y  .assign(buf, 9*12+1);
+      SUMxlny  .assign(buf,10*12+1);
+      SUMylnx  .assign(buf,11*12+1);
+      SUMlnxlny.assign(buf,12*12+1);
+    }
     // Settings
     buf[0] = PROPERTY_SETTINGS;
     length = propertyStore.getProperty(buf);
@@ -549,12 +622,12 @@ public final class CalcEngine
         break;
       case CYX:
         // fact(y)/(fact(y-x)*fact(x))
-        calcTmp.assign(x);
-        calcTmp.fact();
+        rTmp.assign(x);
+        rTmp.fact();
         x.neg();
         x.add(y);
         x.fact();
-        x.mul(calcTmp);
+        x.mul(rTmp);
         y.fact();
         y.div(x);
         break;
@@ -566,6 +639,29 @@ public final class CalcEngine
     if (cmd!=CLEAR)
       strStack[0] = null;
     repaint(-1);
+  }
+
+  private void statAB(Real a, Real b, Real SUMx, Real SUMx2,
+                      Real SUMy, Real SUMy2, Real SUMxy)
+  {
+    // a = (SUMxy-SUMx*SUMy/n)/(SUMx2-sqr(SUMx)/n)
+    a.assign(SUMx);
+    a.mul(SUMy);
+    a.div(SUM1);
+    a.neg();
+    a.add(SUMxy);
+    rTmp.assign(SUMx);
+    rTmp.sqr();
+    rTmp.div(SUM1);
+    rTmp.neg();
+    rTmp.add(SUMx2);
+    a.div(rTmp);
+    // b = (SUMy - a*SUMx)/n
+    b.assign(SUMx);
+    b.mul(a);
+    b.neg();
+    b.add(SUMy);
+    b.div(SUM1);
   }
 
   private void unary(int cmd, int param) {
@@ -623,6 +719,55 @@ public final class CalcEngine
       case TO_RAD:  x.mul(Real.PI); x.div(Real180); break;
       case TO_DHMS: x.toDHMS(); break;
       case TO_H:    x.fromDHMS(); break;
+
+      case LIN_YEST:
+        statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
+        x.mul(rTmp2);
+        x.add(rTmp3);
+        break;
+      case LIN_XEST:
+        statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
+        x.sub(rTmp3);
+        x.div(rTmp2);
+        break;
+      case LOG_YEST:
+        statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMy,SUMy2,SUMylnx);
+        x.ln();
+        x.mul(rTmp2);
+        x.add(rTmp3);
+        break;
+      case LOG_XEST:
+        statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMy,SUMy2,SUMylnx);
+        x.sub(rTmp3);
+        x.div(rTmp2);
+        x.exp();
+        break;
+      case EXP_YEST:
+        statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMlny,SUMln2y,SUMxlny);
+        x.mul(rTmp2);
+        x.add(rTmp3);
+        x.exp();
+        break;
+      case EXP_XEST:
+        statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMlny,SUMln2y,SUMxlny);
+        x.ln();
+        x.sub(rTmp3);
+        x.div(rTmp2);
+        break;
+      case POW_YEST:
+        statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMlnxlny);
+        x.ln();
+        x.mul(rTmp2);
+        x.add(rTmp3);
+        x.exp();
+        break;
+      case POW_XEST:
+        statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMlnxlny);
+        x.ln();
+        x.sub(rTmp3);
+        x.div(rTmp2);
+        x.exp();
+        break;
     }
     strStack[0] = null;
     repaint(1);
@@ -636,21 +781,21 @@ public final class CalcEngine
     Real y = stack[1];
     switch (cmd) {
       case RP:
-        calcTmp.assign(y);
-        calcTmp.atan2(x);
+        rTmp.assign(y);
+        rTmp.atan2(x);
         x.hypot(y);
-        y.assign(calcTmp);
+        y.assign(rTmp);
         fromRAD(y);
         strStack[0] = null;
         strStack[1] = null;
         break;
       case PR:
         toRAD(y);
-        calcTmp.assign(y);
-        calcTmp.cos();
+        rTmp.assign(y);
+        rTmp.cos();
         y.sin();
         y.mul(x);
-        x.mul(calcTmp);
+        x.mul(rTmp);
         strStack[0] = null;
         strStack[1] = null;
         break;
@@ -682,127 +827,186 @@ public final class CalcEngine
     Real y = stack[1];
     switch (cmd) {
       case SUMPL:
-        stat[0].add(Real.ONE);
-        stat[1].add(x);
-        calcTmp.assign(x);
-        calcTmp.sqr();
-        stat[2].add(calcTmp);
-        stat[3].add(y);
-        calcTmp.assign(y);
-        calcTmp.sqr();
-        stat[4].add(calcTmp);
-        calcTmp.assign(x);
-        calcTmp.mul(y);
-        stat[5].add(calcTmp);
+        SUM1.add(Real.ONE);
+        SUMx.add(x);
+        rTmp.assign(x);
+        rTmp.sqr();
+        SUMx2.add(rTmp);
+        SUMy.add(y);
+        rTmp.assign(y);
+        rTmp.sqr();
+        SUMy2.add(rTmp);
+        rTmp.assign(x);
+        rTmp.mul(y);
+        SUMxy.add(rTmp);
+        rTmp2.assign(x);
+        rTmp2.ln();
+        SUMlnx.add(rTmp2);
+        rTmp.assign(rTmp2);
+        rTmp.sqr();
+        SUMln2x.add(rTmp);
+        rTmp3.assign(y);
+        rTmp3.ln();
+        SUMlny.add(rTmp3);
+        rTmp.assign(rTmp3);
+        rTmp.sqr();
+        SUMln2y.add(rTmp);
+        rTmp.assign(x);
+        rTmp.mul(rTmp3);
+        SUMxlny.add(rTmp);
+        rTmp.assign(y);
+        rTmp.mul(rTmp2);
+        SUMylnx.add(rTmp);
+        rTmp2.mul(rTmp3);
+        SUMlnxlny.add(rTmp2);
         break;
       case SUMMI:
-        stat[0].sub(Real.ONE);
-        stat[1].sub(x);
-        calcTmp.assign(x);
-        calcTmp.sqr();
-        stat[2].sub(calcTmp);
-        stat[3].sub(y);
-        calcTmp.assign(y);
-        calcTmp.sqr();
-        stat[4].sub(calcTmp);
-        calcTmp.assign(x);
-        calcTmp.mul(y);
-        stat[5].sub(calcTmp);
+        SUM1.sub(Real.ONE);
+        SUMx.sub(x);
+        rTmp.assign(x);
+        rTmp.sqr();
+        SUMx2.sub(rTmp);
+        SUMy.sub(y);
+        rTmp.assign(y);
+        rTmp.sqr();
+        SUMy2.sub(rTmp);
+        rTmp.assign(x);
+        rTmp.mul(y);
+        SUMxy.sub(rTmp);
+        rTmp2.assign(x);
+        rTmp2.ln();
+        SUMlnx.sub(rTmp2);
+        rTmp.assign(rTmp2);
+        rTmp.sqr();
+        SUMln2x.sub(rTmp);
+        rTmp3.assign(y);
+        rTmp3.ln();
+        SUMlny.sub(rTmp3);
+        rTmp.assign(rTmp3);
+        rTmp.sqr();
+        SUMln2y.sub(rTmp);
+        rTmp.assign(x);
+        rTmp.mul(rTmp3);
+        SUMxlny.sub(rTmp);
+        rTmp.assign(y);
+        rTmp.mul(rTmp2);
+        SUMylnx.sub(rTmp);
+        rTmp2.mul(rTmp3);
+        SUMlnxlny.sub(rTmp2);
         break;
     }
-    recall(stat[0]);
+    recall(SUM1);
   }
 
-  private void stat(int cmd) {
+  private void stat2(int cmd) {
     if (inputInProgress)
       parseInput();
     rollUp();
     rollUp();
     Real x = stack[0];
     Real y = stack[1];
-    Real n     = stat[0];
-    Real SUMx  = stat[1];
-    Real SUMx2 = stat[2];
-    Real SUMy  = stat[3];
-    Real SUMy2 = stat[4];
-    Real SUMxy = stat[5];
     switch (cmd) {
       case AVG:
         // x_avg = SUMx/n
         x.assign(SUMx);
-        x.div(n);
+        x.div(SUM1);
         // y_avg = SUMy/n
         y.assign(SUMy);
-        y.div(n);
+        y.div(SUM1);
         break;
-      case S:
+      case PSTDEV:
+      case STDEV:
         // s_x = sqrt((SUMx2-sqr(SUMx)/n)/(n-1))
+        // S_x = sqrt((SUMx2-sqr(SUMx)/n)/n)
         x.assign(SUMx);
         x.sqr();
-        x.div(n);
+        x.div(SUM1);
         x.neg();
         x.add(SUMx2);
-        calcTmp.assign(n);
-        calcTmp.sub(Real.ONE);
-        x.div(calcTmp);
+        rTmp.assign(SUM1);
+        if (cmd == STDEV)
+          rTmp.sub(Real.ONE);
+        x.div(rTmp);
         x.sqrt();
         // s_y = sqrt((SUMy2-sqr(SUMy)/n)/(n-1))
+        // S_y = sqrt((SUMy2-sqr(SUMy)/n)/n)
         y.assign(SUMy);
         y.sqr();
-        y.div(n);
+        y.div(SUM1);
         y.neg();
         y.add(SUMy2);
-        y.div(calcTmp);
+        y.div(rTmp);
         y.sqrt();
         break;
-      case LR:
-      case YR:
-        // a = (SUMxy-SUMx*SUMy/n)/(SUMx2-sqr(SUMx)/n)
-        x.assign(SUMx);
-        x.mul(SUMy);
-        x.div(n);
-        x.neg();
-        x.add(SUMxy);
-        calcTmp.assign(SUMx);
-        calcTmp.sqr();
-        calcTmp.div(n);
-        calcTmp.neg();
-        calcTmp.add(SUMx2);
-        x.div(calcTmp);
-        // b = y_avg - a*x_avg
-        y.assign(SUMx);
-        y.mul(x);
-        y.neg();
-        y.add(SUMy);
-        y.div(n);
-        if (cmd==LR)
-          break;
-        // y^ = a*x+b
-        x.mul(stack[2]);
-        x.add(y);
-        // r =(SUMxy-SUMx*SUMy/n)/sqrt((SUMx2-sqr(SUMx)/n)*(SUMy2-sqr(SUMy)/n))
-        y.assign(SUMx);
-        y.sqr();
-        y.div(n);
-        y.neg();
-        y.add(SUMx2);
-        calcTmp.assign(SUMy);
-        calcTmp.sqr();
-        calcTmp.div(n);
-        calcTmp.neg();
-        calcTmp.add(SUMy2);
-        y.mul(calcTmp);
-        y.rsqrt();
-        calcTmp.assign(SUMx);
-        calcTmp.mul(SUMy);
-        calcTmp.div(n);
-        calcTmp.neg();
-        calcTmp.add(SUMxy);
-        y.mul(calcTmp);
+      case LIN_AB:
+        statAB(x,y,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
+        break;
+      case LOG_AB:
+        statAB(x,y,SUMlnx,SUMln2x,SUMy,SUMy2,SUMylnx);
+        break;
+      case EXP_AB:
+        statAB(x,y,SUMx,SUMx2,SUMlny,SUMln2y,SUMxlny);
+        y.exp();
+        break;
+      case POW_AB:
+        statAB(x,y,SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMlnxlny);
+        y.exp();
         break;
     }
     strStack[0] = null;
     strStack[1] = null;
+    repaint(-1);
+  }
+
+  private void statR(Real r, Real SUMx, Real SUMx2,
+                     Real SUMy, Real SUMy2, Real SUMxy)
+  {
+    // r =(SUMxy-SUMx*SUMy/n)/sqrt((SUMx2-sqr(SUMx)/n)*(SUMy2-sqr(SUMy)/n))
+    r.assign(SUMx);
+    r.sqr();
+    r.div(SUM1);
+    r.neg();
+    r.add(SUMx2);
+    rTmp.assign(SUMy);
+    rTmp.sqr();
+    rTmp.div(SUM1);
+    rTmp.neg();
+    rTmp.add(SUMy2);
+    r.mul(rTmp);
+    r.rsqrt();
+    rTmp.assign(SUMx);
+    rTmp.mul(SUMy);
+    rTmp.div(SUM1);
+    rTmp.neg();
+    rTmp.add(SUMxy);
+    r.mul(rTmp);
+  }
+
+  private void stat1(int cmd) {
+    if (inputInProgress)
+      parseInput();
+    rollUp();
+    Real x = stack[0];
+    switch (cmd) {
+      case AVGXW:
+        x.assign(SUMxy);
+        x.div(SUMy);
+        break;
+      case LIN_R:
+        statR(x,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
+        break;
+      case LOG_R:
+        statR(x,SUMlnx,SUMln2x,SUMy,SUMy2,SUMylnx);
+        break;
+      case EXP_R:
+        statR(x,SUMx,SUMx2,SUMlny,SUMln2y,SUMxlny);
+        break;
+      case POW_R:
+        statR(x,SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMlnxlny);
+        break;
+    }
+    strStack[0] = null;
+    repaint(-1);
   }
 
   public void command(int cmd, int param) {
@@ -846,22 +1050,24 @@ public final class CalcEngine
       case XCHGST:
       case XCHGMEM:
       case TO_DEG: case TO_RAD: case TO_DHMS: case TO_H:
+      case LIN_YEST: case LIN_XEST: case LOG_YEST: case LOG_XEST:
+      case EXP_YEST: case EXP_XEST: case POW_YEST: case POW_XEST:
         unary(cmd,param);
         break;
       case PI:
         recall(Real.PI);
         break;
       case RANDOM:
-        calcTmp.random();
-        recall(calcTmp);
+        rTmp.random();
+        recall(rTmp);
         break;
       case TIME:
-        calcTmp.time();
-        recall(calcTmp);
+        rTmp.time();
+        recall(rTmp);
         break;
       case DATE:
-        calcTmp.date();
-        recall(calcTmp);
+        rTmp.date();
+        recall(rTmp);
         break;
       case RP:
       case PR:
@@ -901,28 +1107,59 @@ public final class CalcEngine
         clearStat();
         break;
       case AVG:
-      case S:
-      case LR:
-      case YR:
-        stat(cmd);
+      case STDEV:
+      case PSTDEV:
+      case LIN_AB:
+      case LOG_AB:
+      case EXP_AB:
+      case POW_AB:
+        stat2(cmd);
+        break;
+      case AVGXW:
+      case LIN_R:
+      case LOG_R:
+      case EXP_R:
+      case POW_R:
+        stat1(cmd);
         break;
       case N:
-        recall(stat[0]);
+        recall(SUM1);
         break;
       case SUMX:
-        recall(stat[1]);
+        recall(SUMx);
         break;
       case SUMXX:
-        recall(stat[2]);
+        recall(SUMx2);
         break;
       case SUMY:
-        recall(stat[3]);
+        recall(SUMy);
         break;
       case SUMYY:
-        recall(stat[4]);
+        recall(SUMy2);
         break;
       case SUMXY:
-        recall(stat[5]);
+        recall(SUMxy);
+        break;
+      case SUMLNX:
+        recall(SUMlnx);
+        break;
+      case SUMLN2X:
+        recall(SUMln2x);
+        break;
+      case SUMLNY:
+        recall(SUMlny);
+        break;
+      case SUMLN2Y:
+        recall(SUMln2y);
+        break;
+      case SUMXLNY:
+        recall(SUMxlny);
+        break;
+      case SUMYLNX:
+        recall(SUMylnx);
+        break;
+      case SUMLNXLNY:
+        recall(SUMlnxlny);
         break;
       case FACTORIZE:
         if (inputInProgress)

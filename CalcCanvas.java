@@ -26,8 +26,15 @@ public class CalcCanvas
 //            -> int     -> round  ceil   floor   trunc  frac
 //            -> mem     -> STO#   STO+#  RCL#    x<->mem#          -> #
 //            -> stat    -> SUM+   SUM-   clear
-//                          regs   -> SUMx SUMx² SUMy SUMy² SUMxy
-//                          result -> avg  s     L.R. y*,r  n
+//                       -> result -> avg    -> x,y sx,sy dx,dy xw
+//                                 -> ax+b   -> a,b x* y* r draw
+//                                 -> alnx+b -> a,b x* y* r draw
+//                                 -> be^ax  -> a,b x* y* r draw
+//                                 -> bx^a   -> a,b x* y* r draw
+//                       -> sums   -> n
+//                                 -> x      -> SUMx SUMx² SUMlnx SUMln²x
+//                                 -> y      -> SUMy SUMy² SUMlny SUMln²y
+//                                 -> xy     -> SUMxy SUMxlny SUMylnx SUMlnxlny
 //            -> time    -> ->DH.MS ->H   DH.MS+ time   date
 //   mode     -> number  -> normal FIX#   SCI#   ENG#             ( -> # )
 //            -> sepr    -> decimal  ->   dot comma remove keep
@@ -42,8 +49,6 @@ public class CalcCanvas
 //            -> simple  -> abs
 //            -> percent -> %
 //   special  -> user...
-//               stat     -> dx,dy x* r avg-xw
-//               stat     -> mode  -> lin exp log pow
 //   mode     -> prog
 
   private static class Menu
@@ -125,18 +130,61 @@ public class CalcCanvas
         new Menu("Z+",CalcEngine.SUMPL),
         new Menu("Z-",CalcEngine.SUMMI),
         new Menu("result",new Menu[] {
-          new Menu("~x~, ~y~",CalcEngine.AVG),
-          new Menu("s_x_, s_y_",CalcEngine.S),
-          new Menu("L.R.",CalcEngine.LR),
-          new Menu("y^*^, r",CalcEngine.YR),
-          new Menu("n",CalcEngine.N),
+          new Menu("average",new Menu [] {
+            new Menu("~x~, ~y~",CalcEngine.AVG),
+            new Menu("s_x_, s_y_",CalcEngine.STDEV),
+            new Menu("~x~w",CalcEngine.AVGXW),
+            new Menu("S_x_, S_y_",CalcEngine.PSTDEV),
+          }),
+          new Menu("ax+b",new Menu[] {
+            new Menu("a,b", CalcEngine.LIN_AB),
+            new Menu("y^*^",CalcEngine.LIN_YEST),
+            new Menu("x^*^",CalcEngine.LIN_XEST),
+            new Menu("r",   CalcEngine.LIN_R),
+            //new Menu("draw",CalcEngine.LIN_DRAW),
+          }),
+          new Menu("alnx+b",new Menu[] {
+            new Menu("a,b", CalcEngine.LOG_AB),
+            new Menu("y^*^",CalcEngine.LOG_YEST),
+            new Menu("x^*^",CalcEngine.LOG_XEST),
+            new Menu("r",   CalcEngine.LOG_R),
+            //new Menu("draw",CalcEngine.LOG_DRAW),
+          }),
+          new Menu("be^ax",new Menu[] {
+            new Menu("a,b", CalcEngine.EXP_AB),
+            new Menu("y^*^",CalcEngine.EXP_YEST),
+            new Menu("x^*^",CalcEngine.EXP_XEST),
+            new Menu("r",   CalcEngine.EXP_R),
+            //new Menu("draw",CalcEngine.EXP_DRAW),
+          }),
+          new Menu("bx^a",new Menu[] {
+            new Menu("a,b", CalcEngine.POW_AB),
+            new Menu("y^*^",CalcEngine.POW_YEST),
+            new Menu("x^*^",CalcEngine.POW_XEST),
+            new Menu("r",   CalcEngine.POW_R),
+            //new Menu("draw",CalcEngine.POW_DRAW),
+          }),
         }),
-        new Menu("regs",new Menu[] {
-          new Menu("Zx",CalcEngine.SUMX),
-          new Menu("Zx^2",CalcEngine.SUMXX),
-          new Menu("Zy",CalcEngine.SUMY),
-          new Menu("Zy^2",CalcEngine.SUMYY),
-          new Menu("Zxy",CalcEngine.SUMXY),
+        new Menu("sums",new Menu[] {
+          new Menu("n",CalcEngine.N),
+          new Menu("x",new Menu[] {
+            new Menu("Zx",CalcEngine.SUMX),
+            new Menu("Zx^2",CalcEngine.SUMXX),
+            new Menu("Zlnx",CalcEngine.SUMLNX),
+            new Menu("Zln^2^x",CalcEngine.SUMLN2X),
+          }),
+          new Menu("y",new Menu[] {
+            new Menu("Zy",CalcEngine.SUMY),
+            new Menu("Zy^2",CalcEngine.SUMYY),
+            new Menu("Zlny",CalcEngine.SUMLNY),
+            new Menu("Zln^2^y",CalcEngine.SUMLN2Y),
+          }),
+          new Menu("xy",new Menu[] {
+            new Menu("Zxy",CalcEngine.SUMXY),
+            new Menu("Zxlny",CalcEngine.SUMXLNY),
+            new Menu("Zylnx",CalcEngine.SUMYLNX),
+            new Menu("Zlnxlny",CalcEngine.SUMLNXLNY),
+          }),
         }),
         new Menu("clear",CalcEngine.CLST),
       }),
