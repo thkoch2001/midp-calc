@@ -1,0 +1,28 @@
+<project name="Calc" default="make-release">
+  <property name="wtk.home" value="/home/roarl/ant/WTK104"/>
+
+  <taskdef name="wtkbuild" classname="de.pleumann.antenna.WtkBuild"/>
+  <taskdef name="wtkpackage" classname="de.pleumann.antenna.WtkPackage"/>
+  <taskdef name="wtkpreverify" classname="de.pleumann.antenna.WtkPreverify"/>
+  <taskdef name="wtkobfuscate" classname="de.pleumann.antenna.WtkObfuscate"/>
+
+  <target name="make-release">
+    <wtkbuild srcdir="."
+              destdir="."
+              compiler="gcj"
+              debug="off"
+              optimize="on"
+              deprecation="on"
+              preverify="false" />
+
+    <wtkpackage jarfile="Calc.jar"
+                jadfile="Calc.jad"
+                obfuscate="true"
+                preverify="true"
+                autoversion="false">
+      <fileset dir="." includes="ral/*" />
+    </wtkpackage> 
+
+  </target>
+
+</project>
