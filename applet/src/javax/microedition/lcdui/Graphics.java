@@ -14,66 +14,67 @@ public class Graphics
   java.applet.Applet applet;
   Font font;
 
-  Graphics(java.awt.Graphics graphics, java.applet.Applet a) {
+  public Graphics(java.awt.Graphics graphics, java.applet.Applet a) {
     g = graphics;
     applet = a;
   }
 
-  void setColor(int RGB) {
+  public void setColor(int RGB) {
     g.setColor(new java.awt.Color(RGB));
   }
   
-  void setColor(int red, int green, int blue) {
+  public void setColor(int red, int green, int blue) {
     g.setColor(new java.awt.Color(red,green,blue));
   }
   
-  void fillRect(int x, int y, int width, int height) {
+  public void fillRect(int x, int y, int width, int height) {
     g.fillRect(x,y,width,height);
   }
 
-  void fillArc(int x, int y, int width, int height,
+  public void fillArc(int x, int y, int width, int height,
                int startAngle, int arcAngle) {
     g.fillArc(x,y,width,height,startAngle,arcAngle);
   }
 
-  void setFont(Font f) {
+  public void setFont(Font f) {
     font = f;
     g.setFont(font.font);
   }
 
-  Font getFont() {
+  public Font getFont() {
     return font;
   }
 
-  void setClip(int x, int y, int width, int height) {
+  public void setClip(int x, int y, int width, int height) {
     g.setClip(x,y,width,height);
   }
 
-  void drawString(String str, int x, int y, int anchor) {
+  public void drawString(String str, int x, int y, int anchor) {
     if ((anchor & HCENTER)!=0)
       x -= font.stringWidth(str)/2;
     else if ((anchor & RIGHT)!=0)
       x -= font.stringWidth(str);
     if ((anchor & TOP)!=0)
-      y -= font.getBaselinePosition();
+      y += font.getBaselinePosition();
     else if ((anchor & BOTTOM)!=0)
-      y = y-font.getBaselinePosition()+font.getHeight();
+      y = y+font.getBaselinePosition()-font.getHeight();
     g.drawString(str,x,y);
   }
   
-  void drawSubstring(String str, int offset, int len, int x,int y,int anchor) {
+  public void drawSubstring(String str, int offset, int len,
+			    int x, int y, int anchor) {
     drawString(str.substring(offset,offset+len),x,y,anchor);
   }
   
-  void drawChar(char ch, int x, int y, int anchor) {
+  public void drawChar(char ch, int x, int y, int anchor) {
     drawString(String.valueOf(ch),x,y,anchor);
   }
   
-  void drawLine(int x1, int y1, int x2, int y2) {
+  public void drawLine(int x1, int y1, int x2, int y2) {
     g.drawLine(x1,y1,x2,y2);
   }
   
-  void drawImage(Image img, int x, int y, int anchor) {
+  public void drawImage(Image img, int x, int y, int anchor) {
     g.drawImage(img.image, x, y, applet);
   }
 }

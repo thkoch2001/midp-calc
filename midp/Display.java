@@ -27,5 +27,6 @@ public class Display
 
   public void setCurrent(Displayable next) {
     current = next;
+    ral.CalcApplet.getCurrentApplet().repaint();
   }
 }

@@ -82,7 +82,16 @@ public class SetupCanvas
     alertHeading = "Setup";
 
     // Preset setup values for known devices
-    String name = System.getProperty("microedition.platform");
+    String name = null;
+    try {
+      name = System.getProperty("microedition.platform");
+    } catch (Exception e) {
+      midlet.hasClearKey = true;
+      midlet.commandArrangement = 0;
+      midlet.bgrDisplay = false;
+      query = QUERY_FINISHED;
+      finish();
+    }
     if (name != null) {
       if (name.startsWith("Nokia")) {
         // Just start with the most likely command arrangement for Nokia

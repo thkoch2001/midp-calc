@@ -1276,9 +1276,9 @@ public final class CalcCanvas
         } else if (command >= NUMBER_0 && command <= NUMBER_15) {
           // Number has been entered for previous command
           if (menuCommand == CalcEngine.PROG_DRAW ||
-	      menuCommand == CalcEngine.PROG_SOLVE ||
-	      menuCommand == CalcEngine.PROG_INTEGR ||
-	      menuCommand == CalcEngine.PROG_MINMAX) {
+              menuCommand == CalcEngine.PROG_SOLVE ||
+              menuCommand == CalcEngine.PROG_INTEGR ||
+              menuCommand == CalcEngine.PROG_MINMAX) {
             menuCommand += command-NUMBER_0;
             graph = true;
           } if (menuCommand == CalcEngine.PROG_NEW) {
@@ -1346,7 +1346,10 @@ public final class CalcCanvas
         }
         calc.command(CalcEngine.DIGIT_0+key-'0',0);
         break;
-      case '#':
+      case '\b':
+        clearKeyPressed();
+        break;
+      case '#': case 'e': case 'E':
         if (!midlet.hasClearKey) {
           clearKeyPressed();
           break;
@@ -1355,13 +1358,23 @@ public final class CalcCanvas
           return;
         calc.command(CalcEngine.SIGN_E,0);
         break;
-      case '*':
+      case '*': case '.': case ',': case 65452:
         if (menuStackPtr >= 0)
           return;
         if (!midlet.hasClearKey)
           calc.command(CalcEngine.SIGN_POINT_E,0);
         else
           calc.command(CalcEngine.DEC_POINT,0);
+        break;
+      case '\n': case '\r':
+        if (menuStackPtr >= 0)
+          return;
+        calc.command(CalcEngine.ENTER,0);
+        break;
+      case '+':
+        if (menuStackPtr >= 0)
+          return;
+        calc.command(CalcEngine.ADD,0);
         break;
       default:
         switch (getGameAction(key)) {

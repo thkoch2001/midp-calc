@@ -1,4 +1,4 @@
-VERSION = 2.02
+VERSION = 2.03
 TARGETS = Calc.jar Calc.jad
 
 WTK_HOME = /home/roarl/WTK104
@@ -74,7 +74,7 @@ CalcApplet.jar: CalcApplet.java $(JAVAFILES) $(MIDPFILES)
 	jar cf CalcApplet.jar ral/* javax/*
 
 clean:
-	rm -rf $(TARGETS) ral Real.java GFontBase.java pgm2java *~ .\#*
+	rm -rf $(TARGETS) ral javax Real.java GFontBase.java pgm2java *~ .\#*
 
 publish: Calc.jad Calc.jar Real.java
 	scp Calc.jad Calc.jar Calc.html Calc-log.html Calc-prog.html Real.html Real.java Real.jpp gridbug:public_html

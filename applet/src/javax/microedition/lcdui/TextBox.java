@@ -4,16 +4,16 @@ public class TextBox extends Displayable
 {
   String text;
   
-  TextBox(String title, String t, int maxSize, int constraints) {
+  public TextBox(String title, String t, int maxSize, int constraints) {
     text = t;
     // ...
   }
 
-  void setString(String t) {
+  public void setString(String t) {
     text = t;
   }
 
-  String getString() {
+  public String getString() {
     return text;
   }
 

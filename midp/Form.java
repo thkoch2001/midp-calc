@@ -2,11 +2,11 @@ package javax.microedition.lcdui;
 
 public class Form extends Displayable
 {
-  Form(String title) {
+  public Form(String title) {
     // ...
   }
 
-  int append(String str) {
+  public int append(String str) {
     // ...
     return 0;
   }

@@ -4,7 +4,6 @@ public abstract class Displayable
 {
   Command a,b;
   CommandListener commandListener;
-  java.applet.Applet applet;
   
   public void addCommand(Command cmd) {
     if (a == null)
@@ -26,10 +25,6 @@ public abstract class Displayable
 
   public void setCommandListener(CommandListener l) {
     commandListener = l;
-  }
-
-  public void setApplet(java.applet.Applet a) {
-    applet = a;
   }
 
   protected void keyPressed(int keyCode) { }
