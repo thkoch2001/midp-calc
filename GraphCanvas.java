@@ -15,7 +15,8 @@ public final class GraphCanvas
   public GraphCanvas(Calc m, CalcCanvas c) {
     midlet = m;
     cc = c;
-    addCommand(new Command("Break", Command.BACK, 1));
+    addCommand(new Command(
+      "Break", SetupCanvas.commandArrangement[m.commandArrangement*2], 1));
     setCommandListener(this);
   }
 
