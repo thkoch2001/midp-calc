@@ -27,7 +27,7 @@ Financial Java Calculator</h1>
   <li>50-70% speedup of all operations due to inlining of small functions
 </ul>
 
-<h3>Version 1.13, 2004-03-11</h3>
+<h3>Version 1.13</h3>
 
 <ul>
   <li>Correct rounding in multiplication routine
@@ -42,7 +42,7 @@ Financial Java Calculator</h1>
   <li>sqrt(-0) correctly returns 0
 </ul>
 
-<h3>Version 1.11, 2004-02-23</h3>
+<h3>Version 1.11</h3>
 
 <ul>
   <li>Made "int" submenu accessible in hex/oct/bin mode
@@ -56,7 +56,7 @@ Financial Java Calculator</h1>
   <li>Released Real.java class under GPL
 </ul>
 
-<h3>Version 1.08, 2004-01-17</h3>
+<h3>Version 1.08</h3>
 
 <ul>
   <li>Added percent command to basic menu
@@ -64,7 +64,7 @@ Financial Java Calculator</h1>
   <li>atan<sub>2</sub>(0,0) correctly returns 0
 </ul>
 
-<h3>Version 1.02, 2003-12-19</h3>
+<h3>Version 1.02</h3>
 
 <ul>
   <li>y<sup>x</sup> faster and more accurate if x is integer
@@ -74,7 +74,7 @@ Financial Java Calculator</h1>
   <li>Setup dialog to query about keyboard layout
 </ul>
 
-<h3>Version 1.00, 2003-11-29</h3>
+<h3>Version 1.00</h3>
 
 <ul>
   <li>First public version
@@ -98,11 +98,15 @@ Financial Java Calculator</h1>
 <ul>
   <li>Improve accuracy of y<sup>x</sup>
   <li>Try to reduce startup time (12 sec on T610)
-  <li>Modulo operation (menu position?)
+  <li>Modulo operations, mod and div
+  <li>Error functions, erf and erfc
   <li>Stack roll-up and roll-down (rolls using current stack size)
   <li>RECT/POL display mode for complex numbers
   <li>Option to display HEX/OCT/BIN as signed (with '-') instead of
   twos-complement
+  <li>Complex versions of y<sup>x</sup>, <sup>x</sup>&#8730;<span
+  style="text-decoration: overline;">y</span>, e<sup>x</sup>, ln, sin,
+  cos, tan, ...
 </ul>
 
 Long-term plans, that I am not going to implement unless I find myself
@@ -111,16 +115,15 @@ href="https://www.&#112;&#097;&#121;&#112;&#097;&#108;.com/xclick/business=&#114
 me:
 
 <ul>
-  <li>Complex versions of y<sup>x</sup>, <sup>x</sup>&#8730;<span
-  style="text-decoration: overline;">y</span>, e<sup>x</sup>, ln, sin,
-  cos, tan, ...
   <li>Simple programmability in the form of command macro
   <li>Graph drawing, root finding and differentiation of macro
   program. Integration only if I can find a simple, fast and accurate
   algorithm
 </ul>
+
 Things that <i>cannot</i> be implemented because the increased complexity
 will make the application too large:
+
 <ul>
   <li>Full programming mode with program listing, editing, and
   flow control operations such as IF, GOTO etc.
