@@ -6,8 +6,10 @@ public abstract class Displayable
   CommandListener commandListener;
   Font commandFont;
   int width, height;
-  String [] label = {"0",".","-/e","1","2","3","4","5","6","7","8","9"};
-  char [] key     = {'0','*','#','1','2','3','4','5','6','7','8','9'};
+  //String [] label = {"0",".","-/e","1","2","3","4","5","6","7","8","9"};
+  //char [] key     = {'0','*','#'  ,'1','2','3','4','5','6','7','8','9'};
+  String [] label = {".","0","-/e","7","8","9","4","5","6","1","2","3"};
+  char [] key     = {'*','0','#'  ,'7','8','9','4','5','6','1','2','3'};
 
   Displayable() {
     commandFont = Font.getFont(
