@@ -26,6 +26,10 @@
 //   sub(Real)
 //   mul(Real)
 //   div(Real)
+//   and(Real)
+//   or(Real)
+//   xor(Real)
+//   bic(Real)
 //
 // Functions:
 //   abs()
@@ -593,7 +597,7 @@ public final class Real
       if (isInfinity() && a.isInfinity() && sign != a.sign)
         makeNan();
       else
-        makeInfinity(sign);
+        makeInfinity(isInfinity() ? sign : a.sign);
       return;
     }
     if (isZero() || a.isZero())
@@ -774,6 +778,141 @@ public final class Real
     divTmp.assign(a);
     divTmp.recipInternal();
     mul(divTmp);
+  }
+
+  public void and(final Real a) {
+    if (isNan() || a.isNan()) {
+      makeNan();
+      return;
+    }
+    sign &= a.sign;
+    if (isInfinity() || a.isInfinity() || isZero() || a.isZero()) {
+      makeZero(sign);
+      return;
+    }
+
+    int e;
+    long m;
+    if (exponent > a.exponent ||
+        (exponent == a.exponent && mantissa>=a.mantissa))
+    {
+      e = a.exponent;
+      m = a.mantissa;
+    } else {
+      e = exponent;
+      m = mantissa;
+      exponent = a.exponent;
+      mantissa = a.mantissa;
+    }
+    int shift = exponent-e;
+    if (shift>=64) {
+      makeZero(sign);
+      return;
+    }
+
+    mantissa &= m>>>shift;
+    normalize();
+  }
+
+  public void or(final Real a) {
+    if (isNan() || a.isNan()) {
+      makeNan();
+      return;
+    }
+    sign |= a.sign;
+    if (isInfinity() || a.isInfinity()) {
+      makeInfinity(sign);
+      return;
+    }
+    if (isZero() || a.isZero())
+    {
+      if (isZero()) {
+        exponent = a.exponent;
+        mantissa = a.mantissa;
+      }
+      return;
+    }
+
+    int e;
+    long m;
+    if (exponent > a.exponent ||
+        (exponent == a.exponent && mantissa>=a.mantissa))
+    {
+      e = a.exponent;
+      m = a.mantissa;
+    } else {
+      e = exponent;
+      m = mantissa;
+      exponent = a.exponent;
+      mantissa = a.mantissa;
+    }
+    int shift = exponent-e;
+    if (shift>=64)
+      return;
+
+    mantissa |= m>>>shift;
+    normalize();
+  }
+
+  public void xor(final Real a) {
+    if (isNan() || a.isNan()) {
+      makeNan();
+      return;
+    }
+    sign ^= a.sign;
+    if (isInfinity() || a.isInfinity()) {
+      makeInfinity(sign);
+      return;
+    }
+    if (isZero() || a.isZero())
+    {
+      if (isZero()) {
+        exponent = a.exponent;
+        mantissa = a.mantissa;
+      }
+      return;
+    }
+
+    int e;
+    long m;
+    if (exponent > a.exponent ||
+        (exponent == a.exponent && mantissa>=a.mantissa))
+    {
+      e = a.exponent;
+      m = a.mantissa;
+    } else {
+      e = exponent;
+      m = mantissa;
+      exponent = a.exponent;
+      mantissa = a.mantissa;
+    }
+    int shift = exponent-e;
+    if (shift>=64)
+      return;
+
+    mantissa ^= m>>>shift;
+    normalize();
+  }
+
+  public void bic(final Real a) {
+    if (isNan() || a.isNan()) {
+      makeNan();
+      return;
+    }
+    if (a.sign != 0)
+      sign = 0;
+    if (isInfinity() || a.isInfinity() || isZero() || a.isZero())
+      return;
+
+    int shift = exponent-a.exponent;
+    if (shift>=64 || shift<=-64)
+      return;
+
+    if (shift<0)
+      mantissa &= ~(a.mantissa<<(-shift));
+    else
+      mantissa &= ~(a.mantissa>>>shift);
+    normalize();
   }
 
   public void sqr() {
@@ -1574,8 +1713,9 @@ public final class Real
       div(tmp2);
 
     if (negative) {
+      tmp5.assign(tmp1); // sin() uses tmp1
       // -pi/(x*gamma(x)*sin(pi*x))
-      mul(tmp1); tmp1.mul(PI); tmp1.sin(); mul(tmp1); recip(); mul(PI); neg();
+      mul(tmp5); tmp5.mul(PI); tmp5.sin(); mul(tmp5); recip(); mul(PI); neg();
     }
   }
 
