@@ -81,7 +81,7 @@ final class GFont
     length = string.length();
     for (int i=0; i<length; i++) {
       int index = charToIndex(string.charAt(i));
-      if (index>0) {
+      if (index>=0) {
         drawChar(g,x,y,index);
         x += char_width;
       }
@@ -95,7 +95,7 @@ final class GFont
     length = string.length();
     for (int i=start; i<length; i++) {
       int index = charToIndex(string.charAt(i));
-      if (index>0) {
+      if (index>=0) {
         drawChar(g,x,y,index);
         x += char_width;
       }
