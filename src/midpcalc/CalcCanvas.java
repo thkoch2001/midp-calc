@@ -66,8 +66,9 @@ public final class CalcCanvas
 //            -> draw    -> a b c d e
 //   prog[2]  -> finish
 //            -> cond    -> x=y? x!=y? x<y? x<=y? x>y?
-//            -> util    -> abs max min
+//            -> util    -> abs max min select
 //            -> purge
+//            -> mem     -> RCL[x] STO[x] STO+[x]
 //
 ///  prog[1]  -> solve   -> a b c d e
 ///  prog[2]  -> loop    -> label goto isg dse                      -> #
@@ -231,8 +232,8 @@ public final class CalcCanvas
         new Menu("clear",CalcEngine.CLMEM),
       }),
       new Menu("stat",new Menu[] {
-        new Menu("Z+",CalcEngine.SUMPL),
-        new Menu("Z-",CalcEngine.SUMMI),
+        new Menu("ß+",CalcEngine.SUMPL),
+        new Menu("ß-",CalcEngine.SUMMI),
         new Menu("result",Menu.TITLE_SKIP,new Menu[] {
           new Menu("average",new Menu [] {
             new Menu("~x~, ~y~",CalcEngine.AVG),
@@ -273,22 +274,22 @@ public final class CalcCanvas
         new Menu("sums",new Menu[] {
           new Menu("n",CalcEngine.N),
           new Menu("x",Menu.TITLE_SKIP,new Menu[] {
-            new Menu("Zx",CalcEngine.SUMX),
-            new Menu("Zx^2",CalcEngine.SUMXX),
-            new Menu("Zlnx",CalcEngine.SUMLNX),
-            new Menu("Zln^2^x",CalcEngine.SUMLN2X),
+            new Menu("ßx",CalcEngine.SUMX),
+            new Menu("ßx^2",CalcEngine.SUMXX),
+            new Menu("ßlnx",CalcEngine.SUMLNX),
+            new Menu("ßln^2^x",CalcEngine.SUMLN2X),
           }),
           new Menu("y",Menu.TITLE_SKIP,new Menu[] {
-            new Menu("Zy",CalcEngine.SUMY),
-            new Menu("Zy^2",CalcEngine.SUMYY),
-            new Menu("Zlny",CalcEngine.SUMLNY),
-            new Menu("Zln^2^y",CalcEngine.SUMLN2Y),
+            new Menu("ßy",CalcEngine.SUMY),
+            new Menu("ßy^2",CalcEngine.SUMYY),
+            new Menu("ßlny",CalcEngine.SUMLNY),
+            new Menu("ßln^2^y",CalcEngine.SUMLN2Y),
           }),
           new Menu("xy",Menu.TITLE_SKIP,new Menu[] {
-            new Menu("Zxy",CalcEngine.SUMXY),
-            new Menu("Zxlny",CalcEngine.SUMXLNY),
-            new Menu("Zylnx",CalcEngine.SUMYLNX),
-            new Menu("Zlnxlny",CalcEngine.SUMLNXLNY),
+            new Menu("ßxy",CalcEngine.SUMXY),
+            new Menu("ßxlny",CalcEngine.SUMXLNY),
+            new Menu("ßylnx",CalcEngine.SUMYLNX),
+            new Menu("ßlnxlny",CalcEngine.SUMLNXLNY),
           }),
         }),
         new Menu("clear",CalcEngine.CLST),
@@ -306,8 +307,8 @@ public final class CalcCanvas
       }),
       new Menu("conv",new Menu [] {
         new Menu("time",new Menu[] {
-          new Menu("\\DH.MS",CalcEngine.TO_DHMS),
-          new Menu("\\H",CalcEngine.TO_H),
+          new Menu("»DH.MS",CalcEngine.TO_DHMS),
+          new Menu("»H",CalcEngine.TO_H),
           new Menu("time",CalcEngine.TIME),
           new Menu("DH.MS+",CalcEngine.DHMS_PLUS),
           new Menu("date",CalcEngine.DATE),
@@ -327,8 +328,8 @@ public final class CalcCanvas
             new Menu("kg/ton",CalcEngine.CONST_kg_ton),
           }),
           new Menu("temp",new Menu [] {
-            new Menu("°C\\°F",CalcEngine.CONV_C_F),
-            new Menu("°F\\°C",CalcEngine.CONV_F_C),
+            new Menu("°C»°F",CalcEngine.CONV_C_F),
+            new Menu("°F»°C",CalcEngine.CONV_F_C),
             new Menu("°K-°C",CalcEngine.CONST_K_C),
           }),
           new Menu("energy",new Menu [] {
@@ -348,7 +349,7 @@ public final class CalcCanvas
             new Menu("c",CalcEngine.CONST_c),
             new Menu("h",CalcEngine.CONST_h),
             new Menu("µ_0",CalcEngine.CONST_mu_0),
-            new Menu("è_0",CalcEngine.CONST_eps_0),
+            new Menu("ë_0",CalcEngine.CONST_eps_0),
           }),
           new Menu("chem",new Menu [] {
             new Menu("N_A",CalcEngine.CONST_NA),
@@ -357,9 +358,9 @@ public final class CalcCanvas
             new Menu("F",CalcEngine.CONST_F),
           }),
           new Menu("phys",new Menu [] {
-            new Menu("à",CalcEngine.CONST_alpha),
+            new Menu("ã",CalcEngine.CONST_alpha),
             new Menu("a_0",CalcEngine.CONST_a_0),
-            new Menu("R_»",CalcEngine.CONST_R_inf),
+            new Menu("R_Þ",CalcEngine.CONST_R_inf),
             new Menu("µ_B",CalcEngine.CONST_mu_B),
           }),
           new Menu("atom",new Menu [] {
@@ -469,14 +470,14 @@ public final class CalcCanvas
 
   private Menu coordMenu = new Menu("coord",new Menu[] {
     new Menu("hypot",CalcEngine.HYPOT),
-    new Menu("r\\p",CalcEngine.RP),
-    new Menu("p\\r",CalcEngine.PR),
+    new Menu("r»p",CalcEngine.RP),
+    new Menu("p»r",CalcEngine.PR),
     new Menu("atan_2",CalcEngine.ATAN2),
-    new Menu("r\\cplx",CalcEngine.TO_CPLX),
+    new Menu("r»cplx",CalcEngine.TO_CPLX),
   });
 
   private Menu cplxMenu = new Menu("cplx",new Menu[] {
-    new Menu("cplx\\r",CalcEngine.CPLX_SPLIT),
+    new Menu("cplx»r",CalcEngine.CPLX_SPLIT),
     new Menu("abs",CalcEngine.ABS),
     new Menu("arg",CalcEngine.CPLX_ARG),
     new Menu("conj",CalcEngine.CPLX_CONJ),
@@ -484,7 +485,7 @@ public final class CalcCanvas
 
   private Menu math = new Menu("math",new Menu[] {
     new Menu("simple",Menu.TITLE_SKIP,new Menu[] {
-      new Menu("Qx",CalcEngine.SQRT),
+      new Menu("¿x",CalcEngine.SQRT),
       new Menu("x^2",CalcEngine.SQR),
       new Menu("1/x",CalcEngine.RECIP),
       new Menu("%chg",CalcEngine.PERCENT_CHG),
@@ -494,7 +495,7 @@ public final class CalcCanvas
       new Menu("e^x",CalcEngine.EXP),
       new Menu("y^x",CalcEngine.YPOWX),
       new Menu("ln",CalcEngine.LN),
-      new Menu("^x^Qy",CalcEngine.XRTY),
+      new Menu("^x^¿y",CalcEngine.XRTY),
       new Menu("pow_10,2",new Menu[] {
         new Menu("2^x",CalcEngine.EXP2),
         new Menu("10^x",CalcEngine.EXP10),
@@ -514,6 +515,7 @@ public final class CalcCanvas
       new Menu("C y,x",CalcEngine.CYX),
       new Menu("x!",CalcEngine.FACT),
       new Menu("erfc",CalcEngine.ERFC),
+      new Menu("¡x",CalcEngine.GAMMA),
     }),
   });
   private Menu trig = new Menu("trig",new Menu[] {
@@ -539,8 +541,8 @@ public final class CalcCanvas
     }),
     new Menu("more",Menu.TITLE_SKIP,new Menu[] {
       new Menu("RAD/DEG",CalcEngine.TRIG_DEGRAD),
-      new Menu("\\RAD",CalcEngine.TO_RAD),
-      new Menu("\\DEG",CalcEngine.TO_DEG),
+      new Menu("»RAD",CalcEngine.TO_RAD),
+      new Menu("»DEG",CalcEngine.TO_DEG),
       new Menu("¶",CalcEngine.PI),
     }),
   });
@@ -565,19 +567,25 @@ public final class CalcCanvas
   private Menu prog2 = new Menu("prog",new Menu[] {
     new Menu("finish",CalcEngine.PROG_FINISH),
     new Menu("cond",new Menu[] {
-      new Menu("x=y?",CalcEngine.ABS),
-      new Menu("x!=y?",CalcEngine.ABS),
-      new Menu("x<y?",CalcEngine.ABS),
-      new Menu("x<=y?",CalcEngine.ABS),
-      new Menu("x>y?",CalcEngine.ABS),
+      new Menu("x=y?",CalcEngine.IF_EQUAL),
+      new Menu("x!=y?",CalcEngine.IF_NEQUAL),
+      new Menu("x<y?",CalcEngine.IF_LESS),
+      new Menu("x<=y?",CalcEngine.IF_LEQUAL),
+      new Menu("x>y?",CalcEngine.IF_GREATER),
     }),
     new Menu("util",new Menu[] {
       new Menu("abs",CalcEngine.ABS),
-      new Menu("max",CalcEngine.ABS),
-      new Menu("min",CalcEngine.ABS),
-      new Menu("select",CalcEngine.ABS),
+      new Menu("max",CalcEngine.MAX),
+      new Menu("min",CalcEngine.MIN),
+      new Menu("select",CalcEngine.SELECT),
     }),
     new Menu("purge",CalcEngine.PROG_PURGE),
+    new Menu("mem",new Menu[] {
+      new Menu("RCL[x]",CalcEngine.RCL_X),
+      new Menu("STO[x]",CalcEngine.STO_X),
+      null,
+      new Menu("STO+[x]",CalcEngine.STP_X),
+    }),
   });
   private Menu progMenu = new Menu(null,new Menu[] {
     new Menu("",NUMBER_0),
@@ -741,7 +749,7 @@ public final class CalcCanvas
 
   private boolean plainLabel(String label) {
     for (int i=0; i<label.length(); i++)
-      if ("^~_\\«QZ$¶»àè".indexOf(label.charAt(i))>=0)
+      if ("^~_»«¿ß¡¶Þãë".indexOf(label.charAt(i))>=0)
         return false;
     return true;
   }
@@ -759,14 +767,14 @@ public final class CalcCanvas
         font = font==normalFont ? smallFont : normalFont;
       else if (c=='~')
         ; // overline... no font change
-      else if ("\\«QZ$¶".indexOf(c)>=0)
+      else if ("»«¿ß¡¶".indexOf(c)>=0)
         width += font.charWidth('O');
-      else if (c=='»')
+      else if (c=='Þ')
         width += font.charWidth('o')*(6+4)/6;
-      else if (c=='à') {
+      else if (c=='ã') {
         int h2 = (font.getBaselinePosition()*2/3+1)&~1;
         width += h2/2+5+(h2<10?0:1);
-      } else if (c=='è')
+      } else if (c=='ë')
         width += font.charWidth('e')*67/112 + 1;
       else
         width += font.charWidth(c);
@@ -796,11 +804,11 @@ public final class CalcCanvas
         }
       } else if (c=='~') {
         overline = !overline;
-      } else if ("\\«QZ$¶»àè".indexOf(c)>=0) {
+      } else if ("»«¿ß¡¶Þãë".indexOf(c)>=0) {
         int w = font.charWidth('O');
         int h = font.getBaselinePosition();
         switch (c) {
-          case '\\':
+          case '»':
             g.drawLine(x,y+h/2+1,x+w-2,y+h/2+1);
             g.drawLine(x,y+h/2+2,x+w-2,y+h/2+2);
             g.drawLine(x+w-2,y+h/2+1,x+w-2-2,y+h/2+1-2);
@@ -820,7 +828,7 @@ public final class CalcCanvas
               g.drawLine(x,y+h/2+2,x+2,y+h/2+2+2);
             }
             break;
-          case 'Q':
+          case '¿':
             g.drawLine(x,y+h-3,x+3,y+h);
             g.drawLine(x+1,y+h-3,x+4,y+h);
             g.drawLine(x+3,y,x+3,y+h);
@@ -829,7 +837,7 @@ public final class CalcCanvas
             g.drawLine(x+3,y+1,x+w,y+1);
             overline = true;
             break;
-          case 'Z':
+          case 'ß':
             int b = (h&1)^1;
             int s = (h-b-4)/2;
             g.drawLine(x,y+b,x+w-2,y+b);
@@ -841,7 +849,7 @@ public final class CalcCanvas
             g.drawLine(x,y+h-1,x+w-2,y+h-1);
             g.drawLine(x,y+h-2,x+w-2,y+h-2);
             break;
-          case '$':
+          case '¡':
             g.drawLine(x+1,y,x+1,y+h-1);
             g.drawLine(x+2,y,x+2,y+h-1);
             g.drawLine(x,y+h-1,x+3,y+h-1);
@@ -857,7 +865,7 @@ public final class CalcCanvas
             g.drawLine(x+5,y+h/3,x+5,y+h-1);
             g.drawLine(x+6,y+h/3,x+6,y+h-1);
             break;
-          case '»':
+          case 'Þ':
             g.drawChar('o',x,y+normalFont.getHeight()-
                        smallFont.getBaselinePosition(),g.TOP|g.LEFT);
             g.drawChar('o',x+font.charWidth('o')*4/6,
@@ -865,7 +873,7 @@ public final class CalcCanvas
                        smallFont.getBaselinePosition(),g.TOP|g.LEFT);
             w = font.charWidth('o')*(6+4)/6;
             break;
-          case 'à':
+          case 'ã':
             int h2 = (h*2/3+1)&~1;
             w = h2/2+5+(h2<10?0:1);
             int x2 = x+w-h2/2;
@@ -890,7 +898,7 @@ public final class CalcCanvas
             g.drawLine(x+w-2,y+h-1,x+w-2,y+h-2);
             g.drawLine(x+w-1,y+h-2,x+w-1,y+h-3);
             break;
-          case 'è':
+          case 'ë':
             g.drawChar('e',x,y,g.TOP|g.LEFT);
             x += font.charWidth('e')*67/112;
             g.setColor(menuColor[menuStackPtr]);
