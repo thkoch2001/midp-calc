@@ -12,7 +12,7 @@ Financial Java Calculator</h1>
 
 <h2>Changelog:</h2>
 
-<h3>Version 1.12, 2004-03-10</h3>
+<h3>Version 1.13, 2004-03-11</h3>
 
 <ul>
   <li>More accurate rounding in multiplication routine
@@ -21,7 +21,7 @@ Financial Java Calculator</h1>
   <li>Changed exponent marker from "E" to "e", and hex digits from
   "abcdef" to "ABCDEF" to improve visibility of complex numbers
   <li>Removed "+" sign from positive exponents
-  <li>Rudimentary complex math works for +, -, *, /, +/-, &#8730;<span
+  <li>Basic complex math works for +, -, *, /, +/-, &#8730;<span
   style="text-decoration: overline;">x</span>, 1/x,
   x², split, abs, arg, conj and STO/RCL
   <li>sqrt(-0) correctly returns 0
@@ -71,7 +71,7 @@ Financial Java Calculator</h1>
 
 <ul>
   <li>Doesn't work on Siemens phones
-  <li>LASTx does not always keep its imaginary part
+  <li>LASTx does not keep its imaginary part after clear stack and exit
   <li>Sometimes the stack contents are forgotten when you exit
   <li>Setup settings are not reversible
 </ul>
@@ -81,15 +81,11 @@ Financial Java Calculator</h1>
 <h2>Todo-list:</h2>
 
 <ul>
-  <li>(Whatever <i>you</i> want!)
-  <li>???
-  <li>Profit!
-  <li>&nbsp;
-  <li>&nbsp;
   <li>Bypassing setup dialogs on known devices (T610, ?...)
   <li>Further improve accuracy of exponential operations
   <li>Modulo operation (menu position?)
   <li>Stack roll-up and roll-down (rolls using current stack size)
+  <li>RECT/POL display mode for complex numbers
 </ul>
 
 Long-term plans, that I am not going to implement unless I find myself

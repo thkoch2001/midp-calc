@@ -125,6 +125,7 @@ public class CalcCanvas
       new Menu("/",CalcEngine.DIV),
       new Menu("+/-",CalcEngine.NEG),
       new Menu("%",CalcEngine.PERCENT),
+      //new Menu("free",CalcEngine.FREE_MEM),
     }),
     null, // math or binop
     null, // trig or binop2
@@ -317,11 +318,11 @@ public class CalcCanvas
     new Menu("r\\p",CalcEngine.RP),
     new Menu("p\\r",CalcEngine.PR),
     new Menu("atan_2",CalcEngine.ATAN2),
-    new Menu("\\cplx",CalcEngine.TO_CPLX),
+    new Menu("r\\cplx",CalcEngine.TO_CPLX),
   });
 
   private static final Menu cplxMenu = new Menu("cplx",new Menu[] {
-    new Menu("split",CalcEngine.CPLX_SPLIT),
+    new Menu("cplx\\r",CalcEngine.CPLX_SPLIT),
     new Menu("abs",CalcEngine.CPLX_ABS),
     new Menu("arg",CalcEngine.CPLX_ARG),
     new Menu("conj",CalcEngine.CPLX_CONJ),
@@ -395,7 +396,6 @@ public class CalcCanvas
     new Menu("y<<x",CalcEngine.YUPX),
     new Menu("y>>x",CalcEngine.YDNX),
     intMenu,
-    //new Menu("",CalcEngine.FREE_MEM),
   });
 
   private static final int menuColor [] = {

@@ -702,7 +702,7 @@ public final class CalcEngine
     if (xi != null && !xi.isZero()) {
       int maxwidth = format.maxwidth;
       int imagSign = xi.isNegative() && format.base==10 ? 0 : 1;
-      format.maxwidth = (maxwidth-1-imagSign)/2;
+      format.maxwidth = maxwidth/2-imagSign;
       String imag = xi.toString(format);
       format.maxwidth = maxwidth-1-imagSign-imag.length();
       String real = x.toString(format);
@@ -1101,11 +1101,11 @@ public final class CalcEngine
     Real y = stack[1];
     Real xi = null;
     Real yi = null;
-    boolean imag = false;
+    boolean cplx = false;
     if (imagStack != null) {
       xi = imagStack[0];
       yi = imagStack[1];
-      imag = !xi.isZero() || !yi.isZero();
+      cplx = !xi.isZero() || !yi.isZero();
       lastxi.assign(xi);
       lastyi.assign(yi);
     }
@@ -1116,15 +1116,15 @@ public final class CalcEngine
     undoOp = UNDO_BINARY;
     switch (cmd) {
       case ADD:
-        if (imag) yi.add(xi);
+        if (cplx) yi.add(xi);
         y.add(x);
         break;
       case SUB:
-        if (imag) yi.sub(xi);
+        if (cplx) yi.sub(xi);
         y.sub(x);
         break;
       case MUL:
-        if (imag) {
+        if (cplx) {
           rTmp.assign(yi);
           rTmp.mul(xi);
           rTmp2.assign(y);
@@ -1138,7 +1138,7 @@ public final class CalcEngine
         }
         break;
       case DIV:
-        if (imag) {
+        if (cplx) {
           if (xi.isZero()) {
             y.div(x);
             yi.div(x);
@@ -1163,11 +1163,17 @@ public final class CalcEngine
         break;
       case TO_CPLX:
         allocImagStack();
-        imagStack[1].assign(y);
+        cplx = true;
+        yi = imagStack[1];
+        yi.assign(y);
         y.assign(x);
         break;
       case CLEAR:
         break;
+    }
+    if (cplx && (y.isNan() || yi.isNan())) {
+      y.makeNan();
+      yi.makeZero(0);
     }
     rollDown();
     stack[STACK_SIZE-1].makeZero(0);
@@ -1333,10 +1339,10 @@ public final class CalcEngine
     Real tmp;
     Real x = stack[0];
     Real xi = null;
-    boolean imag = false;
+    boolean cplx = false;
     if (imagStack != null) {
       xi = imagStack[0];
-      imag = !xi.isZero();
+      cplx = !xi.isZero();
       lastxi.assign(xi);
     }
     lastx.assign(x);
@@ -1344,12 +1350,12 @@ public final class CalcEngine
     undoOp = UNDO_UNARY;
     switch (cmd) {
       case NEG:
-        if (imag)
+        if (cplx)
           xi.neg();
         x.neg();
         break;
       case SQR:
-        if (imag) {
+        if (cplx) {
           rTmp.assign(xi);
           rTmp.sqr();
           xi.mul(x);
@@ -1361,7 +1367,7 @@ public final class CalcEngine
         }
         break;
       case RECIP:
-        if (imag) {
+        if (cplx) {
           rTmp.assign(x);
           rTmp.sqr();
           rTmp2.assign(xi);
@@ -1375,7 +1381,7 @@ public final class CalcEngine
         }
         break;
       case SQRT:
-        if (imag) {
+        if (cplx) {
           rTmp.assign(x);
           rTmp.hypot(xi);
           rTmp2.assign(x);
@@ -1397,6 +1403,7 @@ public final class CalcEngine
           }
         } else if (x.isNegative() && !x.isZero()) {
           allocImagStack();
+          cplx = true;
           xi = imagStack[0];
           xi.assign(x);
           xi.neg();
@@ -1407,7 +1414,7 @@ public final class CalcEngine
         }
         break;
       case CPLX_ABS:
-        if (imag) {
+        if (cplx) {
           x.hypot(xi);
           xi.makeZero(0);
         } else {
@@ -1415,7 +1422,7 @@ public final class CalcEngine
         }
         break;
       case CPLX_ARG:
-        if (imag) {
+        if (cplx) {
           xi.atan2(x);
           x.assign(xi);
           fromRAD(x);
@@ -1425,9 +1432,13 @@ public final class CalcEngine
         }
         break;
       case CPLX_CONJ:
-        if (imag)
+        if (cplx)
           xi.neg();
         break;
+    }
+    if (cplx && (x.isNan() || xi.isNan())) {
+      x.makeNan();
+      xi.makeZero(0);
     }
     strStack[0] = null;
     repaint(1);
@@ -2522,6 +2533,10 @@ public final class CalcEngine
         Runtime.getRuntime().gc();
         stack[0].assign(Runtime.getRuntime().freeMemory());
         stack[1].assign(Runtime.getRuntime().totalMemory());
+        if (imagStack != null) {
+          imagStack[0].makeZero(0);
+          imagStack[1].makeZero(0);
+        }
         strStack[0] = null;
         strStack[1] = null;
         repaint(-1);

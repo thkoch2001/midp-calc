@@ -19,7 +19,7 @@
 
 <img src="/~roarl/Calc.jpg" align=right alt="">
 
-<b>Current version: 1.11</b> <font size=-1><a
+<b>Current version: 1.13</b> <font size=-1><a
 href="/~roarl/Calc-log.html">changelog</a></font><br>
 
 Copyright: Roar Lauritzsen, email: <a
@@ -49,7 +49,7 @@ Using my <a href="Real.html">Real</a> Java floating point library,
 Calc has 63 bits internal precision, which amounts to approximately 19
 decimal digits accuracy, considerably <i>more</i> than normal
 calculators and computers. The exponent is 31 bits, which allows for
-numbers up to 4.197E+323228496. Handy when you want to calculate the
+numbers up to 4.197e323228496. Handy when you want to calculate the
 factorial of 40000000.<br>
 
 <h2><font color="800000">Disclaimer</font></h2>
@@ -420,18 +420,19 @@ The following operations are available through the menu system:
   <li>Rectangular/polar coordinates
   <ul>
     <li><b>r&rarr;p</b>: Convert rectangular coordinates (x,y) to polar
-(x=radius,&nbsp;y=angle)
+    (x=radius,&nbsp;y=angle)
     <li><b>p&rarr;r</b>: Convert polar coordinates (x=radius, y=angle) to
-rectangular (x,y)
-    <li><b>atan<sub>2</sub></b>: Calculate the arctangent of y/x, in the range -&#960;
-to &#960; (or -180 to 180 in DEG mode)
-    <li><b>hypot</b>: Calculate &#8730;<span style="text-decoration: overline;">x²+y²</span>
-    <li><b>&rarr;cplx</b>: Convert rectangular coordinates (x,y) to
-    complex number x+y·i
+    rectangular (x,y)
+    <li><b>atan<sub>2</sub></b>: Calculate the arctangent of y/x, in
+    the range -&#960; to &#960; (or -180 to 180 in DEG mode)
+    <li><b>hypot</b>: Calculate &#8730;<span
+    style="text-decoration: overline;">x²+y²</span>
+    <li><b>r&rarr;cplx</b>: Convert rectangular coordinates
+    (x=re,&nbspy=im) to complex number
   </ul>
   <li>Complex numbers
   <ul>
-    <li><b>split</b>: Convert complex number, re+im·i, to rectangular
+    <li><b>cplx&rarr;r</b>: Convert complex number to rectangular
   coordinates (x=re,&nbsp;y=im)
     <li><b>abs</b>: Calculate absolute value (complex modulus) of
   complex number
@@ -725,7 +726,7 @@ nan^0 = 1<br>
 The calculator creates complex numbers automatically when you try to
 use the "&#8730;<span style="text-decoration: overline;">x</span>"
 operation on a negative number. Alternatively, a complex number can be
-created from x and y using the "&rarr;cplx" operation.<br>
+created from x and y using the "r&rarr;cplx" operation.<br>
 
 <br>
 Currently only the following operations work with complex numbers: +,

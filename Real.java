@@ -34,8 +34,8 @@
 //   Real(Real)                             <==  Real
 //   Real(int)                              <==  int
 //   Real(long)                             <==  long
-//   Real(String)                           <==  "-1.234E+56"
-//   Real(String, int base)                 <==  "-1.234E+56" / "/fff3.2E-10"
+//   Real(String)                           <==  "-1.234e56"
+//   Real(String, int base)                 <==  "-1.234e56" / "/FFF3.2e-10"
 //   Real(int s, int e, long m)             <==  (-1)^s * 2^(e-62) * m
 //   Real(byte[] data, int offset)          <==  data[offset]..data[offset+11]
 //   assign(Real)
@@ -49,8 +49,8 @@
 //   assignDoubleBits(long)                 <==  IEEE754 64-bits double format
 //
 // Output:
-//   String toString()                      ==>  "-1.234E+56"
-//   String toString(int base)              ==>  "-1.234E+56" / "03.feE+56"
+//   String toString()                      ==>  "-1.234e56"
+//   String toString(int base)              ==>  "-1.234e56" / "03.FEe56"
 //   String toString(NumberFormat)          ==>  e.g. "-1'234'567,8900"
 //   int toInteger()                        ==>  int
 //   long toLong()                          ==>  long
@@ -170,8 +170,8 @@
 //   LOG2E    = log2(e)  = 1/ln(2)
 //   LOG10E   = log10(e) = 1/ln(10)
 //   LN10_LN2 = ln(10)/ln(2)
-//   MAX      = max non-infinite positive number = 4.197E+323228496
-//   MIN      = min non-zero positive number     = 2.383E-323228497
+//   MAX      = max non-infinite positive number = 4.197e323228496
+//   MIN      = min non-zero positive number     = 2.383e-323228497
 //   NAN      = not a number
 //   INF      = infinity
 //   INF_N    = -infinity
