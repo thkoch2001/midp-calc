@@ -41,7 +41,9 @@ public final class CalcCanvas
 //                                 -> xy     -> SUMxy SUMxlny SUMylnx SUMlnxlny
 //            -> finance -> STO RCL solve -> pv fv np pmt ir
 //                       -> clear
-//            -> time    -> ->DH.MS ->H   DH.MS+ time   date
+//            -> conv    -> time   ->  ->DH.MS ->H DH.MS+ time date
+//                       -> metric ->  length weight vol energy temp
+//                       -> const  ->  univ chem phys atom astro
 //   mode     -> number  -> normal FIX#   SCI#   ENG#             ( -> # )
 //            -> sepr    -> decimal  ->   dot comma remove keep
 //                       -> thousand ->   dot/comma space ' none
@@ -53,16 +55,34 @@ public final class CalcCanvas
 //
 // Extensions:
 //   spceial  -> stat    -> S_xw s_xw
-//            -> conv    -> time   ->  ->DH.MS ->H DH.MS+ time date
-//                       -> const  ->  univ chem phys atom astro
-//                       -> metric ->  length weight volume energy temp
+//
+///  special  -> run                                                -> #
+///  mode     -> prog    -> new                                     -> #
+///                      -> delete                                  -> #
+///                      -> clear
+///  prog     -> if      -> x=y? x!=y? x<y? x<=y? x>y?
+///           -> loop    -> label goto isg dse                      -> #
+///           -> subr    -> gosub return                          ( -> # )
+///           -> special -> pause stop clx abs
+///           -> flags   -> sf cf fs? fc?                           -> #
+///           -> progoff
+
+// Complex operations:
+//   + - * / +/- 1/x x² sqrt
+//   <pow> <pow10/2> <trig/normal> <trig/hyp>
+//   <cplx> <stack> <mem> <int>
+// Not yet complex:
+//   <trig/arc> <trig/archyp>
+// Not complex:
+//   % %chg and or xor bic not y<<x y>>x RAD/DEG ->RAD ->DEG
+//   <prob> <coord> <misc> <stat> <finance> <time>
 
 // Physical constants:
 // Universal
 //   Speed of light in vacuum          c == 299792458 m/s
 //   Planck constant                   h = 6.6260693e-34 J·s
-//   Permeability of a vacuum          µ_0 = 12.5663706e-7 N/A²
-//   Permittivity of a vacuum          eps_0 = 8.8541878e-12 F/m
+//   Permeability of a vacuum          µ_0 == 4*pi*1e-7 N/A²
+//   Permittivity of a vacuum          eps_0 == 1/µ_0·c² F/m
 // Chemical
 //   Avogadro constant                 N_A = 6.0221415e23 mol^-1
 //   Molar gas constant                R = 8.314472 J/mol·K
@@ -71,7 +91,7 @@ public final class CalcCanvas
 // Physical and electromagnetic
 //   Fine-structure constant           alpha = 7.297352568e-3
 //   Bohr radius                       a_0 = 5.291772108e-11 m
-//   Rydberg constant                  R_inf=10973731.568525m^-1
+//   Rydberg constant                  R_inf = 10973731.568525m^-1
 //   Bohr magneton                     µ_B = 9.27400949e-24 J/T
 // Atomic
 //   Elementary charge                 e = 1.60217653e-19 C
@@ -85,7 +105,7 @@ public final class CalcCanvas
 //   Light year                        l.y. == 365.25*24*60*60 * c
 //   Astronomical unit                 A.U. == 149597870691 m
 //   Parsec                            pc == 360*60*60/2·pi * A.U.
-
+//
 // Metric conversions:
 // Length
 //   Inch in centimeters               cm/in == 2.54         (def)
@@ -115,29 +135,6 @@ public final class CalcCanvas
 // Sources: http://physics.nist.gov/cuu/Constants
 //          http://www.free-definition.com
 // (== means "equals exactly" or "equals by definition")
-
-//
-///  special  -> run                                                -> #
-///  mode     -> prog    -> new                                     -> #
-///                      -> delete                                  -> #
-///                      -> clear
-///  prog     -> if      -> x=y? x!=y? x<y? x<=y? x>y?
-///           -> loop    -> label goto isg dse                      -> #
-///           -> subr    -> gosub return                          ( -> # )
-///           -> special -> pause stop clx abs
-///           -> flags   -> sf cf fs? fc?                           -> #
-///           -> progoff
-
-// Complex operations:
-//   + - * / +/- 1/x x² sqrt
-//   <pow> <pow10/2> <trig/normal> <trig/hyp>
-//   <cplx> <stack> <mem> <int>
-// Not yet complex:
-//   <trig/arc> <trig/archyp>
-// Not complex:
-//   % %chg and or xor bic not y<<x y>>x RAD/DEG ->RAD ->DEG
-//   <prob> <coord> <misc> <stat> <finance> <time>
-//
   
   private static final class Menu
   {
