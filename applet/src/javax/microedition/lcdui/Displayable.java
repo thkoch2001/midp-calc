@@ -55,19 +55,19 @@ public abstract class Displayable
       pointerPressed(x,y);
     else {
       if (y<height-(commandFont.getHeight()+1)*5) {
-	if (x<width/2) {
+        if (x<width/2) {
           if (a != null && commandListener != null)
-	    commandListener.commandAction(a, this);
-	} else {
-	  if (b != null && commandListener != null)
-	    commandListener.commandAction(b, this);
-	}
+            commandListener.commandAction(a, this);
+        } else {
+          if (b != null && commandListener != null)
+            commandListener.commandAction(b, this);
+        }
       } else if (y<height-(commandFont.getHeight()+1)*4) {
         keyPressed('\b');
       } else {
         x = x*3/width;
-	y = (height-y)/(commandFont.getHeight()+1);
-	keyPressed(key[y*3+x]);
+        y = (height-y)/(commandFont.getHeight()+1);
+        keyPressed(key[y*3+x]);
       }
     }
   }
@@ -93,7 +93,7 @@ public abstract class Displayable
   public void processRepaint(java.awt.Graphics g) {
     g.setColor(java.awt.Color.WHITE);
     g.fillRect(0,height-(commandFont.getHeight()+1)*6,width,
-	       (commandFont.getHeight()+1)*6);
+               (commandFont.getHeight()+1)*6);
     g.setColor(java.awt.Color.LIGHT_GRAY);
     for (int i=1; i<=6; i++)
       g.fillRect(0,height-(commandFont.getHeight()+1)*i,width,1);
