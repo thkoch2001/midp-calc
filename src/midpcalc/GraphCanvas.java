@@ -28,24 +28,24 @@ public final class GraphCanvas
   }
 
   public void paint(Graphics g) {
-    cc.drawModeIndicators(g);
     if (!internalRepaint) {
       // Clear screen
+      cc.drawModeIndicators(g, false);
       g.setColor(0);
       g.fillRect(gx,gy,gw,gh);
       cc.calc.startGraph(g,gx,gy,gw,gh);
-      if (!cc.calc.progRunning) {
-        // Make sure "RUN" indicator is turned off by yet another redraw
-        midlet.display.callSerially(this); // Calls back run() below later
-        return;
-      }
+      midlet.display.callSerially(this); // Calls back run() below later
+      return;
     }
     internalRepaint = false;
 
     if (cc.calc.progRunning) {
+      cc.drawModeIndicators(g, true);
       cc.calc.continueGraph(g,gx,gy,gw,gh);
       if (cc.calc.progRunning)
         midlet.display.callSerially(this); // Calls back run() below later
+    } else {
+      cc.drawModeIndicators(g, false);
     }
   }
 

@@ -56,7 +56,7 @@ stack/RCL st# 2          ; c
 *
 -
 math/simple/sqrt         ; sqrt(b²-4ac)
-stack/RCL st# 2          ; b
+stack/RCL st# 2          ; b (as the stack moves the index changes)
 prog/util/sgn
 *                        ; sgn(b)*sqrt(b²-4ac)
 stack/RCL st# 2          ; b

@@ -231,11 +231,12 @@ public final class CalcEngine
   public static final int JD_TO_DHMS     = 222;
   public static final int DHMS_TO_MJD    = 223;
   public static final int MJD_TO_DHMS    = 224;
-  public static final int PROG_NEW       = 225;
-  public static final int PROG_FINISH    = 226;
-  public static final int PROG_RUN       = 227;
-  public static final int PROG_PURGE     = 228;
-  public static final int PROG_CLEAR     = 229;
+  public static final int SGN            = 225;
+  public static final int PROG_NEW       = 226;
+  public static final int PROG_FINISH    = 227;
+  public static final int PROG_RUN       = 228;
+  public static final int PROG_PURGE     = 229;
+  public static final int PROG_CLEAR     = 230;
 
   // These commands are handled from CalcCanvas
   public static final int AVG_DRAW       = 300;
@@ -243,11 +244,15 @@ public final class CalcEngine
   public static final int LOG_DRAW       = 302;
   public static final int EXP_DRAW       = 303;
   public static final int POW_DRAW       = 304;
-  public static final int PROG_DRAW      = 305; // Uses 5 consecutive slots
+  public static final int PROG_DRAW      = 305; // Uses 9 consecutive slots
   //public static final int PROG_DRAW2   = 306;
   //public static final int PROG_DRAW3   = 307;
   //public static final int PROG_DRAW4   = 308;
   //public static final int PROG_DRAW5   = 309;
+  //public static final int PROG_DRAW6   = 310;
+  //public static final int PROG_DRAW7   = 311;
+  //public static final int PROG_DRAW8   = 312;
+  //public static final int PROG_DRAW9   = 313;
 
   // Special commands
   public static final int FINALIZE       = 500;
@@ -258,6 +263,7 @@ public final class CalcEngine
   private static final int STAT_SIZE     = 13;
   private static final int STATLOG_SIZE  = 64;
   private static final int FINANCE_SIZE  = 5;
+  private static final int NUM_PROGS     = 9;
 
   private static final Real Real180 = new Real(180);
   private static final String empty = "";
@@ -321,8 +327,7 @@ public final class CalcEngine
   public boolean progRunning;
   public static final int PROGLABEL_SIZE = 5;
   public static final String emptyProg = "< >";
-  public String [] progLabels =
-    { emptyProg, emptyProg, emptyProg, emptyProg, emptyProg };
+  public String [] progLabels;
   private short [][] prog;
   private int progCounter;
   private int currentProg;
@@ -353,6 +358,10 @@ public final class CalcEngine
     monitorMode = MONITOR_NONE;
     monitorSize = 0;
     clearMonitorStrings();
+
+    progLabels = new String[NUM_PROGS];
+    for (int i=0; i<NUM_PROGS; i++)
+      progLabels[i] = emptyProg;
 
     Real.accumulateRandomness(System.currentTimeMillis());
   }
@@ -651,7 +660,7 @@ public final class CalcEngine
     }
 
     // Programs
-    for (i=0; i<5; i++) {
+    for (i=0; i<NUM_PROGS; i++) {
       if (prog!=null && prog[i]!=null && prog[i].length!=0) {
         out.writeShort(PROGLABEL_SIZE*2+prog[i].length*2);
         for (j=0; j<PROGLABEL_SIZE; j++)
@@ -667,6 +676,8 @@ public final class CalcEngine
   public void restoreState(DataInputStream in) throws IOException {
     int length,i,j;
     byte [] realBuf = new byte[12];
+
+    repaint(-1); // Better do it now in case of IOException
 
     // Stack
     length = in.readShort();
@@ -783,7 +794,7 @@ public final class CalcEngine
     in.skip(length);
 
     char [] label = new char[PROGLABEL_SIZE];
-    for (i=0; i<5; i++) {
+    for (i=0; i<NUM_PROGS; i++) {
       length = in.readShort();
       if (length >= PROGLABEL_SIZE*2+2) {
         int labelLen=0;
@@ -794,7 +805,7 @@ public final class CalcEngine
         }
         progLabels[i] = new String(label,0,labelLen);
         if (prog == null)
-          prog = new short[5][];
+          prog = new short[NUM_PROGS][];
         prog[i] = new short[(length-PROGLABEL_SIZE*2)/2];
         for (j=0; j<prog[i].length; j++)
           prog[i][j] = in.readShort();
@@ -802,8 +813,6 @@ public final class CalcEngine
       }
       in.skip(length);
     }
-
-    repaint(-1);
   }
 
   public int numRepaintLines() {
@@ -1449,6 +1458,11 @@ public final class CalcEngine
       case TO_RAD:  x.mul(Real.PI); x.div(Real180); break;
       case TO_DHMS: x.toDHMS(); break;
       case TO_H:    x.fromDHMS(); break;
+      case SGN:
+        rTmp.assign(Real.ONE);
+        rTmp.copysign(x);
+        x.assign(rTmp);
+        break;
       case DHMS_TO_UNIX:
       case UNIX_TO_DHMS:
         rTmp.assign(17268672);
@@ -2711,7 +2725,7 @@ public final class CalcEngine
     if (prog == null || prog[currentProg] == null ||
         (cmd >= AVG_DRAW && cmd <= POW_DRAW) ||
         (cmd >= PROG_NEW && cmd <= PROG_CLEAR) ||
-        (cmd >= PROG_DRAW && cmd <= PROG_DRAW+4))
+        (cmd >= PROG_DRAW && cmd < PROG_DRAW+NUM_PROGS))
       return; // Such commands cannot be recorded
     if (progCounter == prog[currentProg].length) {
       short [] prog2 = new short[progCounter*2];
@@ -2790,6 +2804,7 @@ public final class CalcEngine
       case NOT:
       case XCHGMEM:
       case TO_DEG: case TO_RAD: case TO_DHMS: case TO_H:
+      case SGN:
       case DHMS_TO_UNIX: case UNIX_TO_DHMS:
       case DHMS_TO_JD: case JD_TO_DHMS:
       case DHMS_TO_MJD: case MJD_TO_DHMS:
@@ -3261,7 +3276,7 @@ public final class CalcEngine
         progRecording = true;
         currentProg = param;
         if (prog == null)
-          prog = new short[5][];
+          prog = new short[NUM_PROGS][];
         prog[currentProg] = new short[10];
         progCounter = 0;
         break;

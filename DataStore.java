@@ -70,4 +70,20 @@ public final class DataStore
     } catch (Exception e) {
     }
   }
+
+  public void destroy() {
+    try {
+      String recordStoreName = rs.getName();
+      try {
+        // Close repeatedly until an exception is thrown
+        for (;;)
+          rs.closeRecordStore();
+      } catch (Exception e) {
+        // Ignore this
+      }
+      RecordStore.deleteRecordStore(recordStoreName);
+    } catch (Exception e) {
+      System.out.println(e);
+    }
+  }
 }

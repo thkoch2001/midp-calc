@@ -19,11 +19,12 @@
   <li>Financial
   <li>Programmable
   <li>Graphing
+  <li>Complex arithmetic
   <li>RPN
 </ul>
 </font></b>
 
-<b>Current version: 2.00</b> <a
+<p><b>Current version: 2.01</b> <a
 href="Calc-log.html">change-log</a><br>
 
 <b>Copyright: 2003-2004 Roar Lauritzsen</b>, email: <a
@@ -167,7 +168,7 @@ of the devices that have not been tested and also devices not on my list.
     <dt><a href="Calc.html#Prog">Programming</a></dt>
     <dt><a href="Calc.html#Base">Base</a></dt>
     <dt><a href="Calc.html#Monitoring">Monitoring</a></dt>
-    <dt><a href="Calc.html#Fonts">Fonts</a></dt>
+    <dt><a href="Calc.html#System">System</a></dt>
   </dl></dd>
 </dl></dd>
 <dt><a href="Calc.html#Notes">Notes</a></dt>
@@ -184,10 +185,11 @@ of the devices that have not been tested and also devices not on my list.
 
 <h2><a id="Keys" name="Keys">Keys</a></h2>
 
-To be able to navigate efficiently through function menus, Calc is
-best operated on a phone with a 5-way "joystick" or equivalent arrow
-keys, plus a "clear" key, 12 number keys and two soft-keys (those
-configurable keys below the display). The keys are mapped as follows:
+<em>Read this section at least.</em> To be able to navigate
+efficiently through operation menus, Calc is best operated on a phone
+with a 5-way "joystick" or equivalent arrow keys, plus a "clear" key,
+12 number keys and two soft-keys (those configurable keys below the
+display). The keys are mapped as follows:
 
 <ul>
   <li><b>0-9</b>: The number keys are used to enter numbers and as shortcuts
@@ -196,12 +198,12 @@ etc). In hexadecimal mode, you can enter the digits A-F by holding down the
 keys 1-6 until the digit changes. 
   <li><b>*</b> : This key is used to enter the decimal point.
   <li><b>#</b> : This key is used to enter a minus sign or an "e" for
-  exponent. In HEX/OCT/BIN mode, the same key can be used to enter a
+  exponent. (In HEX/OCT/BIN mode, the same key can be used to enter a
   "/". This sign is used to prefix a negative two's complement number
   and should be read as "an infinite number of 1-bits preceding the
   number". Pressing the # key again exchanges the "/" with a normal
   minus sign, indicating the input of a normal negative number
-  which will be converted to two's complement on ENTER.
+  which will be converted to two's complement on ENTER.)
   <li><b>ENTER</b>: This key finishes the currently entered number and puts
   it on the stack. If no number is being entered, the lowest element
   on the stack is duplicated.
@@ -215,6 +217,11 @@ keys 1-6 until the digit changes.
   press the middle of the joystick first). Sub-menus are entered
   by further navigation with the joystick until an actual operation is
   activated.
+  <li><b>Hangup/Back</b>: All devices have some key that exits the
+  application, most often it is called "hangup", "back", "return" or
+  has a symbol of some sort to this effect. On some devices,
+  e.g. K700i, you must press and hold the button for several
+  seconds. The state of the calculator will be saved.
 </ul>
 
 <h2><a id="Setup" name="Setup">Setup</a></h2>
@@ -222,8 +229,8 @@ keys 1-6 until the digit changes.
 To be able to use Calc on devices with fewer keys than the T610 (most
 Nokias, that is), a couple of setup dialogs <em>may</em> appear the
 first time Calc is started. If you don't answer these dialogs
-correctly the first time, I'm afraid the only option is to delete the
-application and download it again (I may fix this in the future).<br>
+correctly the first time, you can get to the setup dialogs again using
+the "reset" command.<br>
 
 <br>
 First, to make sure that "ENTER" and "+" is immediately available,
@@ -400,7 +407,7 @@ this number menu is active, you can access the numbers 0-9 directly
 using the number keys.<br>
 
 <br>Since the middle joystick button can be a bit difficult to press,
-care has been taken not to place the most used functions and sub-menus
+care has been taken not to place the most used operations and sub-menus
 on the middle button. Pressing "clear" while navigating the menus
 backtracks up one level of menus.
 
@@ -692,6 +699,8 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
     to the format ddddHH.MMSS, where dddd is the number of days. 
       <li><b>now</b>: Get current date and time in DH.MS
     format. Useful to remind yourself how this format is
+      <li><b>time</b>: Get current time only in DH.MS format
+      <li><b>date</b>: Get current date only in DH.MS format
       <li><b>DH.MS+</b>: Add x and y as date, hours, minutes and
     seconds
       <li><b>DH.MS&rarr;unix</b>: Convert from yyyymmddHH.MMSS format
@@ -748,11 +757,11 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
       <li>Energy
       <ul>
         <li><b>J/cal</b>: Enter the energy of one international calorie in
-          Joules &#8773;&nbsp;4.1868
+          Joules &asymp;&nbsp;4.1868
         <li><b>J/Btu</b>: Enter the energy of one British thermal unit in
-          Joules &#8773;&nbsp;1055.06
+          Joules &asymp;&nbsp;1055.06
         <li><b>W/hp</b>: Enter the value of one horsepower in Watts
-          &#8773;&nbsp;745.7
+          &asymp;&nbsp;745.7
       </ul>
       <li>Temperature
       <ul>
@@ -774,7 +783,7 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
         <li><b>c</b>: Enter the speed of light in a vacuum
           &equiv;&nbsp;299792458&nbsp;m/s
         <li><b>h</b>: Enter the Planck constant
-          &#8773;&nbsp;6.6260693·10<sup>-34</sup>&nbsp;J&nbsp;s
+          &asymp;&nbsp;6.6260693·10<sup>-34</sup>&nbsp;J&nbsp;s
         <li><b>µ<sub>0</sub></b>: Enter the permeability of a vacuum,
           &equiv;&nbsp;1.256637061435917...·10<sup>-6</sup>&nbsp;N/A²
         <li><b>&#949;<sub>0</sub></b>: Enter the permittivity of a vacuum
@@ -783,42 +792,42 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
       <li>Chemical
       <ul>
         <li><b>N<sub>A</sub></b>: Enter the Avogadro constant
-          &#8773;&nbsp;6.0221415·10<sup>23</sup>&nbsp;mol<sup>-1</sup>
+          &asymp;&nbsp;6.0221415·10<sup>23</sup>&nbsp;mol<sup>-1</sup>
         <li><b>R</b>: Enter the molar gas constant
-          &#8773;&nbsp;8.314472&nbsp;J/mol&nbsp;K
+          &asymp;&nbsp;8.314472&nbsp;J/mol&nbsp;K
         <li><b>k</b>: Enter the Boltzmann constant
-          &#8773;&nbsp;1.3806505·10<sup>-23</sup>&nbsp;J/K
+          &asymp;&nbsp;1.3806505·10<sup>-23</sup>&nbsp;J/K
         <li><b>F</b>: Enter the Faraday constant
-          &#8773;&nbsp;96485.3383&nbsp;C/mol
+          &asymp;&nbsp;96485.3383&nbsp;C/mol
       </ul>
       <li>Physical and electromagnetic
       <ul>
         <li><b>&#945;</b>: Enter the fine-structure constant
-          &#8773;&nbsp;0.007297352568
+          &asymp;&nbsp;0.007297352568
         <li><b>R<sub>&infin;</sub></b>: Enter the Rydberg constant
-          &#8773;&nbsp;10973731.568525&nbsp;m<sup>-1</sup>
+          &asymp;&nbsp;10973731.568525&nbsp;m<sup>-1</sup>
         <li><b>a<sub>0</sub></b>: Enter the Bohr radius
-          &#8773;&nbsp;5.291772108·10<sup>-11</sup>&nbsp;m
+          &asymp;&nbsp;5.291772108·10<sup>-11</sup>&nbsp;m
         <li><b>µ<sub>B</sub></b>: Enter the Bohr magneton
-          &#8773;&nbsp;9.27400949·10<sup>-24</sup>&nbsp;J/T
+          &asymp;&nbsp;9.27400949·10<sup>-24</sup>&nbsp;J/T
       </ul>
       <li>Atomic
       <ul>
         <li><b>e</b>: Enter the elementary charge
-          &#8773;&nbsp;1.60217653·10<sup>-19</sup>&nbsp;C
+          &asymp;&nbsp;1.60217653·10<sup>-19</sup>&nbsp;C
         <li><b>m<sub>e</sub></b>: Enter the mass of an electron
-          &#8773;&nbsp;9.1093826·10<sup>-31</sup>&nbsp;kg
+          &asymp;&nbsp;9.1093826·10<sup>-31</sup>&nbsp;kg
         <li><b>m<sub>p</sub></b>: Enter the mass of a proton
-          &#8773;&nbsp;1.67262171·10<sup>-27</sup>&nbsp;kg
+          &asymp;&nbsp;1.67262171·10<sup>-27</sup>&nbsp;kg
         <li><b>m<sub>n</sub></b>: Enter the mass of a neutron
-          &#8773;&nbsp;1.67492728·10<sup>-27</sup>&nbsp;kg
+          &asymp;&nbsp;1.67492728·10<sup>-27</sup>&nbsp;kg
         <li><b>m<sub>u</sub></b>: Enter the unified atomic mass unit
-          &#8773;&nbsp;1.66053886·10<sup>-27</sup>&nbsp;kg
+          &asymp;&nbsp;1.66053886·10<sup>-27</sup>&nbsp;kg
       </ul>
       <li>Astronomical
       <ul>
         <li><b>G</b>: Enter the Newtonian constant of gravitation
-          &#8773;&nbsp;6.6742·10<sup>-11</sup>&nbsp;N&nbsp;m²/kg²
+          &asymp;&nbsp;6.6742·10<sup>-11</sup>&nbsp;N&nbsp;m²/kg²
         <li><b>g<sub>n</sub></b>: Enter the standard acceleration of gravity
           &equiv;&nbsp;9.80665&nbsp;m/s²
         <li><b>A.U.</b>: Enter the length of one astronomical unit
@@ -868,7 +877,8 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
   <li><a id="Prog" name="Prog">Programming</a> <a
     href="Calc.html#ProgNote"><b>(*)</b></a>
   <ul>
-    <li><b>new</b>: Start entering a new program
+    <li><b>new</b>: Start entering a new program. If you pick a used
+  entry in the menu that program will be overwritten
     <li><b>run</b>: Run a program
     <li><b>draw</b>: Draw graph using a program. Prior to using this
   operation, you should push min-x, max-x, min-y and max-y on the
@@ -889,15 +899,18 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
       <li><b>x&lt;=y?</b>: Push 1 on stack if x is less than or equal to y, otherwise 0
       <li><b>x&gt;y?</b>: Push 1 on stack if x is greater than y, otherwise 0
     </ul>
-    <li>Utility functions for programming
+    <li>Utility operations for programming
     <ul>
       <li><b>abs</b>: Calculate absolute value of x
       <li><b>max</b>: Select maximum value of x and y
       <li><b>min</b>: Select minimum value of x and y
       <li><b>select</b>: Select y or z based on x, i.e. calculate
-  x·y+(1-x)·z. With this you can e.g. simulate "max" by pressing "x&gt;y?", "select"
+  x·y+(1-x)·z. With this you can e.g. simulate "max" by pressing
+  "x&gt;y?", "select"
+      <li><b>sgn</b>: Keep only the sign of x as ±1. With this you can
+  e.g. simulate "abs" by pressing "ENTER", "sgn", "*". Also ±0 becomes ±1
     </ul>
-    <li>Memory functions for programming
+    <li>Indirect memory operations for programming
     <ul>
       <li><b>RCL[x]</b>: Recall memory location indirectly, using x as index (must be between 0 and 15).
       <li><b>STO[x]</b>: Store <b>y</b> in memory location indirectly, using
@@ -922,14 +935,22 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
     <li><b>financial</b>: Monitor financial registers
     <li><b>off</b>: Turn monitoring off
   </ul>
-  <li><a id="Fonts" name="Fonts">Fonts (this menu is available if you
-  have a color screen, otherwise system font is used)</a>
+  <li><a id="System" name="System">System menu</a>
   <ul>
-    <li><b>small</b>: Set small font
-    <li><b>medium</b>: Set medium font
-    <li><b>large</b>: Set large font
-    <li><b>system</b>: Set system font (should be mono-spaced, but this is not
-  the case on T610)
+    <li>Fonts (this menu is available if you have a color screen, otherwise system font is used)
+    <ul>
+      <li><b>small</b>: Set small font
+      <li><b>medium</b>: Set medium font
+      <li><b>large</b>: Set large font
+      <li><b>system</b>: Set system font (should be mono-spaced, but
+  this is not the case on T610)
+    </ul>
+    <li><b>exit</b>: Exit the application. The the stack, memory,
+  statistics, finance and programs will be saved until next time
+    <li><b>reset</b>: Reset the application and exit. All information
+  saved about the stack, memory, etc, will be erased. You will be
+  asked for a confirmation. Use this operation if you have gone through
+  the setup dialogs and picked the wrong settings
   </ul>
 </ul>
 
@@ -1031,7 +1052,7 @@ an 8% annual rate is 8/12=0.6666%.<br>
 mathematically correct, but since the banks use this procedure it is
 wise to do it also, otherwise your numbers will not agree with those
 of the bank. To calculate the nominal monthly interest rate from an
-effective annual interest rate, use the "y%/x" function, which
+effective annual interest rate, use the "y%/x" operation, which
 actually calculates 100·(<sup>x</sup>&#8730;<span
 style="text-decoration: overline;">1+y/100</span>&nbsp;-&nbsp;1).]<br>
 
@@ -1157,7 +1178,7 @@ The constants were found at <a href="http://physics.nist.gov/cuu/Constants">http
 and the metric conversions at <a
 href="http://www.free-definition.com">http://www.free-definition.com</a>.
 Constants given using "&equiv;" are as accurate as the internal precision
-of Calc. Constants given using "&#8773;" are not precisely known by
+of Calc. Constants given using "&asymp;" are not precisely known by
 science, but are as up-to-date as the CODATA internationally
 recommended values of 2002.
 
@@ -1190,9 +1211,11 @@ piece of paper.</br>
 
 <br>
 The programming mode offers no control flow (if-statements) or looping
-(repeat-statements). However, some conditional, utility and memory
-indexing operations have been added. These operations can help
-accomplish complicated programs. For instance, programming <a
+(repeat-statements). However, some conditional, utility and indirect
+memory operations have been added. These operations are not needed in
+normal, interactive mode since you can easily do them "manually", but
+in programming mode they can help accomplish complicated programs. For
+instance, programming <a
 href="http://mathworld.wolfram.com/CollatzProblem.html">Collatz
 Problem</a>; {If x is even, the next number in the sequence is x/2,
 otherwise it is 3x+1}. This program needs an if-statement, but you can
@@ -1217,7 +1240,10 @@ While drawing a graph, Calc will continue calculating new graph points
 and improving the graph indefinitely, until "Back" is pressed. Do not
 leave the program in this state, it will eat your battery. Graph
 drawing and calling other programs recursively cannot be
-programmed.<br>
+programmed, as well as commands on the "System menu".<br>
+
+<br>
+Here are some <a href="Calc-prog.html">programming examples</a>.<br>
 
 <h3><a id="BinaryNote" name="BinaryNote">Binary representation</a></h3>
 
@@ -1253,4 +1279,3 @@ than their internal representation.<br>
 
 </body>
 </html>
-

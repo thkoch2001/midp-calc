@@ -14,6 +14,7 @@ public final class Calc
   public DataStore dataStore;
 
   public TextBox newProgram;
+  public Form resetConfirmation;
   public Command okCommand;
   public Command cancelCommand;
   public int whichProgram;
@@ -31,20 +32,22 @@ public final class Calc
   }
   
   public void startApp() {
-    DataInputStream in = null;
-    if (dataStore != null)
-      in = dataStore.startReading();
-    if (in != null) {
-      try {
-        restoreSetup(in);
-        screen = new CalcCanvas(this,in);
-      } catch (IOException ioe) {
-      }
-    } else {
-      setup = new SetupCanvas(this);
-      if (!setup.isFinished()) {
-        display.setCurrent(setup);
-        return;
+    if (screen == null) {
+      DataInputStream in = null;
+      if (dataStore != null)
+        in = dataStore.startReading();
+      if (in != null) {
+        try {
+          restoreSetup(in);
+          screen = new CalcCanvas(this,in);
+        } catch (IOException ioe) {
+        }
+      } else {
+        setup = new SetupCanvas(this);
+        if (!setup.isFinished()) {
+          display.setCurrent(setup);
+          return;
+        }
       }
     }
     displayScreen();
@@ -67,8 +70,10 @@ public final class Calc
     if (newProgram == null) {
       newProgram = new TextBox("New program", "", CalcEngine.PROGLABEL_SIZE,
                                TextField.ANY);
-      okCommand = new Command("Ok", Command.OK, 1);
-      cancelCommand = new Command("Cancel", Command.CANCEL, 1);
+      if (okCommand == null) {
+        okCommand = new Command("Ok", Command.OK, 1);
+        cancelCommand = new Command("Cancel", Command.CANCEL, 1);
+      }
       newProgram.addCommand(okCommand);
       newProgram.addCommand(cancelCommand);
       newProgram.setCommandListener(this);
@@ -78,12 +83,37 @@ public final class Calc
     display.setCurrent(newProgram);
   }
 
-  public void commandAction(Command c, Displayable d) {
-    if (c == okCommand) {
-      screen.calc.progLabels[whichProgram] = newProgram.getString();
-      screen.calc.command(CalcEngine.PROG_NEW, whichProgram);
+  public void resetRequested() {
+    if (resetConfirmation == null) {
+      resetConfirmation = new Form("Reset?");
+      resetConfirmation.append("Are you sure you want to reset and exit, erasing all data?");
+      if (okCommand == null) {
+        okCommand = new Command("Ok", Command.OK, 1);
+        cancelCommand = new Command("Cancel", Command.CANCEL, 1);
+      }
+      resetConfirmation.addCommand(okCommand);
+      resetConfirmation.addCommand(cancelCommand);
+      resetConfirmation.setCommandListener(this);
     }
-    displayScreen();
+    display.setCurrent(resetConfirmation);
+  }
+
+  public void commandAction(Command c, Displayable d) {
+    if (d == newProgram) {
+      if (c == okCommand) {
+        screen.calc.progLabels[whichProgram] = newProgram.getString();
+        screen.calc.command(CalcEngine.PROG_NEW, whichProgram);
+      }
+      displayScreen();
+    } else if (d == resetConfirmation) {
+      if (c == okCommand) {
+        if (dataStore != null)
+          dataStore.destroy();
+        notifyDestroyed();
+      } else {
+        displayScreen();
+      }
+    }
   }
     
   public void pauseApp() {

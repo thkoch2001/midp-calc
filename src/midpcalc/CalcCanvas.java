@@ -59,12 +59,14 @@ public final class CalcCanvas
 //                       -> draw    -> a b c d e
 //               prog[2] -> finish
 //                       -> cond    -> x=y? x!=y? x<y? x<=y? x>y?
-//                       -> util    -> abs max min select
+//                       -> util    -> abs max min select sgn
 //                       -> purge
-//            -> mem     -> RCL[x] STO[x] STO+[x]
+//                       -> mem     -> RCL[x] STO[x] STO+[x]
 //            -> base    -> dec    hex    oct    bin
 //            -> monitor -> mem    stat   finance                 ( -> # )
-//            -> font    -> small  medium large  system
+//            -> sys     -> font    -> small  medium large  system
+//                       -> exit
+//                       -> reset
 //
 // * replaces math/trig in hex/oct/bin mode
 //
@@ -177,6 +179,7 @@ public final class CalcCanvas
   }
 
   private static final int EXIT = -999;
+  private static final int RESET = -998;
   private static final int FONT_SMALL  = -50+GFont.SMALL;
   private static final int FONT_MEDIUM = -50+GFont.MEDIUM;
   private static final int FONT_LARGE  = -50+GFont.LARGE;
@@ -328,6 +331,8 @@ public final class CalcCanvas
               null,
               new Menu("MJD»DH.MS",CalcEngine.MJD_TO_DHMS),
             }),
+            new Menu("time",CalcEngine.TIME),
+            new Menu("date",CalcEngine.DATE),
           }),
         }),
         new Menu("metric",new Menu [] {
@@ -433,11 +438,15 @@ public final class CalcCanvas
         new Menu("mem",CalcEngine.MONITOR_MEM,Menu.NUMBER_REQUIRED),
         new Menu("off",CalcEngine.MONITOR_NONE),
       }),
-      new Menu("font",new Menu[] {
-        new Menu("medium",FONT_MEDIUM),
-        new Menu("small",FONT_SMALL),
-        new Menu("large",FONT_LARGE),
-        new Menu("system",FONT_SYSTEM),
+      new Menu("sys",new Menu[] {
+        new Menu("font",new Menu[] {
+          new Menu("medium",FONT_MEDIUM),
+          new Menu("small",FONT_SMALL),
+          new Menu("large",FONT_LARGE),
+          new Menu("system",FONT_SYSTEM),
+        }),
+        new Menu("exit",EXIT),
+        new Menu("reset",RESET),
       }),
     }),
   });
@@ -595,6 +604,7 @@ public final class CalcCanvas
       new Menu("max",CalcEngine.MAX),
       new Menu("min",CalcEngine.MIN),
       new Menu("select",CalcEngine.SELECT),
+      new Menu("sgn",CalcEngine.SGN),
     }),
     new Menu("purge",CalcEngine.PROG_PURGE),
     new Menu("mem",new Menu[] {
@@ -609,7 +619,14 @@ public final class CalcCanvas
     new Menu("",NUMBER_1),
     new Menu("",NUMBER_2),
     new Menu("",NUMBER_3),
-    new Menu("",NUMBER_4),
+    new Menu("more",Menu.TITLE_SKIP,new Menu[] {
+      new Menu("",NUMBER_4),
+      new Menu("",NUMBER_5),
+      new Menu("",NUMBER_6),
+      new Menu("",NUMBER_7),
+      new Menu("",NUMBER_8),
+      // Remember to set CalcEngine.NUM_PROGS accordingly
+    }),
   });
 
   private static final int menuColor [] = {
@@ -653,7 +670,7 @@ public final class CalcCanvas
       numberFontStyle = GFont.SYSTEM;
       // Now, remove the font menu.
       // !!! NB !!! Beware if you change the menu layout
-      menu.subMenu[4].subMenu[4] = null;
+      menu.subMenu[4].subMenu[4].subMenu[0] = null;
     }
 
     enter = new Command(
@@ -726,7 +743,7 @@ public final class CalcCanvas
     calc.setMaxWidth(nDigits);
   }
 
-  public void drawModeIndicators(Graphics g) {
+  public void drawModeIndicators(Graphics g, boolean toggleRun) {
     g.setColor(0xffffff);
     g.fillRect(0,0,getWidth(),smallMenuFont.getHeight()-1);
     g.setColor(0);
@@ -772,14 +789,15 @@ public final class CalcCanvas
 
     if (calc.progRecording)
       g.drawString("PRG",x,0,g.TOP|g.LEFT);
-    else if (calc.progRunning && evenFrame)
+    else if (calc.progRunning && (evenFrame || !toggleRun))
       g.drawString("RUN",x,0,g.TOP|g.LEFT);
-    evenFrame = !evenFrame;
+    if (toggleRun)
+      evenFrame = !evenFrame;
   }
 
   private void clearScreen(Graphics g) {
     // Clear screen and draw mode indicators
-    drawModeIndicators(g);
+    drawModeIndicators(g,false);
     g.setColor(0);
     g.fillRect(0,smallMenuFont.getHeight()-1,getWidth(),
                getHeight()-smallMenuFont.getHeight()+1);
@@ -1219,6 +1237,10 @@ public final class CalcCanvas
         // Open submenu
         menuStackPtr++;
         menuStack[menuStackPtr] = subItem;
+        // Set correct labels
+        if (subItem == progMenu.subMenu[4])
+          for (int i=0; i<5; i++)
+            progMenu.subMenu[4].subMenu[i].label = calc.progLabels[i+4];
         numRepaintLines = 0; // Force repaint of menu
       } else if ((subItem.flags & Menu.SUBMENU_REQUIRED)!=0) {
         // Open number/finance/program submenu
@@ -1228,7 +1250,7 @@ public final class CalcCanvas
           progMenu;
         // Set correct labels
         if (sub == progMenu)
-          for (int i=0; i<5; i++)
+          for (int i=0; i<4; i++)
             progMenu.subMenu[i].label = calc.progLabels[i];
         menuCommand = subItem.command; // Save current command
         sub.label = subItem.label; // Set correct label
@@ -1240,6 +1262,8 @@ public final class CalcCanvas
         if (command == EXIT) {
           // Internal exit command
           midlet.exitRequested();
+        } else if (command == RESET) {
+          midlet.resetRequested();
         } else if (command >= FONT_SMALL && command <= FONT_SYSTEM) {
           // Internal font command
           setNumberFont(command-FONT_SMALL);
