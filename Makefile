@@ -1,8 +1,8 @@
 VERSION = 2.01
 TARGETS = Calc.jar Calc.jad
 
-WTK_HOME = /home/roarl/ant/WTK104
-JFLAGS = --bootclasspath=$(WTK_HOME)/lib/midpapi.zip -Wall -C -d . -O2
+WTK_HOME = /home/roarl/WTK104
+JFLAGS = --bootclasspath=$(WTK_HOME)/lib/midpapi.zip --encoding="ISO 8859-1" -Wall -C -d . -O2
 #JFLAGS = -bootclasspath $(WTK_HOME)/lib/midpapi.zip -d . -O
 
 JAVAFILES  = Calc.java \
@@ -52,7 +52,7 @@ Calc.jar: $(JAVAFILES) Calc.jad Calc.png
 #	javac $(JFLAGS) $(JAVAFILES)
 	cp Calc.png ral/
 #	jar cf Calc.jar ral/*
-	ant -buildfile build.xml -Dwtk.home=${WTK_HOME} make-jar
+	ant -buildfile build.xml -lib $(WTK_HOME)/lib -Dwtk.home=${WTK_HOME} make-jar
 
 clean:
 	rm -rf $(TARGETS) ral Real.java GFontBase.java pgm2java *~ .\#*
