@@ -11,7 +11,7 @@
 //
 // Output:
 //   String toString()
-//   String toString(int)
+//   String toString(int base)
 //   int toInteger()
 //
 // Binary operators:
@@ -71,7 +71,13 @@
 // Utility functions:
 //   copysign(Real)
 //   nextafter(Real)
-//   scalb(int)
+//   scalbn(int)
+//
+// Make special values:
+//   makeZero(int sign)
+//   makeInfinity(int sign)
+//   makeNan()
+//   makeExp10(int power)
 //
 // Query abnormal states:
 //   boolean isZero()
@@ -83,8 +89,9 @@
 //   ZERO    = 0
 //   ONE     = 1
 //   TWO     = 2
-//   HALF    = 1/2
+//   FIVE    = 5
 //   TEN     = 10
+//   HALF    = 1/2
 //   THIRD   = 1/3
 //   SQRT2   = sqrt(2)
 //   SQRT1_2 = sqrt(1/2)
@@ -114,8 +121,9 @@ public final class Real
   public static final Real ZERO   = new Real(0,0x00000000,0x0000000000000000L);
   public static final Real ONE    = new Real(0,0x40000000,0x4000000000000000L);
   public static final Real TWO    = new Real(0,0x40000001,0x4000000000000000L);
-  public static final Real HALF   = new Real(0,0x3fffffff,0x4000000000000000L);
+  public static final Real FIVE   = new Real(0,0x40000002,0x5000000000000000L);
   public static final Real TEN    = new Real(0,0x40000003,0x5000000000000000L);
+  public static final Real HALF   = new Real(0,0x3fffffff,0x4000000000000000L);
   public static final Real THIRD  = new Real(0,0x3ffffffe,0x5555555555555555L);
 //public static final Real DIV2_3 = new Real(0,0x3fffffff,0x5555555555555555L);
   public static final Real SQRT2  = new Real(0,0x40000000,0x5a827999fcef3242L);
@@ -202,7 +210,7 @@ public final class Real
     mantissa = 0x4000000000000000L;
     exponent = 0x80000000;
   }
-  
+
   public boolean isZero() {
     return (mantissa == 0 && exponent == 0);
   }
@@ -320,7 +328,7 @@ public final class Real
     return compare(a) >= 0;
   }
 
-  public void scalb(int n) {
+  public void scalbn(int n) {
     if (isZero() || isInfinity() || isNan())
       return;
     exponent += n;
@@ -371,8 +379,10 @@ public final class Real
     if (exponent < 0x40000000) {
       if (sign == 0)
         makeZero(sign);
-      else
-        assign(ONE);
+      else {
+        exponent = ONE.exponent;
+        mantissa = ONE.mantissa;
+      }
       return;
     }
     int shift = 0x4000003e-exponent;
@@ -460,6 +470,25 @@ public final class Real
     return (sign==0) ? (int)(mantissa>>>shift) : -(int)(mantissa>>>shift);
   }
 
+  private static Real subTmp = new Real();
+  private static Real recipTmp = new Real();
+  private static Real recipTmp2 = new Real();
+  private static Real divTmp = new Real();
+  private static Real rsTmp = new Real();
+  private static Real rsTmp2 = new Real();
+  private static Real sqrtTmp = new Real();
+  private static Real expTmp = new Real();
+  private static Real expTmp2 = new Real();
+  private static Real expTmp3 = new Real();
+  private static Real lnTmp = new Real();
+  private static Real lnTmp2 = new Real();
+  private static Real lnTmp3 = new Real();
+  private static Real tmp1 = new Real();
+  private static Real tmp2 = new Real();
+  private static Real tmp3 = new Real();
+  private static Real tmp4 = new Real();
+  private static Real tmp5 = new Real();
+  
   public void add(final Real a) {
     if (isNan() || a.isNan()) {
       makeNan();
@@ -511,8 +540,6 @@ public final class Real
       sign=0;
   }
 
-  private static Real subTmp = new Real();
-  
   public void sub(final Real a) {
     subTmp.assign(a);
     subTmp.neg();
@@ -555,9 +582,6 @@ public final class Real
     normalize();
   }
 
-  private static Real recipTmp = new Real();
-  private static Real recipTmp2 = new Real();
-  
   private void recipInternal() {
     // Calculates recipocal of normalized Real, not zero, nan or infinity
 
@@ -605,8 +629,6 @@ public final class Real
     recipInternal();
   }
 
-  private static Real divTmp = new Real();
-  
   public void div(final Real a) {
     if (isNan() || a.isNan()) {
       makeNan();
@@ -660,9 +682,6 @@ public final class Real
     normalize();
   }
   
-  private static Real rsTmp = new Real();
-  private static Real rsTmp2 = new Real();
-
   private void rsqrtInternal() {
     // Calculates recipocal square root of normalized Real,
     // not zero, nan or infinity
@@ -691,7 +710,7 @@ public final class Real
       sqr();
       mul(rsTmp);
       add(ONE);
-      scalb(-1);
+      scalbn(-1);
       mul(rsTmp2);
       add(rsTmp2);
     }
@@ -715,8 +734,6 @@ public final class Real
 
     rsqrtInternal();
   }
-
-  private static Real sqrtTmp = new Real();
 
   public void sqrt() {
     if (isNan())
@@ -746,19 +763,13 @@ public final class Real
       sign = s;
   }
 
-  private static Real hypotTmp = new Real();
-
   public void hypot(final Real a) {
-    hypotTmp.assign(a);
-    hypotTmp.sqr();
+    tmp1.assign(a);
+    tmp1.sqr();
     sqr();
-    add(hypotTmp);
+    add(tmp1);
     sqrt();
   }
-
-  private static Real expTmp = new Real();
-  private static Real expTmp2 = new Real();
-  private static Real expTmp3 = new Real();
 
   private void exp2Internal() {
     expTmp.assign(this);
@@ -781,15 +792,26 @@ public final class Real
     //  e  =   1  +  x  +  ----  +  ----  +  ----  +  ...
     //                      2!       3!       4!
 
+//     expTmp.assign(this);
+//     expTmp2.assign(this);
+//     add(ONE);
+//     for (int i=2; i<18; i++) {
+//       expTmp2.mul(expTmp);
+//       expTmp3.assign(i);
+//       expTmp2.div(expTmp3);
+//       add(expTmp2);
+//     }
+
     expTmp.assign(this);
-    expTmp2.assign(this);
-    add(ONE);
-    for (int i=2; i<18; i++) {
-      expTmp2.mul(expTmp);
+    expTmp2.assign(ONE);
+    for (int i=18; i>=2; i--) {
       expTmp3.assign(i);
-      expTmp2.div(expTmp3);
+      expTmp2.mul(expTmp3);
       add(expTmp2);
+      mul(expTmp);
     }
+    div(expTmp2);
+    add(ONE);
 
     exponent += exp;
   }
@@ -842,10 +864,23 @@ public final class Real
     exp2();
   }
 
-  private static Real lnTmp = new Real();
-  private static Real lnTmp2 = new Real();
-  private static Real lnTmp3 = new Real();
-
+  public void makeExp10(int power) {
+    boolean recp=false;
+    if (power < 0) {
+      power = -power; // Also works for 0x80000000
+      recp = true;
+    }
+    assign(ONE);
+    expTmp.assign(TEN);
+    for (; power!=0; power>>>=1) {
+      if ((power & 1) != 0)
+        mul(expTmp);
+      expTmp.sqr();
+    }
+    if (recp)
+      recip();
+  }
+  
   private void lnInternal() {
     // Calculates natural logarithm ln(a) for numbers between 1 and 2, using
     //
@@ -864,16 +899,14 @@ public final class Real
     lnTmp.assign(this);
     lnTmp2.assign(this);
     lnTmp2.sqr();
-
     for (int i=3; i<40; i+=2) {
-      System.out.println(this);
       lnTmp.mul(lnTmp2);
       lnTmp3.assign(i);
       lnTmp3.recipInternal();
       lnTmp3.mul(lnTmp);
       add(lnTmp3);
     }
-    scalb(1);
+    scalbn(1);
   }
   
   public void ln() {
@@ -951,8 +984,6 @@ public final class Real
     mul(LOG10E);
   }
 
-  private static Real powTmp = new Real();
-
   public void pow(final Real exp) {
     // Special cases:
     // if y is 0.0 or -0.0 then result is 1.0
@@ -993,9 +1024,9 @@ public final class Real
     if (exp.compare(ONE)==0)
       return;
     if (exp.isInfinity()) {
-      powTmp.assign(this);
-      powTmp.abs();
-      int test = powTmp.compare(ONE);
+      tmp1.assign(this);
+      tmp1.abs();
+      int test = tmp1.compare(ONE);
       if (test>0) {
         if (exp.sign==0)
           makeInfinity(0);
@@ -1018,9 +1049,9 @@ public final class Real
         else
           makeInfinity(0);
       } else {
-        powTmp.assign(exp);
-        powTmp.floor();
-        if (exp.equalTo(powTmp) && (powTmp.toInteger() & 1)!=0) {
+        tmp1.assign(exp);
+        tmp1.floor();
+        if (exp.equalTo(tmp1) && (tmp1.toInteger() & 1)!=0) {
           // Ignoring possible overflow in toInteger()
           if (exp.sign==0)
             makeZero(1);
@@ -1042,10 +1073,10 @@ public final class Real
         else
           makeZero(0);
       } else {
-        powTmp.assign(exp);
-        powTmp.floor();
-        if (exp.equalTo(powTmp)) {
-          if ((powTmp.toInteger() & 1)!=0) {
+        tmp1.assign(exp);
+        tmp1.floor();
+        if (exp.equalTo(tmp1)) {
+          if ((tmp1.toInteger() & 1)!=0) {
             // Ignoring possible overflow in toInteger()
             if (exp.sign==0)
               makeInfinity(1);
@@ -1065,10 +1096,10 @@ public final class Real
     }
     byte s=0;
     if (sign!=0) {
-      powTmp.assign(exp);
-      powTmp.floor();
-      if (exp.equalTo(powTmp)) {
-        if ((powTmp.toInteger() & 1)!=0)
+      tmp1.assign(exp);
+      tmp1.floor();
+      if (exp.equalTo(tmp1)) {
+        if ((tmp1.toInteger() & 1)!=0)
           s = 1;
       } else {
         makeNan();
@@ -1077,18 +1108,13 @@ public final class Real
       sign = 0;
     }
 
-    powTmp.assign(exp);
+    tmp1.assign(exp);
     log2();
-    mul(powTmp);
+    mul(tmp1);
     exp2();
     if (!isNan())
       sign = s;
   }
-
-  private static Real sinTmp = new Real();
-  private static Real sinTmp2 = new Real();
-  private static Real sinTmp3 = new Real();
-  private static Real sinTmp4 = new Real();
 
   private void sinInternal() {
     // Calculate sine for 0 < x < pi/4
@@ -1098,24 +1124,19 @@ public final class Real
     //  sin(x)  =   x  -  ----  +  ----  -  ----  +  ...
     //                     3!       5!       7!
 
-    sinTmp.assign(this);
-    sinTmp2.assign(this);
-    sinTmp2.sqr();
-    sinTmp2.neg();
+    tmp1.assign(this);
+    tmp2.assign(this);
+    tmp2.sqr();
+    tmp2.neg();
     for (int i=3; i<18; i+=2) {
-      sinTmp.mul(sinTmp2);
-      sinTmp3.assign(i);
-      sinTmp4.assign(i-1);
-      sinTmp3.mul(sinTmp4);
-      sinTmp.div(sinTmp3);
-      add(sinTmp);
+      tmp1.mul(tmp2);
+      tmp3.assign(i);
+      tmp4.assign(i-1);
+      tmp3.mul(tmp4);
+      tmp1.div(tmp3);
+      add(tmp1);
     }
   }
-
-  private static Real cosTmp = new Real();
-  private static Real cosTmp2 = new Real();
-  private static Real cosTmp3 = new Real();
-  private static Real cosTmp4 = new Real();
 
   private void cosInternal() {
     // Calculate cosine for 0 < x < pi/4
@@ -1125,18 +1146,18 @@ public final class Real
     //  cos(x)  =   1  -  ----  +  ----  -  ----  +  ...
     //                     2!       4!       6!
 
-    cosTmp2.assign(this);
-    cosTmp2.sqr();
-    cosTmp2.neg();
+    tmp2.assign(this);
+    tmp2.sqr();
+    tmp2.neg();
     assign(ONE);
-    cosTmp.assign(ONE);
+    tmp1.assign(ONE);
     for (int i=2; i<19; i+=2) {
-      cosTmp.mul(cosTmp2);
-      cosTmp3.assign(i);
-      cosTmp4.assign(i-1);
-      cosTmp3.mul(cosTmp4);
-      cosTmp.div(cosTmp3);
-      add(cosTmp);
+      tmp1.mul(tmp2);
+      tmp3.assign(i);
+      tmp4.assign(i-1);
+      tmp3.mul(tmp4);
+      tmp1.div(tmp3);
+      add(tmp1);
     }
   }
 
@@ -1148,9 +1169,9 @@ public final class Real
 
     // First reduce the argument to the range of 0 < x < pi*2
     div(PI2);
-    sinTmp.assign(this);
-    sinTmp.floor();
-    sub(sinTmp);
+    tmp1.assign(this);
+    tmp1.floor();
+    sub(tmp1);
     mul(PI2);
 
     // Since sin(pi*2 - x) = -sin(x) we can reduce the range 0 < x < pi
@@ -1185,28 +1206,22 @@ public final class Real
     sin();
   }
 
-  private static Real tanTmp = new Real();
-
   public void tan() {
-    tanTmp.assign(this);
-    tanTmp.cos();
+    tmp5.assign(this);
+    tmp5.cos();
     sin();
-    div(tanTmp);
+    div(tmp5);
   }
 
-  private static Real asinTmp = new Real();
-
   public void asin() {
-    asinTmp.assign(this);
+    tmp1.assign(this);
     sqr();
     neg();
     add(ONE);
     rsqrt();
-    mul(asinTmp);
+    mul(tmp1);
     atan();
   }
-
-  private static Real acosTmp = new Real();
 
   public void acos() {
     boolean negative = false;
@@ -1214,12 +1229,12 @@ public final class Real
       negative = true;
     abs();
 
-    acosTmp.assign(this);
+    tmp1.assign(this);
     sqr();
     neg();
     add(ONE);
     sqrt();
-    div(acosTmp);
+    div(tmp1);
     atan();
  
     if (negative) {
@@ -1227,10 +1242,6 @@ public final class Real
       add(PI);
     }
   }
-
-  private static Real atanTmp = new Real();
-  private static Real atanTmp2 = new Real();
-  private static Real atanTmp3 = new Real();
 
   private void atanInternal() {
     // Calculate atan for 0 < x < sqrt(2)-1
@@ -1240,17 +1251,16 @@ public final class Real
     //  atan(x)  =   x  -  ----  +  ----  -  ----  +  ...
     //                      3        5        7
 
-    atanTmp.assign(this);
-    atanTmp2.assign(this);
-    atanTmp2.sqr();
-    atanTmp2.neg();
+    tmp1.assign(this);
+    tmp2.assign(this);
+    tmp2.sqr();
+    tmp2.neg();
     for (int i=3; i<48; i+=2) {
-      System.out.println(this);
-      atanTmp.mul(atanTmp2);
-      atanTmp3.assign(i);
-      atanTmp3.recipInternal();
-      atanTmp3.mul(atanTmp);
-      add(atanTmp3);
+      tmp1.mul(tmp2);
+      tmp3.assign(i);
+      tmp3.recipInternal();
+      tmp3.mul(tmp1);
+      add(tmp3);
     }
   }
 
@@ -1264,8 +1274,8 @@ public final class Real
       return;
     }
     
-    atanTmp.assign(SQRT2);
-    atanTmp.sub(ONE);
+    tmp1.assign(SQRT2);
+    tmp1.sub(ONE);
 
     byte s = sign;
     sign = 0;
@@ -1279,14 +1289,14 @@ public final class Real
     // atan(x) = atan[ (x - a) / (1 + x*a) ] + PI/8
     // ,where a = sqrt(2)-1
     boolean sub = false;
-    if (greaterThan(atanTmp))
+    if (greaterThan(tmp1))
     {
       sub = true;
-      atanTmp2.assign(this);
-      sub(atanTmp);
-      atanTmp2.mul(atanTmp);
-      atanTmp2.add(ONE);
-      div(atanTmp2);
+      tmp2.assign(this);
+      sub(tmp1);
+      tmp2.mul(tmp1);
+      tmp2.add(ONE);
+      div(tmp2);
     }
 
     atanInternal();
@@ -1324,82 +1334,66 @@ public final class Real
     sign = s;
   }
 
-  private static Real sinhTmp = new Real();
-
   public void sinh() {
-    sinhTmp.assign(this);
-    sinhTmp.neg();
-    sinhTmp.exp();
+    tmp1.assign(this);
+    tmp1.neg();
+    tmp1.exp();
     exp();
-    sub(sinhTmp);
-    scalb(-1);
+    sub(tmp1);
+    scalbn(-1);
   }
-
-  private static Real coshTmp = new Real();
 
   public void cosh() {
-    coshTmp.assign(this);
-    coshTmp.neg();
-    coshTmp.exp();
+    tmp1.assign(this);
+    tmp1.neg();
+    tmp1.exp();
     exp();
-    add(coshTmp);
-    scalb(-1);
+    add(tmp1);
+    scalbn(-1);
   }
-
-  private static Real tanhTmp = new Real();
-  private static Real tanhTmp2 = new Real();
 
   public void tanh() {
-    tanhTmp.assign(this);
-    tanhTmp.neg();
-    tanhTmp.exp();
+    tmp1.assign(this);
+    tmp1.neg();
+    tmp1.exp();
     exp();
-    tanhTmp2.assign(this);
-    tanhTmp2.add(tanhTmp);
-    sub(tanhTmp);
-    div(tanhTmp2);
+    tmp2.assign(this);
+    tmp2.add(tmp1);
+    sub(tmp1);
+    div(tmp2);
   }
-
-  private static Real asinhTmp = new Real();
 
   public void asinh() {
-    asinhTmp.assign(this);
-    asinhTmp.sqr();
-    asinhTmp.add(ONE);
-    asinhTmp.sqrt();
-    add(asinhTmp);
+    tmp1.assign(this);
+    tmp1.sqr();
+    tmp1.add(ONE);
+    tmp1.sqrt();
+    add(tmp1);
     ln();
   }
-
-  private static Real acoshTmp = new Real();
 
   public void acosh() {
-    acoshTmp.assign(this);
-    acoshTmp.sqr();
-    acoshTmp.sub(ONE);
-    acoshTmp.sqrt();
-    add(acoshTmp);
+    tmp1.assign(this);
+    tmp1.sqr();
+    tmp1.sub(ONE);
+    tmp1.sqrt();
+    add(tmp1);
     ln();
   }
 
-  private static Real atanhTmp = new Real();
-
   public void atanh() {
-    atanhTmp.assign(this);
-    atanhTmp.neg();
-    atanhTmp.add(ONE);
+    tmp1.assign(this);
+    tmp1.neg();
+    tmp1.add(ONE);
     add(ONE);
-    div(atanhTmp);
+    div(tmp1);
     ln();
-    scalb(-1);
+    scalbn(-1);
   }
 
   public void fact() {
     //...
   }
-
-  private static Real atofTmp = new Real();
-  private static Real atofTmp2 = new Real();
 
   private void atof(final String a) {
     makeZero(0);
@@ -1416,65 +1410,149 @@ public final class Real
     }
     while (index<length && a.charAt(index)>='0' && a.charAt(index)<='9') {
       mul(TEN);
-      atofTmp.assign((int)(a.charAt(index)-'0'));
-      add(atofTmp);
+      tmp1.assign((int)(a.charAt(index)-'0'));
+      add(tmp1);
       index++;
     }
     if (index<length && a.charAt(index)=='.') {
       index++;
-      atofTmp2.assign(ONE);
+      tmp2.assign(ONE);
       while (index<length && a.charAt(index)>='0' && a.charAt(index)<='9') {
         mul(TEN);
-        atofTmp.assign((int)(a.charAt(index)-'0'));
-        add(atofTmp);
-        atofTmp2.mul(TEN);
+        tmp1.assign((int)(a.charAt(index)-'0'));
+        add(tmp1);
+        tmp2.mul(TEN);
         index++;
       }
-      div(atofTmp2);
+      div(tmp2);
     }
     while (index<length && a.charAt(index)==' ')
       index++;
     if (index<length && (a.charAt(index)=='e' || a.charAt(index)=='E')) {
       index++;
-      atofTmp2.makeZero(0);
-      byte eTmpSign = 0;
+      int exp = 0;
+      boolean expNeg = false;
       if (index<length && a.charAt(index)=='-') {
-        eTmpSign=1;
+        expNeg = true;
         index++;
       } else if (index<length && a.charAt(index)=='+') {
         index++;
       }
       while (index<length && a.charAt(index)>='0' && a.charAt(index)<='9') {
-        atofTmp2.mul(TEN);
-        atofTmp.assign((int)(a.charAt(index)-'0'));
-        atofTmp2.add(atofTmp);
+        if (exp < 400000000) // This takes care of overflows and makes inf or 0
+          exp = (exp*10)+(int)(a.charAt(index)-'0');
         index++;
       }
-      atofTmp2.sign = eTmpSign;
-      atofTmp2.exp10();
-      mul(atofTmp2);
+      if (expNeg)
+        exp = -exp;
+      tmp1.makeExp10(exp);
+      mul(tmp1);
     }
     sign = tmpSign;
   }
+
+  private void normalizeBCD() {
+    if (mantissa == 0) {
+      exponent = 0;
+      return;
+    }
+    int carry=0;
+    for (int i=0; i<64; i+=4) {
+      int d = (int)((mantissa>>>i)&0xf)+carry;
+      if (d>=10) {
+        d -= 10;
+        carry=1;
+        mantissa &= ~(0xfL<<i);
+        mantissa += (long)d<<i;
+      }
+    }
+    if (carry != 0) {
+      if ((int)(mantissa&0xf)>=5)
+        mantissa += 0x10; // Rounding
+      mantissa >>>= 4;
+      mantissa += 1L<<60;
+      exponent++;
+      if ((int)(mantissa&0xf)>=10) {
+        // Oh, no, not again!
+        normalizeBCD();
+      }
+    }
+    while ((mantissa >>> 60) == 0) {
+      mantissa <<= 4;
+      exponent--;
+    }
+  }
+
+  private void toBCD() {
+    // Convert normal nonzero finite Real to BCD format, represented by 16
+    // 4-bit decimal digits in the mantissa, and exponent as a power of 10
+    tmp1.assign(this);
+    tmp1.abs();
+    tmp2.assign(tmp1);
+    tmp1.log10();
+    tmp1.floor();
+    exponent = tmp1.toInteger();
+    tmp1.makeExp10(exponent);
+    if (tmp1.greaterThan(tmp2)) {
+      // Inaccuracy may cause log10(99999) to turn out as e.g. 5.0001
+      // (Inaccuracy the other way will be taken care of by normalizeBCD)
+      exponent--;
+      tmp1.makeExp10(exponent);
+    }
+    if (exponent > 300000000 || exponent < -300000000) {
+      // Kludge to be able to print very large and very small numbers
+      // without causing over/underflows
+      tmp1.makeExp10(exponent/2);
+      tmp2.div(tmp1); // So, divide twice by not-so-extreme numbers
+      tmp1.makeExp10(exponent-exponent/2);
+    }
+    tmp2.div(tmp1);
+    mantissa = 0;
+    for (int i=60; i>=0; i-=4) {
+      tmp1.assign(tmp2);
+      tmp1.floor();
+      mantissa += (long)tmp1.toInteger()<<i;
+      tmp2.sub(tmp1);
+      tmp2.mul(TEN);
+    }
+    if (tmp2.greaterEqual(FIVE))
+      mantissa++; // Rounding
+    normalizeBCD();
+  }
+
+  private static StringBuffer ftoaBuf = new StringBuffer(30);
 
   private String ftoa(int base) {
     if (isNan())
       return "nan";
     if (isInfinity())
-      return ((sign!=0)?"-":"")+"inf";
+      return (sign!=0)?"-inf":"inf";
     if (isZero())
-      return ((sign!=0)?"-":"")+"0";
+      return (sign!=0)?"-0":"0";
 
     if (base==16) {
       return ((sign!=0)?"-":"")+"0x"+Long.toHexString(mantissa)+" E"+
         ((exponent>=0x40000000)?"+":"")+(exponent-0x40000000);
     } else {
-      return ((sign!=0)?"-":"")+"x";
+      tmp3.assign(this);
+      tmp3.toBCD();
+      ftoaBuf.setLength(0);
+      if (tmp3.sign!=0)
+        ftoaBuf.append('-');
+      ftoaBuf.append((char)('0'+(tmp3.mantissa>>>60)));
+      ftoaBuf.append('.');
+      for (int i=56; i>=0; i-=4)
+        ftoaBuf.append((char)('0'+((tmp3.mantissa>>>i)&0xf)));
+      ftoaBuf.append(" E");
+      if (tmp3.exponent>=0)
+        ftoaBuf.append('+');
+      ftoaBuf.append(tmp3.exponent);
+      return ftoaBuf.toString();
     }
   }
 
   public String toString() {
-    return ftoa(16); // Should be 10
+    return ftoa(10);
   }
   
   public String toString(int base) {
