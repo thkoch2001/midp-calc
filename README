@@ -1,0 +1,64 @@
+This document is by far finished yet
+
+Building
+========
+
+Let me start by saying that one of the first tasks for those not fancying the
+Makefile approach should be to make a more general building process that
+enables building under IDE's and/or under other operating systems. This
+building process should preferrably encompass all that is achieved in the
+current Makefile.
+
+The Makefile and build.xms Ant script enables compilation under Linux. To make
+this Makefile work without modification you need to set up your system
+accordingly:
+
+1) The project depends on Real.java from
+   http://sourceforge.net/projects/real-java. If you simply want to download
+   the file, the file should be placed in a directory named "real-java" on the
+   same level as the midp-calc directory, i.e. ../real-java/Real.java relative
+   to this file.  Alternatively, to check out the real-java project with
+   anonymous CVS from sourceforge, do the following:
+
+     $ cd ..              # i.e. get to the directory containing midp-calc
+     $ cvs -d:pserver:anonymous@cvs.sf.net:/cvsroot/real-java co real-java
+
+2) You need WTK version 1.04 installed in ../../WTK104
+
+3) You need Ant installed
+
+4) You need proguard
+
+
+Development Guidelines
+======================
+
+If you want to contribute to the development, I want you to consider the
+following guidelines first:
+
+1) Make it compact: Many phones and also many WAP gateways have a limit of
+   64kB for the jar file containing an application.
+
+2) Make the least impact on the code: Unless there is a very good reason for
+   it, do not change or refactor large portions of the code simultaneously.
+
+3) Don't break compatibility: If you are making a fix to get the program
+   running on a different hardware, make sure that the code still works on
+   all the hardware that it is already working on, and not just the new
+   hardware.
+
+4) Don't change indenting: I use a BSD-like brace style with 2 spaces of
+   indentation for subblocks. Under no circumstances change the indentation or
+   brace style of large portions of the code using your own prefferred
+   indentation. Under no circumstances insert TAB characters in the code or
+   replace all occurrances of X consecutive spaces with one TAB.
+
+5) Always do "cvs diff <file>" before committing. You need to see what you
+   have done to be able to make a good commit comment. If you accidently
+   changed indentation, inserted TAB's or switched CR/LF mode on the entire
+   document it will show in the diff and you may be able to save face in
+   time. The goal should be to make as small a diff as possible.
+
+
+Regards,
+Roar Lauritzsen
