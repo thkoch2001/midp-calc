@@ -679,9 +679,22 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
       <li><b>&rarr;DH.MS</b>: Convert x from hours to date, hours, minutes and
     seconds. If x&nbsp;&#8804;&nbsp;8784 hours, it is instead converted
     to the format ddddHH.MMSS, where dddd is the number of days. 
-      <li><b>date</b>: Get current date in DH.MS format
-      <li><b>time</b>: Get current time in DH.MS format
-      <li><b>DH.MS+</b>: Add x and y as date, hours, minutes and seconds
+      <li><b>now</b>: Get current date and time in DH.MS
+    format. Useful to remind yourself how this format is
+      <li><b>DH.MS+</b>: Add x and y as date, hours, minutes and
+    seconds
+      <li><b>DH.MS&rarr;unix</b>: Convert from yyyymmddHH.MMSS format
+    to unix time
+      <li><b>unix&rarr;DH.MS</b>: Convert from unix time to
+    yyyymmddHH.MMSS format
+      <li><b>DH.MS&rarr;JD</b>: Convert from yyyymmddHH.MMSS format
+    to Julian Day
+      <li><b>JD&rarr;DH.MS</b>: Convert from Julian Day time to
+    yyyymmddHH.MMSS format
+      <li><b>DH.MS&rarr;MJD</b>: Convert from yyyymmddHH.MMSS format
+    to Modified Julian Day
+      <li><b>MJD&rarr;DH.MS</b>: Convert from Modified Julian Day time to
+    yyyymmddHH.MMSS format
     </ul>
     <li><a id="Metric" name="Metric">Metric conversions</a> <a
       href="Calc.html#ConstNote"><b>(*)</b></a>
@@ -1101,32 +1114,30 @@ href="http://www.fourmilab.ch/documents/calendar/">http://www.fourmilab.ch/docum
 <br>
 Unix time starts with 0 at midnight (00:00 UTC) on January 1st,
 1970. Many operating systems and languages (including Java) use this
-time scale, although many use a local time zone instead of UTC.<br>
-
-<br>
-To convert from a date of the form yyyymmddHH.MMSS to Unix time,
-convert first to hours using "&rarr;H", subtract 17268672 (obtained
-e.g. from 1970010100 &rarr;H), and multiply by 3600 to get number
-of seconds since January 1st 1970.<br>
+time scale, although many use a local time zone instead of UTC. Use
+"DH.MS&rarr;unix" and "unix&rarr;DH.MS" to convert dates to/from this
+time scale.<br>
 
 <br><i>Relation to Julian Days</i><br>
 
 <br>
 Astronomers often use Julian Day or Modified Julian Day as a practical
-format for doing arithmetic with dates. While the Julian era starts at
-noon on Monday, January 1st 4713 BC (in the Julian calendar), the
-calendar implemented by this calculator starts at midnight, January
-1st year 0 (in the extrapolated Gregorian calendar).<br>
-
-<br>
-To convert from a date to Julian Day, convert first to hours using
-"&rarr;H", divide by 24 to get days, and add 1721059.5.<br>
+format for doing arithmetic with dates. The Julian Day is the number
+of days elapsed since noon on Monday, January 1st 4713 BC (in the
+Julian calendar). Use "DH.MS&rarr;JD" and "JD&rarr;DH.MS" to convert
+dates to/from this time scale.<br>
 
 <br>
 The Modified Julian Day is the number of days elapsed since midnight
-(00:00 UTC) on November 17, 1858. To convert from a date to Modified
-Julian Day, convert first to hours using "&rarr;H", divide by 24 to
-get days, and subtract 678941.<br>
+(00:00 UTC) on November 17, 1858. Use "DH.MS&rarr;MJD" and
+"MJD&rarr;DH.MS" to convert dates to/from this time scale.<br>
+
+<br>
+Beware that this calculator has no notion of time zones, it takes
+whatever value the Java environment returns (through
+System.currentTimeMillis()). If you are in a different time zone than
+UTC, you may have to add or subtract some hours to get a perfect unix,
+JD or MJD time value.
 
 <h3><a id="ConstNote" name="ConstNote">Constants</a></h3>
 

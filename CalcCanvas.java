@@ -43,12 +43,24 @@ public final class CalcCanvas
 //                                 -> xy     -> SUMxy SUMxlny SUMylnx SUMlnxlny
 //            -> finance -> STO RCL solve -> pv fv np pmt ir
 //                       -> clear
-//            -> conv    -> time   ->  ->DH.MS ->H DH.MS+ time date
+//            -> conv    -> time   ->  ->DH.MS ->H DH.MS+ now
+//                                     more -> unix -> DH.MS->unix unix->DH.MS
+//                                             JD   -> DH.MS->JD   JD->DH.MS
+//                                             MJD  -> DH.MS->MJD  MJD->DH.MS
 //                       -> metric ->  length weight vol energy temp
 //                       -> const  ->  univ chem phys atom astro
 //   mode     -> number  -> normal FIX#   SCI#   ENG#             ( -> # )
 //                       -> sepr   -> decimal  -> dot comma remove keep
 //                                 -> thousand -> dot/comma space ' none
+//               prog[1] -> run     -> a b c d e
+//                       -> new     -> name?
+//                       -> clear   -> a b c d e
+//                       -> draw    -> a b c d e
+//               prog[2] -> finish
+//                       -> cond    -> x=y? x!=y? x<y? x<=y? x>y?
+//                       -> util    -> abs max min select
+//                       -> purge
+//            -> mem     -> RCL[x] STO[x] STO+[x]
 //            -> base    -> dec    hex    oct    bin
 //            -> monitor -> mem    stat   finance                 ( -> # )
 //            -> font    -> small  medium large  system
@@ -57,24 +69,9 @@ public final class CalcCanvas
 //
 // Extensions:
 //   spceial  -> stat    -> result  -> avg -> S_xw s_xw
-//   special  -> conv    -> time    -> DH.MS->unix  unix->DH.MS
-//                                     DH.MS->JD    JD->DH.MS
-//                                     DH.MS->MJD   MJD->DH.MS
-//   prog[1]  -> run     -> a b c d e
-//            -> new     -> name?
-//            -> clear   -> a b c d e
-//            -> draw    -> a b c d e
-//   prog[2]  -> finish
-//            -> cond    -> x=y? x!=y? x<y? x<=y? x>y?
-//            -> util    -> abs max min select
-//            -> purge
-//            -> mem     -> RCL[x] STO[x] STO+[x]
-//
-///  prog[1]  -> solve   -> a b c d e
-///  prog[2]  -> loop    -> label goto isg dse                      -> #
-///           -> subr    -> gosub return                          ( -> # )
-///           -> running -> pause stop
-///           -> flags   -> sf cf fs? fc?                           -> #
+//   prog[1]  -> solve   -> a b c d e
+//               diff    -> a b c d e
+//               int     -> a b c d e
 
 // Complex operations:
 //   + - * / +/- 1/x x² sqrt
@@ -309,9 +306,28 @@ public final class CalcCanvas
         new Menu("time",new Menu[] {
           new Menu("»DH.MS",CalcEngine.TO_DHMS),
           new Menu("»H",CalcEngine.TO_H),
-          new Menu("time",CalcEngine.TIME),
+          new Menu("now",CalcEngine.TIME_NOW),
           new Menu("DH.MS+",CalcEngine.DHMS_PLUS),
-          new Menu("date",CalcEngine.DATE),
+          new Menu("more",Menu.TITLE_SKIP,new Menu [] {
+            new Menu("unix",Menu.TITLE_SKIP,new Menu [] {
+              new Menu("DH.MS»unix",CalcEngine.DHMS_TO_UNIX),
+              null,
+              null,
+              new Menu("unix»DH.MS",CalcEngine.UNIX_TO_DHMS),
+            }),
+            new Menu("JD",Menu.TITLE_SKIP,new Menu [] {
+              new Menu("DH.MS»JD",CalcEngine.DHMS_TO_JD),
+              null,
+              null,
+              new Menu("JD»DH.MS",CalcEngine.JD_TO_DHMS),
+            }),
+            new Menu("MJD",Menu.TITLE_SKIP,new Menu [] {
+              new Menu("DH.MS»MJD",CalcEngine.DHMS_TO_MJD),
+              null,
+              null,
+              new Menu("MJD»DH.MS",CalcEngine.MJD_TO_DHMS),
+            }),
+          }),
         }),
         new Menu("metric",new Menu [] {
           new Menu("length",new Menu [] {
@@ -631,14 +647,7 @@ public final class CalcCanvas
     calc = new CalcEngine();
 
     int numberFontStyle = GFont.MEDIUM;
-    if (m.propertyStore != null) {
-      calc.restoreState(m.propertyStore);
-      byte [] buf = new byte[2];
-      buf[0] = PROPERTY_SCREEN_STATE;
-      int length = m.propertyStore.getProperty(buf);
-      if (length >= 2)
-        numberFontStyle = buf[1];
-    }
+    restoreState();
     if (!midlet.display.isColor()) {
       numberFontStyle = GFont.SYSTEM;
       // Now, remove the font menu.
@@ -671,6 +680,29 @@ public final class CalcCanvas
 
     numRepaintLines = 100;
     checkRepaint();
+  }
+
+  private void saveState() {
+    if (midlet.propertyStore != null) {
+      int numberFontStyle = numberFont.getStyle();
+      numberFont = null; // Free some memory before saveState()
+      byte [] buf = new byte[2];
+      buf[0] = PROPERTY_SCREEN_STATE;
+      buf[1] = (byte)numberFontStyle;
+      midlet.propertyStore.setProperty(buf,2);
+      calc.saveState(midlet.propertyStore);
+    }
+  }
+  
+  private void restoreState() {
+    if (m.propertyStore != null) {
+      byte [] buf = new byte[2];
+      buf[0] = PROPERTY_SCREEN_STATE;
+      int length = m.propertyStore.getProperty(buf);
+      if (length >= 2)
+        numberFontStyle = buf[1];
+      calc.restoreState(m.propertyStore);
+    }
   }
 
   private void setNumberFont(int size) {
@@ -1376,15 +1408,7 @@ public final class CalcCanvas
 
   public void quit() {
     calc.command(CalcEngine.FINALIZE,0);
-    if (midlet.propertyStore != null) {
-      int numberFontStyle = numberFont.getStyle();
-      numberFont = null; // Free some memory before saveState()
-      byte [] buf = new byte[2];
-      buf[0] = PROPERTY_SCREEN_STATE;
-      buf[1] = (byte)numberFontStyle;
-      midlet.propertyStore.setProperty(buf,2);
-      calc.saveState(midlet.propertyStore);
-    }
+    saveState();
   }
 
 }

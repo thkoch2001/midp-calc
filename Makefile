@@ -1,4 +1,4 @@
-VERSION = 1.92
+VERSION = 1.95
 TARGETS = Calc.jar Calc.jad
 
 WTK_HOME = /home/roarl/ant/WTK104

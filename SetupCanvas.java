@@ -211,7 +211,6 @@ public class SetupCanvas
   }
 
   private void finish() {
-    midlet.saveSetup();
     midlet.displayScreen();
   }
 

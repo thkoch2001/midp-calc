@@ -6,6 +6,7 @@ public final class PropertyStore
     implements RecordFilter
 {
   private final RecordStore rs;
+  private RecordEnumeration re;
   
   private PropertyStore(RecordStore rs) {
     this.rs = rs;

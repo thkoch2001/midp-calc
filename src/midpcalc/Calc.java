@@ -40,21 +40,7 @@ public final class Calc
   }
   
   public void startApp() {
-    if (propertyStore != null) {
-      byte [] buf = new byte[4];
-      buf[0] = PROPERTY_SETUP;
-      int length = propertyStore.getProperty(buf);
-      if (length >= 4) {
-        hasClearKey = buf[1] != 0;
-        commandArrangement = buf[2];
-        bgrDisplay = buf[3] != 0;
-      } else {
-        setup = new SetupCanvas(this);
-        if (!setup.isFinished())
-          display.setCurrent(setup);
-        return;
-      }
-    }
+    restoreSetup();
     displayScreen();
   }
 
@@ -89,7 +75,12 @@ public final class Calc
   }
 
   public void destroyApp(boolean unconditional) {
-    screen.quit();
+    if (propertyStore != null) {
+      
+      saveSetup();
+      screen.quit();
+      propertyStore.close();
+    }
   }
     
   public void exitRequested() {
@@ -105,6 +96,24 @@ public final class Calc
       buf[2] = commandArrangement;
       buf[3] = (byte)(bgrDisplay ? 1 : 0);
       propertyStore.setProperty(buf,4);
+    }
+  }
+
+  public void restoreSetup() {
+    if (propertyStore != null) {
+      byte [] buf = new byte[4];
+      buf[0] = PROPERTY_SETUP;
+      int length = propertyStore.getProperty(buf);
+      if (length >= 4) {
+        hasClearKey = buf[1] != 0;
+        commandArrangement = buf[2];
+        bgrDisplay = buf[3] != 0;
+      } else {
+        setup = new SetupCanvas(this);
+        if (!setup.isFinished())
+          display.setCurrent(setup);
+        return;
+      }
     }
   }
 

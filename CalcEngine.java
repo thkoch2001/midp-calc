@@ -223,11 +223,18 @@ public final class CalcEngine
   public static final int RCL_X          = 215;
   public static final int STO_X          = 216;
   public static final int STP_X          = 217;
-  public static final int PROG_NEW       = 218;
-  public static final int PROG_FINISH    = 219;
-  public static final int PROG_RUN       = 220;
-  public static final int PROG_PURGE     = 221;
-  public static final int PROG_CLEAR     = 222;
+  public static final int TIME_NOW       = 218;
+  public static final int DHMS_TO_UNIX   = 219;
+  public static final int UNIX_TO_DHMS   = 220;
+  public static final int DHMS_TO_JD     = 221;
+  public static final int JD_TO_DHMS     = 222;
+  public static final int DHMS_TO_MJD    = 223;
+  public static final int MJD_TO_DHMS    = 224;
+  public static final int PROG_NEW       = 225;
+  public static final int PROG_FINISH    = 226;
+  public static final int PROG_RUN       = 227;
+  public static final int PROG_PURGE     = 228;
+  public static final int PROG_CLEAR     = 229;
 
   // These commands are handled from CalcCanvas
   public static final int AVG_DRAW       = 300;
@@ -1472,6 +1479,49 @@ public final class CalcEngine
       case TO_RAD:  x.mul(Real.PI); x.div(Real180); break;
       case TO_DHMS: x.toDHMS(); break;
       case TO_H:    x.fromDHMS(); break;
+      case DHMS_TO_UNIX:
+      case UNIX_TO_DHMS:
+        rTmp.assign(17268672);
+        rTmp2.assign(3600);
+        if (cmd == DHMS_TO_UNIX) {
+          x.fromDHMS();
+          x.sub(rTmp);
+          x.mul(rTmp2);
+        } else {
+          x.div(rTmp2);
+          x.add(rTmp);
+          x.toDHMS();
+        }
+        break;
+      case DHMS_TO_JD:
+      case JD_TO_DHMS:
+        rTmp.assign(24);
+        rTmp2.assign(3442119);
+        rTmp2.scalbn(-1);
+        if (cmd == DHMS_TO_JD) {
+          x.fromDHMS();
+          x.div(rTmp);
+          x.add(rTmp2);
+        } else {
+          x.sub(rTmp2);
+          x.mul(rTmp);
+          x.toDHMS();
+        }
+        break;
+      case DHMS_TO_MJD:
+      case MJD_TO_DHMS:
+        rTmp.assign(24);
+        rTmp2.assign(678941);
+        if (cmd == DHMS_TO_MJD) {
+          x.fromDHMS();
+          x.div(rTmp);
+          x.sub(rTmp2);
+        } else {
+          x.add(rTmp2);
+          x.mul(rTmp);
+          x.toDHMS();
+        }
+        break;
       case CONV_C_F:
       case CONV_F_C:
         rTmp.assign(0, 0x40000000, 0x7333333333333333L);
@@ -2764,6 +2814,9 @@ public final class CalcEngine
       case NOT:
       case XCHGMEM:
       case TO_DEG: case TO_RAD: case TO_DHMS: case TO_H:
+      case DHMS_TO_UNIX: case UNIX_TO_DHMS:
+      case DHMS_TO_JD: case JD_TO_DHMS:
+      case DHMS_TO_MJD: case MJD_TO_DHMS:
       case LIN_YEST: case LIN_XEST: case LOG_YEST: case LOG_XEST:
       case EXP_YEST: case EXP_XEST: case POW_YEST: case POW_XEST:
       case CONV_C_F: case CONV_F_C:
@@ -2819,6 +2872,12 @@ public final class CalcEngine
         break;
       case DATE:
         rTmp.date();
+        push(rTmp,null);
+        break;
+      case TIME_NOW:
+        rTmp.time();
+        rTmp2.date();
+        rTmp.add(rTmp2);
         push(rTmp,null);
         break;
       case IF_EQUAL:
