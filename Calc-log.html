@@ -12,10 +12,21 @@ Financial Java Calculator</h1>
 
 <h2>Changelog:</h2>
 
+
+<h3>Upcoming version</h3>
+
+<ul>
+  <li>Correct rounding in addition and subtraction routine
+  <li>Fixed accuracy problem of exponential operations
+  <li>More accurate display of extremely large/small numbers due to
+  accurate exponentiation
+  <li>50-70% speedup of all operations due to inlining of small functions
+</ul>
+
 <h3>Version 1.13, 2004-03-11</h3>
 
 <ul>
-  <li>More accurate rounding in multiplication routine
+  <li>Correct rounding in multiplication routine
   <li>More accurate exponential functions due to better multiplications
   <li>atan<sub>2</sub> result correctly converted in DEG mode
   <li>Changed exponent marker from "E" to "e", and hex digits from
@@ -71,8 +82,8 @@ Financial Java Calculator</h1>
 
 <ul>
   <li>Doesn't work on Siemens phones
-  <li>LASTx does not keep its imaginary part after clear stack and exit
-  <li>Sometimes the stack contents are forgotten when you exit
+  <li>LASTx forgets its imaginary part on clear stack and exit
+  <li>Sometimes the stack contents are forgotten on exit (?)
   <li>Setup settings are not reversible
 </ul>
 <br>
@@ -81,12 +92,14 @@ Financial Java Calculator</h1>
 <h2>Todo-list:</h2>
 
 <ul>
+  <li>Improve accuracy of y<sup>x</sup>
   <li>Bypassing setup dialogs on known devices (T610, ?...)
-  <li>Further improve accuracy of exponential operations
   <li>Try to reduce startup time (12 sec on T610)
   <li>Modulo operation (menu position?)
   <li>Stack roll-up and roll-down (rolls using current stack size)
   <li>RECT/POL display mode for complex numbers
+  <li>Option to display HEX/OCT/BIN as signed (with '-') instead of
+  twos-complement
 </ul>
 
 Long-term plans, that I am not going to implement unless I find myself

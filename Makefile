@@ -48,3 +48,6 @@ Calc.jar: $(JAVAFILES) Calc.jad
 
 clean:
 	rm -rf $(TARGETS) ral Real.java GFontBase.java pgm2java *~
+
+publish:
+	scp Calc.jad Calc.jar Calc.html Calc-log.html Real.html Real.java Real.jpp gridbug:public_html
