@@ -58,91 +58,93 @@
 //   int toFloatBits()                      ==>  IEEE754 32-bits float format
 //   long toDoubleBits()                    ==>  IEEE754 64-bits double format
 //
+//                                               Approx error  Execution time
+//                                               bound (ULPs)  (rel. to add)
 // Binary operators:
-//   add(Real)
-//   sub(Real)
-//   mul(Real)
-//   div(Real)
-//   and(Real)
-//   or(Real)
-//   xor(Real)
-//   bic(Real)
+//   add(Real)                                        ½         ««« 1.0 »»»
+//   sub(Real)                                        ½             1.3
+//   mul(Real)                                        ½             1.0
+//   div(Real)                                        ½             5.9
+//   and(Real)                                        0             1.0
+//   or(Real)                                         0             0.9
+//   xor(Real)                                        0             0.9
+//   bic(Real)                                        0             0.9
 //
 // Functions:
-//   abs()
-//   neg()
-//   sqr()
-//   sqrt()
-//   cbrt()                   // cube root
-//   recip()                  // 1/x
-//   rsqrt()                  // 1/sqrt(x)
-//   exp()
-//   exp2()
-//   exp10()
-//   ln()
-//   log2()
-//   log10()
-//   sin()
-//   cos()
-//   tan()
-//   asin()
-//   acos()
-//   atan()
-//   sinh()
-//   cosh()
-//   tanh()
-//   asinh()
-//   acosh()
-//   atanh()
-//   fact()                   // x!
-//   gamma()
-//   toDHMS()
-//   fromDHMS()
-//   random()
+//   abs()                                            0            0.05
+//   neg()                                            0             0.1
+//   sqr()                                            ½             0.5
+//   sqrt()                                           1              19
+//   cbrt()                   // cube root            5             150
+//   recip()                  // 1/x                  ½             5.5
+//   rsqrt()                  // 1/sqrt(x)            1              18
+//   exp()                                           15              57
+//   exp2()                                          15              56
+//   exp10()                                         15              57
+//   ln()                                             3              90
+//   log2()                                           3              91
+//   log10()                                          3              92
+//   sin()                                            1              37
+//   cos()                                            1              38
+//   tan()                                            2              81
+//   asin()                                           2             130
+//   acos()                                           2             130
+//   atan()                                           1             100
+//   sinh()                                          15             110
+//   cosh()                                          15             110
+//   tanh()                                          20             120
+//   asinh()                                          5             110
+//   acosh()                                          5             110
+//   atanh()                                          5             100
+//   fact()                   // x!                   0              29
+//   gamma()                                         70?            330
+//   toDHMS()                                         ?              19
+//   fromDHMS()                                       ?              16
+//   random()                                         0              21
 //
 // Binary functions:
-//   hypot(Real)
-//   atan2(Real x)
-//   pow(Real)
-//   pow(int)
-//   nroot(Real)
+//   hypot(Real)                                      2              21
+//   atan2(Real x)                                    1             110
+//   pow(Real)                                       15             160
+//   pow(int)                                         5              28
+//   nroot(Real)                                     15             160
 //
 // Integral values:
-//   floor()
-//   ceil()
-//   round()
-//   trunc()
-//   frac()
-//
-// Comparisons:
-//   boolean equalTo(Real)
-//   boolean notEqualTo(Real)
-//   boolean lessThan(Real)
-//   boolean lessEqual(Real)
-//   boolean greaterThan(Real)
-//   boolean greaterEqual(Real)
+//   floor()                                          0             0.5
+//   ceil()                                           0             0.5
+//   round()                                          0             0.4
+//   trunc()                                          0             0.3
+//   frac()                                           0             0.4
 //
 // Utility functions:
-//   copysign(Real)
-//   nextafter(Real)
-//   scalbn(int)
+//   copysign(Real)                                   0             0.4
+//   nextafter(Real)                                  0             1.0
+//   scalbn(int)                                      0             0.4
 //
 // Make special values:
-//   makeZero(int sign)
-//   makeInfinity(int sign)
-//   makeNan()
-//   makeExp10(int power)
-//   int lowPow10()           // Convert to power of 10 <= x, return exponent
+//   makeZero(int sign)                               0            0.05
+//   makeInfinity(int sign)                           0            0.05
+//   makeNan()                                        0            0.05
+//   makeExp10(int power)                             0              30
+//   int lowPow10()                                   0             4.7
+//
+// Comparisons:
+//   boolean equalTo(Real)                                          0.7
+//   boolean notEqualTo(Real)                                       0.7
+//   boolean lessThan(Real)                                         0.7
+//   boolean lessEqual(Real)                                        0.7
+//   boolean greaterThan(Real)                                      0.7
+//   boolean greaterEqual(Real)                                     0.7
 //
 // Query state:
-//   boolean isZero()
-//   boolean isInfinity()
-//   boolean isNan()
-//   boolean isFinite()
-//   boolean isFiniteNonZero()
-//   boolean isIntegral()
-//   boolean isOdd()
-//   boolean isNegative()
+//   boolean isZero()                                              0.05
+//   boolean isInfinity()                                          0.05
+//   boolean isNan()                                               0.05
+//   boolean isFinite()                                            0.05
+//   boolean isFiniteNonZero()                                     0.05
+//   boolean isNegative()                                          0.05
+//   boolean isIntegral()                                           0.3
+//   boolean isOdd()                                                0.2
 //
 // Constants:
 //   ZERO     = 0
@@ -817,7 +819,10 @@ public final class Real
     long b0 = a.mantissa & 0x7fffffff;
     long b1 = a.mantissa >>> 31;
 
-    mantissa = a1*b1 + ((a0*b1 + a1*b0 + ((a0*b0)>>>31) + 0x40000000)>>>31);
+    mantissa = a1*b1;
+    // If we're going to need normalization, we don't want to round twice
+    int round = (mantissa<0) ? 0 : 0x40000000;
+    mantissa += ((a0*b1 + a1*b0 + ((a0*b0)>>>31) + round)>>>31);
 
     normalize();
   }
@@ -835,6 +840,30 @@ public final class Real
       makeInfinity(sign); // Overflow
   }
 
+  public void sqr() {
+    sign = 0;
+    if (!isFiniteNonZero())
+      return;
+    int e = exponent;
+    exponent += exponent-0x40000000;
+    if (exponent < 0) {
+      if (e < 0x40000000)
+        makeZero(sign);     // Underflow
+      else
+        makeInfinity(sign); // Overflow
+      return;
+    }
+    long a0 = mantissa&0x7fffffff;
+    long a1 = mantissa>>>31;
+
+    mantissa = a1*a1;
+    // If we're going to need normalization, we don't want to round twice
+    int round = (mantissa<0) ? 0 : 0x40000000;
+    mantissa += ((((a0*a1)<<1) + ((a0*a0)>>>31) + round)>>>31);
+
+    normalize();
+  }
+  
   private static long ldiv(long a, long b) {
     long m = 1;
     a -= b;
@@ -1132,27 +1161,6 @@ public final class Real
     normalize();
   }
 
-  public void sqr() {
-    sign = 0;
-    if (!isFiniteNonZero())
-      return;
-    int e = exponent;
-    exponent += exponent-0x40000000;
-    if (exponent < 0) {
-      if (e < 0x40000000)
-        makeZero(sign);     // Underflow
-      else
-        makeInfinity(sign); // Overflow
-      return;
-    }
-    long a0 = mantissa&0x7fffffff;
-    long a1 = mantissa>>>31;
-
-    mantissa = a1*a1 + ((((a0*a1)<<1) + ((a0*a0)>>>31) + 0x40000000)>>>31);
-
-    normalize();
-  }
-  
   private void rsqrtInternal() {
     // Calculates recipocal square root of normalized Real,
     // not zero, nan or infinity
@@ -1462,6 +1470,7 @@ public final class Real
     mul(LOG10E);
   }
 
+  // Convert to power of 10 <= x, return exponent
   public int lowPow10() {
     if (!isFiniteNonZero())
       return 0;
@@ -1484,7 +1493,7 @@ public final class Real
     return e;
   }
 
-  private void pow(int power) {
+  public void pow(int power) {
     // Calculate power of integer by successive squaring
     boolean recp=false;
     if (power < 0) {
@@ -1700,11 +1709,13 @@ public final class Real
     }
 
     // First reduce the argument to the range of 0 < x < pi*2
-    div(PI2);
-    tmp1.assign(this);
-    tmp1.floor();
-    sub(tmp1);
-    mul(PI2);
+    if (isNegative() || this.greaterThan(PI2)) {
+      div(PI2);
+      tmp1.assign(this);
+      tmp1.floor();
+      sub(tmp1);
+      mul(PI2);
+    }
 
     // Since sin(pi*2 - x) = -sin(x) we can reduce the range 0 < x < pi
     boolean negative = false;
