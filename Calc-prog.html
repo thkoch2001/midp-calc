@@ -1,0 +1,134 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta http-equiv="content-type"
+ content="text/html; charset=ISO-8859-1">
+  <title>Calc - programming examples</title>
+</head>
+<body bgcolor="#c0f0f0">
+
+<h1><a href="Calc.html">Calc</a> - Java Calculator for cell-phones and
+MIDP devices</h1>
+
+<h2>Programming examples</h2>
+
+<h3>Quadratic equation</h3>
+
+This program solves a second-order polynomial of the type<br>
+
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;ax²&nbsp;+&nbsp;bx&nbsp;+&nbsp;c&nbsp;=&nbsp;0<br>
+
+<br>
+The method used is accurate also if b²&nbsp;&gt;&gt;&nbsp;4ac, as described
+<a
+href="http://mathworld.wolfram.com/QuadraticEquation.html">here</a>. Before
+running the program, push the coefficients a, b, and c to the stack,
+in that order. On exit, the stack contains the original coefficients
+plus the two roots (real or complex).<br>
+
+<pre>
+prog/new "Quad"          ; start recording a new program
+mem/STO 2                ; store c
+stack/more/rolldn
+mem/STO 1                ; store b
+stack/more/rolldn
+mem/STO 0                ; store a
+stack/more/rollup
+stack/more/rollup        ; original stack restored
+ENTER                    ; copy c
+mem/RCL 0                ; a
+-4
+*
+*
+mem/RCL 1                ; b
+math/simple/x²
++
+math/simple/sqrt         ; sqrt(b²-4ac)
+mem/RCL 1                ; b
+prog/util/sgn
+*                        ; sgn(b)*sqrt(b²-4ac)
+mem/RCL 1                ; b
++
+-2
+/                        ; q = -(b+sgn(b)*sqrt(b²-4ac))/2
+ENTER                    ; make copy of q
+mem/RCL 0                ; a
+/                        ; first root, q/a
+stack/x<->y              ; q again
+mem/RCL 2                ; c
+stack/x<->y
+/                        ; second root, c/q
+prog/finish              ; program finished
+</pre><br>
+
+<h3>Biorhythms</h3>
+
+To read about the speculative, but slightly entertaining theory of
+biorhythms, click <a
+href="http://en.wikipedia.org/wiki/Biorhythms">here</a>.  To program
+it, we use the fact that real numbers are drawn as a pink line,
+imaginary parts of complex numbers are drawn as a yellow line, and
+points where the imaginary and real parts of a complex number
+coincide, are drawn with a white color. In addition we use the fact
+that if a program result alternates between values, many graphs can be
+drawn together. This program is only intended to be "draw"n, if you
+"run" the program, you will get alternating results.<br>
+
+<pre>
+prog/new "BioRt"         ; start recording a new program
+conv/time/now            ; get current time
+mem/RCL 0                ; get birthday
++/-
+conv/time/DH.MS+         ; subtract dates
+conv/time/->H            ; hours since birthday
+24
+/                        ; days since birthday
++                        ; add x offset (on stack at start of program)
+trig/more/pi
+ENTER
++
+*                        ; multiply by 2*pi to convert to radians
+ENTER
+ENTER                    ; 3 copies now on stack
+23
+/
+trig/normal/sin          ; physical cycle is 23 days
+stack/x<->y
+28
+/
+trig/normal/sin          ; emotional cycle is 28 days
+math/coord/r->cplx       ; make complex number, re=emotional, im=physical
+stack/x<->y
+33
+/
+trig/normal/sin          ; intellectual cycle is 33 days
+ENTER
+math/coord/r->cplx       ; make complex number with re=im
+mem/RCL 1                ; memory location 1 alternates between 0 and 1
++/-
+1
++
+mem/STO 1                ; alternating number calculated and stored
+prog/util/select         ; select y or z depending on alternating number
+prog/finish              ; program finished
+</pre>
+
+<br>
+Preparations: To try the program, store your birthday in memory
+location 0, store 0 in memory location 1, make sure calculator is in
+RAD mode, and push suitable graph limits on the stack, for instance
+-14, 14, -1.2, 1.2, before finally executing "prog/draw/BioRt". The
+pink graph shows your emotional cycle, the yellow graph shows your
+physical cycle, and the white graph shows your intellectual cycle,
+with zero on the x axis representing current time.<br><br>
+
+<h3>More</h3>
+
+If you think you've made a clever program, send it to me (<a
+href="&#109;&#097;&#105;&#108;&#116;&#111;&#058;&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;">&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;</a>),
+and I might publish it here.
+
+</body>
+</html>
+
