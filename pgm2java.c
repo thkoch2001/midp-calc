@@ -75,10 +75,11 @@ int printStringChar(unsigned char b)
 int main(int argc, char *argv[])
 {
   unsigned char* image;
-  int i,j,k,x;
+  int c,i,j,k,x;
   unsigned char bits[32*3][64];
   int char_height, char_width;
   char *prefix;
+  char *charSet = " \"$%&'*+,-./0123456789=ABCDEFM_aefimnprtvxy";
 
   if ((image=readImage(argv[1],&iW,&iH))==0 || iW%32!=0 || iH%3!=0) {
     printf("Usage: %s image.pgm [prefix]\n",argv[0]);
@@ -95,21 +96,25 @@ int main(int argc, char *argv[])
 
   printf("  protected String %schar_bits =\n    \"",prefix);
   x = 5;
-  for (i=0; i<3; i++) {
-    for (j=0; j<32; j++) {
-      int nBytes = (char_height*char_width*2+7)/8;
-      for (k=0; k<nBytes; k++) {
-        unsigned char b = bits[i*32+j][k];
-        if (x>72) {
-          printf("\"+\n    \"");
-          x = 5;
-        }
-        x += printStringChar(b);
+  for (c=0; c<(int)strlen(charSet); c++) {
+    i = charSet[c]/32-1;
+    j = charSet[c]%32;
+    int nBytes = (char_height*char_width*2+7)/8;
+    for (k=0; k<nBytes; k++) {
+      unsigned char b = bits[i*32+j][k];
+      if (x>72) {
+        printf("\"+\n    \"");
+        x = 5;
       }
+      x += printStringChar(b);
     }
   }
   printf("\";\n");
   printf("  protected final int %schar_width = %d;\n",prefix,char_width/2);
   printf("  protected final int %schar_height = %d;\n",prefix,char_height);
+  printf("  protected final String %schar_set =\n    \"",prefix);
+  for (c=0; c<(int)strlen(charSet); c++)
+    printStringChar(charSet[c]);
+  printf("\";\n");
   return 0;
 }

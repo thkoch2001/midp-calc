@@ -13,9 +13,11 @@ final class GFont
   private final String char_bits;
   private final int char_width;
   private final int char_height;
+  private final String char_set;
   private Image [] char_cache;
   private final int style;
   private final Font systemFont;
+  private final byte [] char_index;
 
   public GFont(int style)
   {
@@ -25,16 +27,19 @@ final class GFont
       char_width = medium_char_width;
       char_height = medium_char_height;
       char_bits = medium_char_bits;
+      char_set = medium_char_set;
     } else if (style == LARGE) {
       systemFont = null;
       char_width = large_char_width;
       char_height = large_char_height;
       char_bits = large_char_bits;
+      char_set = large_char_set;
     } else if (style == SMALL) {
       systemFont = null;
       char_width = small_char_width;
       char_height = small_char_height;
       char_bits = small_char_bits;
+      char_set = small_char_set;
     } else { // SYSTEM font
       systemFont = Font.getFont(Font.FACE_MONOSPACE,
                                 Font.SIZE_MEDIUM,
@@ -42,8 +47,12 @@ final class GFont
       char_width = systemFont.charWidth('0');
       char_height = systemFont.getHeight();
       char_bits = null;
+      char_set = null;
     }
     char_cache = new Image[32*3];
+    char_index = new byte[96];
+    for (char c=32; c<128; c++)
+      char_index[c-32] = (byte)char_set.indexOf(c);
   }
 
   public int getStyle() {
@@ -52,7 +61,7 @@ final class GFont
 
   private int charToIndex(char c) {
     if (c>=32 && c<128)
-      return (int)(c-32);
+      return (int)char_index[c-32];
     return -1;
   }
 
