@@ -14,10 +14,10 @@ href="&#109;&#097;&#105;&#108;&#116;&#111;&#058;&#114;&#111;&#097;&#114;&#108;&#
 
 <br>
 Calc is a Java calculator for MIDP devices, such as a Java-enabled
-cell-phone or PDA. Currently, it has only been tested on a Sony
-Ericsson T610, which is my current phone but which has such a lousy
-built-in calculator that it forced me to develop this
-application. (Now also tested on Nokia 3510i.) I would be glad to hear
+cell-phone or PDA. It was developed for Sony Ericsson T610, which is
+my current phone but which has such a lousy built-in calculator that I
+was forced to develop this application. Now also tested on Nokia 3510i
+(awkward, screen too small) and Nokia 6100. I would be glad to hear
 about success stories with other devices, but I am really not
 interested to know all the devices that it does <em>not</em> work on,
 unless it is obvious that a very minor modification will make it
@@ -36,24 +36,25 @@ instead of "(" and ")". Additionally, being able to store and see
 intermediate results on the stack is very advantageous.<br>
 
 <br>
-Calc has 63 bits internal precision, approximately 19 decimal digits
-accuracy, considerably <span style="font-style: italic;">more</span>
-than normal calculators and computers.  The exponent is 31 bits, which
-allows for numbers up to 4.197E+323228496. Handy when you want to
-calculate the factorial of 40000000.<br>
+Calc has 63 bits internal precision, which amounts to approximately 19
+decimal digits accuracy, considerably <em>more</em> than normal
+calculators and computers. The exponent is 31 bits, which allows for
+numbers up to 4.197E+323228496. Handy when you want to calculate the
+factorial of 40000000.<br>
 
 <br>
-You can download it into your phone using one of these links: <a
+You can download it into your phone or MIDP device using one of these
+links: <a
 href="http://gridbug.ods.org/~roarl/Calc.jad">http://gridbug.ods.org/~roarl/Calc.jad</a>,
 or <a
 href="http://gridbug.ods.org/~roarl/Calc.jar">http://gridbug.ods.org/~roarl/Calc.jar</a>
 
 <h2>Keys</h2>
 
-To be able to navigate efficiently through function menus, Calc can
-only be operated on a phone with a 5-way "joystick" or equivalent
-arrow keys, plus a "clear" key, 12 number keys and two
-application-specific keys. The keys are mapped as follows:
+To be able to navigate efficiently through function menus, Calc is
+best operated on a phone with a 5-way "joystick" or equivalent arrow
+keys, plus a "clear" key, 12 number keys and two soft-keys (those
+configurable keys below the display). The keys are mapped as follows:
 
 <ul>
   <li>0-9: The number keys are used to enter numbers and as shortcuts
@@ -94,12 +95,12 @@ download it again (I may fix this in the future).<br>
 First, to make sure that "ENTER" and "+" is immediately available,
 Calc will rotate through a set of command-key mappings until you
 answer "yes" to the question if you can see both "no" and "yes" mapped
-to the left and right soft-key simultaneously (These keys are located
-left and right directly below the display). (Most Nokias will at first
+to the left and right soft-keys simultaneously (These keys are located
+left and right directly below the display). Most Nokias will at first
 map "yes" and "no" to a menu named "Options" on the left side, with
-nothing on the right side. If you select "yes" when this mapping is
+nothing on the right side. If you select "yes" when such a mapping is
 active, your "ENTER" and "+" key will be accessible in the same
-cumbersome manner.)<br>
+cumbersome manner.<br>
 
 <br>
 Second, to make sure that a "clear" or "c" key is available (and
@@ -113,8 +114,8 @@ If your phone does not have a 5-way joystick, most times on Nokia you
 can use the "dial" button instead of the middle joystick button. If
 you only have a two-way joystick or none at all, the number keys 2, 4,
 5, 6 and 8 will work as joystick keys once a menu is activated. In
-that case, you can only hope that the menu will be activated by the
-"dial" button, otherwise you will be stuck.
+that case, you can only hope that the menu will be activated by "dial"
+or some other button, otherwise you will be stuck.
 
 <h2>Operations</h2>
 
@@ -304,11 +305,11 @@ to &#960; (or -180 to 180 in DEG mode)</li>
       <ul>
         <li>a,b, y<sup>*</sup>, x<sup>*</sup>, r: (see linear regression)
       </ul>
-      <li>Curve fitting: y=be<sup>ax</sup></li>
+      <li>Curve fitting: y=b·e<sup>ax</sup></li>
       <ul>
         <li>a,b, y<sup>*</sup>, x<sup>*</sup>, r: (see linear regression)
       </ul>
-      <li>Curve fitting: y=bx<sup>a</sup></li>
+      <li>Curve fitting: y=b·x<sup>a</sup></li>
       <ul>
         <li>a,b, y<sup>*</sup>, x<sup>*</sup>, r: (see linear regression)
       </ul>
@@ -359,7 +360,7 @@ to &#960; (or -180 to 180 in DEG mode)</li>
   to the format ddddHH.MMSS, where dddd is the number of days.</li> 
     <li>date: Get current date in DH.MS format</li>
     <li>time: Get current time in DH.MS format (inaccurate on early
-  versions of T610)</li>
+  versions of T610 software)</li>
     <li>DH.MS+: Add x and y as date, hours, minutes and seconds</li>
   </ul>
 </ul>
@@ -472,15 +473,6 @@ interest rate which corresponds exactly to an annual interest rate is
 to calculate (<sup>12</sup>&#8730;<span style="text-decoration:
 overline;">1+ir/100</span>&nbsp;-&nbsp;1)*100 (yeah, that is twelfth
 root).]<br>
-
-<br>
-Solving for <em>interest rate</em> is done implicitly using an
-iterative approach. In the iteration, the start value used is the
-current value of the <em>ir</em> register, unless this value is zero,
-in which case 1% is used as a start value. If you get "nan"
-(i.e. not-a-number) as a result when solving for <em>ir</em>, you may
-enter a new start value for <em>ir</em> that is closer to what you
-expect as a result from the calculation.<br>
 
 <br>
 If you solve repeatedly and successively for each of the financial
