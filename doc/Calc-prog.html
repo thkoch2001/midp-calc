@@ -12,6 +12,22 @@ MIDP devices</h1>
 
 <h2>Programming examples</h2>
 
+In the program listings, the most basic commands are written as just
+the command name, such as "ENTER", "*", and numbers such as
+"0.5". Commands that are found deeper down in the menu hierarchy will
+be written prefixed with <em>some parts</em> of the menu choices
+needed to get to the command. This is done to <em>remind</em> the user
+how to find the command, it is not meant as a complete description of
+how to find the command. For example, if I write "<tt><b>stack/RCL st#
+1</b></tt>", I actually mean
+"<tt>main/special/<b>stack</b>/more/<b>RCL&nbsp;st#</b>/&lt;0-3&gt;/&lt;<b>1</b>&gt;</tt>".<br>
+
+<br>
+Programming hint: If a program needs parameters pushed onto the stack
+before running, it is useful to push some dummy arguments on the stack
+before starting to record the program, to be able to follow the
+programming with actual data.<br><br>
+
 <h3>Quadratic equation</h3>
 
 This program solves a second-order polynomial of the type<br>
@@ -27,53 +43,49 @@ running the program, push the coefficients a, b, and c to the stack,
 in that order. On exit, the stack contains the original coefficients
 plus the two roots (real or complex).<br>
 
+<br><b>Program listing:</b>
+
 <pre>
 prog/new "Quad"          ; start recording a new program
-mem/STO 2                ; store c
-stack/more/rolldn
-mem/STO 1                ; store b
-stack/more/rolldn
-mem/STO 0                ; store a
-stack/more/rollup
-stack/more/rollup        ; original stack restored
-ENTER                    ; copy c
-mem/RCL 0                ; a
--4
-*
-*
-mem/RCL 1                ; b
+stack/RCL st# 1          ; b
 math/simple/x²
-+
+stack/RCL st# 3          ; a
+stack/RCL st# 2          ; c
+*
+4
+*
+-
 math/simple/sqrt         ; sqrt(b²-4ac)
-mem/RCL 1                ; b
+stack/RCL st# 2          ; b
 prog/util/sgn
 *                        ; sgn(b)*sqrt(b²-4ac)
-mem/RCL 1                ; b
+stack/RCL st# 2          ; b
 +
 -2
 /                        ; q = -(b+sgn(b)*sqrt(b²-4ac))/2
-ENTER                    ; make copy of q
-mem/RCL 0                ; a
-/                        ; first root, q/a
+stack/RCL st# 1          ; c
+stack/RCL st# 1          ; q
+/                        ; first root, c/q
 stack/x<->y              ; q again
-mem/RCL 2                ; c
-stack/x<->y
-/                        ; second root, c/q
+stack/RCL st# 4          ; c
+/                        ; second root, q/a
 prog/finish              ; program finished
 </pre><br>
 
 <h3>Biorhythms</h3>
 
-To read about the speculative, but slightly entertaining theory of
-biorhythms, click <a
-href="http://en.wikipedia.org/wiki/Biorhythms">here</a>.  To program
-it, we use the fact that real numbers are drawn as a pink line,
-imaginary parts of complex numbers are drawn as a yellow line, and
-points where the imaginary and real parts of a complex number
-coincide, are drawn with a white color. In addition we use the fact
-that if a program result alternates between values, many graphs can be
-drawn together. This program is only intended to be "draw"n, if you
-"run" the program, you will get alternating results.<br>
+The theory of <a
+href="http://en.wikipedia.org/wiki/Biorhythms">biorhythms</a> is
+speculative, but slightly entertaining. To program it, we use the fact
+that real numbers are drawn as a pink line, imaginary parts of complex
+numbers are drawn as a yellow line, and points where the imaginary and
+real parts of a complex number coincide, are drawn with a white
+color. In addition we use the fact that if a program result alternates
+between values, many graphs can be drawn together. This program is
+only intended to be "draw"n, if you "run" the program, you will get
+alternating results.<br>
+
+<br><b>Program listing:</b>
 
 <pre>
 prog/new "BioRt"         ; start recording a new program
@@ -85,7 +97,7 @@ conv/time/->H            ; hours since birthday
 24
 /                        ; days since birthday
 +                        ; add x offset (on stack at start of program)
-trig/more/pi
+trig/pi
 ENTER
 +
 *                        ; multiply by 2*pi to convert to radians
@@ -93,16 +105,16 @@ ENTER
 ENTER                    ; 3 copies now on stack
 23
 /
-trig/normal/sin          ; physical cycle is 23 days
+trig/sin                 ; physical cycle is 23 days
 stack/x<->y
 28
 /
-trig/normal/sin          ; emotional cycle is 28 days
+trig/sin                 ; emotional cycle is 28 days
 math/coord/r->cplx       ; make complex number, re=emotional, im=physical
 stack/x<->y
 33
 /
-trig/normal/sin          ; intellectual cycle is 33 days
+trig/sin                 ; intellectual cycle is 33 days
 ENTER
 math/coord/r->cplx       ; make complex number with re=im
 mem/RCL 1                ; memory location 1 alternates between 0 and 1
