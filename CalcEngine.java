@@ -1,5 +1,7 @@
 package ral;
 
+import javax.microedition.lcdui.*;
+
 public final class CalcEngine
 {
   // Commands == "keystrokes"
@@ -145,7 +147,17 @@ public final class CalcEngine
   public static final int TIME           = 139;
   public static final int DATE           = 140;
   public static final int FACTORIZE      = 141;
+  public static final int AVG_DRAW       = 200;
+  public static final int LIN_DRAW       = 201;
+  public static final int LOG_DRAW       = 202;
+  public static final int EXP_DRAW       = 203;
+  public static final int POW_DRAW       = 204;
   public static final int FINALIZE       = 500;
+  public static final int FREE_MEM       = 501;
+  
+  private static final int STACK_SIZE = 16;
+  private static final int MEM_SIZE = 16;
+  private static final int STATLOG_SIZE = 64;
 
   private static final Real Real180 = new Real(180);
   private static final String empty = "";
@@ -156,6 +168,8 @@ public final class CalcEngine
   public Real [] mem;
   public Real SUM1,SUMx,SUMx2,SUMy,SUMy2,SUMxy;
   public Real SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMxlny,SUMylnx,SUMlnxlny;
+  public int [] statLog; // Low-precision statistics log
+  public int statLogStart,statLogEnd;
   public Real lastx;
   public boolean degrees;
   public StringBuffer inputBuf;
@@ -165,31 +179,13 @@ public final class CalcEngine
 
   public CalcEngine()
   {
-    int i;
     format = new Real.NumberFormat();
-    stack = new Real[16];
-    for (i=0; i<stack.length; i++)
+    stack = new Real[STACK_SIZE];
+    for (int i=0; i<STACK_SIZE; i++)
       stack[i] = new Real();
-    strStack = new String[stack.length];
-    mem = new Real[16];
-    for (i=0; i<mem.length; i++)
-      mem[i] = new Real();
+    strStack = new String[STACK_SIZE];
+    mem = null;
 
-    // Statistical accumulators
-    SUM1      = new Real();
-    SUMx      = new Real();
-    SUMx2     = new Real();
-    SUMy      = new Real();
-    SUMy2     = new Real();
-    SUMxy     = new Real();
-    SUMlnx    = new Real();
-    SUMln2x   = new Real();
-    SUMlny    = new Real();
-    SUMln2y   = new Real();
-    SUMxlny   = new Real();
-    SUMylnx   = new Real();
-    SUMlnxlny = new Real();
-    
     lastx = new Real();
     rTmp = new Real();
     rTmp2 = new Real();
@@ -206,7 +202,7 @@ public final class CalcEngine
   private void clearStrings() {
     if (inputInProgress)
       parseInput();
-    for (int i=0; i<stack.length; i++)
+    for (int i=0; i<STACK_SIZE; i++)
       if (strStack[i] != empty)
         strStack[i] = null;
     repaint(-1);
@@ -214,8 +210,8 @@ public final class CalcEngine
 
   private void clearStack() {
     inputInProgress = false;
-    for (int i=0; i<stack.length; i++) {
-      stack[i].assign(Real.ZERO);
+    for (int i=0; i<STACK_SIZE; i++) {
+      stack[i].makeZero(0);
       strStack[i] = empty;
     }
     repaint(-1);
@@ -224,26 +220,54 @@ public final class CalcEngine
   private void clearMem() {
     if (inputInProgress)
       parseInput();
-    for (int i=0; i<mem.length; i++)
-      mem[i].assign(Real.ZERO);
+    mem = null;
   }
   
   private void clearStat() {
     if (inputInProgress)
       parseInput();
-    SUM1.assign(Real.ZERO);
-    SUMx.assign(Real.ZERO);
-    SUMx2.assign(Real.ZERO);
-    SUMy.assign(Real.ZERO);
-    SUMy2.assign(Real.ZERO);
-    SUMxy.assign(Real.ZERO);
-    SUMlnx.assign(Real.ZERO);
-    SUMln2x.assign(Real.ZERO);
-    SUMlny.assign(Real.ZERO);
-    SUMln2y.assign(Real.ZERO);
-    SUMxlny.assign(Real.ZERO);
-    SUMylnx.assign(Real.ZERO);
-    SUMlnxlny.assign(Real.ZERO);
+    SUM1      = null;
+    SUMx      = null;
+    SUMx2     = null;
+    SUMy      = null;
+    SUMy2     = null;
+    SUMxy     = null;
+    SUMlnx    = null;
+    SUMln2x   = null;
+    SUMlny    = null;
+    SUMln2y   = null;
+    SUMxlny   = null;
+    SUMylnx   = null;
+    SUMlnxlny = null;
+    statLog   = null;
+  }
+
+  private void allocMem() {
+    if (mem != null)
+      return;
+    mem = new Real[MEM_SIZE];
+    for (int i=0; i<MEM_SIZE; i++)
+      mem[i] = new Real();
+  }
+  
+  private void allocStat() {
+    if (SUM1 != null)
+      return;
+    SUM1      = new Real();
+    SUMx      = new Real();
+    SUMx2     = new Real();
+    SUMy      = new Real();
+    SUMy2     = new Real();
+    SUMxy     = new Real();
+    SUMlnx    = new Real();
+    SUMln2x   = new Real();
+    SUMlny    = new Real();
+    SUMln2y   = new Real();
+    SUMxlny   = new Real();
+    SUMylnx   = new Real();
+    SUMlnxlny = new Real();
+    statLog = new int[2*STATLOG_SIZE];
+    statLogStart = statLogEnd = 0;
   }
 
   private static final byte PROPERTY_SETTINGS = 10;
@@ -253,32 +277,40 @@ public final class CalcEngine
 
   public void saveState(PropertyStore propertyStore) {
     int i;
-    byte [] buf = new byte[stack.length*12+1];
+    byte [] buf = new byte[STACK_SIZE*12+1];
     buf[0] = PROPERTY_STACK;
-    for (i=0; i<stack.length; i++)
+    for (i=0; i<STACK_SIZE; i++)
       stack[i].toBytes(buf, i*12+1);
-    propertyStore.setProperty(buf,stack.length*12+1);
+    propertyStore.setProperty(buf,STACK_SIZE*12+1);
     buf[0] = PROPERTY_MEM;
-    for (i=0; i<mem.length; i++)
-      mem[i].toBytes(buf, i*12+1);
-    propertyStore.setProperty(buf,mem.length*12+1);
+    if (mem != null) {
+      for (i=0; i<MEM_SIZE; i++)
+        mem[i].toBytes(buf, i*12+1);
+      propertyStore.setProperty(buf,MEM_SIZE*12+1);
+    } else {
+      propertyStore.setProperty(buf,1);
+    }
     buf[0] = PROPERTY_STAT;
-    SUM1     .toBytes(buf, 0*12+1);
-    SUMx     .toBytes(buf, 1*12+1);
-    SUMx2    .toBytes(buf, 2*12+1);
-    SUMy     .toBytes(buf, 3*12+1);
-    SUMy2    .toBytes(buf, 4*12+1);
-    SUMxy    .toBytes(buf, 5*12+1);
-    SUMlnx   .toBytes(buf, 6*12+1);
-    SUMln2x  .toBytes(buf, 7*12+1);
-    SUMlny   .toBytes(buf, 8*12+1);
-    SUMln2y  .toBytes(buf, 9*12+1);
-    SUMxlny  .toBytes(buf,10*12+1);
-    SUMylnx  .toBytes(buf,11*12+1);
-    SUMlnxlny.toBytes(buf,12*12+1);
-    propertyStore.setProperty(buf,13*12+1);
+    if (SUM1 != null) {
+      SUM1     .toBytes(buf, 0*12+1);
+      SUMx     .toBytes(buf, 1*12+1);
+      SUMx2    .toBytes(buf, 2*12+1);
+      SUMy     .toBytes(buf, 3*12+1);
+      SUMy2    .toBytes(buf, 4*12+1);
+      SUMxy    .toBytes(buf, 5*12+1);
+      SUMlnx   .toBytes(buf, 6*12+1);
+      SUMln2x  .toBytes(buf, 7*12+1);
+      SUMlny   .toBytes(buf, 8*12+1);
+      SUMln2y  .toBytes(buf, 9*12+1);
+      SUMxlny  .toBytes(buf,10*12+1);
+      SUMylnx  .toBytes(buf,11*12+1);
+      SUMlnxlny.toBytes(buf,12*12+1);
+      propertyStore.setProperty(buf,13*12+1);
+    } else {
+      propertyStore.setProperty(buf,1);
+    }
     // Settings
-    for (i=0; i<stack.length; i++)
+    for (i=0; i<STACK_SIZE; i++)
       if (strStack[i] == empty)
         break;
     buf[ 0] = PROPERTY_SETTINGS;
@@ -313,20 +345,23 @@ public final class CalcEngine
   
   public void restoreState(PropertyStore propertyStore) {
     int length,i;
-    byte [] buf = new byte[stack.length*12+1];
+    byte [] buf = new byte[STACK_SIZE*12+1];
     buf[0] = PROPERTY_STACK;
     length = propertyStore.getProperty(buf);
-    if (length >= stack.length*12+1)
-      for (i=0; i<stack.length; i++)
+    if (length >= STACK_SIZE*12+1)
+      for (i=0; i<STACK_SIZE; i++)
         stack[i].assign(buf, i*12+1);
     buf[0] = PROPERTY_MEM;
     length = propertyStore.getProperty(buf);
-    if (length >= mem.length*12+1)
-      for (i=0; i<mem.length; i++)
+    if (length >= MEM_SIZE*12+1) {
+      allocMem();
+      for (i=0; i<MEM_SIZE; i++)
         mem[i].assign(buf, i*12+1);
+    }
     buf[0] = PROPERTY_STAT;
     length = propertyStore.getProperty(buf);
     if (length >= 13*12+1) {
+      allocStat();
       SUM1     .assign(buf, 0*12+1);
       SUMx     .assign(buf, 1*12+1);
       SUMx2    .assign(buf, 2*12+1);
@@ -345,7 +380,7 @@ public final class CalcEngine
     buf[0] = PROPERTY_SETTINGS;
     length = propertyStore.getProperty(buf);
     if (length >= 26+12) {
-      for (i=0; i<stack.length; i++)
+      for (i=0; i<STACK_SIZE; i++)
         strStack[i] = i<buf[1] ? null : empty;
       degrees            = buf[2] != 0;
       format.base        = buf[3];
@@ -386,6 +421,11 @@ public final class CalcEngine
     if (strStack[elementNo] == null)
       strStack[elementNo] = stack[elementNo].toString(format);
     return strStack[elementNo];
+  }
+
+  public void setMaxWidth(int max) {
+    format.maxwidth = max;
+    clearStrings();
   }
 
   private void repaint(int nElements) {
@@ -502,9 +542,9 @@ public final class CalcEngine
   }
 
   private void rollUp() {
-    Real tmp = stack[stack.length-1];
-    String tmpStr = strStack[stack.length-1];
-    for (int i=stack.length-1; i>0; i--) {
+    Real tmp = stack[STACK_SIZE-1];
+    String tmpStr = strStack[STACK_SIZE-1];
+    for (int i=STACK_SIZE-1; i>0; i--) {
       stack[i] = stack[i-1];
       strStack[i] = strStack[i-1];
     }
@@ -515,12 +555,12 @@ public final class CalcEngine
   private void rollDown() {
     Real tmp = stack[0];
     String tmpStr = strStack[0];
-    for (int i=0; i<stack.length-1; i++) {
+    for (int i=0; i<STACK_SIZE-1; i++) {
       stack[i] = stack[i+1];
       strStack[i] = strStack[i+1];
     }
-    stack[stack.length-1] = tmp;
-    strStack[stack.length-1] = tmpStr;
+    stack[STACK_SIZE-1] = tmp;
+    strStack[STACK_SIZE-1] = tmpStr;
   }
 
   private void enter() {
@@ -634,8 +674,8 @@ public final class CalcEngine
       case CLEAR:                          break;
     }
     rollDown();
-    stack[stack.length-1].assign(Real.ZERO);
-    strStack[stack.length-1] = empty;
+    stack[STACK_SIZE-1].assign(Real.ZERO);
+    strStack[STACK_SIZE-1] = empty;
     if (cmd!=CLEAR)
       strStack[0] = null;
     repaint(-1);
@@ -711,6 +751,7 @@ public final class CalcEngine
         }
         break;
       case XCHGMEM:
+        allocMem();
         tmp = stack[0];
         stack[0] = mem[param];
         mem[param] = tmp;
@@ -721,40 +762,47 @@ public final class CalcEngine
       case TO_H:    x.fromDHMS(); break;
 
       case LIN_YEST:
+        allocStat();
         statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
         x.mul(rTmp2);
         x.add(rTmp3);
         break;
       case LIN_XEST:
+        allocStat();
         statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
         x.sub(rTmp3);
         x.div(rTmp2);
         break;
       case LOG_YEST:
+        allocStat();
         statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMy,SUMy2,SUMylnx);
         x.ln();
         x.mul(rTmp2);
         x.add(rTmp3);
         break;
       case LOG_XEST:
+        allocStat();
         statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMy,SUMy2,SUMylnx);
         x.sub(rTmp3);
         x.div(rTmp2);
         x.exp();
         break;
       case EXP_YEST:
+        allocStat();
         statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMlny,SUMln2y,SUMxlny);
         x.mul(rTmp2);
         x.add(rTmp3);
         x.exp();
         break;
       case EXP_XEST:
+        allocStat();
         statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMlny,SUMln2y,SUMxlny);
         x.ln();
         x.sub(rTmp3);
         x.div(rTmp2);
         break;
       case POW_YEST:
+        allocStat();
         statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMlnxlny);
         x.ln();
         x.mul(rTmp2);
@@ -762,6 +810,7 @@ public final class CalcEngine
         x.exp();
         break;
       case POW_XEST:
+        allocStat();
         statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMlnxlny);
         x.ln();
         x.sub(rTmp3);
@@ -823,10 +872,17 @@ public final class CalcEngine
   private void sum(int cmd) {
     if (inputInProgress)
       parseInput();
+    allocStat();
     Real x = stack[0];
     Real y = stack[1];
     switch (cmd) {
       case SUMPL:
+        statLog[statLogEnd*2] = x.toFloatBits();
+        statLog[statLogEnd*2+1] = y.toFloatBits();
+        statLogEnd = (statLogEnd+1)%STATLOG_SIZE;
+        if (statLogEnd == statLogStart) // This leaves one unused entry!
+          statLogStart = (statLogStart+1)%STATLOG_SIZE;
+
         SUM1.add(Real.ONE);
         SUMx.add(x);
         rTmp.assign(x);
@@ -861,6 +917,10 @@ public final class CalcEngine
         SUMlnxlny.add(rTmp2);
         break;
       case SUMMI:
+        // Statistics log: can't do anything except delete last input
+        if (statLogEnd != statLogStart)
+          statLogStart = (statLogStart+STATLOG_SIZE-1)%STATLOG_SIZE;
+
         SUM1.sub(Real.ONE);
         SUMx.sub(x);
         rTmp.assign(x);
@@ -901,6 +961,7 @@ public final class CalcEngine
   private void stat2(int cmd) {
     if (inputInProgress)
       parseInput();
+    allocStat();
     rollUp();
     rollUp();
     Real x = stack[0];
@@ -914,8 +975,8 @@ public final class CalcEngine
         y.assign(SUMy);
         y.div(SUM1);
         break;
-      case PSTDEV:
       case STDEV:
+      case PSTDEV:
         // s_x = sqrt((SUMx2-sqr(SUMx)/n)/(n-1))
         // S_x = sqrt((SUMx2-sqr(SUMx)/n)/n)
         x.assign(SUMx);
@@ -985,6 +1046,7 @@ public final class CalcEngine
   private void stat1(int cmd) {
     if (inputInProgress)
       parseInput();
+    allocStat();
     rollUp();
     Real x = stack[0];
     switch (cmd) {
@@ -1086,15 +1148,20 @@ public final class CalcEngine
       case STO:
         if (inputInProgress)
           parseInput();
+        allocMem();
         mem[param].assign(stack[0]);
         break;
       case STP:
         if (inputInProgress)
           parseInput();
+        allocMem();
         mem[param].add(stack[0]);
         break;
       case RCL:
-        recall(mem[param]);
+        if (mem != null)
+          recall(mem[param]);
+        else
+          recall(Real.ZERO);
         break;
       case CLMEM:
         clearMem();
@@ -1328,11 +1395,148 @@ public final class CalcEngine
         if (inputInProgress)
           parseInput();
         break;
+      case FREE_MEM:
+        if (inputInProgress)
+          parseInput();
+        rollUp();
+        rollUp();
+        Runtime.getRuntime().gc();
+        stack[0].assign(Runtime.getRuntime().freeMemory());
+        stack[1].assign(Runtime.getRuntime().totalMemory());
+        strStack[0] = null;
+        strStack[1] = null;
+        repaint(-1);
+        break;
     }
   }
 
-  public void setMaxWidth(int max) {
-    format.maxwidth = max;
-    clearStrings();
+  private int rangeScale(Real x, Real min, Real max, int size) {
+    if (!x.isFinite())
+      return 0x7fffffff;
+    rTmp.assign(x);
+    rTmp.sub(min);
+    rTmp2.assign(max);
+    rTmp2.sub(min);
+    rTmp.div(rTmp2);
+    rTmp2.assign(size-1);
+    rTmp.mul(rTmp2);
+    rTmp.round();
+    return rTmp.toInteger();
+  }
+
+  public boolean draw(int cmd, Graphics g, int gx, int gy, int gw, int gh) {
+    if (SUM1 == null || statLogStart == statLogEnd)
+      return false;
+    Real xMin = new Real();
+    Real xMax = new Real();
+    Real yMin = new Real();
+    Real yMax = new Real();
+    Real x = new Real();
+    Real y = new Real();
+    Real a = new Real();
+    Real b = new Real();
+    int i,xi,yi,pyi;
+
+    // Find boundaries
+    for (i=statLogStart; i!=statLogEnd; i = (i+1)%STATLOG_SIZE) {
+      x.assignFloatBits(statLog[i*2]);
+      y.assignFloatBits(statLog[i*2+1]);
+      if (x.isFinite() && y.isFinite()) {
+        if (x.lessThan(xMin))    xMin.assign(x);
+        if (x.greaterThan(xMax)) xMax.assign(x);
+        if (y.lessThan(yMin))    yMin.assign(y);
+        if (y.greaterThan(yMax)) yMax.assign(y);
+      }
+    }
+    if (xMin.equals(xMax) || yMin.equals(yMax))
+      return false;
+    // Expand boundaries by 10%
+    rTmp.assign("1.1");
+    xMin.mul(rTmp);
+    xMax.mul(rTmp);
+    yMin.mul(rTmp);
+    yMax.mul(rTmp);
+
+    // shrink window by 4 pixels
+    gx += 2;
+    gy += 2;
+    gw -= 4;
+    gh -= 4;
+
+    // Draw axis
+    g.setColor(0,255,0);
+    xi = gx+rangeScale(Real.ZERO,xMin,xMax,gw);
+    yi = gy+rangeScale(Real.ZERO,yMax,yMin,gh);
+    g.drawLine(xi,gy-1,xi,gy+gh);
+    g.drawLine(gx-1,yi,gx+gw,yi);
+
+    // Draw points
+    g.setColor(255,255,255);
+    for (i=statLogStart; i!=statLogEnd; i = (i+1)%STATLOG_SIZE) {
+      x.assignFloatBits(statLog[i*2]);
+      y.assignFloatBits(statLog[i*2+1]);
+      if (x.isFinite() && y.isFinite()) {
+        xi = gx+rangeScale(x,xMin,xMax,gw);
+        yi = gy+rangeScale(y,yMax,yMin,gh);
+        g.drawLine(xi,yi-1,xi,yi+1);
+        g.drawLine(xi-1,yi,xi+1,yi);
+      }
+    }
+
+    // Draw graph
+    g.setColor(255,0,0);
+    switch (cmd) {
+      case AVG_DRAW:
+        x.assign(SUMx);
+        x.div(SUM1);
+        y.assign(SUMy);
+        y.div(SUM1);
+        if (x.isFinite() && y.isFinite()) {
+          xi = gx+rangeScale(x,xMin,xMax,gw);
+          yi = gy+rangeScale(y,yMax,yMin,gh);
+          g.fillRect(xi-1,yi-1,3,3);
+        }
+        return true;
+      case LIN_DRAW:
+        statAB(a,b,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
+        break;
+      case LOG_DRAW:
+        statAB(a,b,SUMlnx,SUMln2x,SUMy,SUMy2,SUMylnx);
+        break;
+      case EXP_DRAW:
+        statAB(a,b,SUMx,SUMx2,SUMlny,SUMln2y,SUMxlny);
+        break;
+      case POW_DRAW:
+        statAB(a,b,SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMlnxlny);
+        break;
+    }
+    pyi = -1;
+    for (xi=0; xi<gw; xi++) {
+      x.assign(xi);
+      rTmp.assign(gw-1);
+      x.div(rTmp);
+      rTmp.assign(xMax);
+      rTmp.sub(xMin);
+      x.mul(rTmp);
+      x.add(xMin);
+      if (cmd==LOG_DRAW || cmd==POW_DRAW)
+        x.ln();
+      y.assign(x);
+      y.mul(a);
+      y.add(b);
+      if (cmd==EXP_DRAW || cmd==POW_DRAW)
+        y.exp();
+      yi = rangeScale(y,yMax,yMin,gh);
+      if (yi>=0 && yi<gh) {
+        if (pyi > 0)
+          g.drawLine(xi-1+gx,pyi+gy,xi+gx,yi+gy);
+        pyi = yi;
+      } else {
+        if (pyi > 0)
+          break; // We have drawn from inside to outside
+        pyi = -1;
+      }
+    }
+    return true;
   }
 }

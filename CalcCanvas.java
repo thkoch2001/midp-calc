@@ -12,7 +12,7 @@ public class CalcCanvas
 //   basic    ->            -      *      /      +/-
 //   math     -> simple  -> 1/x    x^2    x^1/2  %chg
 //            -> pow     -> y^x    y^1/x  ln     e^x
-//            -> prob    -> Py,x   Cy,x   x!     random factorize
+//            -> comb    -> Py,x   Cy,x   x!     random factorize
 //            -> pow10/2 -> log    10^x   log2   2^x
 //            -> pol     -> r->p   p->r   atan2  hypot
 //   trig     -> normal  -> sin    cos    tan
@@ -135,34 +135,35 @@ public class CalcCanvas
             new Menu("s_x_, s_y_",CalcEngine.STDEV),
             new Menu("~x~w",CalcEngine.AVGXW),
             new Menu("S_x_, S_y_",CalcEngine.PSTDEV),
+            new Menu("draw",CalcEngine.AVG_DRAW),
           }),
           new Menu("ax+b",new Menu[] {
             new Menu("a,b", CalcEngine.LIN_AB),
             new Menu("y^*^",CalcEngine.LIN_YEST),
             new Menu("x^*^",CalcEngine.LIN_XEST),
             new Menu("r",   CalcEngine.LIN_R),
-            //new Menu("draw",CalcEngine.LIN_DRAW),
+            new Menu("draw",CalcEngine.LIN_DRAW),
           }),
           new Menu("alnx+b",new Menu[] {
             new Menu("a,b", CalcEngine.LOG_AB),
             new Menu("y^*^",CalcEngine.LOG_YEST),
             new Menu("x^*^",CalcEngine.LOG_XEST),
             new Menu("r",   CalcEngine.LOG_R),
-            //new Menu("draw",CalcEngine.LOG_DRAW),
+            new Menu("draw",CalcEngine.LOG_DRAW),
           }),
           new Menu("be^ax",new Menu[] {
             new Menu("a,b", CalcEngine.EXP_AB),
             new Menu("y^*^",CalcEngine.EXP_YEST),
             new Menu("x^*^",CalcEngine.EXP_XEST),
             new Menu("r",   CalcEngine.EXP_R),
-            //new Menu("draw",CalcEngine.EXP_DRAW),
+            new Menu("draw",CalcEngine.EXP_DRAW),
           }),
           new Menu("bx^a",new Menu[] {
             new Menu("a,b", CalcEngine.POW_AB),
             new Menu("y^*^",CalcEngine.POW_YEST),
             new Menu("x^*^",CalcEngine.POW_XEST),
             new Menu("r",   CalcEngine.POW_R),
-            //new Menu("draw",CalcEngine.POW_DRAW),
+            new Menu("draw",CalcEngine.POW_DRAW),
           }),
         }),
         new Menu("sums",new Menu[] {
@@ -286,7 +287,7 @@ public class CalcCanvas
       new Menu("log_2",CalcEngine.LOG2),
       new Menu("log_10",CalcEngine.LOG10),
     }),
-    new Menu("prob",new Menu[] {
+    new Menu("comb",new Menu[] {
       new Menu("random",CalcEngine.RANDOM),
       new Menu("P y,x",CalcEngine.PYX),
       new Menu("C y,x",CalcEngine.CYX),
@@ -332,6 +333,7 @@ public class CalcCanvas
     new Menu("not",CalcEngine.NOT),
     new Menu("y<<x",CalcEngine.YUPX),
     new Menu("y>>x",CalcEngine.YDNX),
+    new Menu("",CalcEngine.FREE_MEM),
   });
 
   private static final int menuColor [] = {
@@ -354,6 +356,7 @@ public class CalcCanvas
   private boolean repeating = false;
   private boolean internalRepaint = false;
   private int offX, offY, nDigits, nLines, numberWidth, numberHeight;
+  private boolean graph = false, graphVisible = false;
 
   private Menu [] menuStack;
   private int menuStackPtr;
@@ -670,20 +673,32 @@ public class CalcCanvas
     }
 
     if (numRepaintLines >= 0) {
-      if (menuStackPtr < 0 || !internalRepaint) {
-        if (numRepaintLines > nLines)
-          numRepaintLines = nLines;
-        if (numRepaintLines > 16)
-          numRepaintLines = 16;
-
-        for (int i=0; i<numRepaintLines; i++)
-          drawNumber(g,i,cleared);
+      graphVisible = false;
+      if (graph) {
+        graphVisible = calc.draw(menuCommand,g,
+                                 0,smallMenuFont.getHeight()-1,getWidth(),
+                                 getHeight()-smallMenuFont.getHeight()+1);
+        graph = false;
       }
-      if (menuStackPtr >= 0)
-        drawMenu(g);
+      if (!graphVisible) {
+        if (menuStackPtr < 0 || !internalRepaint) {
+          if (numRepaintLines > nLines)
+            numRepaintLines = nLines;
+          if (numRepaintLines > 16)
+            numRepaintLines = 16;
+
+          for (int i=0; i<numRepaintLines; i++)
+            drawNumber(g,i,cleared);
+        }
+        if (menuStackPtr >= 0)
+          drawMenu(g);
+      }
     }
     internalRepaint = false;
-    numRepaintLines = -1;
+    if (graphVisible)
+      numRepaintLines = 100; // Clear graph on next paint
+    else
+      numRepaintLines = -1;
   }
 
   private void checkRepaint() {
@@ -699,6 +714,12 @@ public class CalcCanvas
   }
 
   private void clearKeyPressed() {
+    if (graphVisible) {
+      graphVisible = false;
+      numRepaintLines = 100;
+      menuStackPtr = -2; // should not continue by clearing the input...
+      return;
+    }
     if (menuStackPtr >= 0) {
       menuStackPtr--;
       if (menuStackPtr >= 0)
@@ -771,6 +792,11 @@ public class CalcCanvas
         } else if (command >= NUMBER_0 && command <= NUMBER_15) {
           // Number has been entered for previous command
           calc.command(menuCommand,command-NUMBER_0);
+        } else if (command >= CalcEngine.AVG_DRAW &&
+                   command <= CalcEngine.POW_DRAW) {
+          menuCommand = command;
+          graph = true;          // graph drawing on next repaint
+          numRepaintLines = 100; // Force repaint of all
         } else {
           // Normal calculator command
           calc.command(command,0);
