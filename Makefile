@@ -3,6 +3,7 @@ TARGETS = Calc.jar Calc.jad
 
 WTK_HOME = /home/roarl/ant/WTK104
 JFLAGS = --bootclasspath=$(WTK_HOME)/lib/midpapi.zip -Wall -C -d . -O2
+#JFLAGS = -bootclasspath $(WTK_HOME)/lib/midpapi.zip -d . -O
 
 JAVAFILES  = Calc.java \
              CalcCanvas.java \
@@ -37,8 +38,10 @@ Calc.jad: Makefile
 	echo "MIDlet-1: Calc, , ral.Calc"            >> $@
 
 Calc.jar: $(JAVAFILES) Calc.jad
+	rm -rf ral
 	gcj $(JFLAGS) $(JAVAFILES)
+#	javac $(JFLAGS) $(JAVAFILES)
 	ant -buildfile build.xml -Dwtk.home=${WTK_HOME} make-jar
 
 clean:
-	rm -rf $(TARGETS) ral GFontBase.java pgm2java
+	rm -rf $(TARGETS) ral GFontBase.java pgm2java *~
