@@ -5,31 +5,37 @@ import javax.microedition.lcdui.*;
 final class GFont
     extends GFontBase
 {
-  static final int MEDIUM = 0;
-  static final int SMALL  = 1;
+  static final int SMALL  = 0;
+  static final int MEDIUM = 1;
   static final int LARGE  = 2;
 
   private final String char_bits;
   private final int char_width;
   private final int char_height;
   private Image [] char_cache;
+  private final int style;
 
   public GFont(int style)
   {
-    if ((style & SMALL) != 0) {
-      char_width = small_char_width;
-      char_height = small_char_height;
-      char_bits = small_char_bits;
+    this.style = style;
+    if ((style & MEDIUM) != 0) {
+      char_width = medium_char_width;
+      char_height = medium_char_height;
+      char_bits = medium_char_bits;
     } else if ((style & LARGE) != 0) {
       char_width = large_char_width;
       char_height = large_char_height;
       char_bits = large_char_bits;
     } else {
-      char_width = medium_char_width;
-      char_height = medium_char_height;
-      char_bits = medium_char_bits;
+      char_width = small_char_width;
+      char_height = small_char_height;
+      char_bits = small_char_bits;
     }
     char_cache = new Image[32*3];
+  }
+
+  public int getStyle() {
+    return style;
   }
 
   private int charToIndex(char c) {
@@ -43,6 +49,8 @@ final class GFont
     if (image == null) {
       image = Image.createImage(char_width,char_height);
       Graphics g2 = image.getGraphics();
+      g2.setColor(0);
+      g2.fillRect(0,0,char_width,char_height);
       for (int y2=0; y2<char_height; y2++)
         for (int x2=0; x2<char_width; x2++) {
           int red,green,blue;
@@ -55,8 +63,10 @@ final class GFont
           green = ((char_bits.charAt(bitPos/8)>>(bitPos&7))&3)*70;
           bitPos += 2;
           blue = ((char_bits.charAt(bitPos/8)>>(bitPos&7))&3)*85;
-          g2.setColor(red,green,blue);
-          g2.fillRect(x2,y2,1,1);
+          if (red != 0 || green != 0 || blue != 0) {
+            g2.setColor(red,green,blue);
+            g2.fillRect(x2,y2,1,1);
+          }
         }
       char_cache[index] = image;
     }
