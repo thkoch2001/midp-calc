@@ -6,8 +6,8 @@
 //   Real(int)                              <==  int
 //   Real(long)                             <==  long
 //   Real(String)                           <==  "-1.234E+56"
-//   Real(String, int base)                 <==  "-1.234E+56"
-//   Real(int s, int e, long m)             <==  -1^s * m * 2^e
+//   Real(String, int base)                 <==  "-1.234E+56" / "/fff3.2E-10"
+//   Real(int s, int e, long m)             <==  (-1)^s * 2^(e-62) * m
 //   Real(byte[] data, int offset)          <==  data[offset]..data[offset+11]
 //   assign(Real)
 //   assign(int)
@@ -19,8 +19,8 @@
 //
 // Output:
 //   String toString()                      ==>  "-1.234E+56"
-//   String toString(int base)              ==>  "-1.234E+56" / "-f.feE+56"
-//   String toString(NumberFormat)          ==>  e.g. "-1 234 567,8900"
+//   String toString(int base)              ==>  "-1.234E+56" / "03.feE+56"
+//   String toString(NumberFormat)          ==>  e.g. "-1'234'567,8900"
 //   int toInteger()                        ==>  int
 //   long toLong()                          ==>  long
 //   void toBytes(byte[] data, int offset)  ==>  data[offset]..data[offset+11]
@@ -113,6 +113,7 @@
 //   ZERO     = 0
 //   ONE      = 1
 //   TWO      = 2
+//   THREE    = 3
 //   FIVE     = 5
 //   TEN      = 10
 //   HALF     = 1/2
@@ -136,6 +137,7 @@
 //   INF      = infinity
 //   INF_N    = -infinity
 //   ZERO_N   = -0
+//   ONE_N    = -1
 //
 package ral;
 
@@ -148,6 +150,7 @@ public final class Real
   public static final Real ZERO   = new Real(0,0x00000000,0x0000000000000000L);
   public static final Real ONE    = new Real(0,0x40000000,0x4000000000000000L);
   public static final Real TWO    = new Real(0,0x40000001,0x4000000000000000L);
+  public static final Real THREE  = new Real(0,0x40000001,0x6000000000000000L);
   public static final Real FIVE   = new Real(0,0x40000002,0x5000000000000000L);
   public static final Real TEN    = new Real(0,0x40000003,0x5000000000000000L);
   public static final Real HALF   = new Real(0,0x3fffffff,0x4000000000000000L);
@@ -334,8 +337,11 @@ public final class Real
   }
 
   public void copysign(final Real a) {
-    if (!isNan())
-      sign = a.sign;
+    if (isNan() || a.isNan()) {
+      makeNan();
+      return;
+    }
+    sign = a.sign;
   }
 
   public void normalize() {
@@ -1694,7 +1700,7 @@ public final class Real
     sign = 0;
 
     boolean recp = false;
-    if (compare(ONE)>0) {
+    if (this.greaterThan(ONE)) {
       recp = true;
       recip();
     }
