@@ -17,7 +17,7 @@
 
 <h1>Calc - Scientific, Statistical & Financial Java Calculator</h1>
 
-<img src="Calc.jpg" align=right alt="">
+<img src="/~roarl/Calc.jpg" align=right alt="">
 
 <b>Current version: 1.09</b><br>
 
@@ -82,21 +82,21 @@ The following MIDP phones/devices have been tested or surveyed for
 usability with the application:
 
 <ul>
-  <li><b>Sony Ericsson T610</b>: Tested ok. (If you have an early
+  <li><b>Sony Ericsson T610</b>: Tested OK. (If you have an early
   version of T610, consider upgrading the software, according to <a
   href="http://www.sonyericsson.com/developer/site/global/newsandevents/latestnews/newsaug03/p_j2me_app_t610.jsp">this</a>.
   It may make your Java applications run <i>much</i> faster, and fixes
   bugs)
   <li><b>Sony Ericsson Z600, T616, T630, P800, P900</b>: Not
-  tested. Probably works ok
-  <li><b>Nokia 6100</b>: Tested ok
-  <li><b>Nokia 7600</b>: Tested ok
-  <li><b>Nokia 3510i</b>: Tested ok. Awkward with the small screen and
+  tested. Probably works OK
+  <li><b>Nokia 6100</b>: Tested OK
+  <li><b>Nokia 7600</b>: Tested OK
+  <li><b>Nokia 3510i</b>: Tested OK. Awkward with the small screen and
   without joystick, but fully functional
   <li><b>Nokia 3100, 3105, 3200, 3300, 3520, 3530, 3560, 3586i, 3595,
   3620, 3650, 3660, 5100, 5140, 6200, 6220, 6225, 6230, 6560,
   6600, 6610, 6650, 6800, 6810, 6820, 7200, 7210, 7250, 7250i,
-  7650</b>: Not tested. Probably works ok 
+  7650</b>: Not tested. Probably works OK 
   <li><b>Nokia 3410, 3570, 3585, 3585i, 3590, 6310i, 7700, 8910i,
   9210i, 9290, N-Gage</b>: Not tested. May work, but there can be
   issues with small screen, black/white screen or lack of joystick or
@@ -105,7 +105,7 @@ usability with the application:
   <li><b>Motorola</b>: I have no idea
 </ul>
 
-Plese notify me if you can use the application without problems on any
+Please notify me if you can use the application without problems on any
 of the devices that have not been tested and also devices not on my list.
 
 <h1>User manual</h1>
@@ -115,6 +115,7 @@ of the devices that have not been tested and also devices not on my list.
 <dt><a href="Calc.html#Keys">Keys</a></dt>
 <dt><a href="Calc.html#Setup">Setup</a></dt>
 <dt><a href="Calc.html#RPN">RPN logic</a></dt>
+<dt><a href="Calc.html#Menu">Menu</a></dt>
 <dt><a href="Calc.html#Operations">Operations</a></dt>
 <dd><dl>
   <dt><a href="Calc.html#Basic">Basic</a></dt>
@@ -275,10 +276,84 @@ href="http://www.hpmuseum.org/rpn.htm">here</a>, except that the
 "ENTER" key works as in the HP <a
 href="http://www.hpmuseum.org/rpnvers.htm#rpl">RPL</a> system.<br>
 
+<h2><a id="Menu" name="Menu">Menu</a></h2>
+
+Pressing the middle of the joystick activates the menu. You select
+sub-menus by pressing one of the 5 joystick directions up, left,
+right, down or middle. The next sub-menu will replace the previous
+menu as you proceed. The following illustration shows the main menu
+(light blue titled "menu") and the first level of sub-menus (minus the
+"mode" sub-menu). In the case of the "special" sub-menu, the three
+subsequent sub-menus activated by the right joystick button are
+shown. Sub-menu entries are printed in normal text and actual
+operations are printed in bold text. Through this hierarchical system,
+more than 100 operations can be reached.<br>
+
+<br>
+<table cellpadding="1" cellspacing="1" border="0">
+  <tr>
+    <td></td><td></td>
+    <td align="center" valign="middle"><img
+    src="/~roarl/Calc_menu1.gif" alt="" width=101 height=83></td>
+  </tr>
+  <tr>
+    <td></td><td></td>
+    <td align="center" valign="middle">&uarr;</td>
+  </tr>
+  <tr>
+    <td align="center" valign="middle"><img
+    src="/~roarl/Calc_menu2.gif" alt="" width=101 height=83></td>
+    <td align="center" valign="middle"><br>&larr;</td>
+    <td align="center" valign="middle"><img
+    src="/~roarl/Calc_menu0.gif" alt="" width=101 height=83></td>
+    <td align="center" valign="middle"><br>&rarr;</td>
+    <td rowspan="1" colspan="2"
+    align="center" valign="middle"><img src="/~roarl/Calc_menu3.gif"
+    alt="" width=101 height=83></td>
+  </tr>
+  <tr>
+    <td></td><td></td>
+    <td align="center" valign="middle">&darr;</td>
+  </tr>
+  <tr>
+    <td></td><td></td>
+    <td rowspan="2" colspan="1"
+    align="center" valign="middle"><img src="/~roarl/Calc_menu4.gif"
+    alt="" width=101 height=83></td>
+  </tr>
+  <tr>
+    <td></td><td></td><td></td>
+    <td align="center" valign="middle"><br>&rarr;</td>
+    <td align="center" valign="middle"><img
+    src="/~roarl/Calc_menu5.gif" alt="" width=101 height=83></td>
+    <td align="center" valign="middle"><br>&rarr;</td>
+    <td align="center" valign="middle"><img
+    src="/~roarl/Calc_menu6.gif" alt="" width=101 height=83></td>
+    <td align="center" valign="middle"><br>&rarr;</td>
+    <td align="center" valign="middle"><img
+    src="/~roarl/Calc_menu7.gif" alt="" width=101 height=83></td>
+  </tr>
+</table>
+<br>
+
+<br>
+Once you've familiarized yourself with the layout, you don't need to
+press the middle joystick button to activate the main menu. Pressing
+up/down/right/left on the joystick without activating the main menu
+first activates the corresponding sub-menu directly. In this way, you
+can reach the most used "ENTER" and "<b>+</b>" operations in one
+keyclick (they are not on the menu, but on soft-keys), and the rest
+of the most basic operations, "<b>-</b>", "<b>*</b>", "<b>/</b>",
+"<b>+/-</b>" and "<b>%</b>" in just two keyclicks.<br>
+
+<br>Since the middle joystick button can be a bit difficult to press,
+care has been taken not to place the most used functions and sub-menus
+on the middle button. Pressing "clear" while navigating the menus
+backtracks up one level of menus.
+
 <h2><a id="Operations" name="Operations">Operations</a></h2>
 
-The following operations are available through the menu system,
-accessed by the joystick or arrow keys:
+The following operations are available through the menu system:
 
 <h3><a id="Basic" name="Basic">Basic</a></h3>
 
@@ -594,7 +669,7 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
 
 <h3><a id="AbnormalNote" name="AbnormalNote">Abnormal results</a></h3>
 
-The calculator implements infinites and nan following the IEEE754
+The calculator implements infinities and nan following the IEEE754
 logic. It is impossible to enter abnormal numbers through the
 keyboard, but they are easily obtained by calculation. If an operation
 produces a result larger than the largest representable number, an
@@ -710,7 +785,7 @@ less than 1000000), the date-time format is instead interpreted as the
 days-time format ddddHH.MMSS, where dddd is the number of days. When
 you convert from hours back to date-time format, it is enough that the
 number of hours is greater than 8784 (i.e. 24 hours times 366, number
-of days in year 0) for the converter to switch back to yymmddHH.MMSS
+of days in year 0) for the converter to switch back to yyyymmddHH.MMSS
 format. This means that for dddd between 366 and 9999, converting from
 ddddHH.MMSS to hours and back again will not yield the original
 input.<br>
@@ -795,3 +870,4 @@ get days, and subtract 678941.<br>
 
 </body>
 </html>
+
