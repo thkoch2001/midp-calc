@@ -627,6 +627,7 @@ public final class Real
   private static Real lnTmp = new Real();
   private static Real lnTmp2 = new Real();
   private static Real lnTmp3 = new Real();
+  private static Real lnTmp4 = new Real();
   private static Real tmp1 = new Real();
   private static Real tmp2 = new Real();
   private static Real tmp3 = new Real();
@@ -1176,21 +1177,18 @@ public final class Real
     sub(expTmp);
     mul(LN2);
 
-    // Using the classic Taylor series.
-    //                       2        3        4
-    //   x                  x        x        x
-    //  e  =   1  +  x  +  ----  +  ----  +  ----  +  ...
-    //                      2!       3!       4!
-
-//     expTmp.assign(this);
-//     expTmp2.assign(this);
-//     add(ONE);
-//     for (int i=2; i<18; i++) {
-//       expTmp2.mul(expTmp);
-//       expTmp3.assign(i);
-//       expTmp2.div(expTmp3);
-//       add(expTmp2);
-//     }
+    // Calculate e^x for 0 < x < ln 2
+    // Using the classic Taylor series
+    //                       2        3        4        5
+    //   x                  x        x        x        x
+    //  e  =   1  +  x  +  ----  +  ----  +  ----  +  ----  +  ...
+    //                      2!       3!       4!       5!
+    //
+    // , factorized as follows:
+    //
+    //  x   (((((...)*x + 5...)*x + 4*5...)*x + 3*4*5...)*x + 2*3*4*5...)*x
+    // e  = --------------------------------------------------------------- + 1
+    //                              2*3*4*5...
 
     expTmp.assign(this);
     expTmp2.assign(ONE);
@@ -1274,13 +1272,18 @@ public final class Real
   
   private void lnInternal() {
     // Calculates natural logarithm ln(a) for numbers between 1 and 2, using
-    //
-    //                                3        5        7
-    //      x+1           /          x        x        x          \
-    //  ln ----- =   2 *  |  x  +   ----  +  ----  +  ---- + ...  |
-    //      x-1           \          3        5        7          /
+    // the series
+    //                          3        5        7
+    //  1      x+1             x        x        x
+    // --- ln ----- =  x  +   ----  +  ----  +  ---- + ...
+    //  2      x-1             3        5        7
     //
     // ,where x = (a-1)/(a+1)
+    // The expression is factorized as follows:
+    //
+    // ((((...)*7x² + 9...)*5x² + 7*9...)*3x² + 5*7*9...)*x² + 3*5*7*9...)*x
+    // ---------------------------------------------------------------------
+    //                              1*3*5*7*9...
 
     lnTmp.assign(this);
     lnTmp.add(ONE);
@@ -1290,13 +1293,18 @@ public final class Real
     lnTmp.assign(this);
     lnTmp2.assign(this);
     lnTmp2.sqr();
-    for (int i=3; i<40; i+=2) {
-      lnTmp.mul(lnTmp2);
-      lnTmp3.assign(i);
-      lnTmp3.recipInternal();
-      lnTmp3.mul(lnTmp);
+    assign(ONE);
+    lnTmp3.assign(ONE);
+    for (int i=37; i>=3; i-=2) {
+      mul(lnTmp2);
+      lnTmp4.assign(i-2);
+      mul(lnTmp4);
+      lnTmp4.assign(i);
+      lnTmp3.mul(lnTmp4);
       add(lnTmp3);
     }
+    mul(lnTmp);
+    div(lnTmp3);
     scalbn(1);
   }
   
@@ -1501,47 +1509,63 @@ public final class Real
 
   private void sinInternal() {
     // Calculate sine for 0 < x < pi/4
-    // Using the classic Taylor series.
-    //                      3        5        7
-    //                     x        x        x
-    //  sin(x)  =   x  -  ----  +  ----  -  ----  +  ...
-    //                     3!       5!       7!
+    // Using the classic Taylor series
+    //                     3        5        7
+    //                    x        x        x
+    // sin(x)  =   x  -  ----  +  ----  -  ----  +  ...
+    //                    3!       5!       7!
+    //
+    // , factorized as follows:
+    //
+    //         ((((...)*-x² + 6*7...)*-x² + 4*5*6*7...)*-x² + 2*3*4*5*6*7...)*x
+    // sin(x) = ---------------------------------------------------------------
+    //                                  2*3*4*5*6*7...
 
     tmp1.assign(this);
     tmp2.assign(this);
     tmp2.sqr();
     tmp2.neg();
-    for (int i=3; i<18; i+=2) {
-      tmp1.mul(tmp2);
-      tmp3.assign(i);
-      tmp4.assign(i-1);
+    assign(ONE);
+    tmp3.assign(ONE);
+    for (int i=19; i>=3; i-=2) {
+      mul(tmp2);
+      tmp4.assign(i*(i-1));
       tmp3.mul(tmp4);
-      tmp1.div(tmp3);
-      add(tmp1);
+      add(tmp3);
     }
+    mul(tmp1);
+    div(tmp3);
   }
 
   private void cosInternal() {
     // Calculate cosine for 0 < x < pi/4
-    // Using the classic Taylor series.
-    //                      2        4        6
-    //                     x        x        x
-    //  cos(x)  =   1  -  ----  +  ----  -  ----  +  ...
-    //                     2!       4!       6!
+    // Using the classic Taylor series
+    //                     2        4        6
+    //                    x        x        x
+    // cos(x)  =   1  -  ----  +  ----  -  ----  +  ...
+    //                    2!       4!       6!
+    //
+    // , factorized as follows:
+    //
+    //          (((...)*-x² + 5*6...)*-x² + 3*4*5*6...)*-x²
+    // cos(x) = ------------------------------------------- + 1
+    //                          1*2*3*4*5*6...
 
+    tmp1.assign(this);
     tmp2.assign(this);
     tmp2.sqr();
     tmp2.neg();
-    assign(ONE);
-    tmp1.assign(ONE);
-    for (int i=2; i<19; i+=2) {
-      tmp1.mul(tmp2);
-      tmp3.assign(i);
-      tmp4.assign(i-1);
+    assign(tmp2);
+    tmp3.assign(ONE);
+    for (int i=18; i>=4; i-=2) {
+      tmp4.assign(i*(i-1));
       tmp3.mul(tmp4);
-      tmp1.div(tmp3);
-      add(tmp1);
+      add(tmp3);
+      mul(tmp2);
     }
+    tmp3.scalbn(1);
+    div(tmp3);
+    add(ONE);
   }
 
   public void sin() {
@@ -1627,22 +1651,33 @@ public final class Real
   private void atanInternal() {
     // Calculate atan for 0 < x < sqrt(2)-1
     // Using the classic Taylor series.
-    //                       3        5        7
-    //                      x        x        x
-    //  atan(x)  =   x  -  ----  +  ----  -  ----  +  ...
     //                      3        5        7
+    //                     x        x        x
+    // atan(x)  =   x  -  ----  +  ----  -  ----  +  ...
+    //                     3        5        7
+    //
+    // , factorized as follows:
+    //
+    //           (((...)*-5x² + 7...)*-3x² + 5*7...)*-x² + 3*5*7...)*x
+    // atan(x) = -----------------------------------------------------
+    //                                 1*3*5*7...
 
     tmp1.assign(this);
     tmp2.assign(this);
     tmp2.sqr();
     tmp2.neg();
-    for (int i=3; i<48; i+=2) {
-      tmp1.mul(tmp2);
-      tmp3.assign(i);
-      tmp3.recipInternal();
-      tmp3.mul(tmp1);
+    assign(ONE);
+    tmp3.assign(ONE);
+    for (int i=45; i>=3; i-=2) {
+      mul(tmp2);
+      tmp4.assign(i-2);
+      mul(tmp4);
+      tmp4.assign(i);
+      tmp3.mul(tmp4);
       add(tmp3);
     }
+    mul(tmp1);
+    div(tmp3);
   }
 
   public void atan() {
