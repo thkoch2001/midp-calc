@@ -4,7 +4,7 @@
   <meta http-equiv="content-type"
  content="text/html; charset=ISO-8859-1">
   <title>Calc - Scientific, Statistical & Financial Java Calculator</title>
-<style>
+<style type="text/css">
 <!--
   A.black:link {color: #000000}
   A.black:visited {color: #000000}
@@ -17,9 +17,9 @@
 
 <h1>Calc - Scientific, Statistical & Financial Java Calculator</h1>
 
-<img src="Calc.jpg" align=right>
+<img src="Calc.jpg" align=right alt="">
 
-<b>Current version: 1.08</b><br>
+<b>Current version: 1.09</b><br>
 
 Copyright: Roar Lauritzsen, email: <a
 href="&#109;&#097;&#105;&#108;&#116;&#111;&#058;&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;">&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;</a><br>
@@ -27,17 +27,13 @@ href="&#109;&#097;&#105;&#108;&#116;&#111;&#058;&#114;&#111;&#097;&#114;&#108;&#
 Contribute: <font size=-1><i>If you find this program useful, you can
 contribute to future work by submitting e.g. $10 to my
 &#080;&#097;&#121;&#080;&#097;&#108; account <a class="black"
-href="https://www.&#112;&#097;&#121;&#112;&#097;&#108;.com/xclick/business=&#114;&#111;&#097;&#114;&#108;%40&#112;&#118;&#118;&#046;&#111;&#114;&#103;&item_name=Calc+-+Java+Calculator">&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;</a></i></font><br>
+href="https://www.&#112;&#097;&#121;&#112;&#097;&#108;.com/xclick/business=&#114;&#111;&#097;&#114;&#108;%40&#112;&#118;&#118;&#046;&#111;&#114;&#103;&#038;item_name=Calc+-+Java+Calculator">&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;</a></i></font><br>
 
 <br>
 Calc is a Java calculator for MIDP devices, such as a Java-enabled
 cell-phone or PDA. It was developed for Sony Ericsson T610, which is
 my current phone but which has such a lousy built-in calculator that I
-was forced to develop this application. (If you have an early version
-of T610, consider upgrading the software, according to <a
-href="http://www.sonyericsson.com/developer/site/global/newsandevents/latestnews/newsaug03/p_j2me_app_t610.jsp">this</a>.
-It may make your Java applications run <i>much</i> faster, and fixes
-bugs.)<br>
+was forced to develop this application.<br>
 
 <br>
 Calc works much like a good old HP calculator with RPN logic, but the
@@ -55,9 +51,9 @@ calculators and computers. The exponent is 31 bits, which allows for
 numbers up to 4.197E+323228496. Handy when you want to calculate the
 factorial of 40000000.<br>
 
-<font color="800000">
-<h2>Disclaimer</h2>
+<h2><font color="800000">Disclaimer</font></h2>
 
+<font color="800000">
 The Calc Java program is supplied "AS IS". The author disclaims all
 warranties, expressed or implied, including, without limitation, the
 warranties of merchantability and of fitness for any purpose. The
@@ -86,23 +82,27 @@ The following MIDP phones/devices have been tested or surveyed for
 usability with the application:
 
 <ul>
-  <li><b>Sony Ericsson T610</b>: Tested ok</li>  
+  <li><b>Sony Ericsson T610</b>: Tested ok. (If you have an early
+  version of T610, consider upgrading the software, according to <a
+  href="http://www.sonyericsson.com/developer/site/global/newsandevents/latestnews/newsaug03/p_j2me_app_t610.jsp">this</a>.
+  It may make your Java applications run <i>much</i> faster, and fixes
+  bugs)
   <li><b>Sony Ericsson Z600, T616, T630, P800, P900</b>: Not
-  tested. Probably works ok</li>
-  <li><b>Nokia 6100</b>: Tested ok</li>
-  <li><b>Nokia 7600</b>: Tested ok</li>
+  tested. Probably works ok
+  <li><b>Nokia 6100</b>: Tested ok
+  <li><b>Nokia 7600</b>: Tested ok
   <li><b>Nokia 3510i</b>: Tested ok. Awkward with the small screen and
-  without joystick, but fully functional</li>
+  without joystick, but fully functional
   <li><b>Nokia 3100, 3105, 3200, 3300, 3520, 3530, 3560, 3586i, 3595,
-  3620, 3650, 3660, 5100, 5140, 6100, 6200, 6220, 6225, 6230, 6560,
+  3620, 3650, 3660, 5100, 5140, 6200, 6220, 6225, 6230, 6560,
   6600, 6610, 6650, 6800, 6810, 6820, 7200, 7210, 7250, 7250i,
-  7650</b>: Not tested. Probably works ok</li> 
+  7650</b>: Not tested. Probably works ok 
   <li><b>Nokia 3410, 3570, 3585, 3585i, 3590, 6310i, 7700, 8910i,
   9210i, 9290, N-Gage</b>: Not tested. May work, but there can be
   issues with small screen, black/white screen or lack of joystick or
-  input keys</li>
-  <li><b>Siemens</b>: Apparently, it does not work with the S55</li>
-  <li><b>Motorola</b>: I have no idea</li>
+  input keys
+  <li><b>Siemens</b>: Apparently, it does not work with the S55
+  <li><b>Motorola</b>: I have no idea
 </ul>
 
 Plese notify me if you can use the application without problems on any
@@ -110,7 +110,44 @@ of the devices that have not been tested and also devices not on my list.
 
 <h1>User manual</h1>
 
-<h2>Keys</h2>
+<dl>
+<dt><b>Table of contents</b></dt>
+<dt><a href="Calc.html#Keys">Keys</a></dt>
+<dt><a href="Calc.html#Setup">Setup</a></dt>
+<dt><a href="Calc.html#RPN">RPN logic</a></dt>
+<dt><a href="Calc.html#Operations">Operations</a></dt>
+<dd><dl>
+  <dt><a href="Calc.html#Basic">Basic</a></dt>
+  <dt><a href="Calc.html#Math">Math</a></dt>
+  <dt><a href="Calc.html#Trig">Trigonometric</a></dt>
+  <dt><a href="Calc.html#Bitwise">Bitwise operations</a></dt>
+  <dt><a href="Calc.html#Special">Special</a></dt>
+  <dd><dl>
+    <dt><a href="Calc.html#Stack">Stack</a></dt>
+    <dt><a href="Calc.html#Memory">Memory</a></dt>
+    <dt><a href="Calc.html#Statistical">Statistical</a></dt>
+    <dt><a href="Calc.html#Financial">Financial</a></dt>
+    <dt><a href="Calc.html#Time">Time and date</a></dt>
+  </dl></dd>
+  <dt><a href="Calc.html#Mode">Mode</a></dt>
+  <dd><dl>
+    <dt><a href="Calc.html#Number">Number</a></dt>
+    <dt><a href="Calc.html#Separators">Separators</a></dt>
+    <dt><a href="Calc.html#Base">Base</a></dt>
+    <dt><a href="Calc.html#Monitoring">Monitoring</a></dt>
+    <dt><a href="Calc.html#Fonts">Fonts</a></dt>
+  </dl></dd>
+</dl></dd>
+<dt><a href="Calc.html#Notes">Notes</a></dt>
+<dd><dl>
+  <dt><a href="Calc.html#AbnormalNote">Abnormal results</a></dt>
+  <dt><a href="Calc.html#FinancialNote">Financial calculation</a></dt>
+  <dt><a href="Calc.html#BinaryNote">Binary representation</a></dt>
+  <dt><a href="Calc.html#DateNote">Date calculation</a></dt>
+</dl></dd>
+</dl>
+
+<h2><a id="Keys" name="Keys">Keys</a></h2>
 
 To be able to navigate efficiently through function menus, Calc is
 best operated on a phone with a 5-way "joystick" or equivalent arrow
@@ -121,30 +158,31 @@ configurable keys below the display). The keys are mapped as follows:
   <li><b>0-9</b>: The number keys are used to enter numbers and as shortcuts
 when executing commands that take a number argument (STO, FIX,
 etc). In hexadecimal mode, you can enter the digits a-f by holding down the
-keys 1-6 until the digit changes.</li> 
-  <li><b>*</b> : This key is used to enter the decimal point.</li>
+keys 1-6 until the digit changes. 
+  <li><b>*</b> : This key is used to enter the decimal point.
   <li><b>#</b> : This key is used to enter a minus sign or an "E" for
   exponent. In HEX/OCT/BIN mode, the same key can be used to enter a
   "/". This sign is used to prefix a negative two's complement number
   and should be read as "an infinite number of 1-bits preceding the
   number". Pressing the # key again exchanges the "/" with a normal
   minus sign, indicating the input of a normal negative number
-  which will be converted to two's complement on ENTER.</li>
+  which will be converted to two's complement on ENTER.
   <li><b>ENTER</b>: This key finishes the currently entered number and puts
   it on the stack. If no number is being entered, the lowest element
-  on the stack is duplicated.</li>
+  on the stack is duplicated.
   <li><b>clear, 'c'</b>: This key deletes the last digit in an entered
   number, clears the lowest element on the stack, and backtracks
-  through menus.</li> 
-  <li><b>+</b> : This key adds the two lowest elements on the stack.</li>
+  through menus. 
+  <li><b>+</b> : This key adds the two lowest elements on the stack.
   <li><b>Joystick/arrow keys</b>: Pressing the middle of the joystick
   activates the menu. Pressing up/down/right/left on the joystick
-  activates the corresponding sub-menu directly. Sub-menus are entered
+  activates the corresponding sub-menu directly (you don't need to
+  press the middle of the joystick first). Sub-menus are entered
   by further navigation with the joystick until an actual operation is
-  activated.</li>
+  activated.
 </ul>
 
-<h2>Setup</h2>
+<h2><a id="Setup" name="Setup">Setup</a></h2>
 
 To be able to use Calc on devices with fewer keys than the T610 (most
 Nokias, that is), a couple of setup dialogs will appear the first time
@@ -178,7 +216,7 @@ you only have a two-way joystick or none at all, the number keys 2, 4,
 that case, you can only hope that the menu will be activated by "dial"
 or some other button, otherwise you will be stuck.
 
-<h2>RPN logic</h2>
+<h2><a id="RPN" name="RPN">RPN logic</a></h2>
 
 If you are familiar with RPN logic, e.g. from a HP calculator, skip
 forward to the next section.<br>
@@ -226,389 +264,335 @@ x:         | 3_     |   3.00 | 2_     |   2.00 | 4_     |   6.00 |  18.00 |
 
 <br>
 Notice that you don't need to press "ENTER" after the "4" (but you
-<i>could</i>), the following "+" operation makes that unnecessary. As
-you press "+", the 2 and the 4 are added to produce 6, and the 3 jumps
-down, ready for the "*" operation.<br>
+<i>could</i>), because the following "+" operation makes it clear that
+you are finished keying the number. As you press "+", the 2 and the 4
+are added to produce 6, and the 3 jumps down, ready for the "*"
+operation.<br>
 
 <br>
-If you are used to normal arithmetic expressions, such as 3*(2+4), all
-you need to realize in order to understand RPN is that what the
-expression really represents is a graph, and that the different ways
-to <i>write</i> the expression is nothing else than different ways of
-traversing the graph. These are the graphs describing the arithmetic
-expressions above: <br>
+A more thorough RPN tutorial can be found <a
+href="http://www.hpmuseum.org/rpn.htm">here</a>, except that the
+"ENTER" key works as in the HP <a
+href="http://www.hpmuseum.org/rpnvers.htm#rpl">RPL</a> system.<br>
 
-<pre>
-       +           *
-      / \         / \
-     3   7       3   +
-                    / \
-                   2   4
-</pre>
-
-</br>
-The graphs are always traversed from the top node, going down to child
-nodes on the left first and child nodes to the right after,
-recursively. In the second example graph the sequence would be like
-this: starting with *, we go down left to 3, up again to *, down right
-to +, down left to 2, up again to +, down right to 4, up again to +,
-and finally up to *.<br>
-
-<br>
-The way we write the expression represented by the graph depends on
-the order we write the elements down as we traverse. We don't want to
-write a node more than once. In normal arithmetic expressions, we
-write a node by writing first an opening parenthesis, then the left
-child, then the content of the node itself, then the right child, and
-finally a closing parenthesis. Like this:
-(&nbsp;3&nbsp;+&nbsp;7&nbsp;), and this:
-(&nbsp;3&nbsp;*&nbsp;(&nbsp;2&nbsp;+&nbsp;4&nbsp;)&nbsp;).<br>
-
-<br>
-In polish notation, used e.g. in the Lisp programming language, we
-write a node by writing first an opening parenthesis, then the content
-of the node itself, then the left child, then the right child, and
-finally a closing parenthesis. Like this:
-(&nbsp;+&nbsp;3&nbsp;7&nbsp;), and this:
-(&nbsp;*&nbsp;3&nbsp;(&nbsp;+&nbsp;2&nbsp;4&nbsp;)&nbsp;). It looks a
-bit like the function calls of other programming languages,
-multiply(3,add(2,4)), and indeed "*" and "+" are simply function names
-in Lisp.<br>
-
-<br>
-In reverse polish notation, RPN, we write a node by writing first an
-opening parenthesis, then the left child, then the right child, then
-the content of the node itself, and finally a closing
-parenthesis. Like this: (&nbsp;3&nbsp;7&nbsp;+&nbsp;), and this:
-(&nbsp;3&nbsp;(&nbsp;2&nbsp;4&nbsp;+&nbsp;)&nbsp;*&nbsp;). Notice that
-we can dispense with the parentheses altogether and just write 3, 2,
-4, +, *, which is <i>exactly</i> as expressions are entered in this
-calculator.<br>
-
-<br>
-If you haven't noticed already, I have just taken you for a ride in a
-college-level computer programming course, and it was probably less
-fun for you than it was for me, haha. What you really need to do to
-learn RPN is to play with the calculator, enter numbers and do some
-operations to see what happens.<br>
-
-
-<h2>Operations</h2>
+<h2><a id="Operations" name="Operations">Operations</a></h2>
 
 The following operations are available through the menu system,
 accessed by the joystick or arrow keys:
 
-<h3>Basic</h3>
+<h3><a id="Basic" name="Basic">Basic</a></h3>
 
 <ul>
-  <li><b>-</b> : Subtract x from y</li>
-  <li><b>*</b> : Multiply x and y</li>
-  <li><b>/</b> : Divide y by x</li>
-  <li><b>+/-</b> : Change sign of x</li>
+  <li><b>-</b> : Subtract x from y
+  <li><b>*</b> : Multiply x and y
+  <li><b>/</b> : Divide y by x
+  <li><b>+/-</b> : Change sign of x
   <li><b>%</b> : Calculate x percent of y. This operation leaves y standing,
   so you can add or subtract the result directly using + or -. To add
-  24% to 42, press "42", "ENTER", "24", "%", "+"</li>
+  24% to 42, press "42", "ENTER", "24", "%", "+"
 </ul>
 
-<h3>Math</h3>
+<h3><a id="Math" name="Math">Math</a></h3>
 
 <ul>
-  <li>Simple</li>
+  <li>Simple
   <ul>
-    <li><b>1/x</b>: Calculate the reciprocal of x</li>
-    <li><b>x²</b>: Calculate the square of x</li>
+    <li><b>1/x</b>: Calculate the reciprocal of x
+    <li><b>x²</b>: Calculate the square of x
     <li><b>&#8730;<span style="text-decoration: overline;">x</span></b>:
-    Calculate the square root of x</li>
+    Calculate the square root of x
     <li><b>%chg</b>: Calculate percentage of change from y to x,
-  i.e. 100·(x-y)/y</li>
+  i.e. 100·(x-y)/y
   </ul>
-  <li>Power</li>
+  <li>Power
   <ul>
-    <li><b>e<sup>x</sup></b>: Calculate the natural exponential</li>
-    <li><b>ln</b>: Calculate the natural logarithm</li>
-    <li><b>y<sup>x</sup></b>: Calculate y to the power of x</li>
+    <li><b>e<sup>x</sup></b>: Calculate the natural exponential
+    <li><b>ln</b>: Calculate the natural logarithm
+    <li><b>y<sup>x</sup></b>: Calculate y to the power of x
     <li><b><sup>x</sup>&#8730;<span style="text-decoration:
   overline;">y</span></b>: Calculate the x'th root of y. Works with
-  negative values of y if x is an odd integer.</li>
+  negative values of y if x is an odd integer.
   </ul>
-  <li>Powers of 10 and 2</li>
+  <li>Powers of 10 and 2
   <ul>
-    <li><b>10<sup>x</sup></b>: Calculates10 to the power of x</li>
-    <li><b>log<sub>10</sub></b>: Calculate base-10 logarithm of x</li>
-    <li><b>2<sup>x</sup></b>: Calculate 2 to the power of x</li>
-    <li><b>log<sub>2</sub></b>: Calculate base-2 logarithm of x</li>
+    <li><b>10<sup>x</sup></b>: Calculates10 to the power of x
+    <li><b>log<sub>10</sub></b>: Calculate base-10 logarithm of x
+    <li><b>2<sup>x</sup></b>: Calculate 2 to the power of x
+    <li><b>log<sub>2</sub></b>: Calculate base-2 logarithm of x
   </ul>
-  <li>Combinatorial</li>
+  <li>Combinatorial
   <ul>
     <li><b>P y,x</b>: Calculate number of permutations (unordered subsets)
-    when x elements is taken from a population of y</li>
+    when x elements is taken from a population of y
     <li><b>C y,x</b>: Calculate number of combinations (ordered subsets)
-    when x elements is taken from a population of y</li>
+    when x elements is taken from a population of y
     <li><b>x!</b> : Calculate the factorial of x. For non-integer values,
-    &#915;(x+1) is calculated</li>
+    &#915;(x+1) is calculated
     <li><b>random</b>: Calculate a random number uniformly distributed
-    in the range [0.0, 1.0)</li>
+    in the range [0.0, 1.0)
     <li><b>factorize</b>: Find greatest prime factor (of integer input
   less than 2³¹). This factor and the original number
   divided by the factor is placed on the stack... repeat! If input is
   not integer, it is rounded. If input is too large, the result will
   be "nan". Factorizing large random numbers is fun: Press "31",
-  "2<sup>x</sup>", "random", "*", "factorize", "factorize", ...</li>
+  "2<sup>x</sup>", "random", "*", "factorize", "factorize", ...
   </ul>
-  <li>Polar coordinates</li>
+  <li>Polar coordinates
   <ul>
     <li><b>r&rarr;p</b>: Convert rectangular coordinates (x,y) to polar
-(x=radius, y=angle)</li>
+(x=radius, y=angle)
     <li><b>p&rarr;r</b>: Convert polar coordinates (x=radius, y=angle) to
-rectangular (x,y)</li>
+rectangular (x,y)
     <li><b>atan<sub>2</sub></b>: Calculate the arctangent of y/x, in the range -&#960;
-to &#960; (or -180 to 180 in DEG mode)</li>
-    <li><b>hypot</b>: Calculate &#8730;<span style="text-decoration: overline;">x²+y²</span></li>
+to &#960; (or -180 to 180 in DEG mode)
+    <li><b>hypot</b>: Calculate &#8730;<span style="text-decoration: overline;">x²+y²</span>
   </ul>
-  <li>Integer operations</li>
+  <li>Integer operations
   <ul>
-    <li><b>round</b>: Round x to nearest integer</li>
-    <li><b>ceil</b>: Round x towards positive infinity</li>
-    <li><b>floor</b>: Round x towards negative infinity</li>
-    <li><b>trunc</b>: Remove fractional part of x (round towards zero)</li>
-    <li><b>frac</b>: Remove integer part of x, i.e. calculate x-trunc(x)</li>
+    <li><b>round</b>: Round x to nearest integer
+    <li><b>ceil</b>: Round x towards positive infinity
+    <li><b>floor</b>: Round x towards negative infinity
+    <li><b>trunc</b>: Remove fractional part of x (round towards zero)
+    <li><b>frac</b>: Remove integer part of x, i.e. calculate x-trunc(x)
   </ul>
 </ul>
 
-<h3>Trigonometric</h3>
+<h3><a id="Trig" name="Trig">Trigonometric</a></h3>
 
 <ul>
-  <li>Normal</li>
+  <li>Normal
   <ul>
-    <li><b>sin</b>: Calculate the sine of x</li>
-    <li><b>cos</b>: Calculate the cosine of x</li>
-    <li><b>tan</b>: Calculate the tangent of x</li>
+    <li><b>sin</b>: Calculate the sine of x
+    <li><b>cos</b>: Calculate the cosine of x
+    <li><b>tan</b>: Calculate the tangent of x
   </ul>
-  <li>Arc</li>
+  <li>Arc
   <ul>
-    <li><b>asin</b>: Calculate the arc sine of x</li>
-    <li><b>acos</b>: Calculate the arc cosine of x</li>
-    <li><b>atan</b>: Calculate the arc tangent of x</li>
+    <li><b>asin</b>: Calculate the arc sine of x
+    <li><b>acos</b>: Calculate the arc cosine of x
+    <li><b>atan</b>: Calculate the arc tangent of x
   </ul>
-  <li>Hyperbolic</li>
+  <li>Hyperbolic
   <ul>
-    <li><b>sinh</b>: Calculate the hyperbolic sine of x</li>
-    <li><b>cosh</b>: Calculate the hyperbolic cosine of x</li>
-    <li><b>tanh</b>: Calculate the hyperbolic tangent of x</li>
+    <li><b>sinh</b>: Calculate the hyperbolic sine of x
+    <li><b>cosh</b>: Calculate the hyperbolic cosine of x
+    <li><b>tanh</b>: Calculate the hyperbolic tangent of x
   </ul>
-  <li>Arc hyperbolic</li>
+  <li>Arc hyperbolic
   <ul>
-    <li><b>asinh</b>: Calculate the arc hyperbolic sine of x</li>
-    <li><b>acosh</b>: Calculate the arc hyperbolic cosine of x</li>
-    <li><b>atanh</b>: Calculate the arc hyperbolic tangent of x</li>
+    <li><b>asinh</b>: Calculate the arc hyperbolic sine of x
+    <li><b>acosh</b>: Calculate the arc hyperbolic cosine of x
+    <li><b>atanh</b>: Calculate the arc hyperbolic tangent of x
   </ul>
-  <li>More</li>
+  <li>More
   <ul>
-    <li><b>RAD/DEG</b>: Switch between radians and degrees as measure of angles</li>
-    <li><b>&rarr;RAD</b>: Convert from degrees to radians</li>
-    <li><b>&rarr;DEG</b>: Convert from radians to degrees</li>
-    <li><b>&#960;</b>: Enters the number &#960;</li>
+    <li><b>RAD/DEG</b>: Switch between radians and degrees as measure of angles
+    <li><b>&rarr;RAD</b>: Convert from degrees to radians
+    <li><b>&rarr;DEG</b>: Convert from radians to degrees
+    <li><b>&#960;</b>: Enters the number &#960;
   </ul>
 </ul>
 
-<h3>Bitwise operations (available instead of math/trig in HEX/OCT/BIN mode)</h3>
+<h3><a id="Bitwise" name="Bitwise">Bitwise operations (available
+instead of math/trig in HEX/OCT/BIN mode)</a></h3>
 
 <ul>
-  <li><b>and</b>: Calculate bitwise AND of x and y</li>
-  <li><b>or</b>: Calculate bitwise OR of x and y</li>
-  <li><b>xor</b>: Calculate bitwise XOR of x and y</li>
+  <li><b>and</b>: Calculate bitwise AND of x and y
+  <li><b>or</b>: Calculate bitwise OR of x and y
+  <li><b>xor</b>: Calculate bitwise XOR of x and y
   <li><b>bic</b>: Bit-clear, clear all bits from y that is set in x,
-  i.e. calculate y AND NOT x</li>
-  <li><b>y&lt;&lt;x</b>: Shift up y by integer number of bits in x</li>
-  <li><b>y&gt;&gt;x</b>: Shift down y by integer number of bits in x</li>
+  i.e. calculate y AND NOT x
+  <li><b>y&lt;&lt;x</b>: Shift up y by integer number of bits in x
+  <li><b>y&gt;&gt;x</b>: Shift down y by integer number of bits in x
+
   <li><b>not</b>: Invert all bits in x. Fractional bits are ignored,
-  i.e. the calculated value is x XOR -1</li>
+  i.e. the calculated value is x XOR -1
 </ul>
 
-<h3>Special</h3>
+<h3><a id="Special" name="Special">Special</a></h3>
 
 <ul>
-  <li>Stack</li>
+  <li><a id="Stack" name="Stack">Stack</a>
   <ul>
-    <li><b>LAST x</b>: Recall value of x before last operation</li>
+    <li><b>LAST x</b>: Recall value of x before last operation
     <li><b>undo</b>: Undo previous stack operation. Memory, statistical and
   financial operations, in addition to clear stack, cannot be
   undone. In operations involving both stack and one of the other
-  modules, such as x&harr;mem, only the stack is restored</li>
-    <li><b>x&harr;y</b>: Exchange x and y elements of the stack</li>
-    <li><b>RCL st#</b>: Copy any stack location</li>
-    <li><b>clear</b>: Clear the stack</li>
+  modules, such as x&harr;mem, only the stack is restored
+    <li><b>x&harr;y</b>: Exchange x and y elements of the stack
+    <li><b>RCL st#</b>: Copy any stack location
+    <li><b>clear</b>: Clear the stack
   </ul>
-  <li>Memory</li>
+  <li><a id="Memory" name="Memory">Memory</a>
   <ul>
-    <li><b>STO</b>: Store x in memory location</li>
-    <li><b>STO+</b>: Add x to memory location</li>
-    <li><b>RCL</b>: Recall memory location</li>
-    <li><b>x&harr;mem</b>: Exchange x with any memory location</li>
-    <li><b>clear</b>: Clear memory</li>
+    <li><b>STO</b>: Store x in memory location
+    <li><b>STO+</b>: Add x to memory location
+    <li><b>RCL</b>: Recall memory location
+    <li><b>x&harr;mem</b>: Exchange x with any memory location
+    <li><b>clear</b>: Clear memory
   </ul>
-  <li>Statistical</li>
+  <li><a id="Statistical" name="Statistical">Statistical</a>
   <ul>
-    <li><b>&#931;+</b> : Add x and y to statistics</li>
-    <li><b>&#931;-</b> : Subtract x and y from statistics</li>
-    <li><b>clear</b>: Clear statistics</li>
-    <li>Results</li>
+    <li><b>&#931;+</b> : Add x and y to statistics
+    <li><b>&#931;-</b> : Subtract x and y from statistics
+    <li><b>clear</b>: Clear statistics
+    <li>Results
     <ul>
-      <li>average</li>
+      <li>average
       <ul>
         <li><b><span style="text-decoration: overline;">x</span>,<span
         style="text-decoration: overline;">y</span></b>: Calculate mean x
-        and mean y values, i.e. &#931;x/n</li>
+        and mean y values, i.e. &#931;x/n
         <li><b><span style="text-decoration: overline;">x</span>w</b>:
         Calculate mean of x values weighted by the y values,
-        i.e. &#931;xy/&#931;y</li>
+        i.e. &#931;xy/&#931;y
         <li><b>s<sub>x</sub>,s<sub>y</sub></b>: Calculate sample standard
         of x and y values, i.e. &#931;(x-<span
-        style="text-decoration: overline;">x</span>)²/(n-1)</li>
+        style="text-decoration: overline;">x</span>)²/(n-1)
         <li><b>S<sub>x</sub>,S<sub>y</sub></b>: Calculate population standard
         deviation of x and y values, i.e. &#931;(x-<span
-        style="text-decoration: overline;">x</span>)²/n</li>
-        <li><b>draw</b>: Draw data points and plot average</li>
+        style="text-decoration: overline;">x</span>)²/n
+        <li><b>draw</b>: Draw data points and plot average
       </ul>
-      <li>Linear regression: y=ax+b</li>
+      <li>Linear regression: y=ax+b
       <ul>
-        <li><b>a,b</b>: Calculate coefficients, x=a, y=b</li>
-        <li><b>y<sup>*</sup></b>: Calculate estimated y for current x</li>
-        <li><b>x<sup>*</sup></b>: Calculate estimated x for current y</li>
-        <li><b>r</b>: Calculate correlation coefficient</li>
-        <li><b>draw</b>: Draw curve along with data points</li>
+        <li><b>a,b</b>: Calculate coefficients, x=a, y=b
+        <li><b>y<sup>*</sup></b>: Calculate estimated y for current x
+        <li><b>x<sup>*</sup></b>: Calculate estimated x for current y
+        <li><b>r</b>: Calculate correlation coefficient
+        <li><b>draw</b>: Draw curve along with data points
       </ul>
-      <li>Curve fitting: y=a·<i>ln</i>x+b</li>
-      <ul>
-        <li><b>a,b, y<sup>*</sup>, x<sup>*</sup>, r</b>: (see linear regression)
-      </ul>
-      <li>Curve fitting: y=b·e<sup>ax</sup></li>
+      <li>Curve fitting: y=a·<i>ln</i>x+b
       <ul>
         <li><b>a,b, y<sup>*</sup>, x<sup>*</sup>, r</b>: (see linear regression)
       </ul>
-      <li>Curve fitting: y=b·x<sup>a</sup></li>
+      <li>Curve fitting: y=b·e<sup>ax</sup>
+      <ul>
+        <li><b>a,b, y<sup>*</sup>, x<sup>*</sup>, r</b>: (see linear regression)
+      </ul>
+      <li>Curve fitting: y=b·x<sup>a</sup>
       <ul>
         <li><b>a,b, y<sup>*</sup>, x<sup>*</sup>, r</b>: (see linear regression)
       </ul>
     </ul>
-    <li>Sums</li>
+    <li>Sums
     <ul>
-      <li><b>n</b>: Recall number of statistics entered</li>
-      <li><b>&#931;x</b>: Recall sum of x'es</li>
-      <li><b>&#931;x²</b>: Recall sum of squared x'es</li>
-      <li><b>&#931;y</b>: Recall sum of y's</li>
-      <li><b>&#931;y²</b>: Recall sum of squared y's</li>
-      <li><b>&#931;xy</b>: Recall sum of x·y product</li>
-      <li><b>&#931;<i>ln</i>x</b>: Recall sum of <i>ln</i>x</li>
-      <li><b>&#931;<i>ln</i>²x</b>: Recall sum of <i>ln</i>²x</li>
-      <li><b>&#931;<i>ln</i>y</b>: Recall sum of <i>ln</i>y</li>
-      <li><b>&#931;<i>ln</i>²y</b>: Recall sum of <i>ln</i>²y</li>
-      <li><b>&#931;x<i>ln</i>y</b>: Recall sum of x·<i>ln</i>y</li>
-      <li><b>&#931;y<i>ln</i>x</b>: Recall sum of y·<i>ln</i>x</li>
+      <li><b>n</b>: Recall number of statistics entered
+      <li><b>&#931;x</b>: Recall sum of x'es
+      <li><b>&#931;x²</b>: Recall sum of squared x'es
+      <li><b>&#931;y</b>: Recall sum of y's
+      <li><b>&#931;y²</b>: Recall sum of squared y's
+      <li><b>&#931;xy</b>: Recall sum of x·y product
+      <li><b>&#931;<i>ln</i>x</b>: Recall sum of <i>ln</i>x
+      <li><b>&#931;<i>ln</i>²x</b>: Recall sum of <i>ln</i>²x
+      <li><b>&#931;<i>ln</i>y</b>: Recall sum of <i>ln</i>y
+      <li><b>&#931;<i>ln</i>²y</b>: Recall sum of <i>ln</i>²y
+      <li><b>&#931;x<i>ln</i>y</b>: Recall sum of x·<i>ln</i>y
+      <li><b>&#931;y<i>ln</i>x</b>: Recall sum of y·<i>ln</i>x
       <li><b>&#931;<i>ln</i>x<i>ln</i>y</b>: Recall sum of
-      <i>ln</i>x·<i>ln</i>y</li>
+      <i>ln</i>x·<i>ln</i>y
     </ul>
   </ul>
-  <li>Financial</li>
+  <li><a id="Financial" name="Financial">Financial</a>
   <ul>
-    <li><b>STO</b>: Store x in financial register (pv, fv, np, pmt, ir%)</li>
-    <li><b>RCL</b>: Recall financial register (pv, fv, np, pmt, ir%)</li>
+    <li><b>STO</b>: Store x in financial register (pv, fv, np, pmt, ir%)
+    <li><b>RCL</b>: Recall financial register (pv, fv, np, pmt, ir%)
     <li><b>solve</b>: Solve one financial value with respect to the
-    others</li>
+    others
     <ul>
-      <li><b>pv</b>: The <i>present value</i> in an account</li>
+      <li><b>pv</b>: The <i>present value</i> in an account
       <li><b>fv</b>: The <i>future value</i> after a certain number of
-      payment periods</li>
-      <li><b>np</b>: The <i>number</i> of payment <i>periods</i></li>
-      <li><b>pmt</b>: The amount of each periodic <i>payment</i></li>
+      payment periods
+      <li><b>np</b>: The <i>number</i> of payment <i>periods</i>
+      <li><b>pmt</b>: The amount of each periodic <i>payment</i>
       <li><b>ir%</b>: The <i>interest rate</i> on the account per period
-      (in percent)</li>
+      (in percent)
     </ul>
-    <li><b>clear</b>: Clear financial registers</li>
+    <li><b>clear</b>: Clear financial registers
     <li><b>END/BGN</b>: Switch between end of month payments and beginning of
-     month payments</li>
+     month payments
     <li><b>y%*x</b>: Interest multiply. Convert from nominal x-times-a-year
-  (e.g. monthly) interest rate to effective annual rate</li>
+  (e.g. monthly) interest rate to effective annual rate
     <li><b>y%/x</b>: Interest divide. Convert from effective annual interest
-  rate to nominal x-times-a-year rate</li>
+  rate to nominal x-times-a-year rate
   </ul>
-  <li>Time and date</li>
+  <li><a id="Time" name="Time">Time and date</a>
   <ul>
     <li><b>&rarr;H</b>: Convert x, interpreted as date, hours, minutes and
   seconds (format yyyymmddHH.MMSS) to hours. If year (yyyy) is zero,
   the format is instead understood as ddddHH.MMSS, where dddd is
-  number of days.</li>
+  number of days.
     <li><b>&rarr;DH.MS</b>: Convert x from hours to date, hours, minutes and
   seconds. If x&nbsp;&#8804;&nbsp;8784 hours, it is instead converted
-  to the format ddddHH.MMSS, where dddd is the number of days.</li> 
-    <li><b>date</b>: Get current date in DH.MS format</li>
+  to the format ddddHH.MMSS, where dddd is the number of days. 
+    <li><b>date</b>: Get current date in DH.MS format
     <li><b>time</b>: Get current time in DH.MS format (inaccurate on early
-  versions of T610 software)</li>
-    <li><b>DH.MS+</b>: Add x and y as date, hours, minutes and seconds</li>
+  versions of T610 software)
+    <li><b>DH.MS+</b>: Add x and y as date, hours, minutes and seconds
   </ul>
 </ul>
 
-<h3>Mode</h3>
+<h3><a id="Mode" name="Mode">Mode</a></h3>
 
 <ul>
-  <li>Number</li>
+  <li><a id="Number" name="Number">Number</a>
   <ul>
     <li><b>normal</b>: Set normal number mode, shows all digits but removes
-    trailing zeros</li>
+    trailing zeros
     <li><b>FIX</b>: Set fixed-decimal number mode, shows a fixed number of
-    digits after the decimal point</li>
+    digits after the decimal point
     <li><b>SCI</b>: Set scientific number mode, shows a fixed number of
-    digits after the decimal point in scientific format</li>
+    digits after the decimal point in scientific format
     <li><b>ENG</b>: Set engineering number mode, shows a fixed number of
     digits after the decimal point in engineering format, i.e. exponent is a
-    multiple of 3</li>
+    multiple of 3
   </ul>
-  <li>Separators</li>
+  <li><a id="Separators" name="Separators">Separators</a>
   <ul>
-    <li>point</li>
+    <li>point
     <ul>
-      <li><b>.</b> : Display the decimal point as a period</li>
-      <li><b>,</b> : Display the decimal point as a comma</li>
-      <li><b>keep</b>: Keep the decimal point even if no fraction is shown</li>
-      <li><b>remove</b>: Remove the decimal point if no fraction is shown</li>
+      <li><b>.</b> : Display the decimal point as a period
+      <li><b>,</b> : Display the decimal point as a comma
+      <li><b>keep</b>: Keep the decimal point even if no fraction is shown
+      <li><b>remove</b>: Remove the decimal point if no fraction is shown
     </ul>
-    <li>thousand</li>
+    <li>thousand
     <ul>
       <li><b>. or ,</b> : Display thousands separator as period or comma
-      (depending on decimal point)</li>
-      <li><b>space</b>: Display thousands separator as space</li>
-      <li><b>'</b> : Display thousands separator as '</li>
-      <li><b>none</b>: Display no thousands separator</li>
+      (depending on decimal point)
+      <li><b>space</b>: Display thousands separator as space
+      <li><b>'</b> : Display thousands separator as '
+      <li><b>none</b>: Display no thousands separator
     </ul>
   </ul>
-  <li>Base</li>
+  <li><a id="Base" name="Base">Base</a>
   <ul>
-    <li><b>DEC</b>: Set decimal (base-10) number mode</li>
-    <li><b>HEX</b>: Set hexadecimal (base-16) number mode</li>
-    <li><b>BIN</b>: Set binary (base-2) number mode</li>
-    <li><b>OCT</b>: Set octal (base-8) number mode</li>
+    <li><b>DEC</b>: Set decimal (base-10) number mode
+    <li><b>HEX</b>: Set hexadecimal (base-16) number mode
+    <li><b>BIN</b>: Set binary (base-2) number mode
+    <li><b>OCT</b>: Set octal (base-8) number mode
   </ul>
-  <li>Monitoring</li>
+  <li><a id="Monitoring" name="Monitoring">Monitoring</a>
   <ul>
     <li><b>mem</b>: Monitor first <i>n</i> memory locations in upper part
-    of the display</li>
-    <li><b>stat</b>: Monitor first <i>n</i> statistical registers</li>
-    <li><b>financial</b>: Monitor financial registers</li>
+    of the display
+    <li><b>stat</b>: Monitor first <i>n</i> statistical registers
+    <li><b>financial</b>: Monitor financial registers
   </ul>
-  <li>Fonts (this menu is available if you have a color screen,
-  otherwise system font is used)</li>
+  <li><a id="Fonts" name="Fonts">Fonts (this menu is available if you
+  have a color screen, otherwise system font is used)</a>
   <ul>
-    <li><b>small</b>: Set small font</li>
-    <li><b>medium</b>: Set medium font</li>
-    <li><b>large</b>: Set large font</li>
+    <li><b>small</b>: Set small font
+    <li><b>medium</b>: Set medium font
+    <li><b>large</b>: Set large font
     <li><b>system</b>: Set system font (should be mono-spaced, but this is not
-  the case on T610)</li>
+  the case on T610)
   </ul>
 </ul>
 
-<h2>Notes</h2>
+<h2><a id="Notes" name="Notes">Notes</a></h2>
 
-<h3>Abnormal results</h3>
+<h3><a id="AbnormalNote" name="AbnormalNote">Abnormal results</a></h3>
 
 The calculator implements infinites and nan following the IEEE754
 logic. It is impossible to enter abnormal numbers through the
@@ -645,7 +629,7 @@ Any operation involving nan produces nan, except nan to the power of
 0:<br>
 nan^0 = 1<br>
 
-<h3>Financial calculation</h3>
+<h3><a id="FinancialNote" name="FinancialNote">Financial calculation</a></h3>
 
 Remember to use negative values for owed balances and money paid to
 the account, positive values for balances in your favor and money
@@ -668,7 +652,7 @@ If you solve repeatedly and successively for each of the financial
 registers, the values may start to drift away from the original values
 because of inaccuracies during the calculations.<br>
 
-<h3>Binary representation</h3>
+<h3><a id="BinaryNote" name="BinaryNote">Binary representation</a></h3>
 
 In binary modes (HEX, OCT and BIN), fractional numbers are not
 displayed as integers, but are instead displayed with the fraction
@@ -700,7 +684,7 @@ occurs when the display cannot display all the significant digits of a
 number may cause inexact values to appear different in the display
 than their internal representation.<br>
 
-<h3>Date representation</h3>
+<h3><a id="DateNote" name="DateNote">Date calculation</a></h3>
 
 The calendar implemented by the DH.MS operations is strictly
 Gregorian, which did not take effect until 1582 in Catholic states and
@@ -729,7 +713,7 @@ number of hours is greater than 8784 (i.e. 24 hours times 366, number
 of days in year 0) for the converter to switch back to yymmddHH.MMSS
 format. This means that for dddd between 366 and 9999, converting from
 ddddHH.MMSS to hours and back again will not yield the original
-input.</br>
+input.<br>
 
 <br>
 Beware that you must specify the year with all four digits. If you
