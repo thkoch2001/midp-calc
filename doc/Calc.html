@@ -3,7 +3,8 @@
 <head>
   <meta http-equiv="content-type"
  content="text/html; charset=ISO-8859-1">
-  <title>Calc - Scientific, Statistical & Financial Java Calculator</title>
+  <title>Calc - Java Calculator: Scientific, Statistical, Financial,
+  Progarmmable, Graphing, RPN</title>
 <style type="text/css">
 <!--
   A.black:link {color: #000000}
@@ -15,11 +16,21 @@
 </head>
 <body>
 
-<h1>Calc - Scientific, Statistical & Financial Java Calculator</h1>
+<h1>Calc - Java Calculator for cell-phones and MIDP devices</h1>
+<b><font size="+1">
+<ul>
+  <li>Scientific
+  <li>Statistical
+  <li>Financial
+  <li>Programmable
+  <li>Graphing
+  <li>RPN
+</ul>
+</font></b>
 
 <img src="/~roarl/Calc.jpg" align=right alt="">
 
-<b>Current version: 1.21</b> <a
+<b>Current version: 2.00</b> <a
 href="Calc-log.html">change-log</a><br>
 
 <b>Copyright: 2003-2004 Roar Lauritzsen</b>, email: <a
@@ -34,9 +45,10 @@ to future work by submitting e.g. $10 to my
 href="https://www.&#112;&#097;&#121;&#112;&#097;&#108;.com/xclick/business=&#114;&#111;&#097;&#114;&#108;%40&#112;&#118;&#118;&#046;&#111;&#114;&#103;&#038;item_name=Calc+-+Java+Calculator">account</a>.
 <font size=-1>I am getting rich, so far I've made $20!</font><br>
 
-<br>
+<h2>Introduction</h2>
+
 Calc is a Java calculator for MIDP devices, such as a Java-enabled
-cell-phone or PDA. It was developed for Sony Ericsson T610, which is
+mobile phone or PDA. It was developed for Sony Ericsson T610, which is
 my current phone but which has such a lousy built-in calculator that I
 was forced to develop this application.<br>
 
@@ -49,7 +61,7 @@ instead of "(", ")" and "=". Additionally, being able to store and see
 intermediate results on the stack is very advantageous.<br>
 
 <br>
-Using my <a href="Real.html">Real</a> Java floating point library,
+Using the <a href="Real.html">Real</a> Java floating point library,
 Calc has 63 bits internal precision, which amounts to approximately 19
 decimal digits accuracy, considerably <i>more</i> than normal
 calculators and computers. The exponent is 31 bits, which allows for
@@ -80,6 +92,9 @@ links: <a
 href="http://gridbug.ods.org/calc.jad">http://gridbug.ods.org/calc.jad</a>,
 or <a
 href="http://gridbug.ods.org/calc.jar">http://gridbug.ods.org/calc.jar</a>
+
+<br>
+&rarr;&nbsp;&rarr;&nbsp;<a href="Calc-log.html">Older versions</a>
 
 <h2>Phones</h2>
 
@@ -146,7 +161,7 @@ of the devices that have not been tested and also devices not on my list.
   <dt><a href="Calc.html#Mode">Mode</a></dt>
   <dd><dl>
     <dt><a href="Calc.html#Number">Number</a></dt>
-    <dt><a href="Calc.html#Separators">Separators</a></dt>
+    <dt><a href="Calc.html#Prog">Programming</a></dt>
     <dt><a href="Calc.html#Base">Base</a></dt>
     <dt><a href="Calc.html#Monitoring">Monitoring</a></dt>
     <dt><a href="Calc.html#Fonts">Fonts</a></dt>
@@ -159,6 +174,7 @@ of the devices that have not been tested and also devices not on my list.
   <dt><a href="Calc.html#FinancialNote">Financial calculation</a></dt>
   <dt><a href="Calc.html#DateNote">Date calculation</a></dt>
   <dt><a href="Calc.html#ConstNote">Constants</a></dt>
+  <dt><a href="Calc.html#ProgNote">Programming</a></dt>
   <dt><a href="Calc.html#BinaryNote">Binary representation</a></dt>
 </dl></dd>
 </dl>
@@ -267,7 +283,8 @@ result. The rest of the stack remains the same. The element above x on
 the stack is called "y". In operations with two arguments, such as
 +,-,* and /, the x and y stack elements are removed from the stack and
 the result is placed on the stack instead, as the new x. The rest of
-the stack moves down one step.<br>
+the stack moves down one step. Sometimes the element above y is called
+"z".<br>
 
 <br>
 For instance, to calculate 3+7, one would press the following sequence
@@ -812,23 +829,64 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
     <li><b>ENG</b>: Set engineering number mode, shows a fixed number of
     digits after the decimal point in engineering format, i.e. exponent is a
     multiple of 3
-  </ul>
-  <li><a id="Separators" name="Separators">Separators</a>
-  <ul>
-    <li>point
+    <li>Separators
     <ul>
-      <li><b>.</b> : Display the decimal point as a period
-      <li><b>,</b> : Display the decimal point as a comma
-      <li><b>keep</b>: Keep the decimal point even if no fraction is shown
-      <li><b>remove</b>: Remove the decimal point if no fraction is shown
+      <li>point
+      <ul>
+        <li><b>.</b> : Display the decimal point as a period
+        <li><b>,</b> : Display the decimal point as a comma
+        <li><b>keep</b>: Keep the decimal point even if no fraction is shown
+        <li><b>remove</b>: Remove the decimal point if no fraction is shown
+      </ul>
+      <li>thousand
+      <ul>
+        <li><b>. or ,</b> : Display thousands separator as period or comma
+        (depending on decimal point)
+        <li><b>space</b>: Display thousands separator as space
+        <li><b>'</b> : Display thousands separator as '
+        <li><b>none</b>: Display no thousands separator
+      </ul>
     </ul>
-    <li>thousand
+  </ul>
+  <li><a id="Prog" name="Prog">Programming</a> <a
+    href="Calc.html#ProgNote"><b>(*)</b></a>
+  <ul>
+    <li><b>new</b>: Start entering a new program
+    <li><b>run</b>: Run a program
+    <li><b>draw</b>: Draw graph using a program. Prior to using this
+  operation, you should push min-x, max-x, min-y and max-y on the
+  stack, in that order
+    <li><b>clear</b>: Clear a program
+  </ul>
+  <li>Programming 2 (available while entering a new program)
+  <ul>
+    <li><b>finish</b>: Finish entering current program
+    <li><b>purge</b>: Start entering current program from
+  scratch. Faster than pressing "finish", "new" and selecting a
+  free spot and a program name again.
+    <li>Conditionals for programming
     <ul>
-      <li><b>. or ,</b> : Display thousands separator as period or comma
-      (depending on decimal point)
-      <li><b>space</b>: Display thousands separator as space
-      <li><b>'</b> : Display thousands separator as '
-      <li><b>none</b>: Display no thousands separator
+      <li><b>x=y?</b>: Push 1 on stack if x exactly equals y, otherwise 0
+      <li><b>x!=y?</b>: Push 1 on stack if x does not equal y, otherwise 0
+      <li><b>x&lt;y?</b>: Push 1 on stack if x is less than y, otherwise 0
+      <li><b>x&lt;=y?</b>: Push 1 on stack if x is less than or equal to y, otherwise 0
+      <li><b>x&gt;y?</b>: Push 1 on stack if x is greater than y, otherwise 0
+    </ul>
+    <li>Utility functions for programming
+    <ul>
+      <li><b>abs</b>: Calculate absolute value of x
+      <li><b>max</b>: Select maximum value of x and y
+      <li><b>min</b>: Select minimum value of x and y
+      <li><b>select</b>: Select y or z based on x, i.e. calculate
+  x·y+(1-x)·z. With this you can e.g. simulate "max" by pressing "x&gt;y?", "select"
+    </ul>
+    <li>Memory functions for programming
+    <ul>
+      <li><b>RCL[x]</b>: Recall memory location indirectly, using x as index (must be between 0 and 15).
+      <li><b>STO[x]</b>: Store <b>y</b> in memory location indirectly, using
+  x as index.
+      <li><b>STO+[x]</b>: Add <b>y</b> to memory location indirectly, using x
+  as index.
     </ul>
   </ul>
   <li><a id="Base" name="Base">Base</a> <a
@@ -1086,6 +1144,58 @@ Constants given using "&equiv;" are as accurate as the internal precision
 of Calc. Constants given using "&cong;" are not precisely known by
 science, but are as up-to-date as the CODATA internationally
 recommended values of 2002.
+
+<h3><a id="ProgNote" name="ProgNote">Programming</a></h3>
+
+(Programming is found on the "mode" menu because it was added last and
+I couldn't find a spot for it anywhere else. Despite this, not all
+operations reached from this menu are "mode-like".)<br>
+
+<br>
+The programming mode in Calc is basically a keyboard/command logging
+facility with playback. In programming mode (i.e. after executing
+"new"), all activity is stored in the current program, but the
+calculator looks and behaves exactly as before except a "PRG"
+indicator to the upper right. There is no limit to the size of a
+program, but beware, do not leave Calc in programming mode (look for
+the "PRG" indicator), because Calc will <b>eventually</b> run out of
+memory and exit.<br>
+
+<br>
+Programs cannot be viewed or edited, so if you perform the wrong
+operation you must start over using "purge". Using the "undo"
+operation does not remove any statements from the program, it only
+adds this operation to the program. If your program is complex, plan
+the steps beforehand on a piece of paper.</br>
+
+<br>
+The programming mode offers no control flow (if-statements) or looping
+(repeat-statements). However, some conditional, utility and memory
+indexing operations have been added. These operations can help
+accomplish complicated programs. For instance, programming <a
+href="http://mathworld.wolfram.com/CollatzProblem.html">Collatz
+Problem</a>; {If x is even, the next number in the sequence is x/2,
+otherwise it is 3x+1}. This program needs an if-statement, but you can
+get around this by calculating both values and selecting afterwards:
+"STO 0", "2", "/", "RCL 0", "3", "*", "1", "+", "RCL 0", "2", "mod",
+"select".<br>
+
+<br>
+When drawing graphs, a program is called repeatedly with different x
+values pushed on the stack. The values left in the x register when the
+program finishes is used as y values in the graph. You first need to
+tell Calc the ranges along the x axis and y axis that you want to see
+during drawing. If the program does not clutter the stack, the graph
+limits will remain on the stack when graph drawing is finished. If a
+program returns a complex value, the graph will split into two lines
+of different color.<br>
+
+<br>
+While drawing a graph, Calc will continue calculating new graph points
+and improving the graph indefinitely, until "BREAK" is pressed. Do not
+leave the program in this state, it will eat your battery. Graph
+drawing and calling other programs recursively cannot be
+programmed.<br>
 
 <h3><a id="BinaryNote" name="BinaryNote">Binary representation</a></h3>
 

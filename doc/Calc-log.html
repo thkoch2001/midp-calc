@@ -13,7 +13,17 @@ Financial Java Calculator</h1>
 <h2>Changelog:</h2>
 
 
-<h3>Version 1.21, 2004-09-07</h3>
+<h3>Version 2.00, 2004-09-15, (50kB)</h3>
+
+<ul>
+  <li>Simple programmability in the form of command macro
+  <li>Extra operations to improve programming
+  <li>Graph drawing of macro program
+  <li>Bugfix: Statistical results do not inherit imaginary parts from
+  top of stack
+</ul>
+
+<h3><a href="http://gridbug.ods.org/calc121.jar">Version 1.21</a>, 2004-09-07, (47kB)</h3>
 
 <ul>
   <li>Correct display of largest/smallest number, i.e. 4.197e323228496
@@ -26,7 +36,7 @@ Financial Java Calculator</h1>
   "time" module, US/metric conversion constants and scientific constants
 </ul>
 
-<h3>Version 1.17, 2004-06-03</h3>
+<h3><a href="http://gridbug.ods.org/calc117.jar">Version 1.17</a>, (46kB)</h3>
 
 <ul>
   <li>Added mod and div, rearranged menus slightly to fit
@@ -39,7 +49,7 @@ Financial Java Calculator</h1>
   <li>Bypassing setup dialog (that does not work) on the Z1010
 </ul>
 
-<h3>Version 1.15</h3>
+<h3><a href="http://gridbug.ods.org/calc115.jar">Version 1.15</a>, (43kB)</h3>
 
 <ul>
   <li>Bypassing setup dialogs on known devices (so far: T610, T630 and
@@ -53,7 +63,7 @@ Financial Java Calculator</h1>
   <li>50-70% speedup of all operations due to inlining of small functions
 </ul>
 
-<h3>Version 1.13</h3>
+<h3><a href="http://gridbug.ods.org/calc113.jar">Version 1.13</a>, (40kB)</h3>
 
 <ul>
   <li>Correct rounding in multiplication routine
@@ -68,7 +78,7 @@ Financial Java Calculator</h1>
   <li>sqrt(-0) correctly returns 0
 </ul>
 
-<h3>Version 1.11</h3>
+<h3><a href="http://gridbug.ods.org/calc111.jar">Version 1.11</a>, (39kB)</h3>
 
 <ul>
   <li>Made "int" submenu accessible in hex/oct/bin mode
@@ -82,7 +92,7 @@ Financial Java Calculator</h1>
   <li>Released Real.java class under GPL
 </ul>
 
-<h3>Version 1.08</h3>
+<h3><a href="http://gridbug.ods.org/calc108.jar">Version 1.08</a>, (38kB)</h3>
 
 <ul>
   <li>Added percent command to basic menu
@@ -90,7 +100,7 @@ Financial Java Calculator</h1>
   <li>atan<sub>2</sub>(0,0) correctly returns 0
 </ul>
 
-<h3>Version 1.02</h3>
+<h3><a href="http://gridbug.ods.org/calc102.jar">Version 1.02</a>, (35kB)</h3>
 
 <ul>
   <li>y<sup>x</sup> faster and more accurate if x is integer
@@ -100,7 +110,7 @@ Financial Java Calculator</h1>
   <li>Setup dialog to query about keyboard layout
 </ul>
 
-<h3>Version 1.00</h3>
+<h3><a href="http://gridbug.ods.org/calc100.jar">Version 1.00</a>, (30kB)</h3>
 
 <ul>
   <li>First public version
@@ -111,7 +121,6 @@ Financial Java Calculator</h1>
 <h2>Bugs:</h2>
 
 <ul>
-  <li>Some statistical results inherit imaginary parts from top of stack
   <li>LASTx forgets its imaginary part on clear stack and exit
   <li>Setup settings are not reversible
 </ul>
@@ -121,19 +130,9 @@ Financial Java Calculator</h1>
 <h2>Todo-list:</h2>
 
 <ul>
-  <li>Fix the bugs, nothing else immediately comes to mind
-</ul>
-
-Long-term plans, that I am not going to implement unless I find myself
-with weeks of spare time or somebody <a
-href="https://www.&#112;&#097;&#121;&#112;&#097;&#108;.com/xclick/business=&#114;&#111;&#097;&#114;&#108;%40&#112;&#118;&#118;&#046;&#111;&#114;&#103;&#038;item_name=Calc+-+Java+Calculator">begs</a>
-me:
-
-<ul>
-  <li>Simple programmability in the form of command macro
-  <li>Graph drawing, root finding and differentiation of macro
-  program. Integration only if I can find a simple, fast and accurate
-  algorithm
+  <li>Fix the bugs
+  <li>Root finding and differentiation of macro program. Integration
+  only if I can find a simple, fast and accurate algorithm
 </ul>
 
 Things that <i>cannot</i> be implemented because the increased complexity
