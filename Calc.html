@@ -80,12 +80,27 @@ The following MIDP phones/devices have been tested with the application:
   <li><b>Nokia 3410, 6310i, 7700, 8910i, 9210i, N-Gage</b>: Not
   tested. May work, but there can be issues with small screen,
   black/white screen or lack of joystick or input keys</li>
-  <li><b>Siemens</b>: I have had complaints</li>
+  <li><b>Siemens</b>: I have heard complaints</li>
   <li><b>Motorola</b>: I have no idea</li>
 </ul>
 
 Plese notify me if you can use the application without problems on any
 of the devices that have not been tested and also devices not on my list.
+
+<h2>Disclaimer</h2>
+
+The Calc Java program is supplied "AS IS". The Author disclaims all
+warranties, expressed or implied, including, without limitation, the
+warranties of merchantability and of fitness for any purpose.  The
+Author assumes no liability for direct, indirect, incidental, special,
+exemplary, or consequential damages, which may result from the use of
+the computer program, even if advised of the possibility of such
+damage. There is no warranty against interference with your enjoyment
+of the computer program or against infringement. There is no warranty
+that my efforts or the computer program will fulfill any of your
+particular purposes or needs.  This computer program is provided with
+all faults, and the entire risk of satisfactory quality, performance,
+accuracy, and effort is with the user.
 
 <h1>User manual</h1>
 
@@ -157,20 +172,122 @@ you only have a two-way joystick or none at all, the number keys 2, 4,
 that case, you can only hope that the menu will be activated by "dial"
 or some other button, otherwise you will be stuck.
 
-<h2>Operations</h2>
+<h2>RPN logic</h2>
 
-In the following operations, x represents the lowest element on the
-stack, y represents the element above x. In operations with two inputs,
-such as +,-,* and /, the x and y stack elements are removed from the
-stack and the result is placed on the stack instead, as the new x. In
-operations with one input, such as e<sup>x</sup>, x is removed from the
-stack and the result is placed on the stack instead. To add 3 and 7,
-for example, one would press the following sequence of keys: 3, ENTER,
-7, +. The result, 10 will now be the lowest element on the stack, ready
-for further calculations.<br>
+If you are familiar with RPN logic, e.g. from a HP calculator, skip
+forward to the next section.<br>
 
 <br>
-The following operations are available through the menu system:
+The basis for implementing RPN logic in this calculator is a stack of
+numbers. The stack is initially empty, and when you write a number and
+"ENTER" it on the stack, the stack grows upwards with the latest
+entered number at the bottom of the stack. To make the stack shrink,
+you can either clear the lowest element on the stack using the "clear"
+key, or you can combine the two lowest elements on the stack using a
+mathematical operation.<br>
+
+<br>
+The lowest element on the stack is called "x". In operations with one
+argument, such as "sin", x is used as input and is replaced by the
+result. The rest of the stack remains the same. The element above x on
+the stack is called "y". In operations with two arguments, such as
++,-,* and /, the x and y stack elements are removed from the stack and
+the result is placed on the stack instead, as the new x. The rest of
+the stack moves down one step.<br>
+
+<br>
+For instance, to calculate 3+7, one would press the following sequence
+of keys: 3, ENTER, 7, +. The result, 10, will now be the lowest
+element on the stack, ready for further calculations. To calculate
+3*(2+4), one would press the following sequence of keys: 3, ENTER, 2,
+ENTER, 4, +, *. (To access the "*" operator, you really need to press
+the key "&uArr;" to enter the "basic" arithmetic menu, followed by
+"&lArr;", to select the multiplication operator.)<br>
+
+<br>
+This is what the display would look like as you enter the sequence of
+keys above, assuming that you start with an empty stack:<br>
+
+<pre>
+Keystrokes:     "3"   "ENTER"     "2"   "ENTER"     "4"      "+"      "*"
+Stack:     |        |        |        |        |        |        |        |
+           |        |        |        |        |   3.00 |        |        |
+y:         |        |        |   3.00 |   3.00 |   2.00 |   3.00 |        |
+x:         | 3_     |   3.00 | 2_     |   2.00 | 4_     |   6.00 |  18.00 |
+</pre>
+
+<br>
+Notice that you don't need to press "ENTER" after the "4" (but you
+<i>could</i>), the following "+" operation makes that unnecessary. As
+you press "+", the 2 and the 4 are added to produce 6, and the 3 jumps
+down, ready for the "*" operation.<br>
+
+<br>
+If you are used to normal arithmetic expressions, such as 3*(2+4), all
+you need to realize in order to understand RPN is that what the
+expression really represents is a graph, and that the different ways
+to <i>write</i> the expression is nothing else than different ways of
+traversing the graph. These are the graphs describing the arithmetic
+expressions above: <br>
+
+<pre>
+       +           *
+      / \         / \
+     3   7       3   +
+                    / \
+                   2   4
+</pre>
+
+</br>
+The graphs are always traversed from the top node, going down to child
+nodes on the left first and child nodes to the right after,
+recursively. In our second example graph the sequence would be like
+this: starting with *, we go down left to 3, up again to *, down right
+to +, down left to 2, up again to +, down right to 4, up again to +,
+and finally up to *.<br>
+
+<br>
+The way we <i>write</i> the graph depends on the order we write the
+elements down as we traverse. We don't want to write a node more than
+once. In normal arithmetic expressions, we write a node by writing
+first an opening parenthesis, then the left child, then the content of
+the node itself, then the right child, and finally a closing
+parenthesis. Like this: (&nbsp;3&nbsp;+&nbsp;7&nbsp;), and this:
+(&nbsp;3&nbsp;*&nbsp;(&nbsp;2&nbsp;+&nbsp;4&nbsp;)&nbsp;).<br>
+
+<br>
+In polish notation, used e.g. in the Lisp programming language, we
+write a node by writing first an opening parenthesis, then the content
+of the node itself, then the left child, then the right child, and
+finally a closing parenthesis. Like this:
+(&nbsp;+&nbsp;3&nbsp;7&nbsp;), and this:
+(&nbsp;*&nbsp;3&nbsp;(&nbsp;+&nbsp;2&nbsp;4&nbsp;)&nbsp;). It looks a
+bit like the function calls of other programming languages,
+multiply(3,add(2,4)), and indeed "*" and "+" are simply function names
+in Lisp.<br>
+
+<br>
+In reverse polish notation, RPN, we write a node by writing first an
+opening parenthesis, then the left child, then the right child, then
+the content of the node itself, and finally a closing
+parenthesis. Like this: (&nbsp;3&nbsp;7&nbsp;+&nbsp;), and this:
+(&nbsp;3&nbsp;(&nbsp;2&nbsp;4&nbsp;+&nbsp;)&nbsp;*&nbsp;). Notice that
+we can dispense with the parentheses altogether and just write 3, 2,
+4, +, *, which is <i>exactly</i> as expressions are entered in this
+calculator.<br>
+
+<br>
+If you haven't noticed already, I have just taken you for a ride in a
+college-level computer programming course, and it was probably less
+fun for you than it was for me, haha. What you really need to do to
+learn RPN is to play with the calculator, enter numbers and do some
+operations to see what happens.<br>
+
+
+<h2>Operations</h2>
+
+The following operations are available through the menu system,
+accessed by the joystick or arrow keys:
 
 <h3>Basic</h3>
 
@@ -555,10 +672,10 @@ by an "f" prefix (or 7 or 1 in OCT and BIN modes). The infinite number
 of 1-bits after the radix is rounded upwards producing an infinite
 number of 0-bits, until the first 0-bit is encountered which will be
 switched to a 1 (rounded or not, these two forms are mathematically
-equivalent). For example, the number "1", inverted, will become
-...1111110.111111.... Rounding of the infinite number of 1's after the
-radix gives the number ...1111111.000000..., which is exactly the way
-we usually see "-1" as two's complement.<br>
+equivalent). For example, the number "1", inverted, will become (in
+binary mode) ...1111110.111111.... Rounding of the infinite number of
+1's after the radix gives the number ...1111111.000000..., which is
+exactly the way we usually see "-1" as two's complement.<br>
 
 <br>
 Bitwise operations with negative numbers (and, or, xor and bic) use
@@ -655,7 +772,7 @@ time scale, although many use a local time zone instead of UTC.<br>
 <br>
 To convert from a date of the form yyyymmddHH.MMSS to Unix time,
 convert first to hours using "&rarr;H", subtract 17268672 (obtained
-e.g.  from 1970010100 &rarr;H), and multiply by 3600 to get number
+e.g. from 1970010100 &rarr;H), and multiply by 3600 to get number
 of seconds since January 1st 1970.<br>
 
 <br><i>Relation to Julian Days</i><br>
