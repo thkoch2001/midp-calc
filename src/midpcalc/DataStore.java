@@ -7,7 +7,7 @@ public final class DataStore
     extends ByteArrayOutputStream
 {
   private final RecordStore rs;
-  private final static int magic = 0x526f6172;
+  private final static int magic = 0x526f6172; // "Roar"
 
   private DataStore(RecordStore rs) {
     this.rs = rs;
@@ -36,9 +36,7 @@ public final class DataStore
         return null;
       }
       return dis;
-    } catch (RecordStoreException rse) {
-      return null;
-    } catch (IOException ioe) {
+    } catch (Exception e) {
       return null;
     }
   }

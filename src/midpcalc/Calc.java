@@ -28,14 +28,6 @@ public final class Calc
   public Calc() {
     display = Display.getDisplay(this);
     dataStore = DataStore.open("CalcData");
-
-    newProgram = new TextBox("New program", "", CalcEngine.PROGLABEL_SIZE,
-                             TextField.ANY);
-    okCommand = new Command("Ok", Command.OK, 1);
-    cancelCommand = new Command("Cancel", Command.CANCEL, 1);
-    newProgram.addCommand(okCommand);
-    newProgram.addCommand(cancelCommand);
-    newProgram.setCommandListener(this);
   }
   
   public void startApp() {
@@ -64,12 +56,6 @@ public final class Calc
     display.setCurrent(screen);
   }
 
-  public void askNewProgram(String name, int n) {
-    newProgram.setString(name);
-    whichProgram = n;
-    display.setCurrent(newProgram);
-  }
-
   public void displayGraph(int gx, int gy, int gw, int gh) {
     if (graph == null)
       graph = new GraphCanvas(this,screen);
@@ -77,6 +63,21 @@ public final class Calc
     display.setCurrent(graph);
   }
   
+  public void askNewProgram(String name, int n) {
+    if (newProgram == null) {
+      newProgram = new TextBox("New program", "", CalcEngine.PROGLABEL_SIZE,
+                               TextField.ANY);
+      okCommand = new Command("Ok", Command.OK, 1);
+      cancelCommand = new Command("Cancel", Command.CANCEL, 1);
+      newProgram.addCommand(okCommand);
+      newProgram.addCommand(cancelCommand);
+      newProgram.setCommandListener(this);
+    }
+    newProgram.setString(name);
+    whichProgram = n;
+    display.setCurrent(newProgram);
+  }
+
   public void commandAction(Command c, Displayable d) {
     if (c == okCommand) {
       screen.calc.progLabels[whichProgram] = newProgram.getString();

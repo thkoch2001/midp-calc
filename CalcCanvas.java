@@ -142,7 +142,7 @@ public final class CalcCanvas
 // Sources: http://physics.nist.gov/cuu/Constants
 //          http://www.free-definition.com
 // (== means "equals exactly" or "equals by definition")
-  
+
   private static final class Menu
   {
     public String label;
@@ -474,7 +474,7 @@ public final class CalcCanvas
     new Menu("fv" ,NUMBER_1),
     new Menu("np" ,NUMBER_2),
     new Menu("pmt",NUMBER_3),
-    new Menu("ir%" ,NUMBER_4),
+    new Menu("ir%",NUMBER_4),
   });
 
   private Menu intMenu = new Menu("int",new Menu[] {
@@ -980,7 +980,10 @@ public final class CalcCanvas
   }
 
   private void drawMenu(Graphics g) {
-    int w = boldMenuFont.stringWidth("acosh")*2+3*2+4*2+21;
+    int w = 21+4*2;
+    if (w<boldMenuFont.stringWidth("m/ft")+3*2)
+      w = boldMenuFont.stringWidth("m/ft")+3*2;
+    w = boldMenuFont.stringWidth("acosh")*2+3*2+w;
     if (w<(menuFont.stringWidth("thousand")+2*2)*2)
       w = (menuFont.stringWidth("thousand")+2*2)*2;
     if (w>getWidth()) w = getWidth();
@@ -1178,19 +1181,19 @@ public final class CalcCanvas
       if (calc.format.base == 10) {
         menu.subMenu[1] = math;
         menu.subMenu[2] = trig;
+        // Also switch coord menu with cplx menu if x or y are complex
+        if (calc.imagStack != null &&
+            (!calc.imagStack[0].isZero() ||
+             !calc.imagStack[1].isZero())) {
+          math.subMenu[2] = cplxMenu;
+        } else {
+          math.subMenu[2] = coordMenu;
+        }
       } else {
         menu.subMenu[1] = bitOp;
         menu.subMenu[2] = bitMath;
       }
-      // Also switch coord menu with cplx menu if x or y are complex
-      if (calc.imagStack != null &&
-          (!calc.imagStack[0].isZero() ||
-           !calc.imagStack[1].isZero())) {
-        math.subMenu[2] = cplxMenu;
-      } else {
-        math.subMenu[2] = coordMenu;
-      }
-      // Also switch between prog1 and prog2 if recording a program
+      // Switch between prog1 and prog2 if recording a program
       if (calc.progRecording) {
         menu.subMenu[4].subMenu[1] = prog2;
       } else {
@@ -1208,32 +1211,32 @@ public final class CalcCanvas
       menuStack[0] = menu;
       menuStackPtr = 0;
       numRepaintLines = 0; // Force repaint of menu
-    } else if (menuStack[menuStackPtr].subMenu.length > menuIndex) {
-      Menu [] subMenu = menuStack[menuStackPtr].subMenu;
-      if (subMenu[menuIndex] == null) {
+    } else if (menuIndex < menuStack[menuStackPtr].subMenu.length) {
+      Menu subItem = menuStack[menuStackPtr].subMenu[menuIndex];
+      if (subItem == null) {
         ; // NOP
-      } else if (subMenu[menuIndex].subMenu != null) {
+      } else if (subItem.subMenu != null) {
         // Open submenu
         menuStackPtr++;
-        menuStack[menuStackPtr] = subMenu[menuIndex];
+        menuStack[menuStackPtr] = subItem;
         numRepaintLines = 0; // Force repaint of menu
-      } else if ((subMenu[menuIndex].flags & Menu.SUBMENU_REQUIRED)!=0) {
+      } else if ((subItem.flags & Menu.SUBMENU_REQUIRED)!=0) {
         // Open number/finance/program submenu
         Menu sub =
-          (subMenu[menuIndex].flags & Menu.NUMBER_REQUIRED )!=0 ? numberMenu :
-          (subMenu[menuIndex].flags & Menu.FINANCE_REQUIRED)!=0 ? financeMenu :
+          (subItem.flags & Menu.NUMBER_REQUIRED )!=0 ? numberMenu :
+          (subItem.flags & Menu.FINANCE_REQUIRED)!=0 ? financeMenu :
           progMenu;
         // Set correct labels
         if (sub == progMenu)
           for (int i=0; i<5; i++)
             progMenu.subMenu[i].label = calc.progLabels[i];
-        menuCommand = subMenu[menuIndex].command; // Save current command
-        sub.label = subMenu[menuIndex].label; // Set correct label
+        menuCommand = subItem.command; // Save current command
+        sub.label = subItem.label; // Set correct label
         menuStackPtr++;
         menuStack[menuStackPtr] = sub;
         numRepaintLines = 0; // Force repaint of menu
       } else {
-        int command = subMenu[menuIndex].command;
+        int command = subItem.command;
         if (command == EXIT) {
           // Internal exit command
           midlet.exitRequested();

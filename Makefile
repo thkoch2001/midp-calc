@@ -1,4 +1,4 @@
-VERSION = 1.95
+VERSION = 2.00
 TARGETS = Calc.jar Calc.jad
 
 WTK_HOME = /home/roarl/ant/WTK104
@@ -49,7 +49,7 @@ Calc.jar: $(JAVAFILES) Calc.jad
 	ant -buildfile build.xml -Dwtk.home=${WTK_HOME} make-jar
 
 clean:
-	rm -rf $(TARGETS) ral Real.java GFontBase.java pgm2java *~
+	rm -rf $(TARGETS) ral Real.java GFontBase.java pgm2java *~ .\#*
 
 publish: Calc.jad Calc.jar Real.java
 	scp Calc.jad Calc.jar Calc.html Calc-log.html Real.html Real.java Real.jpp gridbug:public_html
