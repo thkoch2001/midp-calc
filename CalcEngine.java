@@ -162,7 +162,7 @@ public final class CalcEngine
   public static final int SIGN_POINT_E   = 154;
   public static final int TO_CPLX        = 155;
   public static final int CPLX_SPLIT     = 156;
-  public static final int CPLX_ABS       = 157;
+  public static final int ABS            = 157;
   public static final int CPLX_ARG       = 158;
   public static final int CPLX_CONJ      = 159;
   public static final int ERFC           = 160;
@@ -212,17 +212,24 @@ public final class CalcEngine
   public static final int CONST_K_C      = 204;
   public static final int CONV_C_F       = 205;
   public static final int CONV_F_C       = 206;
-  public static final int PROG_REC       = 207;
+  public static final int PROG_NEW       = 207;
   public static final int PROG_FINISH    = 208;
   public static final int PROG_RUN       = 209;
-  public static final int PROG_CLEAR     = 210;
-  public static final int PROG_DRAW      = 211;
+  public static final int PROG_PURGE     = 210;
+  public static final int PROG_CLEAR     = 211;
+
   // These commands are handled from CalcCanvas
   public static final int AVG_DRAW       = 300;
   public static final int LIN_DRAW       = 301;
   public static final int LOG_DRAW       = 302;
   public static final int EXP_DRAW       = 303;
   public static final int POW_DRAW       = 304;
+  public static final int PROG_DRAW      = 305; // Uses 5 consecutive slots
+  //public static final int PROG_DRAW2   = 306;
+  //public static final int PROG_DRAW3   = 307;
+  //public static final int PROG_DRAW4   = 308;
+  //public static final int PROG_DRAW5   = 309;
+
   // Special commands
   public static final int FINALIZE       = 500;
   public static final int FREE_MEM       = 501;
@@ -292,9 +299,13 @@ public final class CalcEngine
 
   public boolean progRecording;
   public boolean progRunning;
-  private short [] prog;
+  public static final int PROGLABEL_SIZE = 5;
+  public static final String emptyProg = "<->";
+  public String [] progLabels =
+    { emptyProg, emptyProg, emptyProg, emptyProg, emptyProg };
+  private short [][] prog;
   private int progCounter;
-  private Real progXmin,progXmax,progYmin,progYmax;
+  private int currentProg;
   
   public CalcEngine()
   {
@@ -538,13 +549,18 @@ public final class CalcEngine
   private static final byte PROPERTY_MEM      = 12;
   private static final byte PROPERTY_STAT     = 13;
   private static final byte PROPERTY_FINANCE  = 14;
+  private static final byte PROPERTY_PROG     = 15;
+  //private static final byte PROPERTY_PROG2  = 16;
+  //private static final byte PROPERTY_PROG3  = 17;
+  //private static final byte PROPERTY_PROG4  = 18;
+  //private static final byte PROPERTY_PROG5  = 19;
 
   public void saveState(PropertyStore propertyStore)
   {
     tryClearImag(true,true);
     tryClearModules(true,true);
 
-    int i;
+    int i,j;
     byte [] buf = new byte[1+STAT_SIZE*12+STATLOG_SIZE*2*4+2];
 
     // Stack
@@ -610,7 +626,13 @@ public final class CalcEngine
     } else {
       propertyStore.setProperty(buf,1);
     }
-    
+
+    // Max program length
+    int maxProgLen = 0;
+    for (i=0; i<5; i++)
+      if (prog!=null && prog[i]!=null && prog[i].length > maxProgLen)
+        maxProgLen = prog[i].length;
+
     // Settings
     buf[ 0] = PROPERTY_SETTINGS;
     buf[ 1] = (byte)stackHeight;
@@ -639,12 +661,35 @@ public final class CalcEngine
     buf[24] = (byte)(Real.randSeedB>>8);
     buf[25] = (byte)(Real.randSeedB);    
     lastx.toBytes(buf,26);
-    buf[26+12] = (byte)(((monitorMode-MONITOR_NONE)<<5) + monitorSize);
-    propertyStore.setProperty(buf,26+12+1);
+    buf[26+12+0] = (byte)(((monitorMode-MONITOR_NONE)<<5) + monitorSize);
+    buf[26+12+1] = (byte)(maxProgLen>>8);
+    buf[26+12+2] = (byte)(maxProgLen);
+    propertyStore.setProperty(buf,26+12+3);
+
+    // Programs
+    if (1+maxProgLen*2+PROGLABEL_SIZE*2 > buf.length)
+      buf = new byte[1+maxProgLen*2+PROGLABEL_SIZE*2];
+
+    for (i=0; i<5; i++)
+      buf[0] = (byte)(PROPERTY_PROG+i);
+      if (prog!=null && prog[i]!=null && prog[i].length!=0) {
+        for (j=0; j<PROGLABEL_SIZE; j++) {
+          char c = j<progLabels[i].length() ? progLabels[i].charAt(j) : 0;
+          buf[1+2*i+0] = (byte)(c>>8);
+          buf[1+2*i+1] = (byte)(c);
+        }
+        for (j=0; j<prog[i].length; j++) {
+          buf[1+PROGLABEL_SIZE*2+2*i+0] = (byte)(prog[i][j]>>8);
+          buf[1+PROGLABEL_SIZE*2+2*i+1] = (byte)(prog[i][j]);
+        }
+        propertyStore.setProperty(buf,1+PROGLABEL_SIZE*2+prog[i].length*2);
+      } else {
+        propertyStore.setProperty(buf,1);
+      }
   }
   
   public void restoreState(PropertyStore propertyStore) {
-    int length,i;
+    int length,i,j;
     byte [] buf = new byte[1+STAT_SIZE*12+STATLOG_SIZE*2*4+2];
 
     // Stack
@@ -703,6 +748,7 @@ public final class CalcEngine
     // Settings
     buf[0] = PROPERTY_SETTINGS;
     length = propertyStore.getProperty(buf);
+    int maxProgLen = 0;
     if (length >= 26+12) {
       for (i=0; i<STACK_SIZE; i++)
         strStack[i] = i<buf[1] ? null : empty;
@@ -749,7 +795,38 @@ public final class CalcEngine
           monitorLabels = financeLabels;
         }
       }
+      if (length >= 26+12+1+2)
+        maxProgLen = (((buf[26+12+1]&0xff)<<8)+
+                      ((buf[26+12+2]&0xff)));
     }
+
+    // Programs
+    if (1+maxProgLen*2+PROGLABEL_SIZE*2 > buf.length)
+      buf = new byte[1+maxProgLen*2+PROGLABEL_SIZE*2];
+
+    char [] label = new char[PROGLABEL_SIZE];
+    for (i=0; i<5; i++) {
+      buf[0] = (byte)(PROPERTY_PROG+i);
+      length = propertyStore.getProperty(buf);
+      if (length >= 1+PROGLABEL_SIZE*2+2) {
+        int len=0;
+        for (j=0; j<PROGLABEL_SIZE; j++) {
+          label[j] = (char)(((buf[1+2*i+0]&0xff)<<8)+
+                            ((buf[1+2*i+1]&0xff)));
+          if (label[j] != 0)
+            len = j+1;
+        }
+        progLabels[i] = new String(label,0,len);
+        if (prog == null)
+          prog = new short[5][];
+        prog[i] = new short[(length-1-PROGLABEL_SIZE*2)/2];
+        for (j=0; j<prog[i].length; j++) {
+          prog[i][j] = (short)(((buf[1+PROGLABEL_SIZE*2+2*i+0]&0xff)<<8)+
+                               ((buf[1+PROGLABEL_SIZE*2+2*i+1]&0xff)));
+        }
+      }
+    }
+
     repaint(-1);
   }
 
@@ -1648,7 +1725,7 @@ public final class CalcEngine
           x.sqrt();
         }
         break;
-      case CPLX_ABS:
+      case ABS:
         if (cplx) {
           x.hypot(xi);
           xi.makeZero();
@@ -2502,16 +2579,17 @@ public final class CalcEngine
   }
 
   private void record(int cmd, int param) {
-    if (prog == null ||
+    if (prog == null || prog[currentProg] == null ||
         (cmd >= AVG_DRAW && cmd <= POW_DRAW) ||
-        (cmd >= PROG_REC && cmd <= PROG_DRAW))
+        (cmd >= PROG_NEW && cmd <= PROG_CLEAR) ||
+        (cmd >= PROG_DRAW && cmd <= PROG_DRAW+4))
       return; // Such commands cannot be recorded
-    if (progCounter == prog.length) {
-      short [] prog2 = new short[prog.length*2];
-      System.arraycopy(prog,0,prog2,0,prog.length);
-      prog = prog2;
+    if (progCounter == prog[currentProg].length) {
+      short [] prog2 = new short[progCounter*2];
+      System.arraycopy(prog[currentProg],0,prog2,0,progCounter);
+      prog[currentProg] = prog2;
     }
-    prog[progCounter] = (short)(cmd+(param<<10));
+    prog[currentProg][progCounter] = (short)(cmd+(param<<10));
     progCounter++;
   }
 
@@ -2559,7 +2637,7 @@ public final class CalcEngine
         break;
       case NEG:   case RECIP: case SQR:   case SQRT:
       case PERCENT:
-      case CPLX_ABS: case CPLX_ARG: case CPLX_CONJ:
+      case ABS:   case CPLX_ARG: case CPLX_CONJ:
       case LN:    case EXP:
       case LOG10: case EXP10: case LOG2: case EXP2:
       case SIN:   case COS:   case TAN:
@@ -3206,42 +3284,55 @@ public final class CalcEngine
         repaint(-1);
         break;
 
-      case PROG_REC:
+      case PROG_NEW:
         if (inputInProgress)
           parseInput();
         progRecording = true;
-        prog = new short[10];
+        currentProg = param;
+        if (prog == null)
+          prog = new short[5][];
+        prog[currentProg] = new short[10];
         progCounter = 0;
         break;
       case PROG_FINISH:
         if (inputInProgress)
           parseInput();
+        // I assume you cannot reach this command other than in PRG mode
         progRecording = false;
         if (progCounter > 0) {
           short [] prog2 = new short[progCounter];
-          System.arraycopy(prog,0,prog2,0,progCounter);
-          prog = prog2;
+          System.arraycopy(prog[currentProg],0,prog2,0,progCounter);
+          prog[currentProg] = prog2;
         } else {
-          prog = null;
+          prog[currentProg] = null;
         }
         break;
       case PROG_RUN:
         if (inputInProgress)
           parseInput();
-        if (prog != null) {
+        currentProg = param;
+        if (prog != null && prog[currentProg] != null) {
           progRunning = true;
           progCounter = 0;
-          for (int i=0; i<prog.length; i++)
-            execute(prog[i]);
+          for (int i=0; i<prog[currentProg].length; i++)
+            execute(prog[currentProg][i]);
           if (inputInProgress) // From the program...
             parseInput();
           progRunning = false;
         }
         break;
+      case PROG_PURGE:
+        if (inputInProgress)
+          parseInput();
+        progCounter = 0;
+        break;
       case PROG_CLEAR:
         if (inputInProgress)
           parseInput();
-        prog = null;
+        currentProg = param;
+        if (prog != null)
+          prog[currentProg] = null;
+        progLabels[currentProg] = emptyProg;
         progRecording = false;
         progRunning = false;
         break;
@@ -3289,7 +3380,7 @@ public final class CalcEngine
   }
 
   public boolean draw(int cmd, Graphics g, int gx, int gy, int gw, int gh) {
-    if (cmd == PROG_DRAW) {
+    if (cmd >= PROG_DRAW) {
       if (prog == null)
         return false;
     } else if (SUM1 == null || statLogSize == 0)
@@ -3306,7 +3397,7 @@ public final class CalcEngine
     int i,xi,yi,pyi,inc,bigTick;
 
     // Find boundaries
-    if (cmd == PROG_DRAW) {
+    if (cmd >= PROG_DRAW) {
       if (inputInProgress)
         parseInput();
       xMin.assign(stack[3]);
@@ -3420,8 +3511,9 @@ public final class CalcEngine
     // Graph color
     g.setColor(255,0,128);
     
-    if (cmd == PROG_DRAW) {
+    if (cmd >= PROG_DRAW) {
       // Draw program graph
+      currentProg = cmd-PROG_DRAW;
       a.assign(Real.FIVE);
       a.sqrt();
       a.sub(Real.ONE);
@@ -3433,8 +3525,8 @@ public final class CalcEngine
         x.mul(b);
         x.add(xMin);
         push(x,null);
-        for (i=0; i<prog.length; i++)
-          execute(prog[i]);
+        for (i=0; i<prog[currentProg].length; i++)
+          execute(prog[currentProg][i]);
         if (inputInProgress) // From the program... (boring graph)
           parseInput();
         y.assign(stack[0]);

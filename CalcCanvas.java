@@ -65,9 +65,9 @@ public final class CalcCanvas
 //            -> clear   -> a b c d e
 //            -> draw    -> a b c d e
 //   prog[2]  -> finish
-//            -> restart
 //            -> cond    -> x=y? x!=y? x<y? x<=y? x>y?
-//            -> special -> abs max min
+//            -> util    -> abs max min
+//            -> purge
 //
 ///  prog[1]  -> solve   -> a b c d e
 ///  prog[2]  -> loop    -> label goto isg dse                      -> #
@@ -153,7 +153,9 @@ public final class CalcCanvas
 
     public static final byte NUMBER_REQUIRED = 1;
     public static final byte FINANCE_REQUIRED = 2;
-    public static final byte TITLE_SKIP = 4;
+    public static final byte PROG_REQUIRED = 4;
+    public static final byte SUBMENU_REQUIRED = 7;
+    public static final byte TITLE_SKIP = 8;
 
     Menu(String l, int c) {
       label = l;
@@ -197,7 +199,7 @@ public final class CalcCanvas
   private static final int NUMBER_14 = -20+14;
   private static final int NUMBER_15 = -20+15;
   
-  private static final Menu menu = new Menu("menu",new Menu[] {
+  private Menu menu = new Menu("menu",new Menu[] {
     new Menu("basic",new Menu[] {
       new Menu("-",CalcEngine.SUB),
       new Menu("*",CalcEngine.MUL),
@@ -211,13 +213,13 @@ public final class CalcCanvas
     new Menu("special",new Menu [] {
       new Menu("stack",new Menu[] {
         new Menu("LAST x",CalcEngine.LASTX),
-        new Menu("x=y",CalcEngine.XCHG),
+        new Menu("x«y",CalcEngine.XCHG),
         new Menu("undo",CalcEngine.UNDO),
         new Menu("more",Menu.TITLE_SKIP,new Menu [] {
           new Menu("RCL st#",CalcEngine.RCLST,Menu.NUMBER_REQUIRED),
           new Menu("rolldn",CalcEngine.ROLLDN),
           new Menu("rollup",CalcEngine.ROLLUP),
-          new Menu("x=st#",CalcEngine.XCHGST,Menu.NUMBER_REQUIRED),
+          new Menu("x«st#",CalcEngine.XCHGST,Menu.NUMBER_REQUIRED),
         }),
         new Menu("clear",CalcEngine.CLS),
       }),
@@ -225,7 +227,7 @@ public final class CalcCanvas
         new Menu("STO",CalcEngine.STO,Menu.NUMBER_REQUIRED),
         new Menu("RCL",CalcEngine.RCL,Menu.NUMBER_REQUIRED),
         new Menu("STO+",CalcEngine.STP,Menu.NUMBER_REQUIRED),
-        new Menu("x=mem",CalcEngine.XCHGMEM,Menu.NUMBER_REQUIRED),
+        new Menu("x«mem",CalcEngine.XCHGMEM,Menu.NUMBER_REQUIRED),
         new Menu("clear",CalcEngine.CLMEM),
       }),
       new Menu("stat",new Menu[] {
@@ -422,7 +424,7 @@ public final class CalcCanvas
     }),
   });
   
-  private static final Menu numberMenu = new Menu(null,new Menu[] {
+  private Menu numberMenu = new Menu(null,new Menu[] {
     new Menu("<0-3>",Menu.TITLE_SKIP,new Menu[] {
       new Menu("<0>",NUMBER_0),
       new Menu("<1>",NUMBER_1),
@@ -449,7 +451,7 @@ public final class CalcCanvas
     }),
   });
 
-  private static final Menu financeMenu = new Menu(null,new Menu[] {
+  private Menu financeMenu = new Menu(null,new Menu[] {
     new Menu("pv" ,NUMBER_0),
     new Menu("fv" ,NUMBER_1),
     new Menu("np" ,NUMBER_2),
@@ -457,7 +459,7 @@ public final class CalcCanvas
     new Menu("ir%" ,NUMBER_4),
   });
 
-  private static final Menu intMenu = new Menu("int",new Menu[] {
+  private Menu intMenu = new Menu("int",new Menu[] {
     new Menu("round",CalcEngine.ROUND),
     new Menu("ceil",CalcEngine.CEIL),
     new Menu("floor",CalcEngine.FLOOR),
@@ -465,7 +467,7 @@ public final class CalcCanvas
     new Menu("frac",CalcEngine.FRAC),
   });
 
-  private static final Menu coordMenu = new Menu("coord",new Menu[] {
+  private Menu coordMenu = new Menu("coord",new Menu[] {
     new Menu("hypot",CalcEngine.HYPOT),
     new Menu("r\\p",CalcEngine.RP),
     new Menu("p\\r",CalcEngine.PR),
@@ -473,14 +475,14 @@ public final class CalcCanvas
     new Menu("r\\cplx",CalcEngine.TO_CPLX),
   });
 
-  private static final Menu cplxMenu = new Menu("cplx",new Menu[] {
+  private Menu cplxMenu = new Menu("cplx",new Menu[] {
     new Menu("cplx\\r",CalcEngine.CPLX_SPLIT),
-    new Menu("abs",CalcEngine.CPLX_ABS),
+    new Menu("abs",CalcEngine.ABS),
     new Menu("arg",CalcEngine.CPLX_ARG),
     new Menu("conj",CalcEngine.CPLX_CONJ),
   });
 
-  private static final Menu math = new Menu("math",new Menu[] {
+  private Menu math = new Menu("math",new Menu[] {
     new Menu("simple",Menu.TITLE_SKIP,new Menu[] {
       new Menu("Qx",CalcEngine.SQRT),
       new Menu("x^2",CalcEngine.SQR),
@@ -514,7 +516,7 @@ public final class CalcCanvas
       new Menu("erfc",CalcEngine.ERFC),
     }),
   });
-  private static final Menu trig = new Menu("trig",new Menu[] {
+  private Menu trig = new Menu("trig",new Menu[] {
     new Menu("normal",Menu.TITLE_SKIP,new Menu[] {
       new Menu("sin",CalcEngine.SIN),
       new Menu("cos",CalcEngine.COS),
@@ -542,26 +544,47 @@ public final class CalcCanvas
       new Menu("¶",CalcEngine.PI),
     }),
   });
-  private static final Menu bitOp = new Menu("bitop",new Menu[] {
+  private Menu bitOp = new Menu("bitop",new Menu[] {
     new Menu("and",CalcEngine.AND),
     new Menu("or",CalcEngine.OR),
     new Menu("bic",CalcEngine.BIC),
     new Menu("xor",CalcEngine.XOR),
   });
-  private static final Menu bitMath = new Menu("bitop_2",new Menu[] {
+  private Menu bitMath = new Menu("bitop_2",new Menu[] {
     new Menu("not",CalcEngine.NOT),
     new Menu("y<<x",CalcEngine.YUPX),
     new Menu("y>>x",CalcEngine.YDNX),
     intMenu,
   });
-  private static final Menu prog1 = new Menu("prog",new Menu[] {
-    new Menu("record",CalcEngine.PROG_REC),
-    new Menu("run",CalcEngine.PROG_RUN),
-    new Menu("draw",CalcEngine.PROG_DRAW),
-    new Menu("clear",CalcEngine.PROG_CLEAR),
+  private Menu prog1 = new Menu("prog",new Menu[] {
+    new Menu("new",CalcEngine.PROG_NEW,Menu.PROG_REQUIRED),
+    new Menu("run",CalcEngine.PROG_RUN,Menu.PROG_REQUIRED),
+    new Menu("draw",CalcEngine.PROG_DRAW,Menu.PROG_REQUIRED),
+    new Menu("clear",CalcEngine.PROG_CLEAR,Menu.PROG_REQUIRED),
   });
-  private static final Menu prog2 = new Menu("prog",new Menu[] {
+  private Menu prog2 = new Menu("prog",new Menu[] {
     new Menu("finish",CalcEngine.PROG_FINISH),
+    new Menu("cond",new Menu[] {
+      new Menu("x=y?",CalcEngine.ABS),
+      new Menu("x!=y?",CalcEngine.ABS),
+      new Menu("x<y?",CalcEngine.ABS),
+      new Menu("x<=y?",CalcEngine.ABS),
+      new Menu("x>y?",CalcEngine.ABS),
+    }),
+    new Menu("util",new Menu[] {
+      new Menu("abs",CalcEngine.ABS),
+      new Menu("max",CalcEngine.ABS),
+      new Menu("min",CalcEngine.ABS),
+      new Menu("select",CalcEngine.ABS),
+    }),
+    new Menu("purge",CalcEngine.PROG_PURGE),
+  });
+  private Menu progMenu = new Menu(null,new Menu[] {
+    new Menu("",NUMBER_0),
+    new Menu("",NUMBER_1),
+    new Menu("",NUMBER_2),
+    new Menu("",NUMBER_3),
+    new Menu("",NUMBER_4),
   });
 
   private static final int menuColor [] = {
@@ -573,7 +596,7 @@ public final class CalcCanvas
   private Font smallMenuFont;
   private Font smallBoldMenuFont;
   private GFont numberFont;
-  private CalcEngine calc;
+  public CalcEngine calc;
 
   private final Command add;
   private final Command enter;
@@ -718,7 +741,7 @@ public final class CalcCanvas
 
   private boolean plainLabel(String label) {
     for (int i=0; i<label.length(); i++)
-      if ("^~_\\=QZ$¶»àè".indexOf(label.charAt(i))>=0)
+      if ("^~_\\«QZ$¶»àè".indexOf(label.charAt(i))>=0)
         return false;
     return true;
   }
@@ -736,7 +759,7 @@ public final class CalcCanvas
         font = font==normalFont ? smallFont : normalFont;
       else if (c=='~')
         ; // overline... no font change
-      else if ("\\=QZ$¶".indexOf(c)>=0)
+      else if ("\\«QZ$¶".indexOf(c)>=0)
         width += font.charWidth('O');
       else if (c=='»')
         width += font.charWidth('o')*(6+4)/6;
@@ -773,7 +796,7 @@ public final class CalcCanvas
         }
       } else if (c=='~') {
         overline = !overline;
-      } else if ("\\=QZ$¶»àè".indexOf(c)>=0) {
+      } else if ("\\«QZ$¶»àè".indexOf(c)>=0) {
         int w = font.charWidth('O');
         int h = font.getBaselinePosition();
         switch (c) {
@@ -785,7 +808,7 @@ public final class CalcCanvas
             g.drawLine(x+w-2,y+h/2+2,x+w-2-2,y+h/2+2+2);
             g.drawLine(x+w-3,y+h/2+2,x+w-3-1,y+h/2+2+1);
             break;
-          case '=':
+          case '«':
             g.drawLine(x,y+h/2,x+w-2,y+h/2);
             g.drawLine(x+w-2,y+h/2,x+w-2-2,y+h/2-2);
             g.drawLine(x,y+h/2+3,x+w-2,y+h/2+3);
@@ -899,8 +922,7 @@ public final class CalcCanvas
   private void drawMenuItem(Graphics g, Menu menu, int x, int y, int anchor) {
     if (menu==null)
       return;
-    boolean bold = menu.subMenu==null &&
-      (menu.flags & (Menu.NUMBER_REQUIRED|Menu.FINANCE_REQUIRED))==0;
+    boolean bold = menu.subMenu==null && (menu.flags&Menu.SUBMENU_REQUIRED)==0;
     int width = labelWidth(menu.label,bold);
     if ((anchor & g.RIGHT) != 0)
       x -= width;
@@ -1165,11 +1187,16 @@ public final class CalcCanvas
         menuStackPtr++;
         menuStack[menuStackPtr] = subMenu[menuIndex];
         numRepaintLines = 0; // Force repaint of menu
-      } else if ((subMenu[menuIndex].flags &
-                  (Menu.NUMBER_REQUIRED|Menu.FINANCE_REQUIRED))!=0) {
-        // Open number/finance submenu
-        Menu sub = (subMenu[menuIndex].flags & Menu.NUMBER_REQUIRED)!=0 ?
-          numberMenu : financeMenu;
+      } else if ((subMenu[menuIndex].flags & Menu.SUBMENU_REQUIRED)!=0) {
+        // Open number/finance/program submenu
+        Menu sub =
+          (subMenu[menuIndex].flags & Menu.NUMBER_REQUIRED )!=0 ? numberMenu :
+          (subMenu[menuIndex].flags & Menu.FINANCE_REQUIRED)!=0 ? financeMenu :
+          progMenu;
+        // Set correct labels
+        if (sub == progMenu)
+          for (int i=0; i<5; i++)
+            progMenu.subMenu[i].label = calc.progLabels[i];
         menuCommand = subMenu[menuIndex].command; // Save current command
         sub.label = subMenu[menuIndex].label; // Set correct label
         menuStackPtr++;
@@ -1185,10 +1212,19 @@ public final class CalcCanvas
           setNumberFont(command-FONT_SMALL);
         } else if (command >= NUMBER_0 && command <= NUMBER_15) {
           // Number has been entered for previous command
-          calc.command(menuCommand,command-NUMBER_0);
-        } else if ((command >= CalcEngine.AVG_DRAW &&
-                    command <= CalcEngine.POW_DRAW) ||
-                   command == CalcEngine.PROG_DRAW) {
+          if (menuCommand == CalcEngine.PROG_DRAW) {
+            menuCommand += command-NUMBER_0;
+            graph = true;
+          } if (menuCommand == CalcEngine.PROG_NEW) {
+            int n = command-NUMBER_0;
+            String name = calc.progLabels[n]==calc.emptyProg ? "" :
+              calc.progLabels[n];
+            midlet.showNewProgram(name,n);
+          } else {
+            calc.command(menuCommand,command-NUMBER_0);
+          }
+        } else if (command >= CalcEngine.AVG_DRAW &&
+                   command <= CalcEngine.POW_DRAW) {
           menuCommand = command;
           graph = true;          // graph drawing on next repaint
         } else {

@@ -5,11 +5,17 @@ import javax.microedition.lcdui.*;
 
 public final class Calc
     extends MIDlet
+    implements CommandListener
 {
   public CalcCanvas screen;
   public SetupCanvas setup;
   public Display display;
   public PropertyStore propertyStore;
+
+  public TextBox newProgram;
+  public Command okCommand;
+  public Command cancelCommand;
+  public int whichProgram;
 
   // Setup items
   public boolean hasClearKey = true;
@@ -21,6 +27,14 @@ public final class Calc
   public Calc() {
     display = Display.getDisplay(this);
     propertyStore = PropertyStore.open("CalcData");
+
+    newProgram = new TextBox("New program", "", CalcEngine.PROGLABEL_SIZE,
+                             TextField.ANY);
+    okCommand = new Command("Ok", Command.OK, 1);
+    cancelCommand = new Command("Cancel", Command.CANCEL, 1);
+    newProgram.addCommand(okCommand);
+    newProgram.addCommand(cancelCommand);
+    newProgram.setCommandListener(this);
   }
   
   public void startApp() {
@@ -48,6 +62,20 @@ public final class Calc
     display.setCurrent(screen);
   }
 
+  public void showNewProgram(String name, int n) {
+    newProgram.setString(name);
+    whichProgram = n;
+    display.setCurrent(newProgram);
+  }
+  
+  public void commandAction(Command c, Displayable d) {
+    if (c == okCommand) {
+      screen.calc.progLabels[whichProgram] = newProgram.getString();
+      screen.calc.command(CalcEngine.PROG_NEW, whichProgram);
+    }
+    displayScreen();
+  }
+    
   public void pauseApp() {
   }
 
