@@ -21,7 +21,8 @@
 //   assign(String, int base)
 //   assign(int s, int e, long m)
 //   assign(byte[] data, int offset)
-//   assignFloatBits(int)                   <==  float 32-bits representation
+//   assignFloatBits(int)                   <==  IEEE754 32-bits float format
+//   assignDoubleBits(long)                 <==  IEEE754 64-bits double format
 //
 // Output:
 //   String toString()                      ==>  "-1.234E+56"
@@ -30,7 +31,8 @@
 //   int toInteger()                        ==>  int
 //   long toLong()                          ==>  long
 //   void toBytes(byte[] data, int offset)  ==>  data[offset]..data[offset+11]
-//   int toFloatBits()                      ==>  float 32-bits representation
+//   int toFloatBits()                      ==>  IEEE754 32-bits float format
+//   long toDoubleBits()                    ==>  IEEE754 64-bits double format
 //
 // Binary operators:
 //   add(Real)
@@ -47,9 +49,9 @@
 //   neg()
 //   sqr()
 //   sqrt()
-//   cbrt()
-//   recip()
-//   rsqrt()
+//   cbrt()                   // cube root
+//   recip()                  // 1/x
+//   rsqrt()                  // 1/sqrt(x)
 //   exp()
 //   exp2()
 //   exp10()
@@ -68,7 +70,7 @@
 //   asinh()
 //   acosh()
 //   atanh()
-//   fact()
+//   fact()                   // x!
 //   gamma()
 //   toDHMS()
 //   fromDHMS()
@@ -106,7 +108,7 @@
 //   makeInfinity(int sign)
 //   makeNan()
 //   makeExp10(int power)
-//   int lowPow10()           // Convert to lower power of 10, return exponent
+//   int lowPow10()           // Convert to power of 10 <= x, return exponent
 //
 // Query state:
 //   boolean isZero()
@@ -685,9 +687,6 @@ public final class Real
 
   // Temporary values used by functions (to avoid "new" inside functions)
   private static Real subTmp = new Real();
-  private static Real recipTmp = new Real();
-  private static Real recipTmp2 = new Real();
-  private static Real divTmp = new Real();
   private static Real rsTmp = new Real();
   private static Real rsTmp2 = new Real();
   private static Real sqrtTmp = new Real();
@@ -812,51 +811,23 @@ public final class Real
       makeInfinity(sign); // Overflow
   }
 
-  private void recipInternal() {
-    // Calculates recipocal of normalized Real, not zero, nan or infinity
-
-    byte s = sign;
-    sign = 0;
-
-    // Special case, simple power of 2
-    if (mantissa == 0x4000000000000000L) {
-      exponent = 0x80000000-exponent;
-      if (exponent<0) // Overflow
-        makeInfinity(s);
-      return;
+  private static long ldiv(long a, long b) {
+    long m = 1;
+    a -= b;
+    a <<= 1;
+    for (int i=0; i<62; i++) {
+      m <<= 1;
+      if (a < 0 || a >= b) {
+        a -= b;
+        m |= 1;
+      }
+      a <<= 1;
     }
-
-    // Normalize exponent
-    int exp = 0x40000000-exponent;
-    exponent = 0x40000000;
-
-    // Save -A    
-    recipTmp.assign(this);
-    recipTmp.neg();
-
-    // First establish approximate result (actually 31 bit accurate)
-    mantissa = (0x4000000000000000L/(mantissa>>>31))<<31;
-    normalize();
-
-    // Now perform Newton-Raphson iteration
-    // Xn+1 = Xn + Xn*(1-A*Xn)
-
-    for (int i=0; i<2; i++) {
-      // For speed, use only one iteration. Error will be max 10 ulp
-      recipTmp2.assign(this);
-      mul(recipTmp);
-      add(ONE);
-      mul(recipTmp2);
-      add(recipTmp2);
-    }
-
-    // Fix exponent
-    scalbn(exp);
-    // Fix sign
-    if (!isNan())
-      sign = s;
+    if (a < 0 || a >= b)
+      m++;
+    return m;
   }
-
+  
   public void recip() {
     if (isNan())
       return;
@@ -868,7 +839,14 @@ public final class Real
       makeInfinity(sign);
       return;
     }
-    recipInternal();
+    exponent = 0x80000000-exponent;
+    if (mantissa == 0x4000000000000000L) {
+      if (exponent < 0)
+        makeInfinity(sign); // Overflow
+      return;
+    }
+    exponent--;
+    mantissa = ldiv(0x8000000000000000L,mantissa);
   }
 
   public void div(final Real a) {
@@ -876,31 +854,41 @@ public final class Real
       makeNan();
       return;
     }
+    sign ^= a.sign;
     if (isInfinity()) {
       if (a.isInfinity())
         makeNan();
-      else
-        sign ^= a.sign;
       return;
     }
     if (a.isInfinity()) {
-      makeZero(sign^a.sign);
+      makeZero(sign);
       return;
     }
     if (isZero()) {
       if (a.isZero())
         makeNan();
-      else
-        sign ^= a.sign;
       return;
     }
     if (a.isZero()) {
-      makeInfinity(sign^a.sign);
+      makeInfinity(sign);
       return;
     }
-    divTmp.assign(a);
-    divTmp.recipInternal();
-    mul(divTmp);
+    exponent += 0x40000000-a.exponent;
+    if (mantissa < a.mantissa) {
+      mantissa <<= 1;
+      exponent--;
+    }
+    if (exponent < 0) {
+      if (a.exponent >= 0x40000000)
+        makeZero(sign);     // Underflow
+      else
+        makeInfinity(sign); // Overflow
+      return;
+    }
+
+    if (a.mantissa == 0x4000000000000000L)
+      return;
+    mantissa = ldiv(mantissa,a.mantissa);
   }
 
   public void and(final Real a) {
