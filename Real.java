@@ -418,6 +418,10 @@ public final class Real
     return (exponent >= 0 && mantissa != 0);
   }
 
+  public boolean isNegative() {
+    return sign!=0;
+  }
+
   public void abs() {
     sign = 0;
   }
@@ -707,10 +711,6 @@ public final class Real
     return ((mantissa>>>shift)&1) != 0;
   }
 
-  public boolean isNegative() {
-    return sign!=0;
-  }
-
   // Temporary values used by functions (to avoid "new" inside functions)
   private static Real subTmp = new Real();
   private static Real rsTmp = new Real();
@@ -773,8 +773,10 @@ public final class Real
 
       if (sign == s)
         mantissa += m;
-      else
+      else {
         mantissa -= m;
+        if (mantissa <= 4) mantissa = 0;
+      }
 
       normalize();
     }
@@ -1196,16 +1198,16 @@ public final class Real
   public void rsqrt() {
     if (isNan())
       return;
+    if (isZero()) {
+      makeInfinity(0);
+      return;
+    }
     if (sign!=0) {
       makeNan();
       return;
     }
     if (isInfinity()) {
       makeZero(sign);
-      return;
-    }
-    if (isZero()) {
-      makeInfinity(sign);
       return;
     }
 
@@ -1215,11 +1217,15 @@ public final class Real
   public void sqrt() {
     if (isNan())
       return;
+    if (isZero()) {
+      sign=0;
+      return;
+    }
     if (sign!=0) {
       makeNan();
       return;
     }
-    if (isInfinity() || isZero())
+    if (isInfinity())
       return;
 
     sqrtTmp.assign(this);
@@ -2246,6 +2252,7 @@ public final class Real
   public static void accumulateRandomness(long seed) {
     randSeedA ^= seed & 0x5555555555555555L;
     randSeedB ^= seed & 0xaaaaaaaaaaaaaaaaL;
+    nextBits(63);
   }
 
   public void random() {
@@ -2261,8 +2268,8 @@ public final class Real
     int digit = -1;
     if (a>='0' && a<='9')
       digit = (int)(a-'0');
-    else if (a>='a' && a<='f')
-      digit = (int)(a-'a')+10;
+    else if (a>='A' && a<='F')
+      digit = (int)(a-'A')+10;
     if (digit >= base)
       return -1;
     if (twosComplement)
@@ -2492,7 +2499,7 @@ public final class Real
 
   private static StringBuffer ftoaBuf = new StringBuffer(40);
   private static StringBuffer ftoaExp = new StringBuffer(15);
-  public static final String hexChar = "0123456789abcdef";
+  public static final String hexChar = "0123456789ABCDEF";
 
   private String ftoa(NumberFormat format) {
     if (isNan())
@@ -2611,9 +2618,7 @@ public final class Real
 
       ftoaExp.setLength(0);
       if (useExp) {
-        ftoaExp.append('E');
-        if (tmp4.exponent-pointPos >= 0)
-          ftoaExp.append('+');
+        ftoaExp.append('e');
         ftoaExp.append(tmp4.exponent-pointPos);
         width -= ftoaExp.length();
       }
