@@ -2204,35 +2204,25 @@ public final class Real
 
   public static long randSeedA = 0x6487ed5110b4611aL;// Something to start with
   public static long randSeedB = 0x56fc2a2c515da54dL;// (mantissas of pi and e)
-  private static int randBitPos = 0;
 
-  // 64 Bit Linear Congruential Generators with Prime Addend.
-  // Multipliers 27bb2ee687b0b0fd, 369dea0f31a53f85 suggested by
-  // L'cuyer in his table of multipliers:
-  // http://www.iro.umontreal.ca/~lecuyer/myftp/papers/latrules.ps
-  // Prime numbers are randomly generated with Unix command "primes".
+  // 64 Bit CRC Generators
   //
   // The generators used here are not cryptographically secure, but
   // two weak generators are combined into one strong generator by
   // skipping bits from one generator whenever the other generator
   // produces a 0-bit.
   private static void advanceBit() {
-    randBitPos++;
-    if (randBitPos>=64) {
-      // Rehash seeds
-      randSeedA = (randSeedA * 0x369dea0f31a53f85L + 3184845299L);
-      randSeedB = (randSeedB * 0x27bb2ee687b0b0fdL + 2295936121L);
-      randBitPos = 0;
-    }
+    randSeedA = (randSeedA<<1)^(randSeedA<0?0x1b:0);
+    randSeedB = (randSeedB<<1)^(randSeedB<0?0xb000000000000001L:0);
   }
 
   // Get next bits from the pseudo-random sequence
   private static long nextBits(int bits) {
     long answer = 0;
     while (bits-- > 0) {
-      while (((int)(randSeedA>>>randBitPos)&1) == 0)
+      while (randSeedA >= 0)
         advanceBit();
-      answer = (answer<<1) + ((int)(randSeedB>>>randBitPos)&1);
+      answer = (answer<<1) + (randSeedB < 0 ? 1 : 0);
       advanceBit();
     }
     return answer;
@@ -2242,8 +2232,6 @@ public final class Real
   public static void accumulateRandomness(long seed) {
     randSeedA ^= seed & 0x5555555555555555L;
     randSeedB ^= seed & 0xaaaaaaaaaaaaaaaaL;
-    randBitPos = 63; // Force rehash
-    advanceBit();
   }
 
   public void random() {
