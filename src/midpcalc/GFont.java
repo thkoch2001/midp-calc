@@ -67,7 +67,7 @@ final class GFont
     return char_height;
   }
   
-  public int charWidth(char ch) {
+  public int charWidth() {
     return char_width;
   }
 
@@ -76,6 +76,20 @@ final class GFont
   }
 
   public int drawString(Graphics g, int x, int y, String string)
+  {
+    int length;
+    length = string.length();
+    for (int i=0; i<length; i++) {
+      int index = charToIndex(string.charAt(i));
+      if (index>0) {
+        drawChar(g,x,y,index);
+        x += char_width;
+      }
+    }
+    return x;
+  }
+
+  public int drawString(Graphics g, int x, int y, StringBuffer string)
   {
     int length;
     length = string.length();

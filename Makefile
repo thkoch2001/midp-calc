@@ -3,8 +3,20 @@ TARGETS = Calc.jar Calc.jad
 
 JFLAGS = --bootclasspath=/home/roarl/midpapi.jar -C -d . -O2
 
-JAVAFILES  = Calc.java CalcCanvas.java GFont.java GFontBase.java Real.java
-CLASSFILES = ral/Calc.class ral/CalcCanvas.class ral/GFont.class ral/GFontBase.class ral/Real.class
+JAVAFILES  = Calc.java \
+             CalcCanvas.java \
+             CalcEngine.java \
+             GFont.java \
+             GFontBase.java \
+             Real.java
+
+CLASSFILES = ral/Calc.class \
+             ral/CalcCanvas.class \
+             ral/CalcEngine.class \
+             ral/GFont.class \
+             ral/GFontBase.class \
+             ral/Real.class
+
 SHELL = /usr/bin/csh
 
 default: $(TARGETS)
@@ -21,7 +33,7 @@ GFontBase.java: pgm2java large.pgm medium.pgm small.pgm Makefile
 	echo "}"                                     >> $@
 
 calcManifest: Makefile
-	echo "Manifest-Version: 1.0\r"                >  $@
+	echo "Manifest-Version: 1.0\r"               >  $@
 	echo "MicroEdition-Configuration: CLDC-1.0\r">> $@
 	echo "MIDlet-Name: Calc\r"                   >> $@
 	echo "MIDlet-Vendor: Roar Lauritzsen\r"      >> $@
@@ -31,8 +43,8 @@ calcManifest: Makefile
 	echo "\r"                                    >> $@
 
 Calc.jar: $(JAVAFILES) calcManifest
-#	gcj $(JFLAGS) $(JAVAFILES)
-	javac -bootclasspath /home/roarl/midpapi.jar -d . $(JAVAFILES)
+	gcj $(JFLAGS) $(JAVAFILES)
+#	javac -bootclasspath /home/roarl/midpapi.jar -d . $(JAVAFILES)
 	jar cfm $@ calcManifest ral
 
 Calc.jad: Calc.jar Makefile

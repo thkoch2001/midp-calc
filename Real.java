@@ -5,11 +5,13 @@
 //   Real(Real)                             <==  Real
 //   Real(int)                              <==  integer
 //   Real(String)                           <==  "-1.234e+56"
+//   Real(String, int base)                 <==  "-1.234e+56"
 //   Real(int s, int e, long m)             <==  -1^s * m * 2^e
 //   Real(byte[] data, int offset)          <==  data[offset]..data[offset+11]
 //   assign(Real)
 //   assign(int)
 //   assign(String)
+//   assign(String, int base)
 //   assign(int s, int e, long m)
 //   assign(byte[] data, int offset)
 //
@@ -58,6 +60,7 @@
 //   hypot(Real)
 //   atan2(Real x)
 //   pow(Real)
+//   nroot(Real)
 //
 // Integral values:
 //   floor()
@@ -173,11 +176,11 @@ public final class Real
   }
 
   public Real(final String a) {
-    if (a==null) {
-      assign(ZERO);
-      return;
-    }
-    atof(a);
+    assign(a,10);
+  }
+  
+  public Real(final String a, int base) {
+    assign(a,base);
   }
   
   public Real(int s, int e, long m) {
@@ -206,7 +209,15 @@ public final class Real
   }
 
   public void assign(final String a) {
-    atof(a);
+    assign(a,10);
+  }
+
+  public void assign(final String a, int base) {
+    if (a==null || a.length()==0) {
+      assign(ZERO);
+      return;
+    }
+    atof(a,base);
   }
 
   public void assign(int s, int e, long m) {
@@ -307,7 +318,7 @@ public final class Real
       return;
     }
     if ((mantissa >>> 63) != 0) {
-      mantissa >>>= 1;
+      mantissa = (mantissa+1)>>>1;
       exponent ++;
       if (exponent < 0) // Overflow
         makeInfinity(sign);
@@ -515,7 +526,7 @@ public final class Real
       if (sign==0)
         return 0x7fffffff;
       else
-        return 0x80000000;
+        return 0x80000001; // So that you can take -x.toInteger()
     }
     if (exponent < 0x40000000)
       return 0;
@@ -524,7 +535,7 @@ public final class Real
       if (sign==0)
         return 0x7fffffff;
       else
-        return 0x80000000;
+        return 0x80000001; // So that you can take -x.toInteger()
     }
     return (sign==0) ? (int)(mantissa>>>shift) : -(int)(mantissa>>>shift);
   }
@@ -614,7 +625,7 @@ public final class Real
         return;
 
       if (shift!=0)
-        m = (m+(1<<(shift-1)))>>>shift;
+        m = (m+(1L<<(shift-1)))>>>shift;
 
       if (sign == s)
         mantissa += m;
@@ -668,6 +679,19 @@ public final class Real
     mantissa = a1*b1 + ((a0*b1 + a1*b0 + ((a0*b0)>>>31) + 0x40000000)>>>31);
 
     normalize();
+  }
+
+  private void mul10() {
+    if (!isFiniteNonZero())
+      return;
+    mantissa += (mantissa+2)>>>2;
+    exponent += 3;
+    if (mantissa < 0) {
+      mantissa = (mantissa+1)>>>1;
+      exponent++;
+    }
+    if (exponent < 0)
+      makeInfinity(sign); // Overflow
   }
 
   private void recipInternal() {
@@ -1198,6 +1222,19 @@ public final class Real
       sign = s;
   }
 
+  public void nroot(Real root) {
+    boolean negative = false;
+    if (isNegative() && root.isInteger() && root.isOdd()) {
+      negative = true;
+      abs();
+    }
+    tmp2.assign(root);
+    tmp2.recip();
+    pow(tmp2);
+    if (negative)
+      neg();
+  }
+
   private void sinInternal() {
     // Calculate sine for 0 < x < pi/4
     // Using the classic Taylor series.
@@ -1541,11 +1578,34 @@ public final class Real
     }
   }
 
-  private void atof(final String a) {
+  private int digit(char a, int base) {
+    int digit = -1;
+    if (a>='0' && a<='9')
+      digit = (int)(a-'0');
+    else if (a>='a' && a<='f')
+      digit = (int)(a-'a')+10;
+    if (digit >= base)
+      return -1;
+    return digit;
+  }
+
+  private void shiftUp(int base) {
+    if (base==2)
+      scalbn(1);
+    else if (base==8)
+      scalbn(3);
+    else if (base==16)
+      scalbn(4);
+    else
+      mul10();
+  }
+
+  private void atof(final String a, int base) {
     makeZero(0);
     int length = a.length();
     int index = 0;
     byte tmpSign = 0;
+    int d;
     while (index<length && a.charAt(index)==' ')
       index++;
     if (index<length && a.charAt(index)=='-') {
@@ -1554,19 +1614,19 @@ public final class Real
     } else if (index<length && a.charAt(index)=='+') {
       index++;
     }
-    while (index<length && a.charAt(index)>='0' && a.charAt(index)<='9') {
-      mul(TEN);
-      tmp1.assign((int)(a.charAt(index)-'0'));
+    while (index<length && (d=digit(a.charAt(index),base))>=0) {
+      shiftUp(base);
+      tmp1.assign(d);
       add(tmp1);
       index++;
     }
     if (index<length && a.charAt(index)=='.') {
       index++;
       tmp2.assign(ONE);
-      while (index<length && a.charAt(index)>='0' && a.charAt(index)<='9') {
-        tmp2.mul(TEN);
-        mul(TEN);
-        tmp1.assign((int)(a.charAt(index)-'0'));
+      while (index<length && (d=digit(a.charAt(index),base))>=0) {
+        tmp2.shiftUp(base);
+        shiftUp(base);
+        tmp1.assign(d);
         add(tmp1);
         index++;
       }
@@ -1591,8 +1651,17 @@ public final class Real
       }
       if (expNeg)
         exp = -exp;
-      tmp1.makeExp10(exp);
-      mul(tmp1);
+
+      if (base==2)
+        scalbn(exp);
+      else if (base==8)
+        scalbn(exp*3);
+      else if (base==16)
+        scalbn(exp*4);
+      else {
+        tmp1.makeExp10(exp);
+        mul(tmp1);
+      }
     }
     sign = tmpSign;
   }
@@ -1633,24 +1702,22 @@ public final class Real
   private void toBCD() {
     // Convert normal nonzero finite Real to BCD format, represented by 16
     // 4-bit decimal digits in the mantissa, and exponent as a power of 10
-    tmp1.assign(this);
-    tmp1.abs();
-    tmp2.assign(tmp1);
-    tmp1.log10();
-    tmp1.floor();
-    exponent = tmp1.toInteger(); // Can not cause overflow
+    tmp2.assign(this);
+    tmp2.abs();
+    // Approximate log10 using exponent only
+    exponent -= 0x40000000;
+    if (exponent<0) // it's important to achieve floor(exponent*ln2/ln10)
+      exponent = -(int)(((-exponent)*0x4d104d43L+((1L<<32)-1)) >> 32);
+    else
+      exponent = (int)(exponent*0x4d104d43L >> 32);
+    // Now, exponent < log10(this) < exponent+1
     tmp1.makeExp10(exponent);
-    if (tmp1.greaterThan(tmp2)) {
-      // Inaccuracy may cause log10(99999) to turn out as e.g. 5.0001
-      exponent--;
-      tmp1.makeExp10(exponent);
-    } else {
-      tmp3.makeExp10(exponent+1);
-      if (tmp3.lessEqual(tmp2)) {
-        // Inaccuracy may cause log10(100000) to turn out as e.g. 4.9999
-        exponent++;
-        tmp1.assign(tmp3);
-      }
+    tmp3.assign(tmp1);
+    tmp3.mul10();
+    if (tmp3.lessEqual(tmp2)) {
+      // First estimate of log10 was too low
+      exponent++;
+      tmp1.assign(tmp3);
     }
     if (exponent > 300000000 || exponent < -300000000) {
       // Kludge to be able to print very large and very small numbers
@@ -1666,78 +1733,267 @@ public final class Real
       tmp1.floor();
       mantissa += (long)tmp1.toInteger()<<i;
       tmp2.sub(tmp1);
-      tmp2.mul(TEN);
+      tmp2.mul10();
     }
     if (tmp2.greaterEqual(FIVE))
       mantissa++; // Rounding
     normalizeBCD();
   }
 
-  private static StringBuffer ftoaBuf = new StringBuffer(30);
+  private boolean testCarryWhenRounded(int base,int bitsPerDigit,int precision)
+  {
+    if (mantissa >= 0)
+      return false; // msb not set -> carry cannot occur
+    int shift = 64-precision*bitsPerDigit;
+    if (shift<=0)
+      return false; // too high precision -> no rounding necessary
+    tmp5.assign(this);
+    if (base==10) {
+      tmp5.mantissa += (5L<<(shift-4));
+      tmp5.normalizeBCD();
+    } else {
+      tmp5.mantissa += (1L<<(shift-1));
+    }
+    if (tmp5.mantissa >= 0) {
+      // msb has changed from 1 to 0 -> we have carry
+      // now modify the original number
+      mantissa = (1L<<(64-bitsPerDigit));
+      exponent++;
+      return true;
+    }
+    return false;
+  }
 
-  private String ftoa(int base) {
+  private void round(int base, int bitsPerDigit, int precision) {
+    int shift = 64-precision*bitsPerDigit;
+    if (shift<=0)
+      return; // too high precision -> no rounding necessary
+    long orgMantissa = mantissa;
+    if (base==10) {
+      mantissa += (5L<<(shift-4));
+      normalizeBCD();
+    } else {
+      mantissa += (1L<<(shift-1));
+    }
+    if (orgMantissa < 0 && mantissa >= 0) {
+      // msb has changed from 1 to 0 -> we have carry
+      mantissa = (1L<<(64-bitsPerDigit));
+      exponent++;
+    }
+  }
+
+  private int floorDiv(int a, int b) {
+    if (a>=0)
+      return a/b;
+    return -((-a+b-1)/b);
+  }
+  private int floorMod(int a, int b) {
+    if (a>=0)
+      return a%b;
+    return a+((-a+b-1)/b)*b;
+  }
+
+  public static class NumberFormat
+  {
+    public static final int FSE_NONE = 0;
+    public static final int FSE_FIX  = 1;
+    public static final int FSE_SCI  = 2;
+    public static final int FSE_ENG  = 3;
+    
+    public int base;              // 2 8 10 16
+    public int maxwidth;          // 30
+    public int precision;         // 0-16 (for decimal)
+    public int fse;               // NONE FIX SCI ENG
+    public char point;            // '.' ','
+    public boolean removePoint;   // true/false
+    public char thousand;         // '.' ',' ' ' 0
+    
+    NumberFormat() {
+      base = 10;
+      maxwidth = 30;
+      precision = 16;
+      fse = FSE_NONE;
+      point = '.';
+      removePoint = true;
+      thousand = 0;
+    }
+  }
+
+  private static StringBuffer ftoaBuf = new StringBuffer(40);
+  private static StringBuffer ftoaExp = new StringBuffer(15);
+  private static final String hexChar = "0123456789abcdef";
+
+  private String ftoa(NumberFormat format) {
     if (isNan())
       return "nan";
     if (isInfinity())
       return (sign!=0)?"-inf":"inf";
-    if (isZero())
+    if (isZero() && format.fse == NumberFormat.FSE_NONE)
       return (sign!=0)?"-0":"0";
 
-    if (base==16) {
-      return ((sign!=0)?"-":"")+"0x"+Integer.toHexString((int)(mantissa>>>32))+
-        Integer.toHexString((int)mantissa)+" E"+
-        ((exponent>=0x40000000)?"+":"")+(exponent-0x40000000);
-    } else if (base==10) {
-      int i;
-      tmp4.assign(this);
-      tmp4.toBCD();
-      ftoaBuf.setLength(0);
+    int bitsPerDigit,digitsPerThousand;
+    switch (format.base) {
+      case 2:
+        bitsPerDigit = 1;
+        digitsPerThousand = 8;
+        break;
+      case 8:
+        bitsPerDigit = 3;
+        digitsPerThousand = 1000; // Disable thousands separator
+        break;
+      case 16:
+        bitsPerDigit = 4;
+        digitsPerThousand = 4;
+        break;
+      case 10:
+      default:
+        bitsPerDigit = 4;
+        digitsPerThousand = 3;
+        break;
+    }
+    if (format.thousand == 0)
+      digitsPerThousand = 1000; // Disable thousands separator
+
+    int accurateBits = 64;
+    tmp4.assign(this);
+    if (!isZero())
+      if (format.base == 10) {
+        tmp4.toBCD();
+      } else {
+        tmp4.exponent -= 0x40000000-1;
+        int shift = bitsPerDigit-1 - floorMod(tmp4.exponent,bitsPerDigit);
+        tmp4.exponent = floorDiv(tmp4.exponent,bitsPerDigit);
+        if (shift == bitsPerDigit-1) {
+          // More accurate to shift up instead
+          tmp4.mantissa <<= 1;
+          tmp4.exponent--;
+          accurateBits--;
+        }
+        else if (shift>0)
+          tmp4.mantissa = (tmp4.mantissa+(1L<<(shift-1)))>>>shift;
+      }
+    int accurateDigits = (accurateBits+bitsPerDigit-1)/bitsPerDigit;
+
+    int precision;
+    int pointPos = 0;
+    do
+    {
+      int width = format.maxwidth-1; // subtract 1 for decimal point
       if (tmp4.sign!=0)
-        ftoaBuf.append('-');
+        width--; // subtract 1 for sign
 
-      // Add fractional part
-      if (tmp4.exponent>=0 && tmp4.exponent<16)
-      {
-        for (i=0; i<=tmp4.exponent; i++)
-          ftoaBuf.append((char)('0'+((tmp4.mantissa>>>(60-i*4))&0xf)));
-        ftoaBuf.append('.');
-        for (; i<16; i++)
-          ftoaBuf.append((char)('0'+((tmp4.mantissa>>>(60-i*4))&0xf)));
-        tmp4.exponent = 0;
-      }
-      else
-      {
-        ftoaBuf.append((char)('0'+(tmp4.mantissa>>>60)));
-        ftoaBuf.append('.');
-        for (i=56; i>=0; i-=4)
-          ftoaBuf.append((char)('0'+((tmp4.mantissa>>>i)&0xf)));
+      boolean useExp = false;
+      switch (format.fse) {
+        case NumberFormat.FSE_SCI:
+          precision = format.precision+1;
+          useExp = true;
+          break;
+        case NumberFormat.FSE_ENG:
+          pointPos = floorMod(tmp4.exponent,3);
+          precision = format.precision+1+pointPos;
+          useExp = true;
+          break;
+        case NumberFormat.FSE_FIX:
+        case NumberFormat.FSE_NONE:
+        default:
+          precision = 1000;
+          if (format.fse == NumberFormat.FSE_FIX)
+            precision = format.precision+1;
+          if (tmp4.exponent+1 > width-tmp4.exponent/digitsPerThousand ||
+              tmp4.exponent+1 > accurateDigits ||
+              -tmp4.exponent+1 > width)
+          {
+            useExp = true;
+          } else {
+            pointPos = tmp4.exponent;
+            if (tmp4.exponent >= 0) {
+              precision += tmp4.exponent;
+              width -= tmp4.exponent/digitsPerThousand;
+            }
+          }
+          break;
       }
 
-      // Remove trailing zeros and dot
+      ftoaExp.setLength(0);
+      if (useExp) {
+        ftoaExp.append('E');
+        if (tmp4.exponent-pointPos >= 0)
+          ftoaExp.append('+');
+        ftoaExp.append(tmp4.exponent-pointPos);
+        width -= ftoaExp.length();
+      }
+      if (precision > accurateDigits)
+        precision = accurateDigits;
+      if (precision > width)
+        precision = width;
+      if (precision > width+pointPos) // In case of negative pointPos
+        precision = width+pointPos;
+      if (precision <= 0)
+        precision = 1;
+    }
+    while (tmp4.testCarryWhenRounded(format.base,bitsPerDigit,precision));
+
+    tmp4.round(format.base,bitsPerDigit,precision);
+
+    // Start generating the string. First the sign
+    ftoaBuf.setLength(0);
+    if (tmp4.sign!=0) {
+      ftoaBuf.append('-');
+    }
+
+    // Add leading zeros
+    if (pointPos < 0) {
+      ftoaBuf.append('0');
+      ftoaBuf.append(format.point);
+      while (pointPos < -1) {
+        ftoaBuf.append('0');
+        pointPos++;
+      }
+    }
+
+    // Add fractional part
+    while (precision > 0) {
+      ftoaBuf.append(hexChar.charAt((int)(tmp4.mantissa>>>(64-bitsPerDigit))));
+      tmp4.mantissa <<= bitsPerDigit;
+      if (pointPos>0 && pointPos%digitsPerThousand==0)
+        ftoaBuf.append(format.thousand);
+      if (pointPos == 0)
+        ftoaBuf.append(format.point);
+      precision--;
+      pointPos--;
+    }
+
+    if (format.fse == NumberFormat.FSE_NONE) {
+      // Remove trailing zeros
       while (ftoaBuf.charAt(ftoaBuf.length()-1) == '0')
         ftoaBuf.setLength(ftoaBuf.length()-1);
-      while (ftoaBuf.charAt(ftoaBuf.length()-1) == '.')
-        ftoaBuf.setLength(ftoaBuf.length()-1);
-
-      // Add exponent
-      if (tmp4.exponent != 0) {
-        ftoaBuf.append(" E");
-        if (tmp4.exponent>=0)
-          ftoaBuf.append('+');
-        ftoaBuf.append(tmp4.exponent);
-      }
-      return ftoaBuf.toString();
-    } else {
-      return ((sign!=0)?"-?":"?");
     }
+    if (format.removePoint) {
+      // Remove trailing point
+      if (ftoaBuf.charAt(ftoaBuf.length()-1) == format.point)
+        ftoaBuf.setLength(ftoaBuf.length()-1);
+    }
+
+    // Add exponent
+    ftoaBuf.append(ftoaExp);
+
+    return ftoaBuf.toString();
   }
+
+  private static NumberFormat tmpFormat = new NumberFormat();
 
   public String toString() {
-    return ftoa(10);
+    tmpFormat.base = 10;
+    return ftoa(tmpFormat);
   }
-  
+
   public String toString(int base) {
-    return ftoa(base);
+    tmpFormat.base = base;
+    return ftoa(tmpFormat);
+  }
+
+  public String toString(NumberFormat format) {
+    return ftoa(format);
   }
 
 ///////////////////////////////////////////////////////////////////////////////
