@@ -1,3 +1,5 @@
+package ral;
+
 import javax.microedition.lcdui.*;
 
 public class CalcCanvas

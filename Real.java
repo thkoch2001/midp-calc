@@ -123,6 +123,8 @@
 //   INF_N    = -infinity
 //   ZERO_N   = -0
 //
+package ral;
+
 public final class Real
 {
   long mantissa;

@@ -35,6 +35,7 @@
 //               time    -> ->HMS  ->H
 //                          ->RAD  ->DEG
 //               random
+package ral;
 
 import java.io.*;
 import javax.microedition.midlet.*;
