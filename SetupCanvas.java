@@ -12,6 +12,8 @@ public class SetupCanvas
   private Command yes;
   private Command no;
   private Command ok;
+  private Command left;
+  private Command right;
 
   private final Calc midlet;
 
@@ -23,11 +25,21 @@ public class SetupCanvas
   private String clearQueryHeading = "Setup: clear key";
   private String clearQueryText =
     "If you have a \"clear\" key, press it now, otherwise use #";
+
+  private String bgrQueryHeading = "Setup: font";
+  private String bgrQueryText = "What looks best, left or right numbers?";
+  
   private String alertString;
   private String alertHeading;
 
-  private boolean clearQuery = true;
-  private boolean finished = false;
+  private static final int COMMAND_QUERY = 0;
+  private static final int CLEAR_QUERY = 1;
+  private static final int BGR_QUERY = 2;
+  private static final int QUERY_FINISHED = 3;
+  
+  private int query;
+
+  private GFont fontLeft,fontRight;
 
   public static final int [] commandArrangement = {
     Command.OK, Command.SCREEN,
@@ -53,7 +65,7 @@ public class SetupCanvas
     boldMenuFont = Font.getFont(
       Font.FACE_PROPORTIONAL,Font.STYLE_BOLD,Font.SIZE_MEDIUM);
 
-    clearQuery = false;
+    query = COMMAND_QUERY;
     setupHeading = commandQueryHeading;
     setupText = commandQueryText;
 
@@ -62,8 +74,27 @@ public class SetupCanvas
     alertHeading = "Setup";
 
     String name = System.getProperty("microedition.platform");
-    if (name != null && name.startsWith("Nokia"))
-      arrangement = 1;
+    if (name != null) {
+      if (name.startsWith("Nokia")) {
+        arrangement = 1;
+      } else if (name.indexOf("T610")>0) {
+        midlet.hasClearKey = true;
+        midlet.commandArrangement = 0;
+        midlet.bgrDisplay = false;
+        query = QUERY_FINISHED;
+        finish();
+      } else if (name.indexOf("T630")>0) {
+        midlet.hasClearKey = true;
+        midlet.commandArrangement = 0;
+        midlet.bgrDisplay = true;
+        query = QUERY_FINISHED;
+        finish();
+      }
+    }
+  }
+
+  public boolean isFinished() {
+    return query == QUERY_FINISHED;
   }
 
   private void drawWrapped(Graphics g, int x, int y, int w, String text) {
@@ -93,14 +124,21 @@ public class SetupCanvas
   public void paint(Graphics g) {
     if (yes!=null) removeCommand(yes);
     if (no !=null) removeCommand(no);
+    if (left!=null) removeCommand(left);
+    if (right!=null) removeCommand(right);
     removeCommand(ok);
     if (alertString != null) {
       addCommand(ok);
-    } else if (!clearQuery) {
+    } else if (query == COMMAND_QUERY) {
       no  = new Command("no",  commandArrangement[2*arrangement], 1);
       yes = new Command("yes", commandArrangement[2*arrangement+1], 1);
       addCommand(no);
       addCommand(yes);
+    } else if (query == BGR_QUERY) {
+      left = new Command("left",  commandArrangement[2*arrangement], 1);
+      right = new Command("right", commandArrangement[2*arrangement+1], 1);
+      addCommand(left);
+      addCommand(right);
     }
     String text,heading;
     if (alertString != null) {
@@ -118,13 +156,30 @@ public class SetupCanvas
     g.drawString(heading,2,0,g.TOP|g.LEFT);
     g.setFont(menuFont);
     drawWrapped(g,2,boldMenuFont.getHeight()+3,getWidth()-3,text);
+    if (alertString == null && query == BGR_QUERY) {
+      if (fontLeft == null) {
+        fontLeft = new GFont(GFont.MEDIUM);
+        fontRight = new GFont(GFont.MEDIUM|GFont.BGR_ORDER);
+      }
+      fontLeft.drawString(g,2,getHeight()-fontLeft.getHeight()-2," 567 ");
+      fontRight.drawString(g,getWidth()-fontRight.charWidth()*5-2,
+                           getHeight()-fontRight.getHeight()-2," 567 ");
+    }
   }
 
   private void clearKeyPressed(boolean hasClearKey) {
-    alertString = "Thank you - setup finished";
-    alertHeading = "Setup";
     midlet.hasClearKey = hasClearKey;
-    finished = true;
+    if (midlet.display.isColor()) {
+      alertString = "Thank you - next setup item";
+      alertHeading = "Setup";
+      query = BGR_QUERY;
+      setupHeading = bgrQueryHeading;
+      setupText = bgrQueryText;
+    } else {
+      alertString = "Thank you - setup finished";
+      alertHeading = "Setup";
+      query = QUERY_FINISHED;
+    }
     repaint();
   }
 
@@ -150,7 +205,7 @@ public class SetupCanvas
   }
 
   protected void keyPressed(int key) {
-    if (finished) {
+    if (query == QUERY_FINISHED) {
       finish();
       return;
     }
@@ -159,8 +214,10 @@ public class SetupCanvas
     //  repaint();
     //  return;
     //}
-    if (!clearQuery) {
+    if (query == COMMAND_QUERY) {
       nextCommandArrangement();
+      return;
+    } else if (query == BGR_QUERY) {
       return;
     }
     switch (key) {
@@ -206,7 +263,7 @@ public class SetupCanvas
 
   public void commandAction(Command c, Displayable d)
   {
-    if (finished) {
+    if (query == QUERY_FINISHED) {
       finish();
       return;
     }
@@ -215,7 +272,7 @@ public class SetupCanvas
       repaint();
       return;
     }
-    if (clearQuery) {
+    if (query == CLEAR_QUERY) {
       clearKeyInUse();
       return;
     }
@@ -223,11 +280,16 @@ public class SetupCanvas
       alertString = "Thank you - next setup item";
       alertHeading = "Setup";
       midlet.commandArrangement = (byte)arrangement;
-      clearQuery = true;
+      query = CLEAR_QUERY;
       setupHeading = clearQueryHeading;
       setupText = clearQueryText;
-    } else {
+    } else if (c == no) {
       nextCommandArrangement();
+    } else if (c == left || c == right) {
+      alertString = "Thank you - setup finished";
+      alertHeading = "Setup";
+      query = QUERY_FINISHED;
+      midlet.bgrDisplay = c == right;
     }
     repaint();
   }

@@ -10,8 +10,11 @@ public final class Calc
   public SetupCanvas setup;
   public Display display;
   public PropertyStore propertyStore;
+
+  // Setup items
   public boolean hasClearKey = true;
   public byte commandArrangement = 0;
+  public boolean bgrDisplay = false;
   
   public static final byte PROPERTY_SETUP = 0;
 
@@ -22,15 +25,17 @@ public final class Calc
   
   public void startApp() {
     if (propertyStore != null) {
-      byte [] buf = new byte[3];
+      byte [] buf = new byte[4];
       buf[0] = PROPERTY_SETUP;
       int length = propertyStore.getProperty(buf);
-      if (length >= 3) {
+      if (length >= 4) {
         hasClearKey = buf[1] != 0;
         commandArrangement = buf[2];
+        bgrDisplay = buf[3] != 0;
       } else {
         setup = new SetupCanvas(this);
-        display.setCurrent(setup);
+        if (!setup.isFinished())
+          display.setCurrent(setup);
         return;
       }
     }
@@ -57,11 +62,12 @@ public final class Calc
 
   public void saveSetup() {
     if (propertyStore != null) {
-      byte [] buf = new byte[3];
+      byte [] buf = new byte[4];
       buf[0] = PROPERTY_SETUP;
       buf[1] = (byte)(hasClearKey ? 1 : 0);
       buf[2] = commandArrangement;
-      propertyStore.setProperty(buf,3);
+      buf[3] = (byte)(bgrDisplay ? 1 : 0);
+      propertyStore.setProperty(buf,4);
     }
   }
 

@@ -13,13 +13,16 @@ Financial Java Calculator</h1>
 <h2>Changelog:</h2>
 
 
-<h3>Upcoming version</h3>
+<h3>Version 1.14, 2004-04-01</h3>
 
 <ul>
+  <li>Support for sub-pixel antialiased fonts when display order is BGR
+  instead of RGB (e.g. Ericsson T630)
+  <li>Bypassing setup dialogs on known devices (so far: T610 and T630)
   <li>Correct rounding in addition and subtraction routine
-  <li>Fixed accuracy problem of exponential operations
+  <li>Fixed accuracy problem of e<sup>x</sup> and 10<sup>x</sup>
   <li>More accurate display of extremely large/small numbers due to
-  accurate exponentiation
+  accurate 10<sup>x</sup>
   <li>50-70% speedup of all operations due to inlining of small functions
 </ul>
 
@@ -43,7 +46,7 @@ Financial Java Calculator</h1>
 <ul>
   <li>Made "int" submenu accessible in hex/oct/bin mode
   <li>Hex number "1.fffffffffffffffc" correctly displays "2"
-  <li>Faster and more accurate division routine
+  <li>Faster and correctly rounded division routine
   <li>Statistics log (used in "draw") now stores 64 x/y pairs and
   removes correctly on &#931;-
   <li>Using CRC rather than linear congruential generators in random
@@ -93,7 +96,6 @@ Financial Java Calculator</h1>
 
 <ul>
   <li>Improve accuracy of y<sup>x</sup>
-  <li>Bypassing setup dialogs on known devices (T610, ?...)
   <li>Try to reduce startup time (12 sec on T610)
   <li>Modulo operation (menu position?)
   <li>Stack roll-up and roll-down (rolls using current stack size)

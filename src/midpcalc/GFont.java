@@ -9,6 +9,7 @@ final class GFont
   static final int MEDIUM = 1;
   static final int LARGE  = 2;
   static final int SYSTEM = 3;
+  static final int BGR_ORDER = 4;
 
   private final String char_bits;
   private final int char_width;
@@ -18,9 +19,12 @@ final class GFont
   private final int style;
   private final Font systemFont;
   private final byte [] char_index;
+  private final boolean bgr;
 
   public GFont(int style)
   {
+    bgr = (style & BGR_ORDER) != 0;
+    style &= 3;
     this.style = style;
     if (style == MEDIUM) {
       systemFont = null;
@@ -51,8 +55,9 @@ final class GFont
     }
     char_cache = new Image[32*3];
     char_index = new byte[96];
-    for (char c=32; c<128; c++)
-      char_index[c-32] = (byte)char_set.indexOf(c);
+    if (char_set != null)
+      for (char c=32; c<128; c++)
+        char_index[c-32] = (byte)char_set.indexOf(c);
   }
 
   public int getStyle() {
@@ -85,7 +90,10 @@ final class GFont
           bitPos += 2;
           blue = ((char_bits.charAt(bitPos/8)>>(bitPos&7))&3)*85;
           if (red != 0 || green != 0 || blue != 0) {
-            g2.setColor(red,green,blue);
+            if (bgr)
+              g2.setColor(blue,green,red);
+            else
+              g2.setColor(red,green,blue);
             g2.fillRect(x2,y2,1,1);
           }
         }

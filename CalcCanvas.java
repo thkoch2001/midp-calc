@@ -475,7 +475,7 @@ public class CalcCanvas
 
   private void setNumberFont(int size) {
     numberFont = null;
-    numberFont = new GFont(size);
+    numberFont = new GFont(size | (midlet.bgrDisplay ? GFont.BGR_ORDER : 0));
     numberWidth = numberFont.charWidth();
     nDigits = getWidth()/numberWidth;
     offX = (getWidth()-nDigits*numberWidth)/2;
