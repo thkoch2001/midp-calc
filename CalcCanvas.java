@@ -2,7 +2,7 @@ package ral;
 
 import javax.microedition.lcdui.*;
 
-public class CalcCanvas
+public final class CalcCanvas
     extends Canvas
     implements CommandListener
 {
@@ -139,7 +139,7 @@ public class CalcCanvas
 //   <prob> <coord> <misc> <stat> <finance> <time>
 //
   
-  private static class Menu
+  private static final class Menu
   {
     public String label;
     public int command;
