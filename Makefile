@@ -33,18 +33,23 @@ GFontBase.java: pgm2java large.pgm medium.pgm small.pgm Makefile
 
 Calc.jad: Makefile
 	echo "MIDlet-Name: Calc"                     >  $@
-	echo "MIDlet-Version: $(VERSION)"            >> $@
 	echo "MIDlet-Vendor: Roar Lauritzsen"        >> $@
+	echo "MIDlet-Version: $(VERSION)"            >> $@
+	echo "MIDlet-Description: Scientific RPN Calculator" >> $@
+	echo "MIDlet-Icon: /ral/Calc.png"            >> $@
+	echo "MIDlet-Info-URL: http://gridbug.ods.org/Calc.html" >> $@
+	echo "MIDlet-Data-Size: 2048"                >> $@
+	echo "MIDlet-Jar-URL: http://gridbug.ods.org/Calc.jar" >> $@
+	echo "MIDlet-Jar-Size: 0"                    >> $@
 	echo "MicroEdition-Profile: MIDP-1.0"        >> $@
 	echo "MicroEdition-Configuration: CLDC-1.0"  >> $@
-	echo "MIDlet-Jar-URL: http://gridbug.ods.org/~roarl/Calc.jar" >> $@
-	echo "MIDlet-Jar-Size: 0"                    >> $@
-	echo "MIDlet-1: Calc, , ral.Calc"            >> $@
+	echo "MIDlet-1: Calc, /ral/Calc.png, ral.Calc" >> $@
 
-Calc.jar: $(JAVAFILES) Calc.jad
+Calc.jar: $(JAVAFILES) Calc.jad Calc.png
 	rm -rf ral
 	gcj $(JFLAGS) $(JAVAFILES)
 #	javac $(JFLAGS) $(JAVAFILES)
+	cp Calc.png ral/
 #	jar cf Calc.jar ral/*
 	ant -buildfile build.xml -Dwtk.home=${WTK_HOME} make-jar
 
