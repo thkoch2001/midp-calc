@@ -51,7 +51,6 @@ public class CalcCanvas
 //
 // Extensions:
 //   math     -> modulo  -> mod    rem
-//            -> percent -> %
 //   spceial  -> stat    -> S_xw s_xw
 //
 ///  special  -> run                                                -> #
