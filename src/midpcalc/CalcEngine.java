@@ -216,6 +216,7 @@ public final class CalcEngine
   public static final int PROG_FINISH    = 208;
   public static final int PROG_RUN       = 209;
   public static final int PROG_CLEAR     = 210;
+  public static final int PROG_DRAW      = 211;
   // These commands are handled from CalcCanvas
   public static final int AVG_DRAW       = 300;
   public static final int LIN_DRAW       = 301;
@@ -293,6 +294,7 @@ public final class CalcEngine
   public boolean progRunning;
   private short [] prog;
   private int progCounter;
+  private Real progXmin,progXmax,progYmin,progYmax;
   
   public CalcEngine()
   {
@@ -2500,8 +2502,10 @@ public final class CalcEngine
   }
 
   private void record(int cmd, int param) {
-    if (prog == null)
-      return;
+    if (prog == null ||
+        (cmd >= AVG_DRAW && cmd <= POW_DRAW) ||
+        (cmd >= PROG_REC && cmd <= PROG_DRAW))
+      return; // Such commands cannot be recorded
     if (progCounter == prog.length) {
       short [] prog2 = new short[prog.length*2];
       System.arraycopy(prog,0,prog2,0,prog.length);
@@ -3285,8 +3289,12 @@ public final class CalcEngine
   }
 
   public boolean draw(int cmd, Graphics g, int gx, int gy, int gw, int gh) {
-    if (SUM1 == null || statLogSize == 0)
+    if (cmd == PROG_DRAW) {
+      if (prog == null)
+        return false;
+    } else if (SUM1 == null || statLogSize == 0)
       return false;
+
     Real xMin = new Real();
     Real xMax = new Real();
     Real yMin = new Real();
@@ -3298,25 +3306,34 @@ public final class CalcEngine
     int i,xi,yi,pyi,inc,bigTick;
 
     // Find boundaries
-    for (i=0; i<statLogSize; i++) {
-      int index = (statLogStart+i)%STATLOG_SIZE;
-      x.assignFloatBits(statLog[index*2]);
-      y.assignFloatBits(statLog[index*2+1]);
-      if (x.isFiniteNonZero() && y.isFiniteNonZero()) {
-        if (x.lessThan(xMin))    xMin.assign(x);
-        if (x.greaterThan(xMax)) xMax.assign(x);
-        if (y.lessThan(yMin))    yMin.assign(y);
-        if (y.greaterThan(yMax)) yMax.assign(y);
+    if (cmd == PROG_DRAW) {
+      if (inputInProgress)
+        parseInput();
+      xMin.assign(stack[3]);
+      xMax.assign(stack[2]);
+      yMin.assign(stack[1]);
+      yMax.assign(stack[0]);
+    } else {
+      for (i=0; i<statLogSize; i++) {
+        int index = (statLogStart+i)%STATLOG_SIZE;
+        x.assignFloatBits(statLog[index*2]);
+        y.assignFloatBits(statLog[index*2+1]);
+        if (x.isFiniteNonZero() && y.isFiniteNonZero()) {
+          if (x.lessThan(xMin))    xMin.assign(x);
+          if (x.greaterThan(xMax)) xMax.assign(x);
+          if (y.lessThan(yMin))    yMin.assign(y);
+          if (y.greaterThan(yMax)) yMax.assign(y);
+        }
       }
+      // Expand boundaries by 10%
+      rTmp.assign("1.1");
+      xMin.mul(rTmp);
+      xMax.mul(rTmp);
+      yMin.mul(rTmp);
+      yMax.mul(rTmp);
     }
     if (xMin.equals(xMax) || yMin.equals(yMax))
       return false;
-    // Expand boundaries by 10%
-    rTmp.assign("1.1");
-    xMin.mul(rTmp);
-    xMax.mul(rTmp);
-    yMin.mul(rTmp);
-    yMax.mul(rTmp);
 
     g.setClip(gx,gy,gw,gh);
     // shrink window by 4 pixels
@@ -3328,12 +3345,16 @@ public final class CalcEngine
     // Draw X axis
     g.setColor(0,255,128);
     yi = gy+rangeScale(Real.ZERO,yMax,yMin,gh,Real.ZERO);
-    g.drawLine(gx-1,yi,gx+gw,yi);
+    g.drawLine(gx-2,yi,gx+gw+1,yi);
     bigTick = findTickStep(a,xMin,xMax,gw);
     x.assign(a);
     x.neg();
     i = -1;
-    while (x.greaterThan(xMin)) {
+    rTmp3.assign(a);
+    rTmp3.scalbn(-1);
+    rTmp3.neg();
+    rTmp3.add(xMin);
+    while (x.greaterThan(rTmp3)) {
       xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
       inc = (i%bigTick == 0) ? 2 : 1;
       g.setColor(0,32,16);
@@ -3345,7 +3366,10 @@ public final class CalcEngine
     }
     x.assign(a);
     i = 1;
-    while (x.lessThan(xMax)) {
+    rTmp3.assign(a);
+    rTmp3.scalbn(-1);
+    rTmp3.add(xMax);
+    while (x.lessThan(rTmp3)) {
       xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
       inc = (i%bigTick == 0) ? 2 : 1;
       g.setColor(0,32,16);
@@ -3358,12 +3382,16 @@ public final class CalcEngine
 
     // Draw Y axis
     xi = gx+rangeScale(Real.ZERO,xMin,xMax,gw,Real.ZERO);
-    g.drawLine(xi,gy-1,xi,gy+gh);
+    g.drawLine(xi,gy-2,xi,gy+gh+1);
     bigTick = findTickStep(a,yMin,yMax,gh);
     y.assign(a);
     y.neg();
     i = -1;
-    while (y.greaterThan(yMin)) {
+    rTmp3.assign(a);
+    rTmp3.scalbn(-1);
+    rTmp3.neg();
+    rTmp3.add(yMin);
+    while (y.greaterThan(rTmp3)) {
       yi = gy+rangeScale(y,yMax,yMin,gh,Real.ZERO);
       inc = (i%bigTick == 0) ? 2 : 1;
       g.setColor(0,32,16);
@@ -3375,7 +3403,10 @@ public final class CalcEngine
     }
     y.assign(a);
     i = 1;
-    while (y.lessThan(yMax)) {
+    rTmp3.assign(a);
+    rTmp3.scalbn(-1);
+    rTmp3.add(yMax);
+    while (y.lessThan(rTmp3)) {
       yi = gy+rangeScale(y,yMax,yMin,gh,Real.ZERO);
       inc = (i%bigTick == 0) ? 2 : 1;
       g.setColor(0,32,16);
@@ -3386,8 +3417,41 @@ public final class CalcEngine
       i++;
     }
 
-    // Draw graph
+    // Graph color
     g.setColor(255,0,128);
+    
+    if (cmd == PROG_DRAW) {
+      // Draw program graph
+      a.assign(Real.FIVE);
+      a.sqrt();
+      a.sub(Real.ONE);
+      a.scalbn(-1); // a = golden ratio (sqrt(5)-1)/2
+      b.assign(a);
+      for (int j=0; j<1024; j++) {
+        x.assign(xMax);
+        x.sub(xMin);
+        x.mul(b);
+        x.add(xMin);
+        push(x,null);
+        for (i=0; i<prog.length; i++)
+          execute(prog[i]);
+        if (inputInProgress) // From the program... (boring graph)
+          parseInput();
+        y.assign(stack[0]);
+        command(CLEAR,0);
+        if (x.isFinite() && y.isFinite()) {
+          xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
+          yi = gy+rangeScale(y,yMax,yMin,gh,Real.HALF);
+          g.drawLine(xi,yi-1,xi,yi);
+        }
+        b.add(a);
+        if (b.greaterThan(Real.ONE))
+          b.sub(Real.ONE);
+      }
+      return true;
+    }
+    
+    // Draw statistics graph
     switch (cmd) {
       case LIN_DRAW:
         statAB(a,b,SUMx,SUMx2,SUMy,SUMy2,SUMxy);

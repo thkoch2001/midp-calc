@@ -65,6 +65,7 @@ public final class CalcCanvas
 //            -> clear   -> a b c d e
 //            -> draw    -> a b c d e
 //   prog[2]  -> finish
+//            -> restart
 //            -> cond    -> x=y? x!=y? x<y? x<=y? x>y?
 //            -> special -> abs max min
 //
@@ -556,8 +557,7 @@ public final class CalcCanvas
   private static final Menu prog1 = new Menu("prog",new Menu[] {
     new Menu("record",CalcEngine.PROG_REC),
     new Menu("run",CalcEngine.PROG_RUN),
-    null,
-    null,
+    new Menu("draw",CalcEngine.PROG_DRAW),
     new Menu("clear",CalcEngine.PROG_CLEAR),
   });
   private static final Menu prog2 = new Menu("prog",new Menu[] {
@@ -704,9 +704,8 @@ public final class CalcCanvas
 
     if (calc.progRecording)
       g.drawString("PRG",x,0,g.TOP|g.LEFT);
-    else if (calc.progRunning && evenFrame)
+    else if ((calc.progRunning || graph) && evenFrame)
       g.drawString("RUN",x,0,g.TOP|g.LEFT);
-
   }
 
   private void clearScreen(Graphics g) {
@@ -1187,8 +1186,9 @@ public final class CalcCanvas
         } else if (command >= NUMBER_0 && command <= NUMBER_15) {
           // Number has been entered for previous command
           calc.command(menuCommand,command-NUMBER_0);
-        } else if (command >= CalcEngine.AVG_DRAW &&
-                   command <= CalcEngine.POW_DRAW) {
+        } else if ((command >= CalcEngine.AVG_DRAW &&
+                    command <= CalcEngine.POW_DRAW) ||
+                   command == CalcEngine.PROG_DRAW) {
           menuCommand = command;
           graph = true;          // graph drawing on next repaint
         } else {
