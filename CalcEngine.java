@@ -189,7 +189,7 @@ public final class CalcEngine
   public Real PV,FV,NP,PMT,IR;
   public Real [] finance;
   public boolean begin;
-  public int statLogStart,statLogEnd;
+  public int statLogStart,statLogSize;
   public Real lastx,lasty,lastz;
   public boolean degrees;
   public StringBuffer inputBuf;
@@ -352,7 +352,7 @@ public final class CalcEngine
     stat[11] = SUMylnx   = new Real();
     stat[12] = SUMlnxlny = new Real();
     statLog = new int[STATLOG_SIZE*2];
-    statLogStart = statLogEnd = 0;
+    statLogStart = statLogSize = 0;
     if (monitorMode == MONITOR_STAT)
       monitors = stat;
   }
@@ -379,10 +379,18 @@ public final class CalcEngine
   public void saveState(PropertyStore propertyStore) {
     int i;
     byte [] buf = new byte[1+STAT_SIZE*12+STATLOG_SIZE*2*4+2];
+    int stackHeight;
+    for (stackHeight=0; stackHeight<STACK_SIZE; stackHeight++)
+      if (strStack[stackHeight] == empty)
+        break;
     buf[0] = PROPERTY_STACK;
-    for (i=0; i<STACK_SIZE; i++)
-      stack[i].toBytes(buf, 1+i*12);
-    propertyStore.setProperty(buf,1+STACK_SIZE*12);
+    if (stackHeight > 0) {
+      for (i=0; i<STACK_SIZE; i++)
+        stack[i].toBytes(buf, 1+i*12);
+      propertyStore.setProperty(buf,1+STACK_SIZE*12);
+    } else {
+      propertyStore.setProperty(buf,1);
+    }
     buf[0] = PROPERTY_MEM;
     if (mem != null) {
       for (i=0; i<MEM_SIZE; i++)
@@ -402,7 +410,7 @@ public final class CalcEngine
         buf[1+STAT_SIZE*12+4*i+3] = (byte)(statLog[i]);
       }
       buf[1+STAT_SIZE*12+4*i+0] = (byte)(statLogStart);
-      buf[1+STAT_SIZE*12+4*i+1] = (byte)(statLogEnd);
+      buf[1+STAT_SIZE*12+4*i+1] = (byte)(statLogSize);
       propertyStore.setProperty(buf,1+STAT_SIZE*12+STATLOG_SIZE*2*4+2);
     } else {
       propertyStore.setProperty(buf,1);
@@ -416,11 +424,8 @@ public final class CalcEngine
       propertyStore.setProperty(buf,1);
     }
     // Settings
-    for (i=0; i<STACK_SIZE; i++)
-      if (strStack[i] == empty)
-        break;
     buf[ 0] = PROPERTY_SETTINGS;
-    buf[ 1] = (byte)i; // Height of stack
+    buf[ 1] = (byte)stackHeight;
     buf[ 2] = (byte)((degrees ? 1 : 0) + (begin ? 2 : 0));
     buf[ 3] = (byte)format.base;
     buf[ 4] = (byte)format.maxwidth;
@@ -478,7 +483,7 @@ public final class CalcEngine
                       ((buf[1+STAT_SIZE*12+4*i+3]&0xff)));
       }
       statLogStart = buf[1+STAT_SIZE*12+4*i+0]&0xff;
-      statLogEnd   = buf[1+STAT_SIZE*12+4*i+1]&0xff;
+      statLogSize  = buf[1+STAT_SIZE*12+4*i+1]&0xff;
     }
     buf[0] = PROPERTY_FINANCE;
     length = propertyStore.getProperty(buf);
@@ -1085,12 +1090,15 @@ public final class CalcEngine
     allocStat();
     Real x = stack[0];
     Real y = stack[1];
+    int index;
     switch (cmd) {
       case SUMPL:
-        statLog[statLogEnd*2] = x.toFloatBits();
-        statLog[statLogEnd*2+1] = y.toFloatBits();
-        statLogEnd = (statLogEnd+1)%STATLOG_SIZE;
-        if (statLogEnd == statLogStart) // This leaves one unused entry!
+        index = (statLogStart+statLogSize)%STATLOG_SIZE;
+        statLog[index*2] = x.toFloatBits();
+        statLog[index*2+1] = y.toFloatBits();
+        if (statLogSize < STATLOG_SIZE)
+          statLogSize++;
+        else
           statLogStart = (statLogStart+1)%STATLOG_SIZE;
 
         SUM1.add(Real.ONE);
@@ -1127,9 +1135,22 @@ public final class CalcEngine
         SUMlnxlny.add(rTmp2);
         break;
       case SUMMI:
-        // Statistics log: can't do anything except delete last input
-        if (statLogEnd != statLogStart)
-          statLogEnd = (statLogEnd+STATLOG_SIZE-1)%STATLOG_SIZE;
+        // Statistics log: search for point and remove if found
+        int xf = x.toFloatBits();
+        int yf = y.toFloatBits();
+        for (int i=statLogSize-1; i>=0; i--) {
+          index = (statLogStart+i)%STATLOG_SIZE;
+          if (statLog[index*2]==xf && statLog[index*2+1]==yf) {
+            for (; i<statLogSize-1; i++) {
+              int index2 = (statLogStart+i+1)%STATLOG_SIZE;
+              statLog[index*2] = statLog[index2*2];
+              statLog[index*2+1] = statLog[index2*2+1];
+              index = index2;
+            }
+            statLogSize--;
+            break;
+          }
+        }
 
         SUM1.sub(Real.ONE);
         SUMx.sub(x);
@@ -2038,7 +2059,7 @@ public final class CalcEngine
   }
 
   public boolean draw(int cmd, Graphics g, int gx, int gy, int gw, int gh) {
-    if (SUM1 == null || statLogStart == statLogEnd)
+    if (SUM1 == null || statLogSize == 0)
       return false;
     Real xMin = new Real();
     Real xMax = new Real();
@@ -2051,9 +2072,10 @@ public final class CalcEngine
     int i,xi,yi,pyi,inc,bigTick;
 
     // Find boundaries
-    for (i=statLogStart; i!=statLogEnd; i = (i+1)%STATLOG_SIZE) {
-      x.assignFloatBits(statLog[i*2]);
-      y.assignFloatBits(statLog[i*2+1]);
+    for (i=0; i<statLogSize; i++) {
+      int index = (statLogStart+i)%STATLOG_SIZE;
+      x.assignFloatBits(statLog[index*2]);
+      y.assignFloatBits(statLog[index*2+1]);
       if (x.isFiniteNonZero() && y.isFiniteNonZero()) {
         if (x.lessThan(xMin))    xMin.assign(x);
         if (x.greaterThan(xMax)) xMax.assign(x);
@@ -2189,9 +2211,10 @@ public final class CalcEngine
 
     // Draw points
     g.setColor(255,255,255);
-    for (i=statLogStart; i!=statLogEnd; i = (i+1)%STATLOG_SIZE) {
-      x.assignFloatBits(statLog[i*2]);
-      y.assignFloatBits(statLog[i*2+1]);
+    for (i=0; i<statLogSize; i++) {
+      int index = (statLogStart+i)%STATLOG_SIZE;
+      x.assignFloatBits(statLog[index*2]);
+      y.assignFloatBits(statLog[index*2+1]);
       if (x.isFinite() && y.isFinite()) {
         xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
         yi = gy+rangeScale(y,yMax,yMin,gh,Real.ZERO);
