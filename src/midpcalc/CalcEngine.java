@@ -1465,56 +1465,50 @@ public final class CalcEngine
         break;
       case DHMS_TO_UNIX:
       case UNIX_TO_DHMS:
-        rTmp.assign(17268672);
-        rTmp2.assign(3600);
         if (cmd == DHMS_TO_UNIX) {
           x.fromDHMS();
-          x.sub(rTmp);
-          x.mul(rTmp2);
+          x.sub(17268672);
+          x.mul(3600);
         } else {
-          x.div(rTmp2);
-          x.add(rTmp);
+          x.div(3600);
+          x.add(17268672);
           x.toDHMS();
         }
         break;
       case DHMS_TO_JD:
       case JD_TO_DHMS:
-        rTmp.assign(24);
-        rTmp2.assign(3442119);
-        rTmp2.scalbn(-1);
+        rTmp.assign(3442119);
+        rTmp.scalbn(-1);
         if (cmd == DHMS_TO_JD) {
           x.fromDHMS();
-          x.div(rTmp);
-          x.add(rTmp2);
+          x.div(24);
+          x.add(rTmp);
         } else {
-          x.sub(rTmp2);
-          x.mul(rTmp);
+          x.sub(rTmp);
+          x.mul(24);
           x.toDHMS();
         }
         break;
       case DHMS_TO_MJD:
       case MJD_TO_DHMS:
-        rTmp.assign(24);
-        rTmp2.assign(678941);
         if (cmd == DHMS_TO_MJD) {
           x.fromDHMS();
-          x.div(rTmp);
-          x.sub(rTmp2);
+          x.div(24);
+          x.sub(678941);
         } else {
-          x.add(rTmp2);
-          x.mul(rTmp);
+          x.add(678941);
+          x.mul(24);
           x.toDHMS();
         }
         break;
       case CONV_C_F:
       case CONV_F_C:
         rTmp.assign(0, 0x40000000, 0x7333333333333333L);
-        rTmp2.assign(32);
         if (cmd == CONV_C_F) {
           x.mul(rTmp);
-          x.add(rTmp2);
+          x.add(32);
         } else {
-          x.sub(rTmp2);
+          x.sub(32);
           x.div(rTmp);
         }
         break;
@@ -3338,25 +3332,20 @@ public final class CalcEngine
   private int findTickStep(Real step, Real min, Real max, int size) {
     rTmp.assign(max);
     rTmp.sub(min);
-    rTmp2.assign(10); // minimum tick distance
-    rTmp.mul(rTmp2);
-    rTmp2.assign(size);
-    rTmp.div(rTmp2);
+    rTmp.mul(10); // minimum tick distance
+    rTmp.div(size);
     step.assign(rTmp);
     step.lowPow10(); // convert to lower power of 10
     rTmp.div(step);
-    rTmp2.assign(2);
-    if (rTmp.lessThan(rTmp2)) {
-      step.mul(rTmp2);
+    if (rTmp.lessThan(2)) {
+      step.mul(2);
       return 5;
     }
-    rTmp2.assign(5);
-    if (rTmp.lessThan(rTmp2)) {
-      step.mul(rTmp2);
+    if (rTmp.lessThan(5)) {
+      step.mul(5);
       return 2;
     }
-    rTmp2.assign(10);
-    step.mul(rTmp2);
+    step.mul(10);
     return 10;
   }
 
@@ -3533,8 +3522,7 @@ public final class CalcEngine
       inc = (graphCmd==LIN_DRAW) ? gw-1 : 5;
       for (xi=0; xi<gw+5; xi+=inc) {
         x.assign(xi);
-        rTmp.assign(gw-1);
-        x.div(rTmp);
+        x.div(gw-1);
         rTmp.assign(xMax);
         rTmp.sub(xMin);
         x.mul(rTmp);
