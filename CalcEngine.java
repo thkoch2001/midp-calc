@@ -212,6 +212,10 @@ public final class CalcEngine
   public static final int CONST_K_C      = 204;
   public static final int CONV_C_F       = 205;
   public static final int CONV_F_C       = 206;
+  public static final int PROG_REC       = 207;
+  public static final int PROG_FINISH    = 208;
+  public static final int PROG_RUN       = 209;
+  public static final int PROG_CLEAR     = 210;
   // These commands are handled from CalcCanvas
   public static final int AVG_DRAW       = 300;
   public static final int LIN_DRAW       = 301;
@@ -284,6 +288,11 @@ public final class CalcEngine
   private static final int UNDO_XCHGST = 9;
   private int undoStackEmpty = 0;
   private int undoOp = UNDO_NONE;
+
+  public boolean progRecording;
+  public boolean progRunning;
+  private short [] prog;
+  private int progCounter;
   
   public CalcEngine()
   {
@@ -1899,6 +1908,10 @@ public final class CalcEngine
         x.hypot(y);
         y.assign(rTmp);
         fromRAD(y);
+        if (imagStack != null) {
+          imagStack[0].makeZero();
+          imagStack[1].makeZero();
+        }
         strStack[0] = null;
         strStack[1] = null;
         break;
@@ -1909,6 +1922,10 @@ public final class CalcEngine
         y.sin();
         y.mul(x);
         x.mul(rTmp);
+        if (imagStack != null) {
+          imagStack[0].makeZero();
+          imagStack[1].makeZero();
+        }
         strStack[0] = null;
         strStack[1] = null;
         break;
@@ -2069,6 +2086,8 @@ public final class CalcEngine
     if (imagStack != null) {
       lastyi.assign(imagStack[0]);
       lastzi.assign(imagStack[1]);
+      imagStack[0].makeZero();
+      imagStack[1].makeZero();
     }
     undoStackEmpty = strStack[1]==empty ? strStack[0]==empty ? 2 : 1 : 0;
     undoOp = UNDO_PUSH2;
@@ -2157,8 +2176,10 @@ public final class CalcEngine
     allocStat();
     rollUp(true);
     lasty.assign(stack[0]);
-    if (imagStack != null)
+    if (imagStack != null) {
       lastyi.assign(imagStack[0]);
+      imagStack[0].makeZero();
+    }
     undoStackEmpty = strStack[0]==empty ? 1 : 0;
     undoOp = UNDO_PUSH;
     Real x = stack[0];
@@ -2478,7 +2499,26 @@ public final class CalcEngine
     undoOp = UNDO_NONE; // Cannot undo this
   }
 
+  private void record(int cmd, int param) {
+    if (prog == null)
+      return;
+    if (progCounter == prog.length) {
+      short [] prog2 = new short[prog.length*2];
+      System.arraycopy(prog,0,prog2,0,prog.length);
+      prog = prog2;
+    }
+    prog[progCounter] = (short)(cmd+(param<<10));
+    progCounter++;
+  }
+
+  private void execute(short prog) {
+    command(prog&0x3ff, prog>>>10);
+  }
+  
   public void command(int cmd, int param) {
+    if (progRecording && cmd!=PROG_FINISH)
+      record(cmd, param);
+
     switch (cmd) {
       case DIGIT_0: case DIGIT_1: case DIGIT_2: case DIGIT_3:
       case DIGIT_4: case DIGIT_5: case DIGIT_6: case DIGIT_7:
@@ -3160,6 +3200,46 @@ public final class CalcEngine
         strStack[0] = null;
         strStack[1] = null;
         repaint(-1);
+        break;
+
+      case PROG_REC:
+        if (inputInProgress)
+          parseInput();
+        progRecording = true;
+        prog = new short[10];
+        progCounter = 0;
+        break;
+      case PROG_FINISH:
+        if (inputInProgress)
+          parseInput();
+        progRecording = false;
+        if (progCounter > 0) {
+          short [] prog2 = new short[progCounter];
+          System.arraycopy(prog,0,prog2,0,progCounter);
+          prog = prog2;
+        } else {
+          prog = null;
+        }
+        break;
+      case PROG_RUN:
+        if (inputInProgress)
+          parseInput();
+        if (prog != null) {
+          progRunning = true;
+          progCounter = 0;
+          for (int i=0; i<prog.length; i++)
+            execute(prog[i]);
+          if (inputInProgress) // From the program...
+            parseInput();
+          progRunning = false;
+        }
+        break;
+      case PROG_CLEAR:
+        if (inputInProgress)
+          parseInput();
+        prog = null;
+        progRecording = false;
+        progRunning = false;
         break;
     }
   }

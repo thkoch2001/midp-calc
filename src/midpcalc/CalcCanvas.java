@@ -47,8 +47,8 @@ public final class CalcCanvas
 //                       -> metric ->  length weight vol energy temp
 //                       -> const  ->  univ chem phys atom astro
 //   mode     -> number  -> normal FIX#   SCI#   ENG#             ( -> # )
-//            -> sepr    -> decimal  ->   dot comma remove keep
-//                       -> thousand ->   dot/comma space ' none
+//                       -> sepr   -> decimal  -> dot comma remove keep
+//                                 -> thousand -> dot/comma space ' none
 //            -> base    -> dec    hex    oct    bin
 //            -> monitor -> mem    stat   finance                 ( -> # )
 //            -> font    -> small  medium large  system
@@ -382,23 +382,24 @@ public final class CalcCanvas
         new Menu("FIX",CalcEngine.FIX,Menu.NUMBER_REQUIRED),
         new Menu("SCI",CalcEngine.SCI,Menu.NUMBER_REQUIRED),
         new Menu("ENG",CalcEngine.ENG,Menu.NUMBER_REQUIRED),
-      }),
-      new Menu("sepr",new Menu[] {
-        new Menu("point",new Menu[] {
-          new Menu(".",CalcEngine.POINT_DOT),
-          new Menu(",",CalcEngine.POINT_COMMA),
-          new Menu("keep",CalcEngine.POINT_KEEP),
-          new Menu("remove",CalcEngine.POINT_REMOVE),
+        new Menu("sepr",new Menu[] {
+          new Menu("point",new Menu[] {
+            new Menu(".",CalcEngine.POINT_DOT),
+            new Menu(",",CalcEngine.POINT_COMMA),
+            new Menu("keep",CalcEngine.POINT_KEEP),
+            new Menu("remove",CalcEngine.POINT_REMOVE),
+          }),
+          null,
+          null,
+          new Menu("thousand",new Menu[] {
+            new Menu(". or ,",CalcEngine.THOUSAND_DOT),
+            new Menu("space",CalcEngine.THOUSAND_SPACE),
+            new Menu("'",CalcEngine.THOUSAND_QUOTE),
+            new Menu("none",CalcEngine.THOUSAND_NONE),
+          }),
         }),
-        null,
-        null,
-        new Menu("thousand",new Menu[] {
-          new Menu(". or ,",CalcEngine.THOUSAND_DOT),
-          new Menu("space",CalcEngine.THOUSAND_SPACE),
-          new Menu("'",CalcEngine.THOUSAND_QUOTE),
-          new Menu("none",CalcEngine.THOUSAND_NONE),
-        }),
       }),
+      null, // prog1 or prog2
       new Menu("base",new Menu[] {
         new Menu("DEC",CalcEngine.BASE_DEC),
         new Menu("HEX",CalcEngine.BASE_HEX),
@@ -552,6 +553,16 @@ public final class CalcCanvas
     new Menu("y>>x",CalcEngine.YDNX),
     intMenu,
   });
+  private static final Menu prog1 = new Menu("prog",new Menu[] {
+    new Menu("record",CalcEngine.PROG_REC),
+    new Menu("run",CalcEngine.PROG_RUN),
+    null,
+    null,
+    new Menu("clear",CalcEngine.PROG_CLEAR),
+  });
+  private static final Menu prog2 = new Menu("prog",new Menu[] {
+    new Menu("finish",CalcEngine.PROG_FINISH),
+  });
 
   private static final int menuColor [] = {
     0x00e0e0,0x00fc00,0xe0e000,0xfca800,0xfc5400,0xfc0000,
@@ -575,6 +586,7 @@ public final class CalcCanvas
   private int offX, offY, nDigits, nLines, numberWidth, numberHeight;
   private int offY2, offYMonitor, nLinesMonitor;
   private boolean graph = false, graphVisible = false;
+  private boolean evenFrame = true;
 
   private Menu [] menuStack;
   private int menuStackPtr;
@@ -646,15 +658,17 @@ public final class CalcCanvas
     calc.setMaxWidth(nDigits);
   }
 
-  private void clearScreen(Graphics g) {
-    // Clear screen and draw mode indicators
+  private void drawModeIndicators(Graphics g) {
     g.setColor(0xffffff);
     g.fillRect(0,0,getWidth(),smallMenuFont.getHeight()-1);
     g.setColor(0);
     g.setFont(smallMenuFont);
+    int n = 4;
+    if (calc.begin && (calc.progRecording || calc.progRunning))
+      n = 5;
 
     int w = smallMenuFont.stringWidth("ENG");
-    int x = getWidth()/8-w/2;
+    int x = getWidth()/(n*2)-w/2;
     if (x<0) x=0;
     
     if (calc.degrees)
@@ -662,7 +676,7 @@ public final class CalcCanvas
     else
       g.drawString("RAD",x,0,g.TOP|g.LEFT);
 
-    x += Math.max(getWidth()/4,w+2);
+    x += Math.max(getWidth()/n,w+2);
       
     if (calc.format.fse == Real.NumberFormat.FSE_FIX)
       g.drawString("FIX",x,0,g.TOP|g.LEFT);
@@ -670,8 +684,8 @@ public final class CalcCanvas
       g.drawString("SCI",x,0,g.TOP|g.LEFT);
     else if (calc.format.fse == Real.NumberFormat.FSE_ENG)
       g.drawString("ENG",x,0,g.TOP|g.LEFT);
-      
-    x += Math.max(getWidth()/4,w+2);
+
+    x += Math.max(getWidth()/n,w+2);
 
     if (calc.format.base == 2)
       g.drawString("BIN",x,0,g.TOP|g.LEFT);
@@ -680,11 +694,25 @@ public final class CalcCanvas
     else if (calc.format.base == 16)
       g.drawString("HEX",x,0,g.TOP|g.LEFT);
 
-    x += Math.max(getWidth()/4,w+2);
+    x += Math.max(getWidth()/n,w+2);
 
     if (calc.begin)
       g.drawString("BGN",x,0,g.TOP|g.LEFT);
 
+    if (n == 5)
+      x += Math.max(getWidth()/n,w+2);
+
+    if (calc.progRecording)
+      g.drawString("PRG",x,0,g.TOP|g.LEFT);
+    else if (calc.progRunning && evenFrame)
+      g.drawString("RUN",x,0,g.TOP|g.LEFT);
+
+  }
+
+  private void clearScreen(Graphics g) {
+    // Clear screen and draw mode indicators
+    drawModeIndicators(g);
+    g.setColor(0);
     g.fillRect(0,smallMenuFont.getHeight()-1,getWidth(),
                getHeight()-smallMenuFont.getHeight()+1);
   }
@@ -1110,6 +1138,12 @@ public final class CalcCanvas
         math.subMenu[2] = cplxMenu;
       } else {
         math.subMenu[2] = coordMenu;
+      }
+      // Also switch between prog1 and prog2 if recording a program
+      if (calc.progRecording) {
+        menu.subMenu[4].subMenu[1] = prog2;
+      } else {
+        menu.subMenu[4].subMenu[1] = prog1;        
       }
     }
     if (menuStackPtr < 0 && menuIndex < 4) {
