@@ -173,6 +173,7 @@ public final class Real
   public static final Real INF    = new Real(0,0x80000000,0x0000000000000000L);
   public static final Real INF_N  = new Real(1,0x80000000,0x0000000000000000L);
   public static final Real ZERO_N = new Real(1,0x00000000,0x0000000000000000L);
+  public static final Real ONE_N  = new Real(1,0x40000000,0x4000000000000000L);
   
   public Real() {
     assign(ZERO);
@@ -644,8 +645,7 @@ public final class Real
         makeInfinity(isInfinity() ? sign : a.sign);
       return;
     }
-    if (isZero() || a.isZero())
-    {
+    if (isZero() || a.isZero()) {
       if (isZero())
         assign(a);
     }
@@ -828,32 +828,54 @@ public final class Real
       makeNan();
       return;
     }
-    sign &= a.sign;
-    if (isInfinity() || a.isInfinity() || isZero() || a.isZero()) {
-      makeZero(sign);
+    if (isZero() || a.isZero()) {
+      makeZero(0);
+      return;
+    }
+    if (isInfinity() || a.isInfinity()) {
+      if (!isInfinity() && sign!=0)
+        assign(a);
+      else if (!a.isInfinity() && a.sign!=0)
+        ; // assign(this)
+      else if (isInfinity() && a.isInfinity() && sign!=0 && a.sign!=0)
+        ; // makeInfinity(1)
+      else
+        makeZero(0);
       return;
     }
 
+    byte s;
     int e;
     long m;
-    if (exponent > a.exponent ||
-        (exponent == a.exponent && mantissa>=a.mantissa))
-    {
+    if (exponent >= a.exponent) {
+      s = a.sign;
       e = a.exponent;
       m = a.mantissa;
     } else {
+      s = sign;
       e = exponent;
       m = mantissa;
+      sign = a.sign;
       exponent = a.exponent;
       mantissa = a.mantissa;
     }
     int shift = exponent-e;
     if (shift>=64) {
-      makeZero(sign);
+      if (s == 0)
+        makeZero(sign);
       return;
     }
+    if (s != 0)
+      m = -m;
+    if (sign != 0)
+      mantissa = -mantissa;
 
-    mantissa &= m>>>shift;
+    mantissa &= m>>shift;
+    sign = 0;
+    if (mantissa < 0) {
+      mantissa = -mantissa;
+      sign = 1;
+    }
     normalize();
   }
 
@@ -862,38 +884,55 @@ public final class Real
       makeNan();
       return;
     }
-    sign |= a.sign;
-    if (isInfinity() || a.isInfinity()) {
-      makeInfinity(sign);
+    if (isZero() || a.isZero()) {
+      if (isZero())
+        assign(a);
       return;
     }
-    if (isZero() || a.isZero())
-    {
-      if (isZero()) {
-        exponent = a.exponent;
-        mantissa = a.mantissa;
-      }
+    if (isInfinity() || a.isInfinity()) {
+      if (!isInfinity() && sign!=0)
+        ; // assign(this);
+      else if (!a.isInfinity() && a.sign!=0)
+        assign(a);
+      else
+        makeInfinity(sign | a.sign);
       return;
     }
 
+    byte s;
     int e;
     long m;
-    if (exponent > a.exponent ||
-        (exponent == a.exponent && mantissa>=a.mantissa))
-    {
+    if ((sign!=0 && exponent <= a.exponent) || exponent >= a.exponent) {
+      s = a.sign;
       e = a.exponent;
       m = a.mantissa;
     } else {
+      s = sign;
       e = exponent;
       m = mantissa;
+      sign = a.sign;
       exponent = a.exponent;
       mantissa = a.mantissa;
     }
     int shift = exponent-e;
-    if (shift>=64)
+    if (shift>=64 || shift<=-64)
       return;
 
-    mantissa |= m>>>shift;
+    if (s != 0)
+      m = -m;
+    if (sign != 0)
+      mantissa = -mantissa;
+
+    if (shift>=0)
+      mantissa |= m>>shift;
+    else
+      mantissa |= m<<(-shift);
+
+    sign = 0;
+    if (mantissa < 0) {
+      mantissa = -mantissa;
+      sign = 1;
+    }
     normalize();
   }
 
@@ -902,30 +941,28 @@ public final class Real
       makeNan();
       return;
     }
-    sign ^= a.sign;
-    if (isInfinity() || a.isInfinity()) {
-      makeInfinity(sign);
+    if (isZero() || a.isZero()) {
+      if (isZero())
+        assign(a);
       return;
     }
-    if (isZero() || a.isZero())
-    {
-      if (isZero()) {
-        exponent = a.exponent;
-        mantissa = a.mantissa;
-      }
+    if (isInfinity() || a.isInfinity()) {
+      makeInfinity(sign ^ a.sign);
       return;
     }
 
+    byte s;
     int e;
     long m;
-    if (exponent > a.exponent ||
-        (exponent == a.exponent && mantissa>=a.mantissa))
-    {
+    if (exponent >= a.exponent) {
+      s = a.sign;
       e = a.exponent;
       m = a.mantissa;
     } else {
+      s = sign;
       e = exponent;
       m = mantissa;
+      sign = a.sign;
       exponent = a.exponent;
       mantissa = a.mantissa;
     }
@@ -933,7 +970,18 @@ public final class Real
     if (shift>=64)
       return;
 
-    mantissa ^= m>>>shift;
+    if (s != 0)
+      m = -m;
+    if (sign != 0)
+      mantissa = -mantissa;
+
+    mantissa ^= m>>shift;
+
+    sign = 0;
+    if (mantissa < 0) {
+      mantissa = -mantissa;
+      sign = 1;
+    }
     normalize();
   }
 
@@ -942,19 +990,51 @@ public final class Real
       makeNan();
       return;
     }
-    if (a.sign != 0)
-      sign = 0;
-    if (isInfinity() || a.isInfinity() || isZero() || a.isZero())
+    if (isZero() || a.isZero())
       return;
+    if (isInfinity() || a.isInfinity()) {
+      if (!isInfinity()) {
+        if (sign!=0)
+          if (a.sign!=0)
+            makeInfinity(0);
+          else
+            makeInfinity(1);
+      } else if (a.sign!=0) {
+        if (a.isInfinity())
+          makeInfinity(0);
+        else
+          makeZero(0);
+      }
+      return;
+    }
 
     int shift = exponent-a.exponent;
-    if (shift>=64 || shift<=-64)
+    if (shift>=64 || (shift<=-64 && sign==0))
       return;
 
-    if (shift<0)
-      mantissa &= ~(a.mantissa<<(-shift));
-    else
-      mantissa &= ~(a.mantissa>>>shift);
+    long m = a.mantissa;
+    if (a.sign != 0)
+      m = -m;
+    if (sign != 0)
+      mantissa = -mantissa;
+
+    if (shift<0) {
+      if (sign != 0) {
+        if (shift<=-64)
+          mantissa = ~m;
+        else
+          mantissa = (mantissa>>(-shift)) & ~m;
+        exponent = a.exponent;
+      } else
+        mantissa &= ~(m<<(-shift));
+    } else
+      mantissa &= ~(m>>shift);
+
+    sign = 0;
+    if (mantissa < 0) {
+      mantissa = -mantissa;
+      sign = 1;
+    }
     normalize();
   }
 
@@ -1862,10 +1942,12 @@ public final class Real
     else
       YMD = D;
 
-    tmp1.assign(((YMD*100L+h)*100L+m)*100L);
+    tmp1.assign(m*100);
     add(tmp1);
     tmp1.assign(10000);
     div(tmp1);
+    tmp1.assign(YMD*100L+h);
+    add(tmp1);
 
     if (negative)
       neg();
@@ -1888,6 +1970,25 @@ public final class Real
     frac();
     mul(tmp1);
 
+    // MAGIC ROUNDING: Check if we are 2^-10 second short of 100 seconds
+    // i.e. "seconds" > 99.999
+    tmp2.assign(ONE);
+    tmp2.scalbn(-10);
+    add(tmp2);
+    if (this.greaterEqual(tmp1)) {
+      // Yes. So set zero seconds instead and carry over to minutes and hours
+      assign(ZERO);
+      m++;
+      if (m >= 100) {
+        m -= 100;
+        h++;
+      }
+      // Phew! That was close. From now on it is integer arithmetic...
+    } else {
+      // Nope. So try to undo the damage...
+      sub(tmp2);
+    }
+
     D = (int)(h/100);
     h %= 100;
     if (D>=10000) {
@@ -1902,10 +2003,12 @@ public final class Real
       D = gregorian_to_jd(Y,M,D);
     }
 
-    tmp1.assign(((D*24L+h)*60L+m)*60L);
+    tmp1.assign(m*60);
     add(tmp1);
     tmp1.assign(3600);
     div(tmp1);
+    tmp1.assign(D*24L+h);
+    add(tmp1);
 
     if (negative)
       neg();
@@ -1990,7 +2093,7 @@ public final class Real
 
 //*****************************************************************************
 
-  private int digit(char a, int base) {
+  private int digit(char a, int base, boolean twosComplement) {
     int digit = -1;
     if (a>='0' && a<='9')
       digit = (int)(a-'0');
@@ -1998,6 +2101,8 @@ public final class Real
       digit = (int)(a-'a')+10;
     if (digit >= base)
       return -1;
+    if (twosComplement)
+      digit ^= base-1;
     return digit;
   }
 
@@ -2017,7 +2122,7 @@ public final class Real
     int length = a.length();
     int index = 0;
     byte tmpSign = 0;
-    int d;
+    boolean compl = false;
     while (index<length && a.charAt(index)==' ')
       index++;
     if (index<length && a.charAt(index)=='-') {
@@ -2025,8 +2130,14 @@ public final class Real
       index++;
     } else if (index<length && a.charAt(index)=='+') {
       index++;
+    } else if (index<length && a.charAt(index)=='/') {
+      // Input is twos complemented negative number
+      compl=true;
+      tmpSign=1;
+      index++;
     }
-    while (index<length && (d=digit(a.charAt(index),base))>=0) {
+    int d;
+    while (index<length && (d=digit(a.charAt(index),base,compl))>=0) {
       shiftUp(base);
       tmp1.assign(d);
       add(tmp1);
@@ -2035,14 +2146,18 @@ public final class Real
     if (index<length && (a.charAt(index)=='.' || a.charAt(index)==',')) {
       index++;
       tmp2.assign(ONE);
-      while (index<length && (d=digit(a.charAt(index),base))>=0) {
+      while (index<length && (d=digit(a.charAt(index),base,compl))>=0) {
         tmp2.shiftUp(base);
         shiftUp(base);
         tmp1.assign(d);
         add(tmp1);
         index++;
       }
+      if (compl)
+        add(ONE);
       div(tmp2);
+    } else if (compl) {
+      add(ONE);
     }
     while (index<length && a.charAt(index)==' ')
       index++;
@@ -2226,15 +2341,13 @@ public final class Real
 
   private static StringBuffer ftoaBuf = new StringBuffer(40);
   private static StringBuffer ftoaExp = new StringBuffer(15);
-  private static final String hexChar = "0123456789abcdef";
+  public static final String hexChar = "0123456789abcdef";
 
   private String ftoa(NumberFormat format) {
     if (isNan())
       return "nan";
     if (isInfinity())
       return (sign!=0)?"-inf":"inf";
-    if (isZero() && format.fse == NumberFormat.FSE_NONE && format.removePoint)
-      return (sign!=0 && format.base==10)?"-0":"0";
 
     int bitsPerDigit,digitsPerThousand;
     switch (format.base) {
@@ -2298,11 +2411,10 @@ public final class Real
     {
       int width = format.maxwidth-1; // subtract 1 for decimal point
       int prefix = 0;
-      if (tmp4.sign!=0) {
+      if (format.base != 10)
+        prefix = 1; // want room for at least one "0" or "f/7/1"
+      else if (tmp4.sign != 0)
         width--; // subtract 1 for sign
-        if (format.base != 10)
-          prefix = 1; // want room for at least one "f/7/1", too
-      }
 
       boolean useExp = false;
       switch (format.fse) {
@@ -2365,14 +2477,14 @@ public final class Real
     if (tmp4.sign!=0 && format.base == 10)
       ftoaBuf.append('-');
 
-    // Add leading zeros
+    // Add leading zeros (or f/7/1)
+    char prefixChar = (format.base==10 || tmp4.sign==0) ? '0' :
+                      hexChar.charAt(format.base-1);
     if (pointPos < 0) {
-      char lead = (format.base==10 || tmp4.sign==0) ? '0' :
-                    hexChar.charAt(format.base-1);
-      ftoaBuf.append(lead);
+      ftoaBuf.append(prefixChar);
       ftoaBuf.append(format.point);
       while (pointPos < -1) {
-        ftoaBuf.append(lead);
+        ftoaBuf.append(prefixChar);
         pointPos++;
       }
     }
@@ -2403,11 +2515,10 @@ public final class Real
     // Add exponent
     ftoaBuf.append(ftoaExp);
 
-    // In case of negative hex/oct/bin number, prefix with "..." and f/7/1's
-    if (tmp4.sign!=0 && format.base!=10) {
-      ftoaBuf.insert(0,(char)127); // Assuming this is char looks like "..."
+    // In case hex/oct/bin number, prefix with 0's or f/7/1's
+    if (format.base!=10) {
       while (ftoaBuf.length()<format.maxwidth)
-        ftoaBuf.insert(1,hexChar.charAt(format.base-1)); // f/7/1
+        ftoaBuf.insert(0,prefixChar);
     }
 
     return ftoaBuf.toString();
