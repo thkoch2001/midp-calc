@@ -62,7 +62,7 @@ public final class DataStore
         rs.addRecord(buf,0,count);
       }
       re.destroy();
-    } catch (RecordStoreException rse) {
+    } catch (Exception e) {
     }      
     try {
       super.close();

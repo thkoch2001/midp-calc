@@ -15,6 +15,21 @@ JAVAFILES  = Calc.java \
              SetupCanvas.java \
              Real.java
 
+MIDPFILES =  midp/MIDlet.java \
+             midp/Display.java \
+             midp/Displayable.java \
+             midp/Command.java \
+             midp/CommandListener.java \
+             midp/Canvas.java \
+             midp/Form.java \
+             midp/TextBox.java \
+             midp/TextField.java \
+             midp/Graphics.java \
+             midp/Image.java \
+             midp/Font.java \
+             midp/RecordStore.java \
+             midp/RecordEnumeration.java
+
 default: $(TARGETS)
 
 pgm2java: pgm2java.c
@@ -53,6 +68,10 @@ Calc.jar: $(JAVAFILES) Calc.jad Calc.png
 	cp Calc.png ral/
 #	jar cf Calc.jar ral/*
 	ant -buildfile build.xml -lib $(WTK_HOME)/lib -Dwtk.home=${WTK_HOME} make-jar
+
+CalcApplet.jar: CalcApplet.java $(JAVAFILES) $(MIDPFILES)
+	gcj --encoding="ISO 8859-1" -Wall -C -d . -O2 CalcApplet.java $(JAVAFILES) $(MIDPFILES)
+	jar cf CalcApplet.jar ral/* javax/*
 
 clean:
 	rm -rf $(TARGETS) ral Real.java GFontBase.java pgm2java *~ .\#*
