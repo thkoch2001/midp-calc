@@ -4,8 +4,8 @@
 //   Real()                                 <==  0
 //   Real(Real)                             <==  Real
 //   Real(int)                              <==  integer
-//   Real(String)                           <==  "-1.234e+56"
-//   Real(String, int base)                 <==  "-1.234e+56"
+//   Real(String)                           <==  "-1.234E+56"
+//   Real(String, int base)                 <==  "-1.234E+56"
 //   Real(int s, int e, long m)             <==  -1^s * m * 2^e
 //   Real(byte[] data, int offset)          <==  data[offset]..data[offset+11]
 //   assign(Real)
@@ -16,8 +16,9 @@
 //   assign(byte[] data, int offset)
 //
 // Output:
-//   String toString()                      ==>  "-1.234e+56"
-//   String toString(int base)              ==>  "-1.234e+56" / "-0xfffe+56"
+//   String toString()                      ==>  "-1.234E+56"
+//   String toString(int base)              ==>  "-1.234E+56" / "-f.feE+56"
+//   String toString(NumberFormat)          ==>  e.g. "-1 234 567,8900"
 //   int toInteger()                        ==>  integer
 //   void toBytes(byte[] data, int offset)  ==>  data[offset]..data[offset+11]
 //
