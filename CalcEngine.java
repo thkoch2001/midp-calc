@@ -277,7 +277,7 @@ public final class CalcEngine
 
   public void saveState(PropertyStore propertyStore) {
     int i;
-    byte [] buf = new byte[1+13*12+STATLOG_SIZE*2*4];
+    byte [] buf = new byte[1+13*12+STATLOG_SIZE*2*4+2];
     buf[0] = PROPERTY_STACK;
     for (i=0; i<STACK_SIZE; i++)
       stack[i].toBytes(buf, 1+i*12);
@@ -311,7 +311,9 @@ public final class CalcEngine
         buf[1+13*12+4*i+2] = (byte)(statLog[i]>>8);
         buf[1+13*12+4*i+3] = (byte)(statLog[i]);
       }
-      propertyStore.setProperty(buf,1+13*12+STATLOG_SIZE*2*4);
+      buf[1+13*12+4*i+0] = (byte)(statLogStart);
+      buf[1+13*12+4*i+1] = (byte)(statLogEnd);
+      propertyStore.setProperty(buf,1+13*12+STATLOG_SIZE*2*4+2);
     } else {
       propertyStore.setProperty(buf,1);
     }
@@ -351,7 +353,7 @@ public final class CalcEngine
   
   public void restoreState(PropertyStore propertyStore) {
     int length,i;
-    byte [] buf = new byte[1+13*12+STATLOG_SIZE*2*4];
+    byte [] buf = new byte[1+13*12+STATLOG_SIZE*2*4+2];
     buf[0] = PROPERTY_STACK;
     length = propertyStore.getProperty(buf);
     if (length >= 1+STACK_SIZE*12)
@@ -366,7 +368,7 @@ public final class CalcEngine
     }
     buf[0] = PROPERTY_STAT;
     length = propertyStore.getProperty(buf);
-    if (length >= 1+13*12+STATLOG_SIZE*2*4) {
+    if (length >= 1+13*12+STATLOG_SIZE*2*4+2) {
       allocStat();
       SUM1     .assign(buf,1+ 0*12);
       SUMx     .assign(buf,1+ 1*12);
@@ -382,11 +384,13 @@ public final class CalcEngine
       SUMylnx  .assign(buf,1+11*12);
       SUMlnxlny.assign(buf,1+12*12);
       for (i=0; i<STATLOG_SIZE*2; i++) {
-        statLog[i] = ((buf[1+13*12+4*i+0]<<24)+
-                      (buf[1+13*12+4*i+1]<<16)+
-                      (buf[1+13*12+4*i+2]<<8)+
-                      (buf[1+13*12+4*i+3]));
+        statLog[i] = (((buf[1+13*12+4*i+0]&0xff)<<24)+
+                      ((buf[1+13*12+4*i+1]&0xff)<<16)+
+                      ((buf[1+13*12+4*i+2]&0xff)<<8)+
+                      ((buf[1+13*12+4*i+3]&0xff)));
       }
+      statLogStart = buf[1+13*12+4*i+0]&0xff;
+      statLogEnd   = buf[1+13*12+4*i+1]&0xff;
     }
     // Settings
     buf[0] = PROPERTY_SETTINGS;
@@ -601,6 +605,8 @@ public final class CalcEngine
   }
 
   private int greatestFactor(int a) {
+    if (a==-1)
+      return a;
     if (a<0) a = -a;
     if (a<=3)
       return a;
@@ -1442,7 +1448,7 @@ public final class CalcEngine
   private int findTickStep(Real step, Real min, Real max, int size) {
     rTmp.assign(max);
     rTmp.sub(min);
-    rTmp2.assign(8); // minimum tick distance
+    rTmp2.assign(10); // minimum tick distance
     rTmp.mul(rTmp2);
     rTmp2.assign(size);
     rTmp.div(rTmp2);
@@ -1515,7 +1521,7 @@ public final class CalcEngine
     while (x.greaterThan(xMin)) {
       xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
       inc = (i%bigTick == 0) ? 2 : 1;
-      g.setColor(0,64,0);
+      g.setColor(0,32,16);
       g.drawLine(xi,gy-1,xi,gy+gh);
       g.setColor(0,255,128);
       g.drawLine(xi,yi-inc,xi,yi+inc);
@@ -1527,7 +1533,7 @@ public final class CalcEngine
     while (x.lessThan(xMax)) {
       xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
       inc = (i%bigTick == 0) ? 2 : 1;
-      g.setColor(0,64,0);
+      g.setColor(0,32,16);
       g.drawLine(xi,gy-1,xi,gy+gh);
       g.setColor(0,255,128);
       g.drawLine(xi,yi-inc,xi,yi+inc);
@@ -1545,7 +1551,7 @@ public final class CalcEngine
     while (y.greaterThan(yMin)) {
       yi = gy+rangeScale(y,yMax,yMin,gh,Real.ZERO);
       inc = (i%bigTick == 0) ? 2 : 1;
-      g.setColor(0,64,0);
+      g.setColor(0,32,16);
       g.drawLine(gx-1,yi,gx+gw,yi);
       g.setColor(0,255,128);
       g.drawLine(xi-inc,yi,xi+inc,yi);
@@ -1557,7 +1563,7 @@ public final class CalcEngine
     while (y.lessThan(yMax)) {
       yi = gy+rangeScale(y,yMax,yMin,gh,Real.ZERO);
       inc = (i%bigTick == 0) ? 2 : 1;
-      g.setColor(0,64,0);
+      g.setColor(0,32,16);
       g.drawLine(gx-1,yi,gx+gw,yi);
       g.setColor(0,255,128);
       g.drawLine(xi-inc,yi,xi+inc,yi);
