@@ -2428,11 +2428,6 @@ public final class Real
 
   public static class NumberFormat
   {
-    public static final int FSE_NONE = 0;
-    public static final int FSE_FIX  = 1;
-    public static final int FSE_SCI  = 2;
-    public static final int FSE_ENG  = 3;
-    
     public int base;              // 2 8 10 16
     public int maxwidth;          // 30
     public int precision;         // 0-16 (for decimal)
@@ -2440,6 +2435,11 @@ public final class Real
     public char point;            // '.' ','
     public boolean removePoint;   // true/false
     public char thousand;         // '.' ',' ' ' 0
+    
+    public static final int FSE_NONE = 0;
+    public static final int FSE_FIX  = 1;
+    public static final int FSE_SCI  = 2;
+    public static final int FSE_ENG  = 3;
     
     NumberFormat() {
       base = 10;

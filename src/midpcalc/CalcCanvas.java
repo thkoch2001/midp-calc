@@ -11,8 +11,9 @@ public class CalcCanvas
 // Menu:
 //   basic    ->            -      *      /      +/-
 //   math     -> simple  -> 1/x    x^2    x^1/2  %chg
+//                          int -> round ceil floor trunc frac
 //            -> pow     -> y^x    y^1/x  ln     e^x
-//            -> comb    -> Py,x   Cy,x   x!     random factorize
+//            -> comb    -> Py,x   Cy,x   x!     random  factorize
 //            -> pow10/2 -> log    10^x   log2   2^x
 //            -> pol     -> r->p   p->r   atan2  hypot
 //   trig     -> normal  -> sin    cos    tan
@@ -26,7 +27,7 @@ public class CalcCanvas
 //            -> int     -> round  ceil   floor   trunc  frac
 //            -> mem     -> STO#   STO+#  RCL#    x<->mem#          -> #
 //            -> stat    -> SUM+   SUM-   clear
-//                       -> result -> avg    -> x,y sx,sy dx,dy xw
+//                       -> result -> avg    -> x,y sx,sy dx,dy xw draw
 //                                 -> ax+b   -> a,b x* y* r draw
 //                                 -> alnx+b -> a,b x* y* r draw
 //                                 -> be^ax  -> a,b x* y* r draw
@@ -35,40 +36,61 @@ public class CalcCanvas
 //                                 -> x      -> SUMx SUMx² SUMlnx SUMln²x
 //                                 -> y      -> SUMy SUMy² SUMlny SUMln²y
 //                                 -> xy     -> SUMxy SUMxlny SUMylnx SUMlnxlny
+//               finance -> STO RCL solve -> pv fv np pmt ir
+//                          clear
 //            -> time    -> ->DH.MS ->H   DH.MS+ time   date
 //   mode     -> number  -> normal FIX#   SCI#   ENG#             ( -> # )
 //            -> sepr    -> decimal  ->   dot comma remove keep
 //                          thousand ->   dot/comma space ' none
 //            -> base    -> dec    hex    oct    bin
-//            -> font    -> small  medium large
+//            -> monitor -> mem    stat   finance                 ( -> # )
+//            -> font    -> small  medium large  system
 //
 // * replaces math/trig in hex/oct/bin mode
 //
 // Extensions:
 //   math     -> modulo  -> mod    rem
-//            -> simple  -> abs
 //            -> percent -> %
-//   special  -> user...
-//   mode     -> prog
+//   spceial  -> stat    -> S_xw s_xw
+//
+///  special  -> run                                                -> #
+///  mode     -> prog    -> new                                     -> #
+///                      -> delete                                  -> #
+///                      -> clear
+///  prog     -> if      -> x=y? x!=y? x<y? x<=y? x>y?
+///           -> loop    -> label goto isg dse                      -> #
+///           -> subr    -> gosub return                          ( -> # )
+///           -> special -> pause stop clx abs
+///           -> flags   -> sf cf fs? fc?                           -> #
+///           -> progoff
 
   private static class Menu
   {
     public String label;
     public int command;
-    public boolean numberRequired;
+    public byte flags;
     public Menu [] subMenu;
+
+    public static final byte NUMBER_REQUIRED = 1;
+    public static final byte FINANCE_REQUIRED = 2;
+    public static final byte TITLE_SKIP = 4;
 
     Menu(String l, int c) {
       label = l;
       command = c;
     }
-    Menu(String l, int c, boolean r) {
+    Menu(String l, int c, int f) {
       label = l;
       command = c;
-      numberRequired = r;
+      flags = (byte)f;
     }
     Menu(String l, Menu [] m) {
       label = l;
+      subMenu = m;
+    }
+    Menu(String l, int f, Menu [] m) {
+      label = l;
+      flags = (byte)f;
       subMenu = m;
     }
   }
@@ -105,31 +127,16 @@ public class CalcCanvas
     null, // math or binop
     null, // trig or binop2
     new Menu("special",new Menu [] {
-      new Menu("stack",new Menu[] {
-        new Menu("LAST x",CalcEngine.LASTX),
-        new Menu("x=y",CalcEngine.XCHG),
-        new Menu("x=st#",CalcEngine.XCHGST,true),
-        new Menu("RCL st#",CalcEngine.RCLST,true),
-        new Menu("clear",CalcEngine.CLS),
-      }),
-      new Menu("int",new Menu[] {
-        new Menu("round",CalcEngine.ROUND),
-        new Menu("ceil",CalcEngine.CEIL),
-        new Menu("floor",CalcEngine.FLOOR),
-        new Menu("trunc",CalcEngine.TRUNC),
-        new Menu("frac",CalcEngine.FRAC),
-      }),
-      new Menu("mem",new Menu[] {
-        new Menu("STO",CalcEngine.STO,true),
-        new Menu("STO+",CalcEngine.STP,true),
-        new Menu("RCL",CalcEngine.RCL,true),
-        new Menu("x=mem",CalcEngine.XCHGMEM,true),
-        new Menu("clear",CalcEngine.CLMEM),
+      new Menu("finance",new Menu [] {
+        new Menu("STO",CalcEngine.FINANCE_STO,Menu.FINANCE_REQUIRED),
+        new Menu("RCL",CalcEngine.FINANCE_RCL,Menu.FINANCE_REQUIRED),
+        new Menu("solve",CalcEngine.FINANCE_SOLVE,Menu.FINANCE_REQUIRED),
+        new Menu("clear",CalcEngine.FINANCE_CLEAR),
       }),
       new Menu("stat",new Menu[] {
         new Menu("Z+",CalcEngine.SUMPL),
         new Menu("Z-",CalcEngine.SUMMI),
-        new Menu("result",new Menu[] {
+        new Menu("result",Menu.TITLE_SKIP,new Menu[] {
           new Menu("average",new Menu [] {
             new Menu("~x~, ~y~",CalcEngine.AVG),
             new Menu("s_x_, s_y_",CalcEngine.STDEV),
@@ -168,19 +175,19 @@ public class CalcCanvas
         }),
         new Menu("sums",new Menu[] {
           new Menu("n",CalcEngine.N),
-          new Menu("x",new Menu[] {
+          new Menu("x",Menu.TITLE_SKIP,new Menu[] {
             new Menu("Zx",CalcEngine.SUMX),
             new Menu("Zx^2",CalcEngine.SUMXX),
             new Menu("Zlnx",CalcEngine.SUMLNX),
             new Menu("Zln^2^x",CalcEngine.SUMLN2X),
           }),
-          new Menu("y",new Menu[] {
+          new Menu("y",Menu.TITLE_SKIP,new Menu[] {
             new Menu("Zy",CalcEngine.SUMY),
             new Menu("Zy^2",CalcEngine.SUMYY),
             new Menu("Zlny",CalcEngine.SUMLNY),
             new Menu("Zln^2^y",CalcEngine.SUMLN2Y),
           }),
-          new Menu("xy",new Menu[] {
+          new Menu("xy",Menu.TITLE_SKIP,new Menu[] {
             new Menu("Zxy",CalcEngine.SUMXY),
             new Menu("Zxlny",CalcEngine.SUMXLNY),
             new Menu("Zylnx",CalcEngine.SUMYLNX),
@@ -188,6 +195,20 @@ public class CalcCanvas
           }),
         }),
         new Menu("clear",CalcEngine.CLST),
+      }),
+      new Menu("mem",new Menu[] {
+        new Menu("STO",CalcEngine.STO,Menu.NUMBER_REQUIRED),
+        new Menu("STO+",CalcEngine.STP,Menu.NUMBER_REQUIRED),
+        new Menu("RCL",CalcEngine.RCL,Menu.NUMBER_REQUIRED),
+        new Menu("x=mem",CalcEngine.XCHGMEM,Menu.NUMBER_REQUIRED),
+        new Menu("clear",CalcEngine.CLMEM),
+      }),
+      new Menu("stack",new Menu[] {
+        new Menu("LAST x",CalcEngine.LASTX),
+        new Menu("x=y",CalcEngine.XCHG),
+        new Menu("x=st#",CalcEngine.XCHGST,Menu.NUMBER_REQUIRED),
+        new Menu("RCL st#",CalcEngine.RCLST,Menu.NUMBER_REQUIRED),
+        new Menu("clear",CalcEngine.CLS),
       }),
       new Menu("time",new Menu[] {
         new Menu("\\DH.MS",CalcEngine.TO_DHMS),
@@ -200,9 +221,9 @@ public class CalcCanvas
     new Menu("mode",new Menu[] {
       new Menu("number",new Menu[] {
         new Menu("normal",CalcEngine.NORM),
-        new Menu("FIX",CalcEngine.FIX,true),
-        new Menu("SCI",CalcEngine.SCI,true),
-        new Menu("ENG",CalcEngine.ENG,true),
+        new Menu("FIX",CalcEngine.FIX,Menu.NUMBER_REQUIRED),
+        new Menu("SCI",CalcEngine.SCI,Menu.NUMBER_REQUIRED),
+        new Menu("ENG",CalcEngine.ENG,Menu.NUMBER_REQUIRED),
       }),
       new Menu("sepr",new Menu[] {
         new Menu("point",new Menu[] {
@@ -226,6 +247,12 @@ public class CalcCanvas
         new Menu("OCT",CalcEngine.BASE_OCT),
         new Menu("BIN",CalcEngine.BASE_BIN),
       }),
+      new Menu("monitor",new Menu[] {
+        new Menu("finance",CalcEngine.MONITOR_FINANCE),
+        new Menu("stat",CalcEngine.MONITOR_STAT,Menu.NUMBER_REQUIRED),
+        new Menu("mem",CalcEngine.MONITOR_MEM,Menu.NUMBER_REQUIRED),
+        new Menu("off",CalcEngine.MONITOR_NONE),
+      }),
       new Menu("font",new Menu[] {
         new Menu("medium",FONT_MEDIUM),
         new Menu("small",FONT_SMALL),
@@ -236,25 +263,25 @@ public class CalcCanvas
   });
   
   private static final Menu numberMenu = new Menu(null,new Menu[] {
-    new Menu("<0-3>",new Menu[] {
+    new Menu("<0-3>",Menu.TITLE_SKIP,new Menu[] {
       new Menu("<0>",NUMBER_0),
       new Menu("<1>",NUMBER_1),
       new Menu("<2>",NUMBER_2),
       new Menu("<3>",NUMBER_3),
     }),
-    new Menu("<4-7>",new Menu[] {
+    new Menu("<4-7>",Menu.TITLE_SKIP,new Menu[] {
       new Menu("<4>",NUMBER_4),
       new Menu("<5>",NUMBER_5),
       new Menu("<6>",NUMBER_6),
       new Menu("<7>",NUMBER_7),
     }),
-    new Menu("<8-11>",new Menu[] {
+    new Menu("<8-11>",Menu.TITLE_SKIP,new Menu[] {
       new Menu("<8>",NUMBER_8),
       new Menu("<9>",NUMBER_9),
       new Menu("<10>",NUMBER_10),
       new Menu("<11>",NUMBER_11),
     }),
-    new Menu("<12-15>",new Menu[] {
+    new Menu("<12-15>",Menu.TITLE_SKIP,new Menu[] {
       new Menu("<12>",NUMBER_12),
       new Menu("<13>",NUMBER_13),
       new Menu("<14>",NUMBER_14),
@@ -262,12 +289,27 @@ public class CalcCanvas
     }),
   });
 
+  private static final Menu financeMenu = new Menu(null,new Menu[] {
+    new Menu("pv" ,NUMBER_0),
+    new Menu("fv" ,NUMBER_1),
+    new Menu("np" ,NUMBER_2),
+    new Menu("pmt",NUMBER_3),
+    new Menu("ir%" ,NUMBER_4),
+  });
+
   private static final Menu math = new Menu("math",new Menu[] {
-    new Menu("simple",new Menu[] {
+    new Menu("simple",Menu.TITLE_SKIP,new Menu[] {
       new Menu("Qx",CalcEngine.SQRT),
       new Menu("x^2",CalcEngine.SQR),
       new Menu("1/x",CalcEngine.RECIP),
       new Menu("%chg",CalcEngine.PERCENT_CHG),
+      new Menu("int",new Menu[] {
+        new Menu("round",CalcEngine.ROUND),
+        new Menu("ceil",CalcEngine.CEIL),
+        new Menu("floor",CalcEngine.FLOOR),
+        new Menu("trunc",CalcEngine.TRUNC),
+        new Menu("frac",CalcEngine.FRAC),
+      }),
     }),
     new Menu("pow",new Menu[] {
       new Menu("e^x",CalcEngine.EXP),
@@ -296,27 +338,27 @@ public class CalcCanvas
     }),
   });
   private static final Menu trig = new Menu("trig",new Menu[] {
-    new Menu("normal",new Menu[] {
+    new Menu("normal",Menu.TITLE_SKIP,new Menu[] {
       new Menu("sin",CalcEngine.SIN),
       new Menu("cos",CalcEngine.COS),
       new Menu("tan",CalcEngine.TAN),
     }),
-    new Menu("arc",new Menu[] {
+    new Menu("arc",Menu.TITLE_SKIP,new Menu[] {
       new Menu("asin",CalcEngine.ASIN),
       new Menu("acos",CalcEngine.ACOS),
       new Menu("atan",CalcEngine.ATAN),
     }),
-    new Menu("hyp",new Menu[] {
+    new Menu("hyp",Menu.TITLE_SKIP,new Menu[] {
       new Menu("sinh",CalcEngine.SINH),
       new Menu("cosh",CalcEngine.COSH),
       new Menu("tanh",CalcEngine.TANH),
     }),
-    new Menu("archyp",new Menu[] {
+    new Menu("archyp",Menu.TITLE_SKIP,new Menu[] {
       new Menu("asinh",CalcEngine.ASINH),
       new Menu("acosh",CalcEngine.ACOSH),
       new Menu("atanh",CalcEngine.ATANH),
     }),
-    new Menu("more",new Menu[] {
+    new Menu("more",Menu.TITLE_SKIP,new Menu[] {
       new Menu("RAD/DEG",CalcEngine.TRIG_DEGRAD),
       new Menu("\\RAD",CalcEngine.TO_RAD),
       new Menu("\\DEG",CalcEngine.TO_DEG),
@@ -356,12 +398,12 @@ public class CalcCanvas
   private boolean repeating = false;
   private boolean internalRepaint = false;
   private int offX, offY, nDigits, nLines, numberWidth, numberHeight;
+  private int offY2, offYMonitor, nLinesMonitor;
   private boolean graph = false, graphVisible = false;
 
   private Menu [] menuStack;
   private int menuStackPtr;
   private int menuCommand;
-  private String menuLabel;
 
   private PropertyStore propertyStore;
   private static final byte PROPERTY_SCREEN_STATE = 20;
@@ -385,7 +427,7 @@ public class CalcCanvas
       numberFontStyle = GFont.SYSTEM;
       // Now, remove the font menu.
       // !!! NB !!! Beware if you change the menu layout
-      menu.subMenu[4].subMenu[3] = null;
+      menu.subMenu[4].subMenu[4] = null;
     }
 
     enter = new Command("ENTER", Command.OK    , 1);
@@ -408,6 +450,7 @@ public class CalcCanvas
     menuStackPtr = -1;
 
     numRepaintLines = 100;
+    checkRepaint();
   }
 
   private void setNumberFont(int size) {
@@ -420,6 +463,11 @@ public class CalcCanvas
     nLines = (getHeight()-smallMenuFont.getHeight())/numberHeight;
     offY = (getHeight()-smallMenuFont.getHeight()-nLines*numberHeight)/2 +
       smallMenuFont.getHeight();
+    nLinesMonitor = (getHeight()-smallMenuFont.getHeight()-4)/numberHeight;
+    offYMonitor = (getHeight()-smallMenuFont.getHeight()-
+                   nLinesMonitor*numberHeight)/4+smallMenuFont.getHeight();
+    offY2 = 3*(getHeight()-smallMenuFont.getHeight()-
+               nLinesMonitor*numberHeight)/4+smallMenuFont.getHeight();
     calc.setMaxWidth(nDigits);
   }
 
@@ -587,7 +635,8 @@ public class CalcCanvas
   private void drawMenuItem(Graphics g, Menu menu, int x, int y, int anchor) {
     if (menu==null)
       return;
-    boolean bold = menu.subMenu==null && !menu.numberRequired;
+    boolean bold = menu.subMenu==null &&
+      (menu.flags & (Menu.NUMBER_REQUIRED|Menu.FINANCE_REQUIRED))==0;
     int width = labelWidth(menu.label,bold);
     if ((anchor & g.RIGHT) != 0)
       x -= width;
@@ -599,21 +648,29 @@ public class CalcCanvas
   }
 
   private void drawMenu(Graphics g) {
-    int x = getWidth()/12;
-    int w = getWidth()-2*x;
-    int h = getHeight()/2;
+    int w = boldMenuFont.stringWidth("acosh")*2+3*2+4*2+21;
+    if (w<(menuFont.stringWidth("thousand")+2*2)*2)
+      w = (menuFont.stringWidth("thousand")+2*2)*2;
+    if (w>getWidth()) w = getWidth();
+    int h = menuFont.getHeight()*2+3*2+5*2+21;
+    if (h>getHeight()) h = getHeight();
+    int x = (getWidth()-w)/2;
     int y = smallMenuFont.getHeight()+
       (getHeight()-h-smallMenuFont.getHeight())/2;
+    if (y-menuFont.getHeight()-1<smallMenuFont.getHeight())
+      y = smallMenuFont.getHeight()+menuFont.getHeight()+1;
+    if (y+h > getHeight())
+      y = getHeight()-h;
     int ym = ((y+h-3)-menuFont.getHeight()+(y+3))/2;
     // Draw menu title
-    g.setColor(0);
+    g.setColor(menuColor[menuStackPtr]/4);
     g.fillRect(x,y-menuFont.getHeight()-1,w/2,menuFont.getHeight()+1);
     g.setColor(menuColor[menuStackPtr]);
     g.setFont(menuFont);
-    String label = menuStack[menuStackPtr].label;
-    if (menuStack[menuStackPtr] == numberMenu ||
-        (menuStackPtr>=1 && menuStack[menuStackPtr-1] == numberMenu))
-      label = menuLabel;
+    int titleStackPtr = menuStackPtr;
+    while ((menuStack[titleStackPtr].flags & Menu.TITLE_SKIP)!=0)
+      titleStackPtr--;
+    String label = menuStack[titleStackPtr].label;
     drawLabel(g,label,false,x+2,y-menuFont.getHeight());
     // Draw 3D menu background
     g.fillRect(x+2,y+2,w-4,h-4);
@@ -631,28 +688,29 @@ public class CalcCanvas
     g.setColor(0);
     Menu [] subMenu = menuStack[menuStackPtr].subMenu;
     if (subMenu.length>=1)
-      drawMenuItem(g,subMenu[0],getWidth()/2,y+3,g.TOP|g.HCENTER);
+      drawMenuItem(g,subMenu[0],x+w/2,y+3,g.TOP|g.HCENTER);
     if (subMenu.length>=2)
       drawMenuItem(g,subMenu[1],x+3,ym,g.TOP|g.LEFT);
     if (subMenu.length>=3)
       drawMenuItem(g,subMenu[2],x+w-3,ym,g.TOP|g.RIGHT);
     if (subMenu.length>=4)
-      drawMenuItem(g,subMenu[3],getWidth()/2,y+h-3,g.BOTTOM|g.HCENTER);
+      drawMenuItem(g,subMenu[3],x+w/2,y+h-3,g.BOTTOM|g.HCENTER);
     if (subMenu.length>=5)
-      drawMenuItem(g,subMenu[4],getWidth()/2,ym,
+      drawMenuItem(g,subMenu[4],x+w/2,ym,
                    g.TOP|g.HCENTER);
     else {
       // Draw a small "joystick" in the center
       y += h/2;
       x += w/2;
       g.setColor(menuColor[menuStackPtr]/4*3);
-      g.fillRect(x-1,y-10,3,20);
-      g.fillRect(x-10,y-1,20,3);
+      g.fillRect(x-1,y-10,3,21);
+      g.fillRect(x-10,y-1,21,3);
       g.fillArc(x-5,y-5,11,11,0,360);
     }
   }
 
-  private void drawNumber(Graphics g, int i, boolean cleared) {
+  private void drawNumber(Graphics g, int i, boolean cleared, int offY,
+                          int nLines) {
     if (i==0 && calc.inputInProgress) {
       StringBuffer tmp = calc.inputBuf;
       tmp.append('_');
@@ -684,8 +742,27 @@ public class CalcCanvas
     }
   }
 
+  private void drawMonitor(Graphics g, int i, boolean cleared) {
+    String tmp = calc.getMonitorElement(i);
+    String label = calc.getMonitorLabel(i);
+    if (tmp.length()+label.length()>nDigits)
+      tmp = "*****";
+    numberFont.drawString(
+      g,offX+(nDigits-tmp.length())*numberWidth,
+      offYMonitor+i*numberHeight,tmp);
+    numberFont.drawString(g,offX,offYMonitor+i*numberHeight,label);
+    if (!cleared) {
+      g.setColor(0);
+      g.fillRect(offX+label.length()*numberWidth,
+                 offYMonitor+i*numberHeight,
+                 (nDigits-tmp.length()-label.length())*numberWidth,
+                 numberHeight);
+    }
+  }
+
   public void paint(Graphics g) {
     boolean cleared = false;
+    int i;
     if (numRepaintLines == 100 || !internalRepaint) {
       clearScreen(g);
       cleared = true;
@@ -701,14 +778,29 @@ public class CalcCanvas
         graph = false;
       }
       if (!graphVisible) {
-        if (menuStackPtr < 0 || !internalRepaint) {
-          if (numRepaintLines > nLines)
-            numRepaintLines = nLines;
+        if (menuStackPtr < 0 || cleared) {
           if (numRepaintLines > 16)
             numRepaintLines = 16;
+          int monitorSize = calc.getMonitorSize();
+          if (monitorSize > 0) {
+            if (monitorSize > nLinesMonitor-1)
+              monitorSize = nLinesMonitor-1;
+            if (numRepaintLines > nLinesMonitor-monitorSize)
+              numRepaintLines = nLinesMonitor-monitorSize;
 
-          for (int i=0; i<numRepaintLines; i++)
-            drawNumber(g,i,cleared);
+            for (i=0; i<numRepaintLines; i++)
+              drawNumber(g,i,cleared,offY2,nLinesMonitor);
+            for (i=0; i<monitorSize; i++)
+              drawMonitor(g,i,cleared);
+            g.setColor(255,255,255);
+            g.drawLine(0,offYMonitor+monitorSize*numberHeight+1,
+                       getWidth(),offYMonitor+monitorSize*numberHeight+1);
+          } else {
+            if (numRepaintLines > nLines)
+              numRepaintLines = nLines;
+            for (i=0; i<numRepaintLines; i++)
+              drawNumber(g,i,cleared,offY,nLines);
+          }
         }
         if (menuStackPtr >= 0)
           drawMenu(g);
@@ -775,17 +867,17 @@ public class CalcCanvas
         menu.subMenu[2] = bitMath;
       }
     }
-    if (menuStackPtr < 0 && menuIndex <= 4) {
+    if (menuStackPtr < 0 && menuIndex < 4) {
       // Go directly to submenu
       menuStack[0] = menu;
       menuStack[1] = menu.subMenu[menuIndex];
       menuStackPtr = 1;
       numRepaintLines = 0; // Force repaint of menu
-    //} else if (menuStackPtr < 0) {
-    //  // Open top level menu
-    //  menuStack[0] = menu;
-    //  menuStackPtr = 0;
-    //  numRepaintLines = 0; // Force repaint of menu
+    } else if (menuStackPtr < 0) {
+      // Open top level menu
+      menuStack[0] = menu;
+      menuStackPtr = 0;
+      numRepaintLines = 0; // Force repaint of menu
     } else if (menuStack[menuStackPtr].subMenu.length > menuIndex) {
       Menu [] subMenu = menuStack[menuStackPtr].subMenu;
       if (subMenu[menuIndex] == null) {
@@ -795,12 +887,15 @@ public class CalcCanvas
         menuStackPtr++;
         menuStack[menuStackPtr] = subMenu[menuIndex];
         numRepaintLines = 0; // Force repaint of menu
-      } else if (subMenu[menuIndex].numberRequired) {
-        // Open number submenu
+      } else if ((subMenu[menuIndex].flags &
+                  (Menu.NUMBER_REQUIRED|Menu.FINANCE_REQUIRED))!=0) {
+        // Open number/finance submenu
+        Menu sub = (subMenu[menuIndex].flags & Menu.NUMBER_REQUIRED)!=0 ?
+          numberMenu : financeMenu;
         menuCommand = subMenu[menuIndex].command; // Save current command
-        menuLabel = subMenu[menuIndex].label;     // Save current command label
+        sub.label = subMenu[menuIndex].label; // Set correct label
         menuStackPtr++;
-        menuStack[menuStackPtr] = numberMenu;
+        menuStack[menuStackPtr] = sub;
         numRepaintLines = 0; // Force repaint of menu
       } else {
         int command = subMenu[menuIndex].command;
@@ -817,7 +912,6 @@ public class CalcCanvas
                    command <= CalcEngine.POW_DRAW) {
           menuCommand = command;
           graph = true;          // graph drawing on next repaint
-          numRepaintLines = 100; // Force repaint of all
         } else {
           // Normal calculator command
           calc.command(command,0);

@@ -147,28 +147,42 @@ public final class CalcEngine
   public static final int TIME           = 139;
   public static final int DATE           = 140;
   public static final int FACTORIZE      = 141;
+  public static final int FINANCE_STO    = 142;
+  public static final int FINANCE_RCL    = 143;
+  public static final int FINANCE_SOLVE  = 144;
+  public static final int FINANCE_CLEAR  = 145;
+  public static final int MONITOR_NONE   = 146;
+  public static final int MONITOR_MEM    = 147;
+  public static final int MONITOR_STAT   = 148;
+  public static final int MONITOR_FINANCE= 149;
   public static final int AVG_DRAW       = 200;
   public static final int LIN_DRAW       = 201;
   public static final int LOG_DRAW       = 202;
   public static final int EXP_DRAW       = 203;
   public static final int POW_DRAW       = 204;
+
   public static final int FINALIZE       = 500;
   public static final int FREE_MEM       = 501;
   
-  private static final int STACK_SIZE = 16;
-  private static final int MEM_SIZE = 16;
-  private static final int STATLOG_SIZE = 64;
+  private static final int STACK_SIZE    = 16;
+  private static final int MEM_SIZE      = 16;
+  private static final int STAT_SIZE     = 13;
+  private static final int STATLOG_SIZE  = 64;
+  private static final int FINANCE_SIZE  = 5;
 
   private static final Real Real180 = new Real(180);
   private static final String empty = "";
-  
+
   public Real.NumberFormat format;
   public Real [] stack;
   public String [] strStack;
   public Real [] mem;
   public Real SUM1,SUMx,SUMx2,SUMy,SUMy2,SUMxy;
   public Real SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMxlny,SUMylnx,SUMlnxlny;
+  public Real [] stat;
   public int [] statLog; // Low-precision statistics log
+  public Real PV,FV,NP,PMT,IR;
+  public Real [] finance;
   public int statLogStart,statLogEnd;
   public Real lastx;
   public boolean degrees;
@@ -177,6 +191,20 @@ public final class CalcEngine
   private Real rTmp,rTmp2,rTmp3;
   private int repaintLines;
 
+  public int monitorMode;
+  public int monitorSize;
+  public Real [] monitors;
+  public String [] monitorStr;
+  public String [] monitorLabels;  
+  private static final String [] memLabels =
+    { "M0=","M1=","M2=","M3=","M4=","M5=","M6=","M7=",
+      "M8=","M9=","M10=","M11=","M12=","M13=","M14=","M15=" };
+  private static final String [] statLabels =
+    { "n=","$x=","$y=","$x\"=","$y\"=","$xy=","$&x=","$&\"x=",
+      "$&y=","$&\"y=","$x&y=","$y&x=","$&x&y=" };
+  private static final String [] financeLabels =
+    { "pv=","fv=","np=","pmt=","ir%=" };
+  
   public CalcEngine()
   {
     format = new Real.NumberFormat();
@@ -184,7 +212,7 @@ public final class CalcEngine
     for (int i=0; i<STACK_SIZE; i++)
       stack[i] = new Real();
     strStack = new String[STACK_SIZE];
-    mem = null;
+    monitorStr = new String[MEM_SIZE];
 
     lastx = new Real();
     rTmp = new Real();
@@ -195,6 +223,10 @@ public final class CalcEngine
     clearStack();
     clearMem();
     clearStat();
+    clearFinance();
+    monitorMode = MONITOR_NONE;
+    monitorSize = 0;
+    clearMonitorStrings();
 
     Real.accumulateRandomness(System.currentTimeMillis());
   }
@@ -205,6 +237,13 @@ public final class CalcEngine
     for (int i=0; i<STACK_SIZE; i++)
       if (strStack[i] != empty)
         strStack[i] = null;
+    clearMonitorStrings();
+    repaint(-1);
+  }
+
+  private void clearMonitorStrings() {
+    for (int i=0; i<MEM_SIZE; i++)
+      monitorStr[i] = null;
     repaint(-1);
   }
 
@@ -220,12 +259,18 @@ public final class CalcEngine
   private void clearMem() {
     if (inputInProgress)
       parseInput();
+    if (mem == null)
+      return;
+    for (int i=0; i<MEM_SIZE; i++)
+      mem[i] = null;
     mem = null;
   }
   
   private void clearStat() {
     if (inputInProgress)
       parseInput();
+    if (stat == null)
+      return;
     SUM1      = null;
     SUMx      = null;
     SUMx2     = null;
@@ -239,7 +284,25 @@ public final class CalcEngine
     SUMxlny   = null;
     SUMylnx   = null;
     SUMlnxlny = null;
+    for (int i=0; i<STAT_SIZE; i++)
+      stat[i] = null;
+    stat      = null;
     statLog   = null;
+  }
+
+  private void clearFinance() {
+    if (inputInProgress)
+      parseInput();
+    if (finance == null)
+      return;
+    PV  = null;
+    FV  = null;
+    NP  = null;
+    PMT = null;
+    IR  = null;
+    for (int i=0; i<FINANCE_SIZE; i++)
+      finance[i] = null;
+    finance = null;
   }
 
   private void allocMem() {
@@ -248,36 +311,55 @@ public final class CalcEngine
     mem = new Real[MEM_SIZE];
     for (int i=0; i<MEM_SIZE; i++)
       mem[i] = new Real();
+    if (monitorMode == MONITOR_MEM)
+      monitors = mem;
   }
   
   private void allocStat() {
     if (SUM1 != null)
       return;
-    SUM1      = new Real();
-    SUMx      = new Real();
-    SUMx2     = new Real();
-    SUMy      = new Real();
-    SUMy2     = new Real();
-    SUMxy     = new Real();
-    SUMlnx    = new Real();
-    SUMln2x   = new Real();
-    SUMlny    = new Real();
-    SUMln2y   = new Real();
-    SUMxlny   = new Real();
-    SUMylnx   = new Real();
-    SUMlnxlny = new Real();
+    stat = new Real[STAT_SIZE];
+    stat[ 0] = SUM1      = new Real();
+    stat[ 1] = SUMx      = new Real();
+    stat[ 2] = SUMx2     = new Real();
+    stat[ 3] = SUMy      = new Real();
+    stat[ 4] = SUMy2     = new Real();
+    stat[ 5] = SUMxy     = new Real();
+    stat[ 6] = SUMlnx    = new Real();
+    stat[ 7] = SUMln2x   = new Real();
+    stat[ 8] = SUMlny    = new Real();
+    stat[ 9] = SUMln2y   = new Real();
+    stat[10] = SUMxlny   = new Real();
+    stat[11] = SUMylnx   = new Real();
+    stat[12] = SUMlnxlny = new Real();
     statLog = new int[STATLOG_SIZE*2];
     statLogStart = statLogEnd = 0;
+    if (monitorMode == MONITOR_STAT)
+      monitors = stat;
+  }
+
+  private void allocFinance() {
+    if (finance != null)
+      return;
+    finance = new Real[FINANCE_SIZE];
+    finance[0] = PV  = new Real();
+    finance[1] = FV  = new Real();
+    finance[2] = NP  = new Real();
+    finance[3] = PMT = new Real();
+    finance[4] = IR  = new Real();
+    if (monitorMode == MONITOR_FINANCE)
+      monitors = finance;
   }
 
   private static final byte PROPERTY_SETTINGS = 10;
   private static final byte PROPERTY_STACK    = 11;
   private static final byte PROPERTY_MEM      = 12;
   private static final byte PROPERTY_STAT     = 13;
+  private static final byte PROPERTY_FINANCE  = 14;
 
   public void saveState(PropertyStore propertyStore) {
     int i;
-    byte [] buf = new byte[1+13*12+STATLOG_SIZE*2*4+2];
+    byte [] buf = new byte[1+STAT_SIZE*12+STATLOG_SIZE*2*4+2];
     buf[0] = PROPERTY_STACK;
     for (i=0; i<STACK_SIZE; i++)
       stack[i].toBytes(buf, 1+i*12);
@@ -292,28 +374,25 @@ public final class CalcEngine
     }
     buf[0] = PROPERTY_STAT;
     if (SUM1 != null) {
-      SUM1     .toBytes(buf,1+ 0*12);
-      SUMx     .toBytes(buf,1+ 1*12);
-      SUMx2    .toBytes(buf,1+ 2*12);
-      SUMy     .toBytes(buf,1+ 3*12);
-      SUMy2    .toBytes(buf,1+ 4*12);
-      SUMxy    .toBytes(buf,1+ 5*12);
-      SUMlnx   .toBytes(buf,1+ 6*12);
-      SUMln2x  .toBytes(buf,1+ 7*12);
-      SUMlny   .toBytes(buf,1+ 8*12);
-      SUMln2y  .toBytes(buf,1+ 9*12);
-      SUMxlny  .toBytes(buf,1+10*12);
-      SUMylnx  .toBytes(buf,1+11*12);
-      SUMlnxlny.toBytes(buf,1+12*12);
+      for (i=0; i<STAT_SIZE; i++)
+        stat[i].toBytes(buf, 1+i*12);
       for (i=0; i<STATLOG_SIZE*2; i++) {
-        buf[1+13*12+4*i+0] = (byte)(statLog[i]>>24);
-        buf[1+13*12+4*i+1] = (byte)(statLog[i]>>16);
-        buf[1+13*12+4*i+2] = (byte)(statLog[i]>>8);
-        buf[1+13*12+4*i+3] = (byte)(statLog[i]);
+        buf[1+STAT_SIZE*12+4*i+0] = (byte)(statLog[i]>>24);
+        buf[1+STAT_SIZE*12+4*i+1] = (byte)(statLog[i]>>16);
+        buf[1+STAT_SIZE*12+4*i+2] = (byte)(statLog[i]>>8);
+        buf[1+STAT_SIZE*12+4*i+3] = (byte)(statLog[i]);
       }
-      buf[1+13*12+4*i+0] = (byte)(statLogStart);
-      buf[1+13*12+4*i+1] = (byte)(statLogEnd);
-      propertyStore.setProperty(buf,1+13*12+STATLOG_SIZE*2*4+2);
+      buf[1+STAT_SIZE*12+4*i+0] = (byte)(statLogStart);
+      buf[1+STAT_SIZE*12+4*i+1] = (byte)(statLogEnd);
+      propertyStore.setProperty(buf,1+STAT_SIZE*12+STATLOG_SIZE*2*4+2);
+    } else {
+      propertyStore.setProperty(buf,1);
+    }
+    buf[0] = PROPERTY_FINANCE;
+    if (finance != null) {
+      for (i=0; i<FINANCE_SIZE; i++)
+        finance[i].toBytes(buf, 1+i*12);
+      propertyStore.setProperty(buf,1+FINANCE_SIZE*12);
     } else {
       propertyStore.setProperty(buf,1);
     }
@@ -348,12 +427,13 @@ public final class CalcEngine
     buf[24] = (byte)(Real.randSeedB>>8);
     buf[25] = (byte)(Real.randSeedB);    
     lastx.toBytes(buf,26);
-    propertyStore.setProperty(buf,26+12);
+    buf[26+12] = (byte)(((monitorMode-MONITOR_NONE)<<5) + monitorSize);
+    propertyStore.setProperty(buf,26+12+1);
   }
   
   public void restoreState(PropertyStore propertyStore) {
     int length,i;
-    byte [] buf = new byte[1+13*12+STATLOG_SIZE*2*4+2];
+    byte [] buf = new byte[1+STAT_SIZE*12+STATLOG_SIZE*2*4+2];
     buf[0] = PROPERTY_STACK;
     length = propertyStore.getProperty(buf);
     if (length >= 1+STACK_SIZE*12)
@@ -368,29 +448,25 @@ public final class CalcEngine
     }
     buf[0] = PROPERTY_STAT;
     length = propertyStore.getProperty(buf);
-    if (length >= 1+13*12+STATLOG_SIZE*2*4+2) {
+    if (length >= 1+STAT_SIZE*12+STATLOG_SIZE*2*4+2) {
       allocStat();
-      SUM1     .assign(buf,1+ 0*12);
-      SUMx     .assign(buf,1+ 1*12);
-      SUMx2    .assign(buf,1+ 2*12);
-      SUMy     .assign(buf,1+ 3*12);
-      SUMy2    .assign(buf,1+ 4*12);
-      SUMxy    .assign(buf,1+ 5*12);
-      SUMlnx   .assign(buf,1+ 6*12);
-      SUMln2x  .assign(buf,1+ 7*12);
-      SUMlny   .assign(buf,1+ 8*12);
-      SUMln2y  .assign(buf,1+ 9*12);
-      SUMxlny  .assign(buf,1+10*12);
-      SUMylnx  .assign(buf,1+11*12);
-      SUMlnxlny.assign(buf,1+12*12);
+      for (i=0; i<STAT_SIZE; i++)
+        stat[i].assign(buf, 1+i*12);
       for (i=0; i<STATLOG_SIZE*2; i++) {
-        statLog[i] = (((buf[1+13*12+4*i+0]&0xff)<<24)+
-                      ((buf[1+13*12+4*i+1]&0xff)<<16)+
-                      ((buf[1+13*12+4*i+2]&0xff)<<8)+
-                      ((buf[1+13*12+4*i+3]&0xff)));
+        statLog[i] = (((buf[1+STAT_SIZE*12+4*i+0]&0xff)<<24)+
+                      ((buf[1+STAT_SIZE*12+4*i+1]&0xff)<<16)+
+                      ((buf[1+STAT_SIZE*12+4*i+2]&0xff)<<8)+
+                      ((buf[1+STAT_SIZE*12+4*i+3]&0xff)));
       }
-      statLogStart = buf[1+13*12+4*i+0]&0xff;
-      statLogEnd   = buf[1+13*12+4*i+1]&0xff;
+      statLogStart = buf[1+STAT_SIZE*12+4*i+0]&0xff;
+      statLogEnd   = buf[1+STAT_SIZE*12+4*i+1]&0xff;
+    }
+    buf[0] = PROPERTY_FINANCE;
+    length = propertyStore.getProperty(buf);
+    if (length >= 1+FINANCE_SIZE*12) {
+      allocFinance();
+      for (i=0; i<FINANCE_SIZE; i++)
+        finance[i].assign(buf, 1+i*12);
     }
     // Settings
     buf[0] = PROPERTY_SETTINGS;
@@ -423,6 +499,20 @@ public final class CalcEngine
                         ((long)(buf[24]&0xff)<< 8)+
                         ((long)(buf[25]&0xff)));
       lastx.assign(buf,26);
+      if (length >= 26+12+1) {
+        monitorMode = MONITOR_NONE+((buf[26+12]>>5)&7);
+        monitorSize = buf[26+12]&0x1f;
+        if (monitorMode == MONITOR_MEM) {
+          monitors = mem;
+          monitorLabels = memLabels;
+        } else if (monitorMode == MONITOR_STAT) {
+          monitors = stat;
+          monitorLabels = statLabels;
+        } else if (monitorMode == MONITOR_FINANCE) {
+          monitors = finance;
+          monitorLabels = financeLabels;
+        }
+      }
     }
     repaint(-1);
   }
@@ -437,6 +527,26 @@ public final class CalcEngine
     if (strStack[elementNo] == null)
       strStack[elementNo] = stack[elementNo].toString(format);
     return strStack[elementNo];
+  }
+
+  public String getMonitorElement(int elementNo) {
+    if (monitorStr[elementNo] == null) {
+      format.maxwidth -= monitorLabels[elementNo].length();
+      if (monitors != null && monitors[elementNo] != null)
+        monitorStr[elementNo] = monitors[elementNo].toString(format);
+      else
+        monitorStr[elementNo] = Real.ZERO.toString(format);
+      format.maxwidth += monitorLabels[elementNo].length();
+    }
+    return monitorStr[elementNo];
+  }
+
+  public String getMonitorLabel(int elementNo) {
+    return monitorLabels[elementNo];
+  }
+
+  public int getMonitorSize() {
+    return monitorSize;
   }
 
   public void setMaxWidth(int max) {
@@ -775,6 +885,10 @@ public final class CalcEngine
         tmp = stack[0];
         stack[0] = mem[param];
         mem[param] = tmp;
+        if (monitorMode == MONITOR_MEM) {
+          monitorStr[param] = null;
+          repaint(-1);
+        }
         break;
       case TO_DEG:  x.div(Real.PI); x.mul(Real180); break;
       case TO_RAD:  x.mul(Real.PI); x.div(Real180); break;
@@ -975,6 +1089,10 @@ public final class CalcEngine
         SUMlnxlny.sub(rTmp2);
         break;
     }
+    if (monitorMode == MONITOR_STAT) {
+      clearMonitorStrings();
+      repaint(-1);
+    }
     recall(SUM1);
   }
 
@@ -1091,6 +1209,85 @@ public final class CalcEngine
     repaint(-1);
   }
 
+  private void financeSolve(int which) {
+    if (inputInProgress)
+      parseInput();
+    allocFinance();
+    switch (which) {
+      case 0: // PV
+        // pv = -(fv*ir+((1+ir)^np-1)*pmt)/(ir*(1+ir)^np)
+        rTmp.assign(100);
+        rTmp.recip();
+        rTmp.mul(IR);
+        rTmp2.assign(rTmp);
+        rTmp2.add(Real.ONE);
+        rTmp2.pow(NP);
+        PV.assign(rTmp2);
+        PV.sub(Real.ONE);
+        PV.mul(PMT);
+        rTmp2.mul(rTmp);
+        rTmp.mul(FV);
+        PV.add(rTmp);
+        PV.div(rTmp2);
+        PV.neg();
+        break;
+      case 1: // FV
+        // fv = -(-pmt+(1+ir)^np*(pmt+ir*pv))/ir
+        rTmp.assign(100);
+        rTmp.recip();
+        rTmp.mul(IR);
+        FV.assign(rTmp);
+        FV.add(Real.ONE);
+        FV.pow(NP);
+        rTmp2.assign(rTmp);
+        rTmp2.mul(PV);
+        rTmp2.add(PMT);
+        FV.mul(rTmp2);
+        FV.sub(PMT);
+        FV.div(rTmp);
+        FV.neg();
+        break;
+      case 2: // NP
+        // np = ln((pmt-ir*fv)/(pmt+ir*pv))/ln(1+ir)
+        rTmp.assign(100);
+        rTmp.recip();
+        rTmp.mul(IR);
+        NP.assign(rTmp);
+        NP.mul(FV);
+        NP.neg();
+        NP.add(PMT);
+        rTmp2.assign(rTmp);
+        rTmp2.mul(PV);
+        rTmp2.add(PMT);
+        NP.div(rTmp2);
+        NP.ln();
+        rTmp.add(Real.ONE);
+        rTmp.ln();
+        NP.div(rTmp);
+        break;
+      case 3: // PMT
+        // pmt = -(((1+ir)^np*pv+fv)*ir)/((1+ir)^np-1)
+        rTmp.assign(100);
+        rTmp.recip();
+        rTmp.mul(IR);
+        rTmp2.assign(rTmp);
+        rTmp2.add(Real.ONE);
+        rTmp2.pow(NP);
+        PMT.assign(rTmp2);
+        PMT.mul(PV);
+        PMT.add(FV);
+        PMT.mul(rTmp);
+        rTmp2.sub(Real.ONE);
+        PMT.div(rTmp2);
+        PMT.neg();
+        break;
+      case 4: // IR
+        //IR.assign(Real.NAN);
+        break;
+    }
+    recall(finance[which]);
+  }
+
   public void command(int cmd, int param) {
     switch (cmd) {
       case DIGIT_0: case DIGIT_1: case DIGIT_2: case DIGIT_3:
@@ -1170,12 +1367,20 @@ public final class CalcEngine
           parseInput();
         allocMem();
         mem[param].assign(stack[0]);
+        if (monitorMode == MONITOR_MEM) {
+          monitorStr[param] = null;
+          repaint(-1);
+        }
         break;
       case STP:
         if (inputInProgress)
           parseInput();
         allocMem();
         mem[param].add(stack[0]);
+        if (monitorMode == MONITOR_MEM) {
+          monitorStr[param] = null;
+          repaint(-1);
+        }
         break;
       case RCL:
         if (mem != null)
@@ -1185,6 +1390,10 @@ public final class CalcEngine
         break;
       case CLMEM:
         clearMem();
+        if (monitorMode == MONITOR_MEM) {
+          clearMonitorStrings();
+          repaint(-1);
+        }
         break;
       case SUMPL:
       case SUMMI:
@@ -1192,6 +1401,10 @@ public final class CalcEngine
         break;
       case CLST:
         clearStat();
+        if (monitorMode == MONITOR_STAT) {
+          clearMonitorStrings();
+          repaint(-1);
+        }
         break;
       case AVG:
       case STDEV:
@@ -1265,6 +1478,77 @@ public final class CalcEngine
           repaint(-1);
         }
         break;
+
+      case FINANCE_STO:
+        if (inputInProgress)
+          parseInput();
+        allocFinance();
+        finance[param].assign(stack[0]);
+        if (monitorMode == MONITOR_FINANCE) {
+          monitorStr[param] = null;
+          repaint(-1);
+        }
+        break;
+      case FINANCE_RCL:
+        if (finance != null)
+          recall(finance[param]);
+        else
+          recall(Real.ZERO);
+        break;
+      case FINANCE_SOLVE:
+        financeSolve(param);
+        if (monitorMode == MONITOR_FINANCE) {
+          monitorStr[param] = null;
+          repaint(-1);
+        }
+        break;
+      case FINANCE_CLEAR:
+        clearFinance();
+        if (monitorMode == MONITOR_FINANCE) {
+          clearMonitorStrings();
+          repaint(-1);
+        }
+        break;
+
+      case MONITOR_NONE:
+        if (inputInProgress)
+          parseInput();
+        monitorMode = cmd;
+        monitorSize = 0;
+        clearMonitorStrings();
+        repaint(-1);
+        break;
+      case MONITOR_MEM:
+        if (inputInProgress)
+          parseInput();
+        monitorMode = cmd;
+        monitorSize = param > MEM_SIZE ? MEM_SIZE : param;
+        monitors = mem;
+        monitorLabels = memLabels;
+        clearMonitorStrings();
+        repaint(-1);
+        break;
+      case MONITOR_STAT:
+        if (inputInProgress)
+          parseInput();
+        monitorMode = cmd;
+        monitorSize = param > STAT_SIZE ? STAT_SIZE : param;
+        monitors = stat;
+        monitorLabels = statLabels;
+        clearMonitorStrings();
+        repaint(-1);
+        break;
+      case MONITOR_FINANCE:
+        if (inputInProgress)
+          parseInput();
+        monitorMode = cmd;
+        monitorSize = FINANCE_SIZE;
+        monitors = finance;
+        monitorLabels = financeLabels;
+        clearMonitorStrings();
+        repaint(-1);
+        break;
+
       case NORM:
         if (inputInProgress)
           parseInput();

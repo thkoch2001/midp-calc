@@ -3,11 +3,11 @@
 <head>
   <meta http-equiv="content-type"
  content="text/html; charset=ISO-8859-1">
-  <title>Calc: Scientific Java Calculator</title>
+  <title>Calc - Scientific Statistical & Financial Java Calculator</title>
 </head>
 <body>
 
-<h1>Calc - Scientific Java Calculator</h1>
+<h1>Calc - Scientific Statistical & Financial Java Calculator</h1>
 
 Author: Roar Lauritzsen, <a
 href="&#109;&#097;&#105;&#108;&#116;&#111;&#058;&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;">&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;</a><br>
@@ -20,7 +20,11 @@ lousy built-in calculator that it forced me to develop this
 application. I would be glad to hear about success stories with other
 devices, but I am really not interested to know all the devices that
 it does <em>not</em> work on, unless it is obvious that a very minor
-modification will make it work.<br>
+modification will make it work. (If you have an early version of T610,
+consider upgrading the software, according to <a
+href="http://www.sonyericsson.com/developer/site/global/newsandevents/latestnews/newsaug03/p_j2me_app_t610.jsp">this</a>.
+It may make your Java applications run <em>much</em> faster, and fixes
+bugs.)<br>
 
 <br>
 Calc works much like a good old HP calculator with RPN logic, but the
@@ -147,6 +151,14 @@ rectangular (x,y)</li>
     <li>atan<sub>2</sub>: Calculates the arctangent of y/x, in the range -&#960;
 to &#960; (or -180 to 180 in DEG mode)</li>
     <li>hypot: Calculates &#8730;<span style="text-decoration: overline;">x²+y²</span></li>
+  </ul>
+  <li>Integer operations</li>
+  <ul>
+    <li>round: Round x to nearest integer</li>
+    <li>ceil: Round x towards positive infinity</li>
+    <li>floor: Round x towards negative infinity</li>
+    <li>trunc: Remove fractional part of x (round towards zero)</li>
+    <li>frac: Remove integer part of x, i.e. calculate x-trunc(x)</li>
   </ul>
 </ul>
 
@@ -281,13 +293,22 @@ to &#960; (or -180 to 180 in DEG mode)</li>
       <em>ln</em>x·<em>ln</em>y</li>
     </ul>
   </ul>
-  <li>Integer operations</li>
+  <li>Financial</li>
   <ul>
-    <li>round: Round x to nearest integer</li>
-    <li>ceil: Round x towards positive infinity</li>
-    <li>floor: Round x towards negative infinity</li>
-    <li>trunc: Remove fractional part of x (round towards zero)</li>
-    <li>frac: Remove integer part of x, i.e. calculate x-trunc(x)</li>
+    <li>STO: Store x in financial register (pv, fv, np, pmt, ir%)</li>
+    <li>RCL: Recall financial register (pv, fv, np, pmt, ir%)</li>
+    <li>solve: Solve one financial value with respect to the
+    others</li>
+    <ul>
+      <li>pv: The <em>present value</em> in an account</li>
+      <li>fv: The <em>future value</em> after a certain number of
+      payment periods</li>
+      <li>np: The <em>number</em> of payment <em>periods</em></li>
+      <li>pmt: The amount of each periodic <em>payment</em></li>
+      <li>ir%: The <em>interest rate</em> on the account per period
+      (in percent)</li>
+    </ul>
+    <li>clear: Clear financial memory</li>
   </ul>
   <li>Time and date</li>
   <ul>
@@ -299,7 +320,8 @@ to &#960; (or -180 to 180 in DEG mode)</li>
   seconds. If x&nbsp;&#8804;&nbsp;8784 hours, it is instead converted
   to the format ddddHH.MMSS, where dddd is the number of days.</li> 
     <li>date: Get current date in DH.MS format</li>
-    <li>time: Get current time in DH.MS format (inaccurate on T610)</li>
+    <li>time: Get current time in DH.MS format (inaccurate on eary
+  versions of T610)</li>
     <li>DH.MS+: Add x and y as date, hours, minutes and seconds</li>
   </ul>
 </ul>
@@ -343,6 +365,13 @@ to &#960; (or -180 to 180 in DEG mode)</li>
     <li>HEX: Set hexadecimal (base-16) number mode</li>
     <li>BIN: Set binary (base-2) number mode</li>
     <li>OCT: Set octal (base-8) number mode</li>
+  </ul>
+  <li>Monitornig</li>
+  <ul>
+    <li>mem: Monitor first <em>n</em> memory locations in upper part
+    of the display</li>
+    <li>stat: Monitor first <em>n</em> statistical registers</li>
+    <li>financial: Monitor financial registers</li>
   </ul>
   <li>Fonts (this menu is available if you have a color screen,
   otherwise system font is used)</li>
