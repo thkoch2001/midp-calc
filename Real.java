@@ -1,18 +1,23 @@
 // class Real: Integer implementation of 64-bit precision floating point
 //
 // Constructors/assignment:
-//   Real()
-//   Real(Real)
-//   Real(int)
-//   Real(String)
+//   Real()                                 <==  0
+//   Real(Real)                             <==  Real
+//   Real(int)                              <==  integer
+//   Real(String)                           <==  "-1.234e+56"
+//   Real(int s, int e, long m)             <==  -1^s * m * 2^e
+//   Real(byte[] data, int offset)          <==  data[offset]..data[offset+11]
 //   assign(Real)
 //   assign(int)
 //   assign(String)
+//   assign(int s, int e, long m)
+//   assign(byte[] data, int offset)
 //
 // Output:
-//   String toString()
-//   String toString(int base)
-//   int toInteger()
+//   String toString()                      ==>  "-1.234e+56"
+//   String toString(int base)              ==>  "-1.234e+56" / "-0xfffe+56"
+//   int toInteger()                        ==>  integer
+//   void toBytes(byte[] data, int offset)  ==>  data[offset]..data[offset+11]
 //
 // Binary operators:
 //   add(Real)
@@ -51,7 +56,7 @@
 //
 // Binary functions:
 //   hypot(Real)
-//   atan2(Real)
+//   atan2(Real x)
 //   pow(Real)
 //
 // Integral values:
@@ -80,39 +85,43 @@
 //   makeNan()
 //   makeExp10(int power)
 //
-// Query abnormal states:
+// Query state:
 //   boolean isZero()
 //   boolean isInfinity()
 //   boolean isNan()
 //   boolean isFinite()
+//   boolean isFiniteNonZero()
+//   boolean isInteger()
+//   boolean isOdd()
+//   boolean isNegative()
 //
 // Constants:
-//   ZERO    = 0
-//   ONE     = 1
-//   TWO     = 2
-//   FIVE    = 5
-//   TEN     = 10
-//   HALF    = 1/2
-//   THIRD   = 1/3
-//   SQRT2   = sqrt(2)
-//   SQRT1_2 = sqrt(1/2)
-//   PI2     = PI*2
-//   PI      = PI
-//   PI_2    = PI/2
-//   PI_4    = PI/4
-//   PI_8    = PI/8
-//   E       = e
-//   LN2     = ln(2)
-//   LN10    = ln(10)
-//   LOG2E   = log2(e)  = 1/log(2)
-//   LOG10E  = log10(e) = 1/log(10)
-//   LN10_LN2= ln(10)/ln(2)
-//   MAX     = max non-infinite positive number = 4.197E+323228496
-//   MIN     = min non-zero positive number     = 2.383E-323228497
-//   NAN     = not a number
-//   INF     = infinity
-//   INF_N   = -infinity
-//   ZERO_N  = -0
+//   ZERO     = 0
+//   ONE      = 1
+//   TWO      = 2
+//   FIVE     = 5
+//   TEN      = 10
+//   HALF     = 1/2
+//   THIRD    = 1/3
+//   SQRT2    = sqrt(2)
+//   SQRT1_2  = sqrt(1/2)
+//   PI2      = PI*2
+//   PI       = PI
+//   PI_2     = PI/2
+//   PI_4     = PI/4
+//   PI_8     = PI/8
+//   E        = e
+//   LN2      = ln(2)
+//   LN10     = ln(10)
+//   LOG2E    = log2(e)  = 1/log(2)
+//   LOG10E   = log10(e) = 1/log(10)
+//   LN10_LN2 = ln(10)/ln(2)
+//   MAX      = max non-infinite positive number = 4.197E+323228496
+//   MIN      = min non-zero positive number     = 2.383E-323228497
+//   NAN      = not a number
+//   INF      = infinity
+//   INF_N    = -infinity
+//   ZERO_N   = -0
 //
 public final class Real
 {
@@ -142,7 +151,7 @@ public final class Real
   public static final Real LOG2E  = new Real(0,0x40000000,0x5c551d94ae0bf85eL);
   public static final Real LOG10E = new Real(0,0x3ffffffe,0x6f2dec549b9438cbL);
   public static final Real LN10_LN2=new Real(0,0x40000001,0x6a4d3c25e68dc57fL);
-  public static final Real MAX    = new Real(0,0x7FFFFFFF,0x7FFFFFFFFFFFFFFFL);
+  public static final Real MAX    = new Real(0,0x7fffffff,0x7fffffffffffffffL);
   public static final Real MIN    = new Real(0,0x00000000,0x4000000000000000L);
   public static final Real NAN    = new Real(0,0x80000000,0x4000000000000000L);
   public static final Real INF    = new Real(0,0x80000000,0x0000000000000000L);
@@ -153,10 +162,6 @@ public final class Real
     assign(ZERO);
   }
 
-  public Real(int s, int e, long m) {
-    assign(s,e,m);
-  }
-  
   public Real(final Real a) {
     assign(a);
   }
@@ -173,10 +178,12 @@ public final class Real
     atof(a);
   }
   
-  public void assign(int s, int e, long m) {
-    sign = (byte)s;
-    exponent = e;
-    mantissa = m;
+  public Real(int s, int e, long m) {
+    assign(s,e,m);
+  }
+  
+  public Real(byte [] data, int offset) {
+    assign(data,offset);
   }
 
   public void assign(final Real a) {
@@ -198,6 +205,43 @@ public final class Real
 
   public void assign(final String a) {
     atof(a);
+  }
+
+  public void assign(int s, int e, long m) {
+    sign = (byte)s;
+    exponent = e;
+    mantissa = m;
+  }
+
+  public void assign(byte [] data, int offset) {
+    sign = (byte)((data[offset]>>7)&1);
+    exponent = (((data[offset   ]&0x7f)<<24)+
+                ((data[offset +1]&0xff)<<16)+
+                ((data[offset +2]&0xff)<<8)+
+                ((data[offset +3]&0xff)));
+    mantissa = (((long)(data[offset+ 4]&0xff)<<56)+
+                ((long)(data[offset+ 5]&0xff)<<48)+
+                ((long)(data[offset+ 6]&0xff)<<40)+
+                ((long)(data[offset+ 7]&0xff)<<32)+
+                ((long)(data[offset+ 8]&0xff)<<24)+
+                ((long)(data[offset+ 9]&0xff)<<16)+
+                ((long)(data[offset+10]&0xff)<< 8)+
+                ((long)(data[offset+11]&0xff)));
+  }
+
+  public void toBytes(byte [] data, int offset) {
+    data[offset   ] = (byte)((sign<<7)+(exponent>>24));
+    data[offset+ 1] = (byte)(exponent>>16);
+    data[offset+ 2] = (byte)(exponent>>8);
+    data[offset+ 3] = (byte)(exponent);
+    data[offset+ 4] = (byte)(mantissa>>56);
+    data[offset+ 5] = (byte)(mantissa>>48);
+    data[offset+ 6] = (byte)(mantissa>>40);
+    data[offset+ 7] = (byte)(mantissa>>32);
+    data[offset+ 8] = (byte)(mantissa>>24);
+    data[offset+ 9] = (byte)(mantissa>>16);
+    data[offset+10] = (byte)(mantissa>>8);
+    data[offset+11] = (byte)(mantissa);
   }
 
   public void makeZero(int s) {
@@ -231,7 +275,13 @@ public final class Real
   }
 
   public boolean isFinite() {
-    return exponent >= 0;
+    // That is, non-infinite and non-nan
+    return (exponent >= 0);
+  }
+
+  public boolean isFiniteNonZero() {
+    // That is, non-infinite and non-nan and non-zero
+    return (mantissa != 0 && exponent >= 0);
   }
 
   public void abs() {
@@ -336,7 +386,7 @@ public final class Real
   }
 
   public void scalbn(int n) {
-    if (isZero() || isInfinity() || isNan())
+    if (!isFiniteNonZero())
       return;
     exponent += n;
     if (exponent < 0) {
@@ -381,7 +431,7 @@ public final class Real
   }
 
   public void floor() {
-    if (isZero() || isInfinity() || isNan())
+    if (!isFiniteNonZero())
       return;
     if (exponent < 0x40000000) {
       if (sign == 0)
@@ -412,7 +462,7 @@ public final class Real
   }
 
   public void round() {
-    if (isZero() || isInfinity() || isNan())
+    if (!isFiniteNonZero())
       return;
     if (exponent < 0x3fffffff) {
       makeZero(sign);
@@ -428,7 +478,7 @@ public final class Real
   }
 
   public void trunc() {
-    if (isZero() || isInfinity() || isNan())
+    if (!isFiniteNonZero())
       return;
     if (exponent < 0x40000000) {
       makeZero(sign);
@@ -443,7 +493,7 @@ public final class Real
   }
 
   public void frac() {
-    if (isZero() || isInfinity() || isNan() || exponent < 0x40000000)
+    if (!isFiniteNonZero() || exponent < 0x40000000)
       return;
 
     int shift = 0x4000003e-exponent;
@@ -461,7 +511,7 @@ public final class Real
       return 0;
     if (isInfinity()) {
       if (sign==0)
-        return 0x7ffffffe; // Deliberately not odd (because of pow())
+        return 0x7fffffff;
       else
         return 0x80000000;
     }
@@ -470,11 +520,36 @@ public final class Real
     int shift = 0x4000003e-exponent;
     if (shift < 32) {
       if (sign==0)
-        return 0x7ffffffe; // Deliberately not odd (because of pow())
+        return 0x7fffffff;
       else
         return 0x80000000;
     }
     return (sign==0) ? (int)(mantissa>>>shift) : -(int)(mantissa>>>shift);
+  }
+
+  public boolean isInteger() {
+    if (isNan())
+      return false;
+    if (isZero() || isInfinity())
+      return true;
+    if (exponent < 0x40000000)
+      return false;
+    int shift = 0x4000003e-exponent;
+    if (shift <= 0)
+      return true;
+    return (mantissa&((1L<<shift)-1)) == 0;
+  }
+
+  public boolean isOdd() {
+    if (!isFiniteNonZero() ||
+        exponent < 0x40000000 || exponent > 0x4000003e)
+      return false;
+    int shift = 0x4000003e-exponent;
+    return ((mantissa>>>shift)&1) != 0;
+  }
+
+  public boolean isNegative() {
+    return sign!=0;
   }
 
   private static Real subTmp = new Real();
@@ -613,7 +688,6 @@ public final class Real
     recipTmp.neg();
 
     // First establish approximate result (actually 31 bit accurate)
-
     mantissa = (0x4000000000000000L/(mantissa>>>31))<<31;
     normalize();
 
@@ -677,12 +751,9 @@ public final class Real
   }
 
   public void sqr() {
-    if (isNan())
-      return;
     sign = 0;
-    if (isInfinity() || isZero())
+    if (!isFiniteNonZero())
       return;
-
     int e = exponent;
     exponent += exponent-0x40000000;
     if (exponent < 0) {
@@ -767,7 +838,7 @@ public final class Real
   }
 
   public void cbrt() {
-    if (isZero() || isInfinity() || isNan())
+    if (!isFiniteNonZero())
       return;
 
     byte s = sign;
@@ -1066,10 +1137,7 @@ public final class Real
         else
           makeInfinity(0);
       } else {
-        tmp1.assign(exp);
-        tmp1.floor();
-        if (exp.equalTo(tmp1) && (tmp1.toInteger() & 1)!=0) {
-          // Ignoring possible overflow in toInteger()
+        if (exp.isInteger() && exp.isOdd()) {
           if (exp.sign==0)
             makeZero(1);
           else
@@ -1090,11 +1158,8 @@ public final class Real
         else
           makeZero(0);
       } else {
-        tmp1.assign(exp);
-        tmp1.floor();
-        if (exp.equalTo(tmp1)) {
-          if ((tmp1.toInteger() & 1)!=0) {
-            // Ignoring possible overflow in toInteger()
+        if (exp.isInteger()) {
+          if (exp.isOdd()) {
             if (exp.sign==0)
               makeInfinity(1);
             else
@@ -1113,10 +1178,8 @@ public final class Real
     }
     byte s=0;
     if (sign!=0) {
-      tmp1.assign(exp);
-      tmp1.floor();
-      if (exp.equalTo(tmp1)) {
-        if ((tmp1.toInteger() & 1)!=0)
+      if (exp.isInteger()) {
+        if (exp.isOdd())
           s = 1;
       } else {
         makeNan();
@@ -1179,7 +1242,7 @@ public final class Real
   }
 
   public void sin() {
-    if (isNan() || isInfinity()) {
+    if (!isFinite()) {
       makeNan();
       return;
     }
@@ -1193,20 +1256,20 @@ public final class Real
 
     // Since sin(pi*2 - x) = -sin(x) we can reduce the range 0 < x < pi
     boolean negative = false;
-    if (greaterThan(PI)) {
+    if (this.greaterThan(PI)) {
       sub(PI2);
       neg();
       negative = true;
     }
 
     // Since sin(x) = sin(pi - x) we can reduce the range to 0 < x < pi/2
-    if (greaterThan(PI_2)) {
+    if (this.greaterThan(PI_2)) {
       sub(PI);
       neg();
     }
 
     // Since sin(x) = cos(pi/2 - x) we can reduce the range to 0 < x < pi/4
-    if (greaterThan(PI_4)) {
+    if (this.greaterThan(PI_4)) {
       sub(PI_2);
       neg();
       cosInternal();
@@ -1280,7 +1343,7 @@ public final class Real
   }
 
   public void atan() {
-    if (isNan() || isZero())
+    if (isZero() || isNan())
       return;
     if (isInfinity()) {
       byte s = sign;
@@ -1289,9 +1352,6 @@ public final class Real
       return;
     }
     
-    tmp1.assign(SQRT2);
-    tmp1.sub(ONE);
-
     byte s = sign;
     sign = 0;
 
@@ -1303,8 +1363,10 @@ public final class Real
 
     // atan(x) = atan[ (x - a) / (1 + x*a) ] + PI/8
     // ,where a = sqrt(2)-1
+    tmp1.assign(SQRT2);
+    tmp1.sub(ONE);
     boolean sub = false;
-    if (greaterThan(tmp1))
+    if (this.greaterThan(tmp1))
     {
       sub = true;
       tmp2.assign(this);
@@ -1407,13 +1469,11 @@ public final class Real
   }
 
   public void fact() {
-    if (isNan() || isInfinity())
+    if (!isFinite())
       return;
 
-    tmp1.assign(this);
-    tmp1.floor();
-    tmp2.assign(25);
-    if (this.notEqualTo(tmp1) || this.lessThan(ZERO) || this.greaterThan(tmp2))
+    tmp1.assign(25);
+    if (!isInteger() || this.lessThan(ZERO) || this.greaterThan(tmp1))
     {
       // x<0, x>25 or not integer: fact(x) = gamma(x+1)
       add(ONE);
@@ -1421,14 +1481,14 @@ public final class Real
       return;
     }
     assign(ONE);
-    while (tmp1.toInteger()>1) {
+    while (tmp1.greaterThan(ONE)) {
       mul(tmp1);
       tmp1.sub(ONE);
     }
   }
 
   public void gamma() {
-    if (isNan() || isInfinity())
+    if (!isFinite())
       return;
 
     // x<0: gamma(-x) = -pi/(x*gamma(x)*sin(pi*x))
@@ -1676,5 +1736,55 @@ public final class Real
   public String toString(int base) {
     return ftoa(base);
   }
+
+///////////////////////////////////////////////////////////////////////////////
+// To make library re-entrant, change private static tmp variables with this:
+//
+//   private static final int FREE = 2;
+//
+//   private boolean isFree() {
+//     return (sign == FREE);
+//   }
+//   private void setFree() {
+//     sign = FREE;
+//   }
+//
+//   private static Real [] tmpArray = {
+//     new Real(FREE,0,0), new Real(FREE,0,0),
+//     new Real(FREE,0,0), new Real(FREE,0,0),
+//     new Real(FREE,0,0), new Real(FREE,0,0),
+//     new Real(FREE,0,0), new Real(FREE,0,0)
+//   };
+//
+//   private static Real allocTmp() {
+//     synchronized (tmpArray) {
+//       int i;
+//       for (i=0; i<tmpArray.length; i++)
+//         if (tmpArray[i].isFree()) {
+//           tmpArray[i].makeZero(0);
+//           return tmpArray[i];
+//         }
+//       Real [] newTmpArray = new Real[tmpArray.length*2];
+//       for (i=0; i<tmpArray.length; i++)
+//         newTmpArray[i] = tmpArray[i];
+//       for (i=tmpArray.length; i<newTmpArray.length; i++)
+//         newTmpArray[i] = new Real(FREE,0,0);
+//       tmpArray = newTmpArray;
+//
+//       i = tmpArray.length;
+//       tmpArray[i].makeZero(0);
+//       return tmpArray[i];
+//     }
+//   }
+//
+//   private static void freeTmp(Real a) {
+//     synchronized (tmpArray) {
+//       for (int i=0; i<tmpArray.length; i++)
+//         if (a == tmpArray[i]) {
+//           a.setFree();
+//           return;
+//         }
+//     }
+//   }
   
 }
