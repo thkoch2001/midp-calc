@@ -83,7 +83,7 @@ public final class DataStore
       }
       RecordStore.deleteRecordStore(recordStoreName);
     } catch (Exception e) {
-	//System.out.println(e);
+      //System.out.println(e);
     }
   }
 }
