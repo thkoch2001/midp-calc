@@ -675,6 +675,7 @@ public class CalcCanvas
             numRepaintLines = 100; // Force repaint of all
           break;
         }
+        menuStackPtr = -1; // In case it was -2, which signals no-repeat
         calc.command(CalcEngine.CLEAR,0);
         break;
       case -1: // UP
