@@ -1,4 +1,4 @@
-VERSION = 0.2
+VERSION = 0.92
 TARGETS = Calc.jar Calc.jad
 
 JFLAGS = --bootclasspath=/home/roarl/midpapi.jar -C -d . -O2
