@@ -36,7 +36,7 @@ final class GFont
       char_height = small_char_height;
       char_bits = small_char_bits;
     } else { // SYSTEM font
-      systemFont = Font.getFont(Font.FACE_SYSTEM,
+      systemFont = Font.getFont(Font.FACE_MONOSPACE,
                                 Font.SIZE_MEDIUM,
                                 Font.STYLE_PLAIN);
       char_width = systemFont.charWidth('0');
