@@ -13,7 +13,20 @@ Financial Java Calculator</h1>
 <h2>Changelog:</h2>
 
 
-<h3>Version 1.15, 2004-04-07</h3>
+<h3>Version 1.17, 2004-06-03</h3>
+
+<ul>
+  <li>Added mod and div, rearranged menus slightly to fit
+  <li>Added complementary error function, erfc. At worst only 44 bits
+  accurate (i.e. 13 digits, for x=5.44), mostly much better
+  <li>Added stack roll-up, roll-down and x&harr;st#
+  <li>More accurate sin, cos, tan for values » 2&pi;
+  <li>Fixed accuracy problem of y<sup>x</sup>
+  <li>Complex versions of trigonometric and power operations
+  <li>Bypassing setup dialog (that does not work) on the Z1010
+</ul>
+
+<h3>Version 1.15</h3>
 
 <ul>
   <li>Bypassing setup dialogs on known devices (so far: T610, T630 and
@@ -87,7 +100,6 @@ Financial Java Calculator</h1>
 <ul>
   <li>Doesn't work on Siemens phones
   <li>LASTx forgets its imaginary part on clear stack and exit
-  <li>Sometimes the stack contents are forgotten on exit (?)
   <li>Setup settings are not reversible
 </ul>
 <br>
@@ -96,17 +108,7 @@ Financial Java Calculator</h1>
 <h2>Todo-list:</h2>
 
 <ul>
-  <li>Improve accuracy of y<sup>x</sup>
-  <li>Try to reduce startup time (12 sec on T610)
-  <li>Modulo operations, mod and div
-  <li>Error functions, erf and erfc
-  <li>Stack roll-up and roll-down (rolls using current stack size)
-  <li>RECT/POL display mode for complex numbers
-  <li>Option to display HEX/OCT/BIN as signed (with '-') instead of
-  twos-complement
-  <li>Complex versions of y<sup>x</sup>, <sup>x</sup>&#8730;<span
-  style="text-decoration: overline;">y</span>, e<sup>x</sup>, ln, sin,
-  cos, tan, ...
+  <li>Nothing immediately comes to mind
 </ul>
 
 Long-term plans, that I am not going to implement unless I find myself
@@ -130,6 +132,7 @@ will make the application too large:
   <li>Vector and matrix arithmetic
   <li>Expression evaluation, e.g. "2+3-5*sin(34.5)^2"
   <li>Symbolic differentiation and integration
+  <li>Spreadsheet, thesaurus and encyclopedia
 </ul>
 
 </body>

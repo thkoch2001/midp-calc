@@ -19,8 +19,8 @@
 
 <img src="/~roarl/Calc.jpg" align=right alt="">
 
-<b>Current version: 1.15</b> <font size=-1><a
-href="/~roarl/Calc-log.html">changelog</a></font><br>
+<b>Current version: 1.17</b> <font size=-1><a
+href="/~roarl/Calc-log.html">change-log</a></font><br>
 
 Copyright: Roar Lauritzsen, email: <a
 href="&#109;&#097;&#105;&#108;&#116;&#111;&#058;&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;">&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;</a><br>
@@ -90,10 +90,10 @@ usability with the application:
   bugs)
   <li><b>Sony Ericsson T630</b>: Tested OK
   <li><b>Sony Ericsson Z600</b>: Tested OK
+  <li><b>Sony Ericsson Z1010</b>: Tested OK
   <li><b>Sony Ericsson T616, P800, P900</b>: Not tested. Probably works OK
-  <li><b>Sony Ericsson Z1010</b>: The key arrangements don't work.
   <li><b>Sony Ericsson Z500, K700</b>: Not tested. Probably works OK
-  or has same problem as Z1010.
+  or has problem in the setup dialogs.
   <li><b>Nokia 6100</b>: Tested OK
   <li><b>Nokia 7210</b>: Tested OK
   <li><b>Nokia 7600</b>: Tested OK
@@ -409,17 +409,15 @@ The following operations are available through the menu system:
     <li><b>e<sup>x</sup></b>: Calculate the natural exponential
     <li><b>ln</b>: Calculate the natural logarithm
     <li><b>y<sup>x</sup></b>: Calculate y to the power of x
-    <li><b><sup>x</sup>&#8730;<span style="text-decoration: overline;">y</span></b>: Calculate the x'th root of y. Works with
+    <li><b><sup>x</sup>&#8730;<span style="text-decoration:
+  overline;">y</span></b>: Calculate the x'th root of y. Works with
   negative values of y if x is an odd integer.
-  </ul>
-  <li>Powers of 10 and 2
-  <ul>
     <li><b>10<sup>x</sup></b>: Calculate 10 to the power of x
     <li><b>log<sub>10</sub></b>: Calculate base-10 logarithm of x
     <li><b>2<sup>x</sup></b>: Calculate 2 to the power of x
     <li><b>log<sub>2</sub></b>: Calculate base-2 logarithm of x
   </ul>
-  <li>Combinatorial
+  <li>Probability
   <ul>
     <li><b>P y,x</b>: Calculate number of permutations (unordered subsets)
     when x elements is taken from a population of y
@@ -427,14 +425,10 @@ The following operations are available through the menu system:
     when x elements is taken from a population of y
     <li><b>x!</b> : Calculate the factorial of x. For non-integer values,
     &#915;(x+1) is calculated
-    <li><b>random</b>: Calculate a random number uniformly distributed
-    in the range [0.0, 1.0)
-    <li><b>factorize</b>: Find greatest prime factor (of integer input
-  less than 2³¹). This factor and the original number
-  divided by the factor is placed on the stack... repeat! If input is
-  not integer, it is rounded. If input is too large, the result will
-  be "nan". Factorizing large random numbers is fun: Press "31",
-  "2<sup>x</sup>", "random", "*", "factorize", "factorize", ...
+    <li><b>erfc</b>: Calculate the complementary error function,
+  1-erf(x), equal to the integral from x to infinity of
+  2/&#8730;<span style="text-decoration:
+  overline;">&pi;</span>&nbsp;·e<sup>-t²</sup>&nbsp;dt.
   </ul>
   <li>Rectangular/polar coordinates
   <ul>
@@ -443,21 +437,39 @@ The following operations are available through the menu system:
     <li><b>p&rarr;r</b>: Convert polar coordinates (x=radius, y=angle) to
     rectangular (x,y)
     <li><b>atan<sub>2</sub></b>: Calculate the arctangent of y/x, in
-    the range -&#960; to &#960; (or -180 to 180 in DEG mode)
+    the range -&pi; to &pi; (or -180 to 180 in DEG mode)
     <li><b>hypot</b>: Calculate &#8730;<span
     style="text-decoration: overline;">x²+y²</span>
     <li><b>r&rarr;cplx</b>: Convert rectangular coordinates
     (x=re,&nbspy=im) to complex number
   </ul>
-  <li>Complex numbers
+  <li>Complex numbers (available instead of coordinate menu if x or y
+  is complex)
   <ul>
     <li><b>cplx&rarr;r</b>: Convert complex number to rectangular
   coordinates (x=re,&nbsp;y=im)
     <li><b>abs</b>: Calculate absolute value (complex modulus) of
   complex number
     <li><b>arg</b>: Calculate angle (complex argument) of complex
-  number in the range -&#960; to &#960; (or -180 to 180 in DEG mode)
+  number in the range -&pi; to &pi; (or -180 to 180 in DEG mode)
     <li><b>conj</b>: Calculate complex conjugate
+  </ul>
+  <li>Miscellaneous
+  <ul>
+    <li><b>mod</b>: Calculate y modulo x, i.e. subtract (or add) x
+  from y until the remainder is between 0 and x. Works the same for
+  negative x. Actually, y-x·floor(y/x).
+    <li><b>div</b>: Complementary to mod it calculates how many times x
+  must be subtracted from y to get a remainder between 0 and
+  x. Actually, floor(y/x)
+    <li><b>random</b>: Calculate a random number uniformly distributed
+    in the range [0.0, 1.0)
+    <li><b>factorize</b>: Find greatest prime factor (of integer input
+  less than 2³¹). This factor and the original number
+  divided by the factor is placed on the stack... repeat! If input is
+  not integer, it is rounded. If input is too large, the result will
+  be "nan". Factorizing large random numbers is fun: Press "31",
+  "2<sup>x</sup>", "random", "*", "factorize", "factorize", ...
   </ul>
   <li>Integer operations
   <ul>
@@ -501,7 +513,7 @@ The following operations are available through the menu system:
     <li><b>RAD/DEG</b>: Switch between radians and degrees as measure of angles
     <li><b>&rarr;RAD</b>: Convert from degrees to radians
     <li><b>&rarr;DEG</b>: Convert from radians to degrees
-    <li><b>&#960;</b>: Enter the number &#960;
+    <li><b>&pi;</b>: Enter the number &pi;
   </ul>
 </ul>
 
@@ -532,13 +544,18 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
   undone. In operations involving both stack and one of the other
   modules, such as x&harr;mem, only the stack is restored
     <li><b>x&harr;y</b>: Exchange x and y elements of the stack
-    <li><b>RCL st#</b>: Copy any stack location
+    <li><b>rolldn</b>: Roll stack down (rolling with as many elements
+  as is currently in the stack)
+    <li><b>rollup</b>: Roll stack up
+    <li><b>RCL st#</b>: Copy any stack location into x
+    <li><b>x&harr;st#</b>: Exchange x with any stack element (y is element 1)
     <li><b>clear</b>: Clear the stack
   </ul>
   <li><a id="Memory" name="Memory">Memory</a>
   <ul>
     <li><b>STO</b>: Store x in memory location
-    <li><b>STO+</b>: Add x to memory location
+    <li><b>STO+</b>: Add x to memory location. (Useful with memory
+  monitoring for keeping score in a game ;-)
     <li><b>RCL</b>: Recall memory location
     <li><b>x&harr;mem</b>: Exchange x with any memory location
     <li><b>clear</b>: Clear memory
@@ -572,19 +589,22 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
         <li><b>y<sup>*</sup></b>: Calculate estimated y for current x
         <li><b>x<sup>*</sup></b>: Calculate estimated x for current y
         <li><b>r</b>: Calculate correlation coefficient
-        <li><b>draw</b>: Draw curve along with data points
+        <li><b>draw</b>: Draw regression curve along with data points
       </ul>
       <li>Curve fitting: y=a·<i>ln</i>x+b
       <ul>
-        <li><b>a,b, y<sup>*</sup>, x<sup>*</sup>, r</b>: (see linear regression)
+        <li><b>a,b, y<sup>*</sup>, x<sup>*</sup>, r</b>:
+        (see linear regression)
       </ul>
       <li>Curve fitting: y=b·e<sup>ax</sup>
       <ul>
-        <li><b>a,b, y<sup>*</sup>, x<sup>*</sup>, r</b>: (see linear regression)
+        <li><b>a,b, y<sup>*</sup>, x<sup>*</sup>, r</b>:
+        (see linear regression)
       </ul>
       <li>Curve fitting: y=b·x<sup>a</sup>
       <ul>
-        <li><b>a,b, y<sup>*</sup>, x<sup>*</sup>, r</b>: (see linear regression)
+        <li><b>a,b, y<sup>*</sup>, x<sup>*</sup>, r</b>:
+        (see linear regression)
       </ul>
     </ul>
     <li>Sums
@@ -733,7 +753,6 @@ Examples of operations with abnormal numbers are:<br>
 0*inf = nan<br>
 inf/inf = nan<br>
 inf-inf = nan<br>
-ln(-1) = nan<br>
 1/inf = 0<br>
 -1*0 = -0<br>
 Any operation involving nan produces nan, except nan to the power of
@@ -744,18 +763,25 @@ nan^0 = 1<br>
 
 The calculator creates complex numbers automatically when you try to
 use the "&#8730;<span style="text-decoration: overline;">x</span>"
-operation on a negative number. Alternatively, a complex number can be
-created from x and y using the "r&rarr;cplx" operation.<br>
+operation on a negative number, or when another operation requires a
+complex result. Alternatively, a complex number can be created from x
+and y using the "r&rarr;cplx" operation.<br>
 
 <br>
-Currently only the following operations work with complex numbers: +,
--, *, /, +/-, &#8730;<span style="text-decoration:
-overline;">x</span>, 1/x, x², cplx&rarr;r, abs, arg, conj and
-STO/RCL. Financial and statistical modules cannot store complex
-numbers, so with these modules only the real part of the numbers are
-stored/used. Any operations that are undefined for complex numbers or
-that have not been implemented yet, returns "nan" when used with
-complex input(s).<br>
+Most operations that logically extends to complex arguments have been
+implemented for complex numbers, i.e. all basic operations, all simple
+operations except "%chg", all power operations and all trigonometric
+operations. For convenience, integer operations (rounding and
+truncation) work on the real and imaginary part of the complex number
+separately.
+
+<br>
+All stack and memory operations also handle complex numbers. Financial
+and statistical modules cannot store complex numbers, so with these
+modules only the real part of the numbers are stored/used. Any
+operations that are undefined for complex numbers or that have not
+been implemented yet, returns "nan" when used with complex
+input(s).<br>
 
 <br>
 If either x or y contains a complex number, any operation in the
@@ -763,6 +789,13 @@ If either x or y contains a complex number, any operation in the
 rectangular/polar coordinates). In this case the "coord" submenu is
 exchanged with a submenu called "cplx" for dealing with complex
 numbers.<br>
+
+<br>
+Complex operations work strictly in radians, so when the input is
+complex (i.e. it has a non-zero imaginary part), operations involving
+the angle of the complex number (i.e. most trigonometric and
+power functions) will automatically cause a switch from degrees (DEG)
+to radians (RAD).
 
 <br>
 Complex numbers are displayed on one line as e.g. 2+3i. Since two
@@ -788,7 +821,7 @@ mathematically correct, but since the banks use this procedure it is
 wise to do it also, otherwise your numbers will not agree with those
 of the bank. To calculate the nominal monthly interest rate from an
 effective annual interest rate, use the "y%/x" function, which
-actually calculates 100*(<sup>x</sup>&#8730;<span
+actually calculates 100·(<sup>x</sup>&#8730;<span
 style="text-decoration: overline;">1+y/100</span>&nbsp;-&nbsp;1).]<br>
 
 <br>
