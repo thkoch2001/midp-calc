@@ -24,24 +24,19 @@
 Copyright: Roar Lauritzsen, email: <a
 href="&#109;&#097;&#105;&#108;&#116;&#111;&#058;&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;">&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;</a><br>
 
-Contribute: <font size=-1><em>If you find this program useful, you can
+Contribute: <font size=-1><i>If you find this program useful, you can
 contribute to future work by submitting e.g. $10 to my
 &#080;&#097;&#121;&#080;&#097;&#108; account <a class="black"
-href="https://www.&#112;&#097;&#121;&#112;&#097;&#108;.com/xclick/business=&#114;&#111;&#097;&#114;&#108;%40&#112;&#118;&#118;&#046;&#111;&#114;&#103;&item_name=Calc+-+Java+Calculator">&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;</a></em></font><br>
+href="https://www.&#112;&#097;&#121;&#112;&#097;&#108;.com/xclick/business=&#114;&#111;&#097;&#114;&#108;%40&#112;&#118;&#118;&#046;&#111;&#114;&#103;&item_name=Calc+-+Java+Calculator">&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;</a></i></font><br>
 
 <br>
 Calc is a Java calculator for MIDP devices, such as a Java-enabled
 cell-phone or PDA. It was developed for Sony Ericsson T610, which is
 my current phone but which has such a lousy built-in calculator that I
-was forced to develop this application. Now also tested on Nokia 3510i
-(awkward, screen too small), Nokia 6100 and 7600. I would be glad
-to hear about success stories with other devices, but I am really not
-interested to know all the devices that it does <em>not</em> work on,
-unless it is obvious that a very minor modification will make it
-work. (If you have an early version of T610, consider upgrading the
-software, according to <a
+was forced to develop this application. (If you have an early version
+of T610, consider upgrading the software, according to <a
 href="http://www.sonyericsson.com/developer/site/global/newsandevents/latestnews/newsaug03/p_j2me_app_t610.jsp">this</a>.
-It may make your Java applications run <em>much</em> faster, and fixes
+It may make your Java applications run <i>much</i> faster, and fixes
 bugs.)<br>
 
 <br>
@@ -55,7 +50,7 @@ intermediate results on the stack is very advantageous.<br>
 <br>
 Using my <a href="Real.html">Real</a> Java floating point library,
 Calc has 63 bits internal precision, which amounts to approximately 19
-decimal digits accuracy, considerably <em>more</em> than normal
+decimal digits accuracy, considerably <i>more</i> than normal
 calculators and computers. The exponent is 31 bits, which allows for
 numbers up to 4.197E+323228496. Handy when you want to calculate the
 factorial of 40000000.<br>
@@ -67,6 +62,33 @@ href="http://gridbug.ods.org/calc.jad">http://gridbug.ods.org/calc.jad</a>,
 or <a
 href="http://gridbug.ods.org/calc.jar">http://gridbug.ods.org/calc.jar</a>
 
+<h2>Phones</h2>
+
+The following MIDP phones/devices have been tested with the application:
+
+<ul>
+  <li><b>Sony Ericsson T610</b>: Tested ok</li>  
+  <li><b>Sony Ericsson Z600, T630, P800, P900</b>: Not tested. Probably works
+  ok</li>
+  <li><b>Nokia 3510i</b>: Tested ok. Awkward with the small screen and
+  without joystick, but fully functional</li>
+  <li><b>Nokia 6100</b>: Tested ok</li>
+  <li><b>Nokia 7600</b>: Tested ok</li>
+  <li><b>Nokia 3100, 3200, 3300, 3650, 3660, 5100, 5140, 6100, 6220,
+  6230, 6600, 6610, 6650, 6800, 6810, 6820, 7200, 7210, 7250, 7250i,
+  7650</b>: Not tested. Probably works ok</li>
+  <li><b>Nokia 3410, 6310i, 7700, 8910i, 9210i, N-Gage</b>: Not
+  tested. May work, but there can be issues with small screen,
+  black/white screen or lack of joystick or input keys</li>
+  <li><b>Siemens</b>: I have had complaints</li>
+  <li><b>Motorola</b>: I have no idea</li>
+</ul>
+
+Plese notify me if you can use the application without problems on any
+of the devices that have not been tested and also devices not on my list.
+
+<h1>User manual</h1>
+
 <h2>Keys</h2>
 
 To be able to navigate efficiently through function menus, Calc is
@@ -75,26 +97,26 @@ keys, plus a "clear" key, 12 number keys and two soft-keys (those
 configurable keys below the display). The keys are mapped as follows:
 
 <ul>
-  <li>0-9: The number keys are used to enter numbers and as shortcuts
+  <li><b>0-9</b>: The number keys are used to enter numbers and as shortcuts
 when executing commands that take a number argument (STO, FIX,
 etc). In hexadecimal mode, you can enter the digits a-f by holding down the
 keys 1-6 until the digit changes.</li> 
-  <li>*: This key is used to enter the decimal point.</li>
-  <li>#: This key is used to enter a minus sign or an "E" for
+  <li><b>*</b> : This key is used to enter the decimal point.</li>
+  <li><b>#</b> : This key is used to enter a minus sign or an "E" for
   exponent. In HEX/OCT/BIN mode, the same key can be used to enter a
   "/". This sign is used to prefix a negative two's complement number
   and should be read as "an infinite number of 1-bits preceding the
   number". Pressing the # key again exchanges the "/" with a normal
   minus sign, indicating the input of a normal negative number
   which will be converted to two's complement on ENTER.</li>
-  <li>ENTER: This key finishes the currently entered number and puts
+  <li><b>ENTER</b>: This key finishes the currently entered number and puts
   it on the stack. If no number is being entered, the lowest element
   on the stack is duplicated.</li>
-  <li>clear, 'c': This key deletes the last digit in an entered
+  <li><b>clear, 'c'</b>: This key deletes the last digit in an entered
   number, clears the lowest element on the stack, and backtracks
   through menus.</li> 
-  <li>+ : This key adds the two lowest elements on the stack.</li>
-  <li>Joystick/arrow keys: Pressing the middle of the joystick
+  <li><b>+</b> : This key adds the two lowest elements on the stack.</li>
+  <li><b>Joystick/arrow keys</b>: Pressing the middle of the joystick
   activates the menu. Pressing up/down/right/left on the joystick
   activates the corresponding sub-menu directly. Sub-menus are entered
   by further navigation with the joystick until an actual operation is
@@ -153,11 +175,11 @@ The following operations are available through the menu system:
 <h3>Basic</h3>
 
 <ul>
-  <li>- : Subtract x from y</li>
-  <li>* : Multiply x and y</li>
-  <li>/ : Divide y by x</li>
-  <li>+/- : Change sign of x</li>
-  <li>% : Calculate x percent of y. This operation leaves y standing,
+  <li><b>-</b> : Subtract x from y</li>
+  <li><b>*</b> : Multiply x and y</li>
+  <li><b>/</b> : Divide y by x</li>
+  <li><b>+/-</b> : Change sign of x</li>
+  <li><b>%</b> : Calculate x percent of y. This operation leaves y standing,
   so you can add or subtract the result directly using + or -</li>
 </ul>
 
@@ -166,58 +188,60 @@ The following operations are available through the menu system:
 <ul>
   <li>Simple</li>
   <ul>
-    <li>1/x: Calculate the reciprocal of x</li>
-    <li>x²: Calculate the square of x</li>
-    <li>&#8730;<span style="text-decoration: overline;">x</span>:
+    <li><b>1/x</b>: Calculate the reciprocal of x</li>
+    <li><b>x²</b>: Calculate the square of x</li>
+    <li><b>&#8730;<span style="text-decoration: overline;">x</span></b>:
     Calculate the square root of x</li>
-    <li>%chg: Calculate percent change from y to x, i.e. 100·(x-y)/y</li>
+    <li><b>%chg</b>: Calculate percent change from y to x,
+  i.e. 100·(x-y)/y</li>
   </ul>
   <li>Power</li>
   <ul>
-    <li>e<sup>x</sup>: Calculate the natural exponential</li>
-    <li>ln: Calculate the natural logarithm</li>
-    <li>y<sup>x</sup>: Calculate y to the power of x</li>
-    <li><sup>x</sup>&#8730;<span style="text-decoration: overline;">y</span>: Calculate the x'th root of y. Works with negative
-values of y if x is an odd integer.</li>
+    <li><b>e<sup>x</sup></b>: Calculate the natural exponential</li>
+    <li><b>ln</b>: Calculate the natural logarithm</li>
+    <li><b>y<sup>x</sup></b>: Calculate y to the power of x</li>
+    <li><b><sup>x</sup>&#8730;<span style="text-decoration:
+  overline;">y</span></b>: Calculate the x'th root of y. Works with
+  negative values of y if x is an odd integer.</li>
   </ul>
   <li>Powers of 10 and 2</li>
   <ul>
-    <li>10<sup>x</sup>: Calculates10 to the power of x</li>
-    <li>log<sub>10</sub>: Calculate base-10 logarithm of x</li>
-    <li>2<sup>x</sup>: Calculate 2 to the power of x</li>
-    <li>log<sub>2</sub>: Calculate base-2 logarithm of x</li>
+    <li><b>10<sup>x</sup></b>: Calculates10 to the power of x</li>
+    <li><b>log<sub>10</sub></b>: Calculate base-10 logarithm of x</li>
+    <li><b>2<sup>x</sup></b>: Calculate 2 to the power of x</li>
+    <li><b>log<sub>2</sub></b>: Calculate base-2 logarithm of x</li>
   </ul>
   <li>Combinatorial</li>
   <ul>
-    <li>P y,x: Calculate number of permutations (unordered subsets)
+    <li><b>P y,x</b>: Calculate number of permutations (unordered subsets)
     when x elements is taken from a population of y</li>
-    <li>C y,x: Calculate number of combinations (ordered subsets)
+    <li><b>C y,x</b>: Calculate number of combinations (ordered subsets)
     when x elements is taken from a population of y</li>
-    <li>x! : Calculate the factorial of x. For non-integer values,
+    <li><b>x!</b> : Calculate the factorial of x. For non-integer values,
     &#915;(x+1) is calculated</li>
-    <li>random: Calculate a random number uniformly distributed
+    <li><b>random</b>: Calculate a random number uniformly distributed
     in the range [0.0, 1.0)</li>
-    <li>factorize: Find greatest prime factor (of integer input less than
-    2<sup>31</sup>). This factor and the original number divided by
-    the factor is placed on the stack... repeat!</li>
+    <li><b>factorize</b>: Find greatest prime factor (of integer input
+  less than 2<sup>31</sup>). This factor and the original number
+  divided by the factor is placed on the stack... repeat!</li>
   </ul>
   <li>Polar coordinates</li>
   <ul>
-    <li>r&rarr;p: Convert rectangular coordinates (x,y) to polar
+    <li><b>r&rarr;p</b>: Convert rectangular coordinates (x,y) to polar
 (x=radius, y=angle)</li>
-    <li>p&rarr;r: Convert polar coordinates (x=radius, y=angle) to
+    <li><b>p&rarr;r</b>: Convert polar coordinates (x=radius, y=angle) to
 rectangular (x,y)</li>
-    <li>atan<sub>2</sub>: Calculate the arctangent of y/x, in the range -&#960;
+    <li><b>atan<sub>2</sub></b>: Calculate the arctangent of y/x, in the range -&#960;
 to &#960; (or -180 to 180 in DEG mode)</li>
-    <li>hypot: Calculate &#8730;<span style="text-decoration: overline;">x²+y²</span></li>
+    <li><b>hypot</b>: Calculate &#8730;<span style="text-decoration: overline;">x²+y²</span></li>
   </ul>
   <li>Integer operations</li>
   <ul>
-    <li>round: Round x to nearest integer</li>
-    <li>ceil: Round x towards positive infinity</li>
-    <li>floor: Round x towards negative infinity</li>
-    <li>trunc: Remove fractional part of x (round towards zero)</li>
-    <li>frac: Remove integer part of x, i.e. calculate x-trunc(x)</li>
+    <li><b>round</b>: Round x to nearest integer</li>
+    <li><b>ceil</b>: Round x towards positive infinity</li>
+    <li><b>floor</b>: Round x towards negative infinity</li>
+    <li><b>trunc</b>: Remove fractional part of x (round towards zero)</li>
+    <li><b>frac</b>: Remove integer part of x, i.e. calculate x-trunc(x)</li>
   </ul>
 </ul>
 
@@ -226,48 +250,48 @@ to &#960; (or -180 to 180 in DEG mode)</li>
 <ul>
   <li>Normal</li>
   <ul>
-    <li>sin: Calculate the sine of x</li>
-    <li>cos: Calculate the cosine of x</li>
-    <li>tan: Calculate the tangent of x</li>
+    <li><b>sin</b>: Calculate the sine of x</li>
+    <li><b>cos</b>: Calculate the cosine of x</li>
+    <li><b>tan</b>: Calculate the tangent of x</li>
   </ul>
   <li>Arc</li>
   <ul>
-    <li>asin: Calculate the arc sine of x</li>
-    <li>acos: Calculate the arc cosine of x</li>
-    <li>atan: Calculate the arc tangent of x</li>
+    <li><b>asin</b>: Calculate the arc sine of x</li>
+    <li><b>acos</b>: Calculate the arc cosine of x</li>
+    <li><b>atan</b>: Calculate the arc tangent of x</li>
   </ul>
   <li>Hyperbolic</li>
   <ul>
-    <li>sinh: Calculate the hyperbolic sine of x</li>
-    <li>cosh: Calculate the hyperbolic cosine of x</li>
-    <li>tanh: Calculate the hyperbolic tangent of x</li>
+    <li><b>sinh</b>: Calculate the hyperbolic sine of x</li>
+    <li><b>cosh</b>: Calculate the hyperbolic cosine of x</li>
+    <li><b>tanh</b>: Calculate the hyperbolic tangent of x</li>
   </ul>
   <li>Arc hyperbolic</li>
   <ul>
-    <li>asinh: Calculate the arc hyperbolic sine of x</li>
-    <li>acosh: Calculate the arc hyperbolic cosine of x</li>
-    <li>atanh: Calculate the arc hyperbolic tangent of x</li>
+    <li><b>asinh</b>: Calculate the arc hyperbolic sine of x</li>
+    <li><b>acosh</b>: Calculate the arc hyperbolic cosine of x</li>
+    <li><b>atanh</b>: Calculate the arc hyperbolic tangent of x</li>
   </ul>
   <li>More</li>
   <ul>
-    <li>RAD/DEG: Switche between radians and degrees as measure of angles</li>
-    <li>&rarr;RAD: Convert from degrees to radians</li>
-    <li>&rarr;DEG: Convert from radians to degrees</li>
-    <li>&#960;: Enters the number &#960;</li>
+    <li><b>RAD/DEG</b>: Switche between radians and degrees as measure of angles</li>
+    <li><b>&rarr;RAD</b>: Convert from degrees to radians</li>
+    <li><b>&rarr;DEG</b>: Convert from radians to degrees</li>
+    <li><b>&#960;</b>: Enters the number &#960;</li>
   </ul>
 </ul>
 
 <h3>Bitwise operations (available in HEX/OCT/BIN mode)</h3>
 
 <ul>
-  <li>and: Calculate bitwise AND of x and y</li>
-  <li>or: Calculate bitwise OR of x and y</li>
-  <li>xor: Calculate bitwise XOR of x and y</li>
-  <li>bic: Bit-clear, clear all bits from y that is set in x,
+  <li><b>and</b>: Calculate bitwise AND of x and y</li>
+  <li><b>or</b>: Calculate bitwise OR of x and y</li>
+  <li><b>xor</b>: Calculate bitwise XOR of x and y</li>
+  <li><b>bic</b>: Bit-clear, clear all bits from y that is set in x,
   i.e. calculate y AND NOT x</li>
-  <li>y&lt;&lt;x: Shift up y by integer number of bits in x</li>
-  <li>y&gt;&gt;x: Shift down y by integer number of bits in x</li>
-  <li>not: Invert all bits in x. Fractional bits are ignored,
+  <li><b>y&lt;&lt;x</b>: Shift up y by integer number of bits in x</li>
+  <li><b>y&gt;&gt;x</b>: Shift down y by integer number of bits in x</li>
+  <li><b>not</b>: Invert all bits in x. Fractional bits are ignored,
   i.e. the calculated value is x XOR -1</li>
 </ul>
 
@@ -276,121 +300,121 @@ to &#960; (or -180 to 180 in DEG mode)</li>
 <ul>
   <li>Stack</li>
   <ul>
-    <li>LAST x: Recall value of x before last operation</li>
-    <li>undo: Undo previous stack operation. Memory, statistical and
+    <li><b>LAST x</b>: Recall value of x before last operation</li>
+    <li><b>undo</b>: Undo previous stack operation. Memory, statistical and
   financial operations, in addition to clear stack, cannot be
   undone. In operations involving both stack and one of the other
   modules, such as x&harr;mem, only the stack is restored</li>
-    <li>x&harr;y: Exchange x and y elements of the stack</li>
-    <li>RCL st#: Copy any stack location</li>
-    <li>clear: Clear the stack</li>
+    <li><b>x&harr;y</b>: Exchange x and y elements of the stack</li>
+    <li><b>RCL st#</b>: Copy any stack location</li>
+    <li><b>clear</b>: Clear the stack</li>
   </ul>
   <li>Memory</li>
   <ul>
-    <li>STO: Store x in memory location</li>
-    <li>STO+: Add x to memory location</li>
-    <li>RCL: Recall memory location</li>
-    <li>x&harr;mem: Exchange x with any memory location</li>
-    <li>clear: Clear memory</li>
+    <li><b>STO</b>: Store x in memory location</li>
+    <li><b>STO+</b>: Add x to memory location</li>
+    <li><b>RCL</b>: Recall memory location</li>
+    <li><b>x&harr;mem</b>: Exchange x with any memory location</li>
+    <li><b>clear</b>: Clear memory</li>
   </ul>
   <li>Statistical</li>
   <ul>
-    <li>&#931;+ : Add x and y to statistics</li>
-    <li>&#931;- : Subtract x and y from statistics</li>
-    <li>clear: Clear statistics</li>
+    <li><b>&#931;+</b> : Add x and y to statistics</li>
+    <li><b>&#931;-</b> : Subtract x and y from statistics</li>
+    <li><b>clear</b>: Clear statistics</li>
     <li>Results</li>
     <ul>
       <li>average</li>
       <ul>
-        <li><span style="text-decoration: overline;">x</span>,<span
-        style="text-decoration: overline;">y</span>: Calculate mean x
+        <li><b><span style="text-decoration: overline;">x</span>,<span
+        style="text-decoration: overline;">y</span></b>: Calculate mean x
         and mean y values, i.e. &#931;x/n</li>
-        <li><span style="text-decoration: overline;">x</span>w:
+        <li><b><span style="text-decoration: overline;">x</span>w</b>:
         Calculate mean of x values weighted by the y values,
         i.e. &#931;xy/&#931;y</li>
-        <li>s<sub>x</sub>,s<sub>y</sub>: Calculate sample standard
+        <li><b>s<sub>x</sub>,s<sub>y</sub></b>: Calculate sample standard
         of x and y values, i.e. &#931;(x-<span
         style="text-decoration: overline;">x</span>)²/(n-1)</li>
-        <li>S<sub>x</sub>,S<sub>y</sub>: Calculate population standard
+        <li><b>S<sub>x</sub>,S<sub>y</sub></b>: Calculate population standard
         deviation of x and y values, i.e. &#931;(x-<span
         style="text-decoration: overline;">x</span>)²/n</li>
-        <li>draw: Draw data points and plot average</li>
+        <li><b>draw</b>: Draw data points and plot average</li>
       </ul>
       <li>Linear regression: y=ax+b</li>
       <ul>
-        <li>a,b: Calculate coefficients, x=a, y=b</li>
-        <li>y<sup>*</sup>: Calculate estimated y for current x</li>
-        <li>x<sup>*</sup>: Calculate estimated x for current y</li>
-        <li>r: Calculate correlation coefficient</li>
-        <li>draw: Draw curve along with data points</li>
+        <li><b>a,b</b>: Calculate coefficients, x=a, y=b</li>
+        <li><b>y<sup>*</sup></b>: Calculate estimated y for current x</li>
+        <li><b>x<sup>*</sup></b>: Calculate estimated x for current y</li>
+        <li><b>r</b>: Calculate correlation coefficient</li>
+        <li><b>draw</b>: Draw curve along with data points</li>
       </ul>
-      <li>Curve fitting: y=a·<em>ln</em>x+b</li>
+      <li>Curve fitting: y=a·<i>ln</i>x+b</li>
       <ul>
-        <li>a,b, y<sup>*</sup>, x<sup>*</sup>, r: (see linear regression)
+        <li><b>a,b, y<sup>*</sup>, x<sup>*</sup>, r</b>: (see linear regression)
       </ul>
       <li>Curve fitting: y=b·e<sup>ax</sup></li>
       <ul>
-        <li>a,b, y<sup>*</sup>, x<sup>*</sup>, r: (see linear regression)
+        <li><b>a,b, y<sup>*</sup>, x<sup>*</sup>, r</b>: (see linear regression)
       </ul>
       <li>Curve fitting: y=b·x<sup>a</sup></li>
       <ul>
-        <li>a,b, y<sup>*</sup>, x<sup>*</sup>, r: (see linear regression)
+        <li><b>a,b, y<sup>*</sup>, x<sup>*</sup>, r</b>: (see linear regression)
       </ul>
     </ul>
     <li>Sums</li>
     <ul>
-      <li>n: Recall number of statistics entered</li>
-      <li>&#931;x: Recall sum of x'es</li>
-      <li>&#931;x²: Recall sum of squared x'es</li>
-      <li>&#931;y: Recall sum of y's</li>
-      <li>&#931;y²: Recall sum of squared y's</li>
-      <li>&#931;xy: Recall sum of x·y product</li>
-      <li>&#931;<em>ln</em>x: Recall sum of <em>ln</em>x</li>
-      <li>&#931;<em>ln</em>²x: Recall sum of <em>ln</em>²x</li>
-      <li>&#931;<em>ln</em>y: Recall sum of <em>ln</em>y</li>
-      <li>&#931;<em>ln</em>²y: Recall sum of <em>ln</em>²y</li>
-      <li>&#931;x<em>ln</em>y: Recall sum of x·<em>ln</em>y</li>
-      <li>&#931;y<em>ln</em>x: Recall sum of y·<em>ln</em>x</li>
-      <li>&#931;<em>ln</em>x<em>ln</em>y: Recall sum of
-      <em>ln</em>x·<em>ln</em>y</li>
+      <li><b>n</b>: Recall number of statistics entered</li>
+      <li><b>&#931;x</b>: Recall sum of x'es</li>
+      <li><b>&#931;x²</b>: Recall sum of squared x'es</li>
+      <li><b>&#931;y</b>: Recall sum of y's</li>
+      <li><b>&#931;y²</b>: Recall sum of squared y's</li>
+      <li><b>&#931;xy</b>: Recall sum of x·y product</li>
+      <li><b>&#931;<i>ln</i>x</b>: Recall sum of <i>ln</i>x</li>
+      <li><b>&#931;<i>ln</i>²x</b>: Recall sum of <i>ln</i>²x</li>
+      <li><b>&#931;<i>ln</i>y</b>: Recall sum of <i>ln</i>y</li>
+      <li><b>&#931;<i>ln</i>²y</b>: Recall sum of <i>ln</i>²y</li>
+      <li><b>&#931;x<i>ln</i>y</b>: Recall sum of x·<i>ln</i>y</li>
+      <li><b>&#931;y<i>ln</i>x</b>: Recall sum of y·<i>ln</i>x</li>
+      <li><b>&#931;<i>ln</i>x<i>ln</i>y</b>: Recall sum of
+      <i>ln</i>x·<i>ln</i>y</li>
     </ul>
   </ul>
   <li>Financial</li>
   <ul>
-    <li>STO: Store x in financial register (pv, fv, np, pmt, ir%)</li>
-    <li>RCL: Recall financial register (pv, fv, np, pmt, ir%)</li>
-    <li>solve: Solve one financial value with respect to the
+    <li><b>STO</b>: Store x in financial register (pv, fv, np, pmt, ir%)</li>
+    <li><b>RCL</b>: Recall financial register (pv, fv, np, pmt, ir%)</li>
+    <li><b>solve</b>: Solve one financial value with respect to the
     others</li>
     <ul>
-      <li>pv: The <em>present value</em> in an account</li>
-      <li>fv: The <em>future value</em> after a certain number of
+      <li><b>pv</b>: The <i>present value</i> in an account</li>
+      <li><b>fv</b>: The <i>future value</i> after a certain number of
       payment periods</li>
-      <li>np: The <em>number</em> of payment <em>periods</em></li>
-      <li>pmt: The amount of each periodic <em>payment</em></li>
-      <li>ir%: The <em>interest rate</em> on the account per period
+      <li><b>np</b>: The <i>number</i> of payment <i>periods</i></li>
+      <li><b>pmt</b>: The amount of each periodic <i>payment</i></li>
+      <li><b>ir%</b>: The <i>interest rate</i> on the account per period
       (in percent)</li>
     </ul>
-    <li>clear: Clear financial registers</li>
-    <li>END/BGN: Switch between end of month payments and beginning of
+    <li><b>clear</b>: Clear financial registers</li>
+    <li><b>END/BGN</b>: Switch between end of month payments and beginning of
      month payments</li>
-    <li>y%*x: Interest multiply. Convert from nominal x-times-a-year
+    <li><b>y%*x</b>: Interest multiply. Convert from nominal x-times-a-year
   (e.g. monthly) interest rate to effective annual rate</li>
-    <li>y%/x: Interest divide. Convert from effective annual interest
+    <li><b>y%/x</b>: Interest divide. Convert from effective annual interest
   rate to nominal x-times-a-year rate</li>
   </ul>
   <li>Time and date</li>
   <ul>
-    <li>&rarr;H: Convert x, interpreted as date, hours, minutes and
+    <li><b>&rarr;H</b>: Convert x, interpreted as date, hours, minutes and
   seconds (format yyyymmddHH.MMSS) to hours. If year (yyyy) is zero,
   the format is instead understood as ddddHH.MMSS, where dddd is
   number of days.</li>
-    <li>&rarr;DH.MS: Convert x from hours to date, hours, minutes and
+    <li><b>&rarr;DH.MS</b>: Convert x from hours to date, hours, minutes and
   seconds. If x&nbsp;&#8804;&nbsp;8784 hours, it is instead converted
   to the format ddddHH.MMSS, where dddd is the number of days.</li> 
-    <li>date: Get current date in DH.MS format</li>
-    <li>time: Get current time in DH.MS format (inaccurate on early
+    <li><b>date</b>: Get current date in DH.MS format</li>
+    <li><b>time</b>: Get current time in DH.MS format (inaccurate on early
   versions of T610 software)</li>
-    <li>DH.MS+: Add x and y as date, hours, minutes and seconds</li>
+    <li><b>DH.MS+</b>: Add x and y as date, hours, minutes and seconds</li>
   </ul>
 </ul>
 
@@ -399,13 +423,13 @@ to &#960; (or -180 to 180 in DEG mode)</li>
 <ul>
   <li>Number</li>
   <ul>
-    <li>normal: Set normal number mode, shows all digits but removes
+    <li><b>normal</b>: Set normal number mode, shows all digits but removes
     trailing zeros</li>
-    <li>FIX: Set fixed-decimal number mode, shows a fixed number of
+    <li><b>FIX</b>: Set fixed-decimal number mode, shows a fixed number of
     digits after the decimal point</li>
-    <li>SCI: Set scientific number mode, shows a fixed number of
+    <li><b>SCI</b>: Set scientific number mode, shows a fixed number of
     digits after the decimal point in scientific format</li>
-    <li>ENG: Set engineering number mode, shows a fixed number of
+    <li><b>ENG</b>: Set engineering number mode, shows a fixed number of
     digits after the decimal point in engineering format, i.e. exponent is a
     multiple of 3</li>
   </ul>
@@ -413,41 +437,41 @@ to &#960; (or -180 to 180 in DEG mode)</li>
   <ul>
     <li>point</li>
     <ul>
-      <li>. : Display the decimal point as a period</li>
-      <li>, : Display the decimal point as a comma</li>
-      <li>keep: Keep the decimal point even if no fraction is shown</li>
-      <li>remove: Remove the decimal point if no fraction is shown</li>
+      <li><b>.</b> : Display the decimal point as a period</li>
+      <li><b>,</b> : Display the decimal point as a comma</li>
+      <li><b>keep</b>: Keep the decimal point even if no fraction is shown</li>
+      <li><b>remove</b>: Remove the decimal point if no fraction is shown</li>
     </ul>
     <li>thousand</li>
     <ul>
-      <li>. or , : Display thousands separator as period or comma
+      <li><b>. or ,</b> : Display thousands separator as period or comma
       (depending on decimal point)</li>
-      <li>space: Display thousands separator as space</li>
-      <li>' : Display thousands separator as '</li>
-      <li>none: Display no thousands separator</li>
+      <li><b>space</b>: Display thousands separator as space</li>
+      <li><b>'</b> : Display thousands separator as '</li>
+      <li><b>none</b>: Display no thousands separator</li>
     </ul>
   </ul>
   <li>Base</li>
   <ul>
-    <li>DEC: Set decimal (base-10) number mode</li>
-    <li>HEX: Set hexadecimal (base-16) number mode</li>
-    <li>BIN: Set binary (base-2) number mode</li>
-    <li>OCT: Set octal (base-8) number mode</li>
+    <li><b>DEC</b>: Set decimal (base-10) number mode</li>
+    <li><b>HEX</b>: Set hexadecimal (base-16) number mode</li>
+    <li><b>BIN</b>: Set binary (base-2) number mode</li>
+    <li><b>OCT</b>: Set octal (base-8) number mode</li>
   </ul>
   <li>Monitoring</li>
   <ul>
-    <li>mem: Monitor first <em>n</em> memory locations in upper part
+    <li><b>mem</b>: Monitor first <i>n</i> memory locations in upper part
     of the display</li>
-    <li>stat: Monitor first <em>n</em> statistical registers</li>
-    <li>financial: Monitor financial registers</li>
+    <li><b>stat</b>: Monitor first <i>n</i> statistical registers</li>
+    <li><b>financial</b>: Monitor financial registers</li>
   </ul>
   <li>Fonts (this menu is available if you have a color screen,
   otherwise system font is used)</li>
   <ul>
-    <li>small: Set small font</li>
-    <li>medium: Set medium font</li>
-    <li>large: Set large font</li>
-    <li>system: Set system font (should be mono-spaced, but this is not
+    <li><b>small</b>: Set small font</li>
+    <li><b>medium</b>: Set medium font</li>
+    <li><b>large</b>: Set large font</li>
+    <li><b>system</b>: Set system font (should be mono-spaced, but this is not
   the case on T610)</li>
   </ul>
 </ul>
@@ -591,8 +615,8 @@ DH.MS+.<br>
 <br>
 [* leap years in this period matches leap years in the period
 1900-1999, so you may get away with it. On the other hand, the year
-100 (in the extrapolated Gregorian calendar) was <em>not</em> a leap
-year while the year 2000 <em>was</em>.]<br>
+100 (in the extrapolated Gregorian calendar) was <i>not</i> a leap
+year while the year 2000 <i>was</i>.]<br>
 
 <br>
 If year is nonzero, and month (mm) is zero, the month will be
