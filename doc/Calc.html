@@ -40,9 +40,9 @@ You can download it into your phone using this link: <a href="http://gridbug.ods
 
 To be able to navigate efficiently through function menus, Calc can
 only be operated on a phone with a 5-way "joystick" or equivalent
-arrow keys, plus a "clear" key and 12 number keys, such as the
-Sony-Ericsson T610. (Because of the anti-aliased fonts it also needs a
-color screen.) The keys are mapped as follows:
+arrow keys, plus a "clear" key, 12 number keys and two
+application-specific keys. (Because of the anti-aliased fonts it also
+needs a color screen.) The keys are mapped as follows:
 
 <ul>
   <li>0-9: The number keys are used to enter numbers and as shortcuts
@@ -91,7 +91,7 @@ The following operations are available through the menu system:
     <li>x²: Calculates the square of x</li>
     <li>&#8730;<span style="text-decoration: overline;">x</span>:
     Calculates the square root of x</li>
-    <li>%chg: Calculates percent change from x to y, i.e. 100·(x-y)/y</li>
+    <li>%chg: Calculates percent change from y to x, i.e. 100·(x-y)/y</li>
   </ul>
   <li>Power</li>
   <ul>
@@ -211,22 +211,22 @@ correlation coefficient (r)</li>
   <li>Integer operations</li>
   <ul>
     <li>round: Round x to nearest integer</li>
-    <li>trunc: Remove fractional part of x</li>
     <li>ceil: Round x towards positive infinity</li>
     <li>floor: Round x towards negative infinity</li>
-    <li>frac: Remove integer part of x</li>
+    <li>trunc: Remove fractional part of x (round towards zero)</li>
+    <li>frac: Remove integer part of x, i.e. calculate x-trunc(x)</li>
   </ul>
   <li>Time</li>
   <ul>
     <li>&rarr;DH.MS: Convert x from hours to date, hours, minutes and
-seconds. Date format is yyyymmddHH.MMSS. If x&nbsp;&#8804;&nbsp;24000,
-it is converted
+seconds. Date format is yyyymmddHH.MMSS. If x&nbsp;&#8804;&nbsp;24000
+hours, it is instead converted
 to the format ddddHH.MMSS, where dddd is the number of days.</li>
     <li>&rarr;H: Convert date, hours, minutes and seconds to hours. If
-yyyy is zero, format is understood as ddddHH.MMSS, where dddd is number
-of days.</li>
+yyyy is zero, format is instead understood as ddddHH.MMSS, where dddd
+is number of days.</li>
     <li>date: Get current date in DH.MS format</li>
-    <li>time: Get current time in DH.MS format</li>
+    <li>time: Get current time in DH.MS format (inaccurate on T610)</li>
     <li>DH.MS+: Add x and y as date, hours, minutes and seconds</li>
   </ul>
 </ul>
