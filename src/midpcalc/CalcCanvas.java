@@ -23,6 +23,7 @@ public class CalcCanvas
 //            -> more    -> RAD/DEG ->RAD  ->DEG  pi
 //   bitop*   ->            and    or     xor     bic
 //   bitop2*  ->            not    y<<x   y>>x
+//                          int -> round ceil floor trunc frac
 //   special  -> stack   -> x<->y  clear  RCL st# LASTx  undo     ( -> # )
 //            -> int     -> round  ceil   floor   trunc  frac
 //            -> mem     -> STO#   STO+#  RCL#    x<->mem#          -> #
@@ -303,19 +304,21 @@ public class CalcCanvas
     new Menu("ir%" ,NUMBER_4),
   });
 
+  private static final Menu intMenu = new Menu("int",new Menu[] {
+    new Menu("round",CalcEngine.ROUND),
+    new Menu("ceil",CalcEngine.CEIL),
+    new Menu("floor",CalcEngine.FLOOR),
+    new Menu("trunc",CalcEngine.TRUNC),
+    new Menu("frac",CalcEngine.FRAC),
+  });
+
   private static final Menu math = new Menu("math",new Menu[] {
     new Menu("simple",Menu.TITLE_SKIP,new Menu[] {
       new Menu("Qx",CalcEngine.SQRT),
       new Menu("x^2",CalcEngine.SQR),
       new Menu("1/x",CalcEngine.RECIP),
       new Menu("%chg",CalcEngine.PERCENT_CHG),
-      new Menu("int",new Menu[] {
-        new Menu("round",CalcEngine.ROUND),
-        new Menu("ceil",CalcEngine.CEIL),
-        new Menu("floor",CalcEngine.FLOOR),
-        new Menu("trunc",CalcEngine.TRUNC),
-        new Menu("frac",CalcEngine.FRAC),
-      }),
+      intMenu,
     }),
     new Menu("pow",new Menu[] {
       new Menu("e^x",CalcEngine.EXP),
@@ -381,7 +384,8 @@ public class CalcCanvas
     new Menu("not",CalcEngine.NOT),
     new Menu("y<<x",CalcEngine.YUPX),
     new Menu("y>>x",CalcEngine.YDNX),
-    new Menu("",CalcEngine.FREE_MEM),
+    intMenu,
+    //new Menu("",CalcEngine.FREE_MEM),
   });
 
   private static final int menuColor [] = {
