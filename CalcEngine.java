@@ -266,7 +266,7 @@ public final class CalcEngine
     SUMxlny   = new Real();
     SUMylnx   = new Real();
     SUMlnxlny = new Real();
-    statLog = new int[2*STATLOG_SIZE];
+    statLog = new int[STATLOG_SIZE*2];
     statLogStart = statLogEnd = 0;
   }
 
@@ -277,35 +277,41 @@ public final class CalcEngine
 
   public void saveState(PropertyStore propertyStore) {
     int i;
-    byte [] buf = new byte[STACK_SIZE*12+1];
+    byte [] buf = new byte[1+13*12+STATLOG_SIZE*2*4];
     buf[0] = PROPERTY_STACK;
     for (i=0; i<STACK_SIZE; i++)
-      stack[i].toBytes(buf, i*12+1);
-    propertyStore.setProperty(buf,STACK_SIZE*12+1);
+      stack[i].toBytes(buf, 1+i*12);
+    propertyStore.setProperty(buf,1+STACK_SIZE*12);
     buf[0] = PROPERTY_MEM;
     if (mem != null) {
       for (i=0; i<MEM_SIZE; i++)
-        mem[i].toBytes(buf, i*12+1);
-      propertyStore.setProperty(buf,MEM_SIZE*12+1);
+        mem[i].toBytes(buf, 1+i*12);
+      propertyStore.setProperty(buf,1+MEM_SIZE*12);
     } else {
       propertyStore.setProperty(buf,1);
     }
     buf[0] = PROPERTY_STAT;
     if (SUM1 != null) {
-      SUM1     .toBytes(buf, 0*12+1);
-      SUMx     .toBytes(buf, 1*12+1);
-      SUMx2    .toBytes(buf, 2*12+1);
-      SUMy     .toBytes(buf, 3*12+1);
-      SUMy2    .toBytes(buf, 4*12+1);
-      SUMxy    .toBytes(buf, 5*12+1);
-      SUMlnx   .toBytes(buf, 6*12+1);
-      SUMln2x  .toBytes(buf, 7*12+1);
-      SUMlny   .toBytes(buf, 8*12+1);
-      SUMln2y  .toBytes(buf, 9*12+1);
-      SUMxlny  .toBytes(buf,10*12+1);
-      SUMylnx  .toBytes(buf,11*12+1);
-      SUMlnxlny.toBytes(buf,12*12+1);
-      propertyStore.setProperty(buf,13*12+1);
+      SUM1     .toBytes(buf,1+ 0*12);
+      SUMx     .toBytes(buf,1+ 1*12);
+      SUMx2    .toBytes(buf,1+ 2*12);
+      SUMy     .toBytes(buf,1+ 3*12);
+      SUMy2    .toBytes(buf,1+ 4*12);
+      SUMxy    .toBytes(buf,1+ 5*12);
+      SUMlnx   .toBytes(buf,1+ 6*12);
+      SUMln2x  .toBytes(buf,1+ 7*12);
+      SUMlny   .toBytes(buf,1+ 8*12);
+      SUMln2y  .toBytes(buf,1+ 9*12);
+      SUMxlny  .toBytes(buf,1+10*12);
+      SUMylnx  .toBytes(buf,1+11*12);
+      SUMlnxlny.toBytes(buf,1+12*12);
+      for (i=0; i<STATLOG_SIZE*2; i++) {
+        buf[1+13*12+4*i+0] = (byte)(statLog[i]>>24);
+        buf[1+13*12+4*i+1] = (byte)(statLog[i]>>16);
+        buf[1+13*12+4*i+2] = (byte)(statLog[i]>>8);
+        buf[1+13*12+4*i+3] = (byte)(statLog[i]);
+      }
+      propertyStore.setProperty(buf,1+13*12+STATLOG_SIZE*2*4);
     } else {
       propertyStore.setProperty(buf,1);
     }
@@ -345,36 +351,42 @@ public final class CalcEngine
   
   public void restoreState(PropertyStore propertyStore) {
     int length,i;
-    byte [] buf = new byte[STACK_SIZE*12+1];
+    byte [] buf = new byte[1+13*12+STATLOG_SIZE*2*4];
     buf[0] = PROPERTY_STACK;
     length = propertyStore.getProperty(buf);
-    if (length >= STACK_SIZE*12+1)
+    if (length >= 1+STACK_SIZE*12)
       for (i=0; i<STACK_SIZE; i++)
-        stack[i].assign(buf, i*12+1);
+        stack[i].assign(buf, 1+i*12);
     buf[0] = PROPERTY_MEM;
     length = propertyStore.getProperty(buf);
-    if (length >= MEM_SIZE*12+1) {
+    if (length >= 1+MEM_SIZE*12) {
       allocMem();
       for (i=0; i<MEM_SIZE; i++)
-        mem[i].assign(buf, i*12+1);
+        mem[i].assign(buf, 1+i*12);
     }
     buf[0] = PROPERTY_STAT;
     length = propertyStore.getProperty(buf);
-    if (length >= 13*12+1) {
+    if (length >= 1+13*12+STATLOG_SIZE*2*4) {
       allocStat();
-      SUM1     .assign(buf, 0*12+1);
-      SUMx     .assign(buf, 1*12+1);
-      SUMx2    .assign(buf, 2*12+1);
-      SUMy     .assign(buf, 3*12+1);
-      SUMy2    .assign(buf, 4*12+1);
-      SUMxy    .assign(buf, 5*12+1);
-      SUMlnx   .assign(buf, 6*12+1);
-      SUMln2x  .assign(buf, 7*12+1);
-      SUMlny   .assign(buf, 8*12+1);
-      SUMln2y  .assign(buf, 9*12+1);
-      SUMxlny  .assign(buf,10*12+1);
-      SUMylnx  .assign(buf,11*12+1);
-      SUMlnxlny.assign(buf,12*12+1);
+      SUM1     .assign(buf,1+ 0*12);
+      SUMx     .assign(buf,1+ 1*12);
+      SUMx2    .assign(buf,1+ 2*12);
+      SUMy     .assign(buf,1+ 3*12);
+      SUMy2    .assign(buf,1+ 4*12);
+      SUMxy    .assign(buf,1+ 5*12);
+      SUMlnx   .assign(buf,1+ 6*12);
+      SUMln2x  .assign(buf,1+ 7*12);
+      SUMlny   .assign(buf,1+ 8*12);
+      SUMln2y  .assign(buf,1+ 9*12);
+      SUMxlny  .assign(buf,1+10*12);
+      SUMylnx  .assign(buf,1+11*12);
+      SUMlnxlny.assign(buf,1+12*12);
+      for (i=0; i<STATLOG_SIZE*2; i++) {
+        statLog[i] = ((buf[1+13*12+4*i+0]<<24)+
+                      (buf[1+13*12+4*i+1]<<16)+
+                      (buf[1+13*12+4*i+2]<<8)+
+                      (buf[1+13*12+4*i+3]));
+      }
     }
     // Settings
     buf[0] = PROPERTY_SETTINGS;
@@ -602,6 +614,7 @@ public final class CalcEngine
     }
     int x=5;
     int s=5*5;
+    if (a<s) return a;
     do {
       while (a%x == 0) {
         a /= x;
@@ -671,7 +684,8 @@ public final class CalcEngine
         y.fact();
         y.div(x);
         break;
-      case CLEAR:                          break;
+      case CLEAR:
+        break;
     }
     rollDown();
     stack[STACK_SIZE-1].assign(Real.ZERO);
@@ -919,7 +933,7 @@ public final class CalcEngine
       case SUMMI:
         // Statistics log: can't do anything except delete last input
         if (statLogEnd != statLogStart)
-          statLogStart = (statLogStart+STATLOG_SIZE-1)%STATLOG_SIZE;
+          statLogEnd = (statLogEnd+STATLOG_SIZE-1)%STATLOG_SIZE;
 
         SUM1.sub(Real.ONE);
         SUMx.sub(x);
@@ -1238,7 +1252,7 @@ public final class CalcEngine
           int a = stack[0].toInteger();
           int b = greatestFactor(a);
           rollUp();
-          stack[0].assign(a/b);
+          stack[0].assign((b!=0) ? a/b : 0);
           stack[1].assign(b);
           strStack[0] = null;
           strStack[1] = null;
@@ -1410,7 +1424,7 @@ public final class CalcEngine
     }
   }
 
-  private int rangeScale(Real x, Real min, Real max, int size) {
+  private int rangeScale(Real x, Real min, Real max, int size, Real offset) {
     if (!x.isFinite())
       return 0x7fffffff;
     rTmp.assign(x);
@@ -1420,8 +1434,34 @@ public final class CalcEngine
     rTmp.div(rTmp2);
     rTmp2.assign(size-1);
     rTmp.mul(rTmp2);
+    rTmp.add(offset);
     rTmp.round();
     return rTmp.toInteger();
+  }
+
+  private int findTickStep(Real step, Real min, Real max, int size) {
+    rTmp.assign(max);
+    rTmp.sub(min);
+    rTmp2.assign(8); // minimum tick distance
+    rTmp.mul(rTmp2);
+    rTmp2.assign(size);
+    rTmp.div(rTmp2);
+    step.assign(rTmp);
+    step.lowPow10(); // convert to lower power of 10
+    rTmp.div(step);
+    rTmp2.assign(2);
+    if (rTmp.lessThan(rTmp2)) {
+      step.mul(rTmp2);
+      return 5;
+    }
+    rTmp2.assign(5);
+    if (rTmp.lessThan(rTmp2)) {
+      step.mul(rTmp2);
+      return 2;
+    }
+    rTmp2.assign(10);
+    step.mul(rTmp2);
+    return 10;
   }
 
   public boolean draw(int cmd, Graphics g, int gx, int gy, int gw, int gh) {
@@ -1435,13 +1475,13 @@ public final class CalcEngine
     Real y = new Real();
     Real a = new Real();
     Real b = new Real();
-    int i,xi,yi,pyi;
+    int i,xi,yi,pyi,inc,bigTick;
 
     // Find boundaries
     for (i=statLogStart; i!=statLogEnd; i = (i+1)%STATLOG_SIZE) {
       x.assignFloatBits(statLog[i*2]);
       y.assignFloatBits(statLog[i*2+1]);
-      if (x.isFinite() && y.isFinite()) {
+      if (x.isFiniteNonZero() && y.isFiniteNonZero()) {
         if (x.lessThan(xMin))    xMin.assign(x);
         if (x.greaterThan(xMax)) xMax.assign(x);
         if (y.lessThan(yMin))    yMin.assign(y);
@@ -1457,46 +1497,77 @@ public final class CalcEngine
     yMin.mul(rTmp);
     yMax.mul(rTmp);
 
+    g.setClip(gx,gy,gw,gh);
     // shrink window by 4 pixels
     gx += 2;
     gy += 2;
     gw -= 4;
     gh -= 4;
 
-    // Draw axis
-    g.setColor(0,255,0);
-    xi = gx+rangeScale(Real.ZERO,xMin,xMax,gw);
-    yi = gy+rangeScale(Real.ZERO,yMax,yMin,gh);
-    g.drawLine(xi,gy-1,xi,gy+gh);
+    // Draw X axis
+    g.setColor(0,255,128);
+    yi = gy+rangeScale(Real.ZERO,yMax,yMin,gh,Real.ZERO);
     g.drawLine(gx-1,yi,gx+gw,yi);
+    bigTick = findTickStep(a,xMin,xMax,gw);
+    x.assign(a);
+    x.neg();
+    i = -1;
+    while (x.greaterThan(xMin)) {
+      xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
+      inc = (i%bigTick == 0) ? 2 : 1;
+      g.setColor(0,64,0);
+      g.drawLine(xi,gy-1,xi,gy+gh);
+      g.setColor(0,255,128);
+      g.drawLine(xi,yi-inc,xi,yi+inc);
+      x.sub(a);
+      i--;
+    }
+    x.assign(a);
+    i = 1;
+    while (x.lessThan(xMax)) {
+      xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
+      inc = (i%bigTick == 0) ? 2 : 1;
+      g.setColor(0,64,0);
+      g.drawLine(xi,gy-1,xi,gy+gh);
+      g.setColor(0,255,128);
+      g.drawLine(xi,yi-inc,xi,yi+inc);
+      x.add(a);
+      i++;
+    }
 
-    // Draw points
-    g.setColor(255,255,255);
-    for (i=statLogStart; i!=statLogEnd; i = (i+1)%STATLOG_SIZE) {
-      x.assignFloatBits(statLog[i*2]);
-      y.assignFloatBits(statLog[i*2+1]);
-      if (x.isFinite() && y.isFinite()) {
-        xi = gx+rangeScale(x,xMin,xMax,gw);
-        yi = gy+rangeScale(y,yMax,yMin,gh);
-        g.drawLine(xi,yi-1,xi,yi+1);
-        g.drawLine(xi-1,yi,xi+1,yi);
-      }
+    // Draw Y axis
+    xi = gx+rangeScale(Real.ZERO,xMin,xMax,gw,Real.ZERO);
+    g.drawLine(xi,gy-1,xi,gy+gh);
+    bigTick = findTickStep(a,yMin,yMax,gh);
+    y.assign(a);
+    y.neg();
+    i = -1;
+    while (y.greaterThan(yMin)) {
+      yi = gy+rangeScale(y,yMax,yMin,gh,Real.ZERO);
+      inc = (i%bigTick == 0) ? 2 : 1;
+      g.setColor(0,64,0);
+      g.drawLine(gx-1,yi,gx+gw,yi);
+      g.setColor(0,255,128);
+      g.drawLine(xi-inc,yi,xi+inc,yi);
+      y.sub(a);
+      i--;
+    }
+    y.assign(a);
+    i = 1;
+    while (y.lessThan(yMax)) {
+      yi = gy+rangeScale(y,yMax,yMin,gh,Real.ZERO);
+      inc = (i%bigTick == 0) ? 2 : 1;
+      g.setColor(0,64,0);
+      g.drawLine(gx-1,yi,gx+gw,yi);
+      g.setColor(0,255,128);
+      g.drawLine(xi-inc,yi,xi+inc,yi);
+      y.add(a);
+      i++;
     }
 
     // Draw graph
-    g.setColor(255,0,0);
+    g.setColor(255,0,128);
     switch (cmd) {
-      case AVG_DRAW:
-        x.assign(SUMx);
-        x.div(SUM1);
-        y.assign(SUMy);
-        y.div(SUM1);
-        if (x.isFinite() && y.isFinite()) {
-          xi = gx+rangeScale(x,xMin,xMax,gw);
-          yi = gy+rangeScale(y,yMax,yMin,gh);
-          g.fillRect(xi-1,yi-1,3,3);
-        }
-        return true;
       case LIN_DRAW:
         statAB(a,b,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
         break;
@@ -1510,33 +1581,66 @@ public final class CalcEngine
         statAB(a,b,SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMlnxlny);
         break;
     }
-    pyi = -1;
-    for (xi=0; xi<gw; xi++) {
-      x.assign(xi);
-      rTmp.assign(gw-1);
-      x.div(rTmp);
-      rTmp.assign(xMax);
-      rTmp.sub(xMin);
-      x.mul(rTmp);
-      x.add(xMin);
-      if (cmd==LOG_DRAW || cmd==POW_DRAW)
-        x.ln();
-      y.assign(x);
-      y.mul(a);
-      y.add(b);
-      if (cmd==EXP_DRAW || cmd==POW_DRAW)
-        y.exp();
-      yi = rangeScale(y,yMax,yMin,gh);
-      if (yi>=0 && yi<gh) {
-        if (pyi > 0)
-          g.drawLine(xi-1+gx,pyi+gy,xi+gx,yi+gy);
-        pyi = yi;
-      } else {
-        if (pyi > 0)
-          break; // We have drawn from inside to outside
-        pyi = -1;
+    if (cmd != AVG_DRAW && a.isFinite() && b.isFinite()) {
+      pyi = -1000;
+      inc = (cmd==LIN_DRAW) ? gw-1 : 10;
+      for (xi=0; xi<gw+10; xi+=inc) {
+        x.assign(xi);
+        rTmp.assign(gw-1);
+        x.div(rTmp);
+        rTmp.assign(xMax);
+        rTmp.sub(xMin);
+        x.mul(rTmp);
+        x.add(xMin);
+        if (cmd==LOG_DRAW || cmd==POW_DRAW)
+          x.ln();
+        y.assign(x);
+        y.mul(a);
+        y.add(b);
+        if (cmd==EXP_DRAW || cmd==POW_DRAW)
+          y.exp();
+        yi = rangeScale(y,yMax,yMin,gh,Real.HALF);
+        if (yi > -1000 && yi<1000+gh) {
+          if (pyi > -1000) {
+            g.drawLine(xi-inc+gx,pyi+gy,xi+gx,yi+gy);
+            g.drawLine(xi-inc+gx,pyi-1+gy,xi+gx,yi-1+gy);
+          }
+          pyi = yi;
+        } else {
+          if (pyi > -1000)
+            break; // We have drawn from inside to outside
+          pyi = -1000;
+        }
       }
     }
+
+    // Draw points
+    g.setColor(255,255,255);
+    for (i=statLogStart; i!=statLogEnd; i = (i+1)%STATLOG_SIZE) {
+      x.assignFloatBits(statLog[i*2]);
+      y.assignFloatBits(statLog[i*2+1]);
+      if (x.isFinite() && y.isFinite()) {
+        xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
+        yi = gy+rangeScale(y,yMax,yMin,gh,Real.ZERO);
+        g.drawLine(xi,yi-1,xi,yi+1);
+        g.drawLine(xi-1,yi,xi+1,yi);
+      }
+    }
+
+    // Draw average
+    if (cmd == AVG_DRAW) {
+      g.setColor(255,0,128);
+      x.assign(SUMx);
+      x.div(SUM1);
+      y.assign(SUMy);
+      y.div(SUM1);
+      if (x.isFinite() && y.isFinite()) {
+        xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
+        yi = gy+rangeScale(y,yMax,yMin,gh,Real.ZERO);
+        g.fillRect(xi-1,yi-1,3,3);
+      }
+    }
+
     return true;
   }
 }
