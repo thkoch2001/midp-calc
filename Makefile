@@ -1,4 +1,4 @@
-VERSION = 1.15
+VERSION = 1.17
 TARGETS = Calc.jar Calc.jad
 
 WTK_HOME = /home/roarl/ant/WTK104
@@ -49,5 +49,5 @@ Calc.jar: $(JAVAFILES) Calc.jad
 clean:
 	rm -rf $(TARGETS) ral Real.java GFontBase.java pgm2java *~
 
-publish:
+publish: Calc.jad Calc.jar Real.java
 	scp Calc.jad Calc.jar Calc.html Calc-log.html Real.html Real.java Real.jpp gridbug:public_html
