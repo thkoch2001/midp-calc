@@ -15,10 +15,18 @@ public class CalcApplet
     Display.getDisplay(calc).getCurrent().processRepaint(g);
   }
 
-  public void keyReleased(KeyEvent e) { }
+  private boolean repeating = false;
+
+  public void keyReleased(KeyEvent e) {
+    repeating = false;
+  }
   public void keyTyped(KeyEvent e) {
     int key = e.getKeyChar();
-    Display.getDisplay(calc).getCurrent().processKeyPress(key);
+    if (repeating)
+      Display.getDisplay(calc).getCurrent().processKeyRepeat(key);
+    else
+      Display.getDisplay(calc).getCurrent().processKeyPress(key);
+    repeating = true;
   }
   public void keyPressed(KeyEvent e) {
     int key = 0;
