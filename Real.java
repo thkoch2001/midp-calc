@@ -1684,7 +1684,8 @@ public final class Real
       return (sign!=0)?"-0":"0";
 
     if (base==16) {
-      return ((sign!=0)?"-":"")+"0x"+Long.toHexString(mantissa)+" E"+
+      return ((sign!=0)?"-":"")+"0x"+Integer.toHexString((int)(mantissa>>>32))+
+        Integer.toHexString((int)mantissa)+" E"+
         ((exponent>=0x40000000)?"+":"")+(exponent-0x40000000);
     } else if (base==10) {
       int i;

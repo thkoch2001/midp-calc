@@ -45,23 +45,28 @@ public class CalcCanvas
     g.fillRect(0,0,getWidth(),getHeight());
     int h = currentFont.getHeight();
     currentFont.drawString(g,0,10,text);
-    currentFont.drawString(g,0,30," !\"#$%&'()*+,-./");
-    currentFont.drawString(g,0,30+h,"0123456789:;<=>?");
-    currentFont.drawString(g,0,30+2*h,"@ABCDEFGHIJKLMNO");
-    currentFont.drawString(g,0,30+3*h,"PQRSTUVWXYZ[\\]^_");
-    currentFont.drawString(g,0,30+4*h,"`abcdefghijklmno");
-    currentFont.drawString(g,0,30+5*h,"pqrstuvwxyz{|}~");
     System.out.println(text);
   }
 
   protected void keyPressed(int key) {
     print(Integer.toString(key)+" (down)");
-    if (key=='1')
-      currentFont = smallFont;
-    if (key=='2')
-      currentFont = mediumFont;
-    if (key=='3')
-      currentFont = largeFont;
+    if (key=='1') {
+      Real a = new Real(Real.PI);
+      text = a.toString();
+    }
+    if (key=='2') {
+      Real a = new Real(Real.PI);
+      Real b = new Real(Real.E);
+      a.mul(b);
+      text = a.toString();
+    }
+    if (key=='3') {
+      Real a = new Real(Real.HALF);
+      a.gamma();
+      a.sqr();
+      a.mul(new Real(4));
+      text = a.toString();
+    }
   }
 
   protected void keyReleased(int key) {

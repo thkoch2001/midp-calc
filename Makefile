@@ -3,8 +3,8 @@ TARGETS = Calc.jar Calc.jad
 
 JFLAGS = --bootclasspath=/home/roarl/midpapi.jar -C -d . -O2
 
-JAVAFILES  = Calc.java CalcCanvas.java GFont.java GFontBase.java
-CLASSFILES = ral/Calc.class ral/CalcCanvas.class ral/GFont.class ral/GFontBase.class
+JAVAFILES  = Calc.java CalcCanvas.java GFont.java GFontBase.java Real.java
+CLASSFILES = ral/Calc.class ral/CalcCanvas.class ral/GFont.class ral/GFontBase.class ral/Real.class
 SHELL = /usr/bin/csh
 
 default: $(TARGETS)
