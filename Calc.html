@@ -55,7 +55,25 @@ calculators and computers. The exponent is 31 bits, which allows for
 numbers up to 4.197E+323228496. Handy when you want to calculate the
 factorial of 40000000.<br>
 
-<br>
+<font color="800000">
+<h2>Disclaimer</h2>
+
+The Calc Java program is supplied "AS IS". The author disclaims all
+warranties, expressed or implied, including, without limitation, the
+warranties of merchantability and of fitness for any purpose. The
+author assumes no liability for direct, indirect, incidental, special,
+exemplary, or consequential damages, which may result from the use of
+the computer program, even if advised of the possibility of such
+damage. There is no warranty against interference with your enjoyment
+of the computer program or against infringement. There is no warranty
+that the computer program will fulfill any of your particular purposes
+or needs. This computer program is provided with all faults, and the
+entire risk of satisfactory quality, performance, accuracy, and effort
+is with the user.
+</font>
+
+<h2>Download</h2>
+
 You can download it into your phone or MIDP device using one of these
 links: <a
 href="http://gridbug.ods.org/calc.jad">http://gridbug.ods.org/calc.jad</a>,
@@ -64,43 +82,31 @@ href="http://gridbug.ods.org/calc.jar">http://gridbug.ods.org/calc.jar</a>
 
 <h2>Phones</h2>
 
-The following MIDP phones/devices have been tested with the application:
+The following MIDP phones/devices have been tested or surveyed for
+usability with the application:
 
 <ul>
   <li><b>Sony Ericsson T610</b>: Tested ok</li>  
-  <li><b>Sony Ericsson Z600, T630, P800, P900</b>: Not tested. Probably works
-  ok</li>
-  <li><b>Nokia 3510i</b>: Tested ok. Awkward with the small screen and
-  without joystick, but fully functional</li>
+  <li><b>Sony Ericsson Z600, T616, T630, P800, P900</b>: Not
+  tested. Probably works ok</li>
   <li><b>Nokia 6100</b>: Tested ok</li>
   <li><b>Nokia 7600</b>: Tested ok</li>
-  <li><b>Nokia 3100, 3200, 3300, 3650, 3660, 5100, 5140, 6100, 6220,
-  6230, 6600, 6610, 6650, 6800, 6810, 6820, 7200, 7210, 7250, 7250i,
-  7650</b>: Not tested. Probably works ok</li>
-  <li><b>Nokia 3410, 6310i, 7700, 8910i, 9210i, N-Gage</b>: Not
-  tested. May work, but there can be issues with small screen,
-  black/white screen or lack of joystick or input keys</li>
-  <li><b>Siemens</b>: I have heard complaints</li>
+  <li><b>Nokia 3510i</b>: Tested ok. Awkward with the small screen and
+  without joystick, but fully functional</li>
+  <li><b>Nokia 3100, 3105, 3200, 3300, 3520, 3530, 3560, 3586i, 3595,
+  3620, 3650, 3660, 5100, 5140, 6100, 6200, 6220, 6225, 6230, 6560,
+  6600, 6610, 6650, 6800, 6810, 6820, 7200, 7210, 7250, 7250i,
+  7650</b>: Not tested. Probably works ok</li> 
+  <li><b>Nokia 3410, 3570, 3585, 3585i, 3590, 6310i, 7700, 8910i,
+  9210i, 9290, N-Gage</b>: Not tested. May work, but there can be
+  issues with small screen, black/white screen or lack of joystick or
+  input keys</li>
+  <li><b>Siemens</b>: Apparently, it does not work with the S55</li>
   <li><b>Motorola</b>: I have no idea</li>
 </ul>
 
 Plese notify me if you can use the application without problems on any
 of the devices that have not been tested and also devices not on my list.
-
-<h2>Disclaimer</h2>
-
-The Calc Java program is supplied "AS IS". The Author disclaims all
-warranties, expressed or implied, including, without limitation, the
-warranties of merchantability and of fitness for any purpose.  The
-Author assumes no liability for direct, indirect, incidental, special,
-exemplary, or consequential damages, which may result from the use of
-the computer program, even if advised of the possibility of such
-damage. There is no warranty against interference with your enjoyment
-of the computer program or against infringement. There is no warranty
-that my efforts or the computer program will fulfill any of your
-particular purposes or needs.  This computer program is provided with
-all faults, and the entire risk of satisfactory quality, performance,
-accuracy, and effort is with the user.
 
 <h1>User manual</h1>
 
@@ -181,10 +187,12 @@ forward to the next section.<br>
 The basis for implementing RPN logic in this calculator is a stack of
 numbers. The stack is initially empty, and when you write a number and
 "ENTER" it on the stack, the stack grows upwards with the latest
-entered number at the bottom of the stack. To make the stack shrink,
-you can either clear the lowest element on the stack using the "clear"
-key, or you can combine the two lowest elements on the stack using a
-mathematical operation.<br>
+entered number at the bottom of the stack. If you start to enter
+another number, the numbers already on the stack jump up to make room
+for the new number. To make the stack shrink, you can either clear the
+lowest element on the stack using the "clear" key, or you can combine
+the two lowest elements on the stack using a mathematical
+operation.<br>
 
 <br>
 The lowest element on the stack is called "x". In operations with one
@@ -205,7 +213,7 @@ the key "&uArr;" to enter the "basic" arithmetic menu, followed by
 "&lArr;", to select the multiplication operator.)<br>
 
 <br>
-This is what the display would look like as you enter the sequence of
+This is what the display will look like as you enter the sequence of
 keys above, assuming that you start with an empty stack:<br>
 
 <pre>
@@ -241,18 +249,19 @@ expressions above: <br>
 </br>
 The graphs are always traversed from the top node, going down to child
 nodes on the left first and child nodes to the right after,
-recursively. In our second example graph the sequence would be like
+recursively. In the second example graph the sequence would be like
 this: starting with *, we go down left to 3, up again to *, down right
 to +, down left to 2, up again to +, down right to 4, up again to +,
 and finally up to *.<br>
 
 <br>
-The way we <i>write</i> the graph depends on the order we write the
-elements down as we traverse. We don't want to write a node more than
-once. In normal arithmetic expressions, we write a node by writing
-first an opening parenthesis, then the left child, then the content of
-the node itself, then the right child, and finally a closing
-parenthesis. Like this: (&nbsp;3&nbsp;+&nbsp;7&nbsp;), and this:
+The way we write the expression represented by the graph depends on
+the order we write the elements down as we traverse. We don't want to
+write a node more than once. In normal arithmetic expressions, we
+write a node by writing first an opening parenthesis, then the left
+child, then the content of the node itself, then the right child, and
+finally a closing parenthesis. Like this:
+(&nbsp;3&nbsp;+&nbsp;7&nbsp;), and this:
 (&nbsp;3&nbsp;*&nbsp;(&nbsp;2&nbsp;+&nbsp;4&nbsp;)&nbsp;).<br>
 
 <br>
@@ -297,7 +306,8 @@ accessed by the joystick or arrow keys:
   <li><b>/</b> : Divide y by x</li>
   <li><b>+/-</b> : Change sign of x</li>
   <li><b>%</b> : Calculate x percent of y. This operation leaves y standing,
-  so you can add or subtract the result directly using + or -</li>
+  so you can add or subtract the result directly using + or -. To add
+  24% to 42, press "42", "ENTER", "24", "%", "+"</li>
 </ul>
 
 <h3>Math</h3>
@@ -309,7 +319,7 @@ accessed by the joystick or arrow keys:
     <li><b>x²</b>: Calculate the square of x</li>
     <li><b>&#8730;<span style="text-decoration: overline;">x</span></b>:
     Calculate the square root of x</li>
-    <li><b>%chg</b>: Calculate percent change from y to x,
+    <li><b>%chg</b>: Calculate percentage of change from y to x,
   i.e. 100·(x-y)/y</li>
   </ul>
   <li>Power</li>
@@ -339,8 +349,11 @@ accessed by the joystick or arrow keys:
     <li><b>random</b>: Calculate a random number uniformly distributed
     in the range [0.0, 1.0)</li>
     <li><b>factorize</b>: Find greatest prime factor (of integer input
-  less than 2<sup>31</sup>). This factor and the original number
-  divided by the factor is placed on the stack... repeat!</li>
+  less than 2³¹). This factor and the original number
+  divided by the factor is placed on the stack... repeat! If input is
+  not integer, it is rounded. If input is too large, the result will
+  be "nan". Factorizing large random numbers is fun: Press "31",
+  "2<sup>x</sup>", "random", "*", "factorize", "factorize", ...</li>
   </ul>
   <li>Polar coordinates</li>
   <ul>
@@ -391,14 +404,14 @@ to &#960; (or -180 to 180 in DEG mode)</li>
   </ul>
   <li>More</li>
   <ul>
-    <li><b>RAD/DEG</b>: Switche between radians and degrees as measure of angles</li>
+    <li><b>RAD/DEG</b>: Switch between radians and degrees as measure of angles</li>
     <li><b>&rarr;RAD</b>: Convert from degrees to radians</li>
     <li><b>&rarr;DEG</b>: Convert from radians to degrees</li>
     <li><b>&#960;</b>: Enters the number &#960;</li>
   </ul>
 </ul>
 
-<h3>Bitwise operations (available in HEX/OCT/BIN mode)</h3>
+<h3>Bitwise operations (available instead of math/trig in HEX/OCT/BIN mode)</h3>
 
 <ul>
   <li><b>and</b>: Calculate bitwise AND of x and y</li>
@@ -660,7 +673,9 @@ because of inaccuracies during the calculations.<br>
 In binary modes (HEX, OCT and BIN), fractional numbers are not
 displayed as integers, but are instead displayed with the fraction
 visible in exactly the same manner as decimal numbers, depending on
-the number format (normal, FIX, SCI and ENG).<br>
+the number format (normal, FIX, SCI and ENG). If a number is displayed
+with an exponent, the exponent itself is still displayed in decimal
+form.<br>
 
 <br>
 Negative numbers are displayed as a generalized form of "twos
