@@ -471,22 +471,30 @@ public final class CalcEngine
     if (a<0) a = -a;
     if (a<=3)
       return a;
-    while (2*2<=a && (a&1) == 0)
+    while ((a&1) == 0) {
       a >>= 1;
-    while (3*3<=a && a%3 == 0)
+      if (a<2*2) return a;
+    }
+    while (a%3 == 0) {
       a /= 3;
+      if (a<3*3) return a;
+    }
     int x=5;
     int s=5*5;
     do {
-      while (s<=a && a%x == 0)
+      while (a%x == 0) {
         a /= x;
+        if (a<s) return a;
+      }
       x += 2;
       s = x*x;
-      while (s<=a && a%x == 0)
+      while (a%x == 0) {
         a /= x;
+        if (a<s) return a;
+      }
       x += 4;
       s = x*x;
-    } while (s<=a && x<46343);
+    } while (a>=s && x<46343);
     return a;
   }
 
@@ -911,14 +919,19 @@ public final class CalcEngine
       case FACTORIZE:
         if (inputInProgress)
           parseInput();
-        int a = stack[0].toInteger();
-        int b = greatestFactor(a);
-        rollUp();
-        stack[0].assign(a/b);
-        stack[1].assign(b);
-        strStack[0] = null;
-        strStack[1] = null;
-        repaint(-1);
+        stack[0].round();
+        if (stack[0].exponent > 0x4000001e) {
+          recall(Real.NAN);
+        } else {
+          int a = stack[0].toInteger();
+          int b = greatestFactor(a);
+          rollUp();
+          stack[0].assign(a/b);
+          stack[1].assign(b);
+          strStack[0] = null;
+          strStack[1] = null;
+          repaint(-1);
+        }
         break;
       case NORM:
         if (inputInProgress)
