@@ -71,7 +71,6 @@ public final class CalcCanvas
 // * replaces math/trig in hex/oct/bin mode
 //
 // Extensions:
-//   spceial  -> stat    -> result  -> avg -> S_xw s_xw
 //   prog[1]  -> more    -> solve   -> a b c d e
 //                       -> diff    -> a b c d e
 //                       -> int     -> a b c d e
