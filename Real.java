@@ -105,6 +105,7 @@
 //   LN10    = ln(10)
 //   LOG2E   = log2(e)
 //   LOG10E  = log10(e)
+//   LN10_LN2= ln(10)/ln(2)
 //   MAX     = max non-infinite positive number = 4.197E+323228496
 //   MIN     = min non-zero positive number     = 2.383E-323228497
 //   NAN     = not a number
@@ -133,12 +134,13 @@ public final class Real
   public static final Real PI_2   = new Real(0,0x40000000,0x6487ed5110b4611aL);
   public static final Real PI_4   = new Real(0,0x3fffffff,0x6487ed5110b4611aL);
   public static final Real PI_8   = new Real(0,0x3ffffffe,0x6487ed5110b4611aL);
-  public static final Real E      = new Real(0,0x40000001,0x56fc2a2c515da548L);
-  public static final Real LN2    = new Real(0,0x3fffffff,0x58b90bfbe8e7bccfL);
-//public static final Real LN2_3  = new Real(1,0x3ffffffe,0x67cc8fb2fe612fc2L);
-  public static final Real LN10   = new Real(0,0x40000001,0x49aec6eed5545605L);
-  public static final Real LOG2E  = new Real(0,0x40000000,0x5c551d94ae0bf865L);
-  public static final Real LOG10E = new Real(0,0x3ffffffe,0x6f2dec549b9438d5L);
+  public static final Real E      = new Real(0,0x40000001,0x56fc2a2c515da54dL);
+  public static final Real LN2    = new Real(0,0x3fffffff,0x58b90bfbe8e7bcd6L);
+//public static final Real LN2_3  = new Real(1,0x3ffffffe,0x67cc8fb2fe612fcbL);
+  public static final Real LN10   = new Real(0,0x40000001,0x49aec6eed554560bL);
+  public static final Real LOG2E  = new Real(0,0x40000000,0x5c551d94ae0bf85eL);
+  public static final Real LOG10E = new Real(0,0x3ffffffe,0x6f2dec549b9438cbL);
+  public static final Real LN10_LN2=new Real(0,0x40000001,0x6a4d3c25e68dc57fL);
   public static final Real MAX    = new Real(0,0x7FFFFFFF,0x7FFFFFFFFFFFFFFFL);
   public static final Real MIN    = new Real(0,0x00000000,0x4000000000000000L);
   public static final Real NAN    = new Real(0,0x80000000,0x4000000000000000L);
@@ -873,14 +875,13 @@ public final class Real
       assign(ONE);
       return;
     }
-    mul(LN10);
-    mul(LOG2E);
+    mul(LN10_LN2);
     exp2();
   }
 
   public void makeExp10(int power) {
     // Calculate power of 10 by successive squaring for increased accuracy
-    // (Perhaps it is not so accurate for large arguments?)
+    // It is not so accurate for large arguments, but better than exp10()
     boolean recp=false;
     if (power < 0) {
       power = -power; // Also works for 0x80000000 (but will underflow)
