@@ -47,4 +47,4 @@ Calc.jar: $(JAVAFILES) Calc.jad
 	ant -buildfile build.xml -Dwtk.home=${WTK_HOME} make-jar
 
 clean:
-	rm -rf $(TARGETS) ral GFontBase.java pgm2java *~
+	rm -rf $(TARGETS) ral Real.java GFontBase.java pgm2java *~
