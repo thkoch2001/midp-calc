@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
   <title>Calc - Java Calculator: Scientific, Statistical, Financial,
-  Progarmmable, Graphing, RPN</title>
+  Programmable, Graphing, RPN</title>
   <link rel="icon" href="/Calc.ico" />
 </style>
 </head>
@@ -25,7 +25,7 @@
 </ul>
 </font></b>
 
-<p><b>Current version: 2.02</b> <a
+<p><b>Current version: 2.03</b> <a
 href="Calc-log.html">change-log</a><br>
 
 <b>Copyright: 2003-2004 Roar Lauritzsen</b>, email: <a
@@ -139,11 +139,12 @@ usability with the application:
   <li><b>Siemens SL45</b>: Doesn't work, 'Out of heap memory'
   <li><b>Siemens S55</b>: Works after a fashion with newest firmware.
   Older firmware doesn't work, 'Cannot verify class'
-  <li><b>LG 7100</b>: Tested OK. Other LG phones may work. If you
-  notify me I will attempt to enable support for it
+  <li><b>LG 7100</b>: Tested OK. <em>Other LG phones may work. If you
+  notify me I will attempt to enable support for it</em>
   <li><b>Samsung Z105 3G</b>: Tested OK. Enter and + keys are
   reversed, but this should work just as well
   <li><b>Motorola C650</b>: Doesn't work, cannot pass setup
+  <li><b>Sharp GX15</b>: Doesn't work, cannot pass setup
 </ul>
 
 Please notify me if you can use the application without problems on any
@@ -433,7 +434,9 @@ backtracks up one level of menus.
 
 <h2><a id="Operations" name="Operations">Operations</a></h2>
 
-The following operations are available through the menu system:
+The following operations are available through the menu system. Some
+of the operations are explained more thoroughly in the <a
+href="Calc.html#Notes">notes</a> section.
 
 <h3><a id="Basic" name="Basic">Basic</a></h3>
 
@@ -523,8 +526,9 @@ The following operations are available through the menu system:
   less than 2³¹). This factor and the original number
   divided by the factor is placed on the stack... repeat! If input is
   not integer, it is rounded. If input is too large, the result will
-  be "nan". Factorizing large random numbers is fun: Press "31",
-  "2<sup>x</sup>", "random", "*", "factorize", "factorize", ...
+  be <tt>nan</tt> <a href="Calc.html#AbnormalNote"><b>(*)</b></a>. Factorizing
+  large random numbers is fun: Press "31", "2<sup>x</sup>", "random",
+  "*", "factorize", "factorize", ...
   </ul>
   <li>Integer operations
   <ul>
@@ -899,10 +903,23 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
     <li><b>new</b>: Start entering a new program. If you pick a used
   entry in the menu that program will be overwritten
     <li><b>run</b>: Run a program
-    <li><b>draw</b>: Draw graph using a program. Prior to using this
-  operation, you should push min-x, max-x, min-y and max-y on the
-  stack, in that order
     <li><b>clear</b>: Clear a program
+    <li><b>draw</b>: Draw program function f(x). Prior to using this
+  operation, you should enter min-x, max-x, min-y and max-y on the
+  stack, in that order
+    <li><b>integrate</b>: Integrate program function f(x). Prior
+  to using this operation, you should enter x-limit-1,
+  x-limit-2, and the desired accuracy on the stack, in that order
+    <li><b>diff.</b>: Differentiate program function f(x). Prior
+  to using this operation, enter the x you want to differentiate for
+    <li><b>solve</b>: Solve program function f(x), i.e. find a root
+  where f(x)=0. Prior to using this operation, enter <b>two</b>
+  limits x1 and x2 on the stack, so that f(x1)·f(x2)&lt;0
+    <li><b>min/max</b>: Find local minima or maxima in program
+  function f(x). Prior to using this operation, enter <b>two</b>
+  limits x1 and x2 on the stack, so that at the mid-point between x1
+  and x2, the function f((x1+x2)/2) is either greater or less than
+  both f(x1) and f(x2).
   </ul>
   <li>Programming 2 (available while entering a new program)
   <ul>
@@ -912,11 +929,11 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
   free spot and a program name again.
     <li>Conditionals for programming
     <ul>
-      <li><b>x=y?</b>: Push 1 on stack if x exactly equals y, otherwise 0
-      <li><b>x!=y?</b>: Push 1 on stack if x does not equal y, otherwise 0
-      <li><b>x&lt;y?</b>: Push 1 on stack if x is less than y, otherwise 0
-      <li><b>x&lt;=y?</b>: Push 1 on stack if x is less than or equal to y, otherwise 0
-      <li><b>x&gt;y?</b>: Push 1 on stack if x is greater than y, otherwise 0
+      <li><b>x=y?</b>: Enter 1 on stack if x exactly equals y, otherwise 0
+      <li><b>x!=y?</b>: Enter 1 on stack if x does not equal y, otherwise 0
+      <li><b>x&lt;y?</b>: Enter 1 on stack if x is less than y, otherwise 0
+      <li><b>x&lt;=y?</b>: Enter 1 on stack if x is less than or equal to y, otherwise 0
+      <li><b>x&gt;y?</b>: Enter 1 on stack if x is greater than y, otherwise 0
     </ul>
     <li>Utility operations for programming
     <ul>
@@ -925,7 +942,9 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
       <li><b>min</b>: Select minimum value of x and y
       <li><b>select</b>: Select y or z based on x, i.e. calculate
   x·y+(1-x)·z. With this you can e.g. simulate "max" by pressing
-  "x&gt;y?", "select"
+  "x&gt;y?", "select". When selection criterion x exactly equals 1 or
+  0, y or z is copied directly instead of calculating it. This enables
+  selecting away <tt>inf</tt>'s and <tt>nan</tt>'s.
       <li><b>sgn</b>: Keep only the sign of x as ±1. With this you can
   e.g. simulate "abs" by pressing "ENTER", "sgn", "*". Also ±0 becomes ±1
     </ul>
@@ -966,10 +985,11 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
     </ul>
     <li><b>exit</b>: Exit the application. The the stack, memory,
   statistics, finance and programs will be saved until next time
-    <li><b>reset</b>: Reset the application and exit. All information
-  saved about the stack, memory, etc, will be erased. You will be
-  asked for a confirmation. Use this operation if you have gone through
-  the setup dialogs and picked the wrong settings
+    <li><b>reset</b>: Reset the application and exit. All setup
+  information, all values saved in the stack, memory, statistics,
+  finance and all programs will be erased. You will be asked for a
+  confirmation. Use this operation if you have gone through the setup
+  dialogs and picked the wrong settings
   </ul>
 </ul>
 
@@ -977,38 +997,42 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
 
 <h3><a id="AbnormalNote" name="AbnormalNote">Abnormal results</a></h3>
 
-The calculator implements infinities and nan following the IEEE754
-logic. It is impossible to enter abnormal numbers through the
+The calculator implements infinities and <tt>nan</tt> following the
+IEEE754 logic. It is impossible to enter abnormal numbers through the
 keyboard, but they are easily obtained by calculation. If an operation
 produces a result larger than the largest representable number, an
 infinity value is generated, and "inf" or "-inf" is displayed. If an
 operation produces a result smaller than the smallest representable
 number, zero is generated. To be able to use this result properly in
 further calculations, the number "-0" may also be produced. If an
-operation is impossible or would produce a complex number as a result, a
-nan value is produced and "nan" is displayed (not-a-number).<br>
+operation is undefined, a <tt>nan</tt> value is produced and "nan" is
+displayed (not-a-number).<br>
 
 <br>
 Abnormal numbers are often fine to use in further calculations. In
 most cases where the final result would be meaningful, abnormal
-numbers accomplish this. For instance, atan(inf)=pi/2, 1/inf=0,
-etc. In most cases where the final result is not meaningful, a nan
-will be produced.<br>
+numbers accomplish this. For instance, <tt>atan(inf)=pi/2,
+1/inf=0</tt>, etc. In most cases where the final result is not
+meaningful, a <tt>nan</tt> will be produced. Additionally,
+<tt>nan</tt> is used to indicate "bad input parameters" or "failure
+to obtain a valid result" from an algorithm implemented in the
+calculator, e.g. factorizing.<br>
 
 <br>
 Examples of operations with abnormal numbers are:<br>
-1/0 = inf<br>
-1+inf = inf<br>
-1*inf = inf<br>
-0/0 = nan<br>
-0*inf = nan<br>
-inf/inf = nan<br>
-inf-inf = nan<br>
-1/inf = 0<br>
--1*0 = -0<br>
-Any operation involving nan produces nan, except nan to the power of
+<tt>1/0 = inf</tt><br>
+<tt>1+inf = inf</tt><br>
+<tt>1*inf = inf</tt><br>
+<tt>0/0 = nan</tt><br>
+<tt>0*inf = nan</tt><br>
+<tt>inf/inf = nan</tt><br>
+<tt>inf-inf = nan</tt><br>
+<tt>1/inf = 0</tt><br>
+<tt>-1*0 = -0</tt><br>
+Any operation involving <tt>nan</tt> produces <tt>nan</tt>, except
+<tt>nan</tt> to the power of
 0:<br>
-nan^0 = 1<br>
+<tt>nan^0 = 1</tt><br>
 
 <h3><a id="ComplexNote" name="ComplexNote">Complex results</a></h3>
 
@@ -1031,7 +1055,7 @@ All stack and memory operations also handle complex numbers. Financial
 and statistical modules cannot store complex numbers, so with these
 modules only the real part of the numbers are stored/used. Any
 operations that are undefined for complex numbers or that have not
-been implemented yet, returns "nan" when used with complex
+been implemented yet, returns <tt>nan</tt> when used with complex
 input(s).<br>
 
 <br>
@@ -1214,19 +1238,16 @@ facility with playback. In programming mode (i.e. after executing
 calculator looks and behaves exactly as before except a "PRG"
 indicator to the upper right. There is no limit to the size of a
 program, but beware, do not leave Calc in programming mode (look for
-the "PRG" indicator), because Calc will <b>eventually</b> run out of
-memory and exit.<br>
+the "PRG" indicator), because Calc will <em>eventually</em> run out of
+memory and exit, losing any changes since the program was started.<br>
 
 <br>
 Programs cannot be viewed or edited, only recorded, so if you perform
 the wrong operation you must start over using "purge". Using the
 "undo" operation does not remove any statements from the program, it
-only adds this operation to the program. Similarly, numbers entered
-during programming are not stored as a whole number, but rather as the
-keys that were used to enter the number. Using the clear key while
-entering a number will store the clear key in the program as well. My
-advice: If your program is complex, plan the steps beforehand on a
-piece of paper.</br>
+only adds this operation to the program as well. Advice: If your
+program is complex, plan the steps beforehand on a piece of
+paper.</br>
 
 <br>
 The programming mode offers no control flow (if-statements) or looping
@@ -1243,23 +1264,84 @@ get around this by calculating both values and selecting afterwards:
 "select".<br>
 
 <br>
-When drawing graphs, a program is called repeatedly with different x
-values pushed on the stack. The values left in the x register when the
-program finishes is used as y values in the graph. You first need to
-tell Calc the ranges along the x axis and y axis that you want to see
-during drawing. If the program does not clutter the stack, the graph
-limits will remain on the stack when graph drawing is finished. If a
-program returns a complex value, the graph will split into two lines
-of different color. This is a neat way to display two (non-complex)
-graphs at once, placing both graph values in x and y and using
-"r&rarr;cplx".<br>
+A program is called a <b>function</b> if it uses the x on the stack as
+input, and produces a new number on the stack as output. The value
+left in the x register when the program finishes is used as the
+function value f(x). During graph drawing, integration,
+differentiation, solving, minimizing or maximizing, a program is
+called repeatedly with different x values placed on the stack. If the
+program does not clutter the stack (i.e. it does not leave more values
+on the stack than the result), the input parameters will remain on the
+stack when the operation is finished.<br>
 
 <br>
-While drawing a graph, Calc will continue calculating new graph points
-and improving the graph indefinitely, until "Back" is pressed. Do not
-leave the program in this state, it will eat your battery. Graph
-drawing and calling other programs recursively cannot be
-programmed, as well as commands on the "System menu".<br>
+When <b>drawing</b> graphs, you must first enter the ranges along the
+x axis and y axis that you want to see during drawing.  If a program
+returns a complex value, the graph will split into two lines of
+different color. This is a neat way to display two (non-complex)
+graphs at once, placing both graph values in x and y and using
+"r&rarr;cplx". While drawing the graph, Calc will continue calculating
+new graph points and improving the graph indefinitely, until "Break"
+is pressed. Do not leave the program in this state, it will eat your
+battery.<br>
+
+<br>
+When <b>integrating</b>, you must enter the range over which you want
+to integrate, and the accuracy you desire from the result. When the
+operation is finished, the result is placed on the stack. If the
+program returns complex, <tt>inf</tt> or <tt>nan</tt> values during the
+operation, the result will be <tt>nan</tt>. If the algorithm fails to produce
+the desired accuracy, the unfinished result is placed on the stack
+along with a <tt>nan</tt>. The algorithm may handle integration through a
+singularity, but in this case the algorithm works better if the
+singularity is at x=0 and the first integration limit is also 0. The
+accuracy of the result will most often be of the same magnitude as the
+input accuracy, but depending on the difficulty of the function to be
+integrated, it may be much better or worse than this.<br>
+
+<br>
+When <b>differentiating</b>, you must enter the x for which you want
+to differentiate. When the operation is finished, the result is placed
+on the stack. If the program returns complex, <tt>inf</tt> or
+<tt>nan</tt> values during the operation, the result will be
+<tt>nan</tt>. The accuracy of the result is at most 13 digits.<br>
+
+<br>
+When <b>solving</b>, you must enter two limits that "straddle" the
+solution, i.e. two x values for which the corresponding function
+values have opposite sign. When the operation is finished, the result
+is placed on the stack. If the program returns complex, <tt>inf</tt>
+or <tt>nan</tt> values during the operation, the result will be
+<tt>nan</tt>. The accuracy of the result is in most cases a full 19
+digits, but this depends largely on the accuracy of the operations
+used in the program.<br>
+
+<br>
+When <b>minimizing</b> or <b>maximizing</b>, you must enter two limits
+in such a way that the calculator can decide if it should do
+minimization or maximization. To decide, it inspects the function
+value midway between the limits. If this value is greater than the
+function value at both limits, the operation will be maximization.  If
+the value is less than at both limits, the operation will be
+minimization. If the value lies in-between, the criterion is undecided
+and the result will be <tt>nan</tt>. When the operation is finished,
+the result placed on the stack. If the program returns complex,
+<tt>inf</tt> or <tt>nan</tt> values during the operation, the result
+will be <tt>nan</tt>. The accuracy of the result is much worse than
+for solving because of the flatness of a curve at a minima/maxima, in
+most cases only about 10 digits.<br>
+
+<br>
+Caveat: Since the calculator can represent very small numbers
+(i.e. 2.383e-323228497), solving or min/max-ing trivial cases when the
+answer is exactly zero can take forever, since the result always
+approaches zero but never gets there. Examples are "solve" on the
+"sgn" function, and "min/max" on the "abs" function.<br>
+
+<br>
+Graph drawing, integration, differentiation, solving, min/max-ing and
+calling other programs recursively cannot be programmed, as well as
+commands on the "System menu".<br>
 
 <br>
 Here are some <a href="Calc-prog.html">programming examples</a>.<br>

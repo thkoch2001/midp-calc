@@ -29,7 +29,7 @@ before running, it is useful to push some dummy arguments on the stack
 before starting to record the program, to be able to follow the
 programming with actual data.<br><br>
 
-<h3>Quadratic equation</h3>
+<h2>Quadratic equation</h2>
 
 This program solves a second-order polynomial of the type<br>
 
@@ -73,7 +73,8 @@ stack/RCL st# 4          ; c
 prog/finish              ; program finished
 </pre><br>
 
-<h3>Biorhythms</h3>
+
+<h2>Biorhythms</h2>
 
 The theory of <a
 href="http://en.wikipedia.org/wiki/Biorhythms">biorhythms</a> is
@@ -136,7 +137,117 @@ pink graph shows your emotional cycle, the yellow graph shows your
 physical cycle, and the white graph shows your intellectual cycle,
 with zero on the x axis representing current time.<br><br>
 
-<h3>More</h3>
+
+<h2>Advanced curve fitting example</h2>
+
+Suppose we have a set of data observations and we want to find curve
+that fits the points:<br>
+
+<pre>
+   x   y
+ -------
+   0   0
+   5   6
+  10  10
+  20  17
+  30  21
+  50  27
+</pre>
+
+<br>
+Looking at the points, the curve that seems to start at the origin,
+grow linearly at first, and gradually lose its steepness towards the
+right. One function that behaves this way is:<br>
+
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;y&nbsp;=&nbsp;a&nbsp;<i>ln</i>(bx&nbsp;+&nbsp;1)<br>
+
+<br>
+Now we want to find out if such a curve fits the observed data
+well. The statistics module can fit a curve to the function
+y&nbsp;=&nbsp;a&nbsp;<i>ln</i>(x)&nbsp;+&nbsp;b. If we add a parameter
+c to the x values before summing the statistics, we can fit a curve to
+the function
+y&nbsp;=&nbsp;a&nbsp;<i>ln</i>(x&nbsp;+&nbsp;c)&nbsp;+&nbsp;b. This
+curve corresponds to the function above
+iff. <i>ln</i>(c)&nbsp;=&nbsp;-b/a. Consequently, programming the
+entering of the above data points with modified x values, and
+calculating the resulting <i>ln</i>(c)&nbsp;+&nbsp;b/a, we can find
+our curve using the "solve" operation.<br>
+
+<br><b>Program listing:</b>
+
+<pre>
+prog/new "fit"           ; start recording a new program
+mem/STO 0                ; save input value, c
+stat/clear
+0
+ENTER
+0
+mem/RCL 0
++
+stat/SUM+                ; x1+c,y1
+6
+ENTER
+5
+mem/RCL 0
++
+stat/SUM+                ; x2+c,y2
+10
+ENTER
+10
+mem/RCL 0
++
+stat/SUM+                ; x3+c,y3
+17
+ENTER
+20
+mem/RCL 0
++
+stat/SUM+                ; x4+c,y4
+21
+ENTER
+30
+mem/RCL 0
++
+stat/SUM+                ; x5+c,y5
+27
+ENTER
+50
+mem/RCL 0
++
+stat/SUM+                ; x6+c,y6
+mem/RCL 0
+math/pow/ln              ; ln(c)
+stat/result/alnx+b/a,b   ; calculate a,b
+/
++                        ; output value, ln(c)+b/a
+prog/finish              ; program finished
+</pre>
+
+<br>
+Running the program with a few test values shows that c=1 and c=20 is
+located on either side of the solution, and entering those limits
+before executing "prog/solve/fit", yields the result
+c=10.76295. Looking at the curve with "stat/result/alnx+b/draw" shows
+a pretty good fit (although translated 10.76 along the x axis), and
+the correlation coefficient "stat/result/alnx+b/r" returns 0.9996,
+which indicates that the data is modelled well by the curve. The
+coefficient "b" of the <em>original</em> function can be calculated
+from the coefficients of our current function as e<sup>b/a</sup>, and
+the coefficient "a" is the same.<br>
+
+<br>
+By letting the input value of a program modify a set of statistics, we
+have used the solve function to perform a curve fitting out of the
+ordinary. The resulting function is as follows:<br>
+
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;y&nbsp;=&nbsp;15.724&nbsp;<i>ln</i>(0.092911x&nbsp;+&nbsp;1)<br>
+<br>
+
+
+<h2>More</h2>
 
 If you think you've made a clever program, send it to me (<a
 href="&#109;&#097;&#105;&#108;&#116;&#111;&#058;&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;">&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;</a>),

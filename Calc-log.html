@@ -14,9 +14,15 @@ MIDP devices</h1>
 <h2>Changelog:</h2>
 
 
-<h3>Version 2.02, 2004-11-21, (52kB)</h3>
+<h3>Version 2.03, 2004-12-10, (52kB)</h3>
 
 <ul>
+  <li>Integration, differentiation, solving and min/max of macro program
+  <li>Fixed programming function "select" to copy the number instead
+  of calculating it when selection criterion x equals 0 or 1. This
+  enables selecting away inf's and nan's.
+  <li>Numbers entered in macro program are stored atomically, not as
+  keyclicks (fixes problem with HEX/OCT/BIN mode during programming)
   <li>Upgraded compiler tools and cleanup of Real.java
 </ul>
 
@@ -148,6 +154,7 @@ MIDP devices</h1>
 
 <ul>
   <li>None of the key mappings work on Nokia 6820 and 5140
+  <li>P900 and P910 could work better with pen input and different key mapping
 </ul>
 <br>
 <br>
@@ -156,9 +163,6 @@ MIDP devices</h1>
 
 <ul>
   <li>Fix the bugs
-  <li>Numbers entered in macro program to be stored as Real, not keyclicks
-  (fixes problem with HEX/OCT/BIN mode during programming)
-  <li>Root finding, differentiation and integration of macro program
 </ul>
 
 Things that <i>cannot</i> be implemented because the increased complexity
