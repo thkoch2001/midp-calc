@@ -435,6 +435,20 @@ to calculate (<sup>12</sup>&#8730;<span style="text-decoration:
 overline;">1+ir/100</span>&nbsp;-&nbsp;1)*100 (yeah, that is twelfth
 root).]<br>
 
+<br>
+Solving for <em>interest rate</em> is done imlpicitly using an
+iterative approach. In the iteration, the start value used is the
+current value of the <em>ir</em> register, unless this value is zero,
+in which case 1% is used as a start value. If you get "nan"
+(i.e. not-a-number) as a result when solving for <em>ir</em>, you may
+enter a new start value for <em>ir</em> that is closer to what you
+expect as a result from the calculation.<br>
+
+<br>
+If you solve repeatedly and successively for each of the financial
+registers, the values may start to drift away from the original values
+because of inaccuracies during the calculations.<br>
+
 <h3>Date representation</h3>
 
 The calendar implemented by the DH.MS operations is strictly
