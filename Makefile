@@ -1,13 +1,15 @@
-VERSION = 0.92
+VERSION = 0.99
 TARGETS = Calc.jar Calc.jad
 
 JFLAGS = --bootclasspath=/home/roarl/midpapi.jar -C -d . -O2
+#JFLAGS = --bootclasspath=/home/roarl/s1studio/me/emulator/j2mewtk-1_0_4-linux/lib/midpapi.zip -C -d . -O2
 
 JAVAFILES  = Calc.java \
              CalcCanvas.java \
              CalcEngine.java \
              GFont.java \
              GFontBase.java \
+             PropertyStore.java \
              Real.java
 
 CLASSFILES = ral/Calc.class \
@@ -15,6 +17,7 @@ CLASSFILES = ral/Calc.class \
              ral/CalcEngine.class \
              ral/GFont.class \
              ral/GFontBase.class \
+             ral/PropertyStore.class \
              ral/Real.class
 
 SHELL = /usr/bin/csh

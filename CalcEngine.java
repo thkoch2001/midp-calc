@@ -82,40 +82,51 @@ public final class CalcEngine
   public static final int STP            =  76;
   public static final int RCL            =  77;
   public static final int XCHGMEM        =  78;
-  public static final int SUMPL          =  79;
-  public static final int SUMMI          =  80;
-  public static final int CLST           =  81;
-  public static final int AVG            =  82;
-  public static final int S              =  83;
-  public static final int LR             =  84;
-  public static final int YR             =  85;
-  public static final int N              =  86;
-  public static final int SUMX           =  87;
-  public static final int SUMXX          =  88;
-  public static final int SUMY           =  89;
-  public static final int SUMYY          =  90;
-  public static final int SUMXY          =  91;
-  public static final int NORM           =  92;
-  public static final int FIX            =  93;
-  public static final int SCI            =  94;
-  public static final int ENG            =  95;
-  public static final int POINT_DOT      =  96;
-  public static final int POINT_COMMA    =  97;
-  public static final int POINT_REMOVE   =  98;
-  public static final int POINT_KEEP     =  99;
-  public static final int THOUSAND_DOT   = 100;
-  public static final int THOUSAND_SPACE = 101;
-  public static final int THOUSAND_NONE  = 102;
-  public static final int BASE_BIN       = 103;
-  public static final int BASE_OCT       = 104;
-  public static final int BASE_DEC       = 105;
-  public static final int BASE_HEX       = 106;
-  public static final int TRIG_DEG       = 107;
-  public static final int TRIG_RAD       = 108;
-  public static final int FINALIZE       = 109;
+  public static final int CLMEM          =  79;
+  public static final int SUMPL          =  80;
+  public static final int SUMMI          =  81;
+  public static final int CLST           =  82;
+  public static final int AVG            =  83;
+  public static final int S              =  84;
+  public static final int LR             =  85;
+  public static final int YR             =  86;
+  public static final int N              =  87;
+  public static final int SUMX           =  88;
+  public static final int SUMXX          =  89;
+  public static final int SUMY           =  90;
+  public static final int SUMYY          =  91;
+  public static final int SUMXY          =  92;
+  public static final int NORM           =  93;
+  public static final int FIX            =  94;
+  public static final int SCI            =  95;
+  public static final int ENG            =  96;
+  public static final int POINT_DOT      =  97;
+  public static final int POINT_COMMA    =  98;
+  public static final int POINT_REMOVE   =  99;
+  public static final int POINT_KEEP     = 100;
+  public static final int THOUSAND_DOT   = 101;
+  public static final int THOUSAND_SPACE = 102;
+  public static final int THOUSAND_QUOTE = 103;
+  public static final int THOUSAND_NONE  = 104;
+  public static final int BASE_BIN       = 105;
+  public static final int BASE_OCT       = 106;
+  public static final int BASE_DEC       = 107;
+  public static final int BASE_HEX       = 108;
+  public static final int TRIG_DEG       = 109;
+  public static final int TRIG_RAD       = 110;
+  public static final int TO_DEG         = 111;
+  public static final int TO_RAD         = 112;
+  public static final int RANDOM         = 113;
+  public static final int TO_DHMS        = 114;
+  public static final int TO_H           = 115;
+  public static final int DHMS_PLUS      = 116;
+  public static final int TIME           = 117;
+  public static final int DATE           = 118;
+  public static final int FINALIZE       = 500;
 
   private static final Real Real180 = new Real(180);
   private static final Real RealFFFF = new Real("4294967295");
+  private static final String empty = "";
   
   public Real.NumberFormat format;
   public Real [] stack;
@@ -129,36 +140,11 @@ public final class CalcEngine
   private Real calcTmp;
   private int repaintLines;
 
-  private void clearStrings() {
-    if (inputInProgress)
-      parseInput();
-    for (int i=0; i<stack.length; i++)
-      if (strStack[i] != "")
-        strStack[i] = null;
-    repaint(-1);
-  }
-
-  private void clearStack() {
-    inputInProgress = false;
-    for (int i=0; i<stack.length; i++) {
-      stack[i].assign(Real.ZERO);
-      strStack[i] = "";
-    }
-    repaint(-1);
-  }
-  
-  private void clearStat() {
-    if (inputInProgress)
-      parseInput();
-    for (int i=0; i<stat.length; i++)
-      stat[i].assign(Real.ZERO);
-  }
-  
   public CalcEngine()
   {
     int i;
     format = new Real.NumberFormat();
-    stack = new Real[20];
+    stack = new Real[16];
     for (i=0; i<stack.length; i++)
       stack[i] = new Real();
     strStack = new String[stack.length];
@@ -173,6 +159,149 @@ public final class CalcEngine
     inputBuf = new StringBuffer(40);
     degrees = false;
     clearStack();
+    clearMem();
+    clearStat();
+
+    Real.accumulateRandomness(System.currentTimeMillis());
+  }
+
+  private void clearStrings() {
+    if (inputInProgress)
+      parseInput();
+    for (int i=0; i<stack.length; i++)
+      if (strStack[i] != empty)
+        strStack[i] = null;
+    repaint(-1);
+  }
+
+  private void clearStack() {
+    inputInProgress = false;
+    for (int i=0; i<stack.length; i++) {
+      stack[i].assign(Real.ZERO);
+      strStack[i] = empty;
+    }
+    repaint(-1);
+  }
+  
+  private void clearMem() {
+    if (inputInProgress)
+      parseInput();
+    for (int i=0; i<mem.length; i++)
+      mem[i].assign(Real.ZERO);
+  }
+  
+  private void clearStat() {
+    if (inputInProgress)
+      parseInput();
+    for (int i=0; i<stat.length; i++)
+      stat[i].assign(Real.ZERO);
+  }
+
+  private static final byte PROPERTY_SETTINGS = 10;
+  private static final byte PROPERTY_STACK    = 11;
+  private static final byte PROPERTY_MEM      = 12;
+  private static final byte PROPERTY_STAT     = 13;
+
+  public void saveState(PropertyStore propertyStore) {
+    int i;
+    byte [] buf = new byte[stack.length*12+1];
+    buf[0] = PROPERTY_STACK;
+    for (i=0; i<stack.length; i++)
+      stack[i].toBytes(buf, i*12+1);
+    propertyStore.setProperty(buf,stack.length*12+1);
+    buf[0] = PROPERTY_MEM;
+    for (i=0; i<mem.length; i++)
+      mem[i].toBytes(buf, i*12+1);
+    propertyStore.setProperty(buf,mem.length*12+1);
+    buf[0] = PROPERTY_STAT;
+    for (i=0; i<stat.length; i++)
+      stat[i].toBytes(buf, i*12+1);
+    propertyStore.setProperty(buf,stat.length*12+1);
+    // Settings
+    for (i=0; i<stack.length; i++)
+      if (strStack[i] == empty)
+        break;
+    buf[ 0] = PROPERTY_SETTINGS;
+    buf[ 1] = (byte)i; // Height of stack
+    buf[ 2] = (byte)(degrees ? 1 : 0);
+    buf[ 3] = (byte)format.base;
+    buf[ 4] = (byte)format.maxwidth;
+    buf[ 5] = (byte)format.precision;
+    buf[ 6] = (byte)format.fse;
+    buf[ 7] = (byte)format.point;
+    buf[ 8] = (byte)(format.removePoint ? 1 : 0);
+    buf[ 9] = (byte)format.thousand;
+    buf[10] = (byte)(Real.randSeedA>>56);
+    buf[11] = (byte)(Real.randSeedA>>48);
+    buf[12] = (byte)(Real.randSeedA>>40);
+    buf[13] = (byte)(Real.randSeedA>>32);
+    buf[14] = (byte)(Real.randSeedA>>24);
+    buf[15] = (byte)(Real.randSeedA>>16);
+    buf[16] = (byte)(Real.randSeedA>>8);
+    buf[17] = (byte)(Real.randSeedA);
+    buf[18] = (byte)(Real.randSeedB>>56);
+    buf[19] = (byte)(Real.randSeedB>>48);
+    buf[20] = (byte)(Real.randSeedB>>40);
+    buf[21] = (byte)(Real.randSeedB>>32);
+    buf[22] = (byte)(Real.randSeedB>>24);
+    buf[23] = (byte)(Real.randSeedB>>16);
+    buf[24] = (byte)(Real.randSeedB>>8);
+    buf[25] = (byte)(Real.randSeedB);    
+    lastx.toBytes(buf,26);
+    propertyStore.setProperty(buf,26+12);
+  }
+  
+  public void restoreState(PropertyStore propertyStore) {
+    int length,i;
+    byte [] buf = new byte[stack.length*12+1];
+    buf[0] = PROPERTY_STACK;
+    length = propertyStore.getProperty(buf);
+    if (length >= stack.length*12+1)
+      for (i=0; i<stack.length; i++)
+        stack[i].assign(buf, i*12+1);
+    buf[0] = PROPERTY_MEM;
+    length = propertyStore.getProperty(buf);
+    if (length >= mem.length*12+1)
+      for (i=0; i<mem.length; i++)
+        mem[i].assign(buf, i*12+1);
+    buf[0] = PROPERTY_STAT;
+    length = propertyStore.getProperty(buf);
+    if (length >= stat.length*12+1)
+      for (i=0; i<stat.length; i++)
+        stat[i].assign(buf, i*12+1);
+    // Settings
+    buf[0] = PROPERTY_SETTINGS;
+    length = propertyStore.getProperty(buf);
+    if (length >= 26+12) {
+      for (i=0; i<stack.length; i++)
+        strStack[i] = i<buf[1] ? null : empty;
+      degrees            = buf[2] != 0;
+      format.base        = buf[3];
+      format.maxwidth    = buf[4];
+      format.precision   = buf[5];
+      format.fse         = buf[6];
+      format.point       = (char)buf[7];
+      format.removePoint = buf[8] != 0;
+      format.thousand    = (char)buf[9];
+      Real.randSeedA = (((long)(buf[10]&0xff)<<56)+
+                        ((long)(buf[11]&0xff)<<48)+
+                        ((long)(buf[12]&0xff)<<40)+
+                        ((long)(buf[13]&0xff)<<32)+
+                        ((long)(buf[14]&0xff)<<24)+
+                        ((long)(buf[15]&0xff)<<16)+
+                        ((long)(buf[16]&0xff)<< 8)+
+                        ((long)(buf[17]&0xff)));
+      Real.randSeedB = (((long)(buf[18]&0xff)<<56)+
+                        ((long)(buf[19]&0xff)<<48)+
+                        ((long)(buf[20]&0xff)<<40)+
+                        ((long)(buf[21]&0xff)<<32)+
+                        ((long)(buf[22]&0xff)<<24)+
+                        ((long)(buf[23]&0xff)<<16)+
+                        ((long)(buf[24]&0xff)<< 8)+
+                        ((long)(buf[25]&0xff)));
+      lastx.assign(buf,26);
+    }
+    repaint(-1);
   }
 
   public int numRepaintLines() {
@@ -359,6 +488,12 @@ public final class CalcEngine
       case BIC:   y.bic(x);                break;
       case YUPX:  y.scalbn(x.toInteger()); break;
       case YDNX:  y.scalbn(-x.toInteger());break;
+      case DHMS_PLUS:
+        x.fromDHMS();
+        y.fromDHMS();
+        y.add(x);
+        y.toDHMS();
+        break;
       case PYX:
         // fact(y)/fact(y-x)
         x.neg();
@@ -382,7 +517,7 @@ public final class CalcEngine
     }
     rollDown();
     stack[stack.length-1].assign(Real.ZERO);
-    strStack[stack.length-1] = "";
+    strStack[stack.length-1] = empty;
     if (cmd!=CLEAR)
       strStack[0] = null;
     repaint(-1);
@@ -427,17 +562,23 @@ public final class CalcEngine
       case TRUNC: x.trunc(); break;
       case FRAC:  x.frac();  break;
       case XCHGST:
-        tmp = stack[0];
-        stack[0] = stack[param];
-        stack[param] = tmp;
-        strStack[param] = strStack[0];
-        repaint(param+1);
+        if (strStack[param] != empty) {
+          tmp = stack[0];
+          stack[0] = stack[param];
+          stack[param] = tmp;
+          strStack[param] = strStack[0];
+          repaint(param+1);
+        }
         break;
       case XCHGMEM:
         tmp = stack[0];
         stack[0] = mem[param];
         mem[param] = tmp;
         break;
+      case TO_DEG:  x.div(Real.PI); x.mul(Real180); break;
+      case TO_RAD:  x.mul(Real.PI); x.div(Real180); break;
+      case TO_DHMS: x.toDHMS(); break;
+      case TO_H:    x.fromDHMS(); break;
     }
     strStack[0] = null;
     repaint(1);
@@ -525,6 +666,7 @@ public final class CalcEngine
         stat[5].sub(calcTmp);
         break;
     }
+    recall(stat[0]);
   }
 
   private void stat(int cmd) {
@@ -644,6 +786,7 @@ public final class CalcEngine
       case PYX:   case CYX:
       case AND:   case OR:    case XOR:   case BIC:
       case YUPX:  case YDNX:
+      case DHMS_PLUS:
         binary(cmd);
         break;
       case NEG:   case ABS:   case RECIP: case SQR:   case SQRT:
@@ -657,10 +800,23 @@ public final class CalcEngine
       case ROUND: case CEIL:  case FLOOR: case TRUNC: case FRAC:
       case XCHGST:
       case XCHGMEM:
+      case TO_DEG: case TO_RAD: case TO_DHMS: case TO_H:
         unary(cmd,param);
         break;
       case PI:
         recall(Real.PI);
+        break;
+      case RANDOM:
+        calcTmp.random();
+        recall(calcTmp);
+        break;
+      case TIME:
+        calcTmp.time();
+        recall(calcTmp);
+        break;
+      case DATE:
+        calcTmp.date();
+        recall(calcTmp);
         break;
       case RP:
       case PR:
@@ -688,6 +844,9 @@ public final class CalcEngine
         break;
       case RCL:
         recall(mem[param]);
+        break;
+      case CLMEM:
+        clearMem();
         break;
       case SUMPL:
       case SUMMI:
@@ -813,6 +972,14 @@ public final class CalcEngine
           clearStrings();
         }
         break;
+      case THOUSAND_QUOTE:
+        if (inputInProgress)
+          parseInput();
+        if (format.thousand != '\'') {
+          format.thousand = '\'';
+          clearStrings();
+        }
+        break;
       case THOUSAND_NONE:
         if (inputInProgress)
           parseInput();
@@ -872,5 +1039,6 @@ public final class CalcEngine
 
   public void setMaxWidth(int max) {
     format.maxwidth = max;
+    clearStrings();
   }
 }

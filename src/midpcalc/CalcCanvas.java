@@ -28,7 +28,7 @@ public class CalcCanvas
 //            -> stat    -> SUM+   SUM-   clear
 //                          regs   -> SUMx SUMx� SUMy SUMy� SUMxy
 //                          result -> avg  s     L.R. y,r   n
-//            -> time    -> ->HMS  ->H    HMS+   time   date
+//            -> time    -> ->DH.MS ->H   DH.MS+ time   date
 //   mode     -> number  -> normal FIX#   SCI#   ENG#             ( -> # )
 //            -> sepr    -> decimal  ->   dot comma remove keep
 //                          thousand ->   dot/comma space ' none
@@ -66,6 +66,9 @@ public class CalcCanvas
   }
 
   private static final int EXIT = -999;
+  private static final int FONT_SMALL  = -50+GFont.SMALL;
+  private static final int FONT_MEDIUM = -50+GFont.MEDIUM;
+  private static final int FONT_LARGE  = -50+GFont.LARGE;
   private static final int NUMBER_0 = -20+0;
   private static final int NUMBER_1 = -20+1;
   private static final int NUMBER_2 = -20+2;
@@ -90,8 +93,8 @@ public class CalcCanvas
       new Menu("/",CalcEngine.DIV),
       new Menu("+/-",CalcEngine.NEG),
     }),
-    null,
-    null,
+    null, // math or binop
+    null, // trig or binop2
     new Menu("special",new Menu [] {
       new Menu("stack",new Menu[] {
         new Menu("LAST x",CalcEngine.LASTX),
@@ -112,11 +115,11 @@ public class CalcCanvas
         new Menu("STO+",CalcEngine.STP,true),
         new Menu("RCL",CalcEngine.RCL,true),
         new Menu("x=mem",CalcEngine.XCHGMEM,true),
+        new Menu("clear",CalcEngine.CLMEM),
       }),
       new Menu("stat",new Menu[] {
         new Menu("Z+",CalcEngine.SUMPL),
         new Menu("Z-",CalcEngine.SUMMI),
-        new Menu("clear",CalcEngine.CLST),
         new Menu("result",new Menu[] {
           new Menu("~x~, ~y~",CalcEngine.AVG),
           new Menu("s_x_, s_y_",CalcEngine.S),
@@ -131,17 +134,24 @@ public class CalcCanvas
           new Menu("Zy^2",CalcEngine.SUMYY),
           new Menu("Zxy",CalcEngine.SUMXY),
         }),
+        new Menu("clear",CalcEngine.CLST),
       }),
-      //new Menu("exit",-999),
+      new Menu("time",new Menu[] {
+        new Menu("\\DH.MS",CalcEngine.TO_DHMS),
+        new Menu("\\H",CalcEngine.TO_H),
+        new Menu("time",CalcEngine.TIME),
+        new Menu("DH.MS+",CalcEngine.DHMS_PLUS),
+        new Menu("date",CalcEngine.DATE),
+      }),
     }),
     new Menu("mode",new Menu[] {
-      new Menu("format",new Menu[] {
+      new Menu("number",new Menu[] {
         new Menu("normal",CalcEngine.NORM),
         new Menu("FIX",CalcEngine.FIX,true),
         new Menu("SCI",CalcEngine.SCI,true),
         new Menu("ENG",CalcEngine.ENG,true),
       }),
-      new Menu("number",new Menu[] {
+      new Menu("sepr",new Menu[] {
         new Menu("point",new Menu[] {
           new Menu(".",CalcEngine.POINT_DOT),
           new Menu(",",CalcEngine.POINT_COMMA),
@@ -153,14 +163,9 @@ public class CalcCanvas
         new Menu("thousand",new Menu[] {
           new Menu(". or ,",CalcEngine.THOUSAND_DOT),
           new Menu("space",CalcEngine.THOUSAND_SPACE),
+          new Menu("'",CalcEngine.THOUSAND_QUOTE),
           new Menu("none",CalcEngine.THOUSAND_NONE),
         }),
-      }),
-      new Menu("trig",new Menu[] {
-        new Menu("DEG",CalcEngine.TRIG_DEG),
-        null,
-        null,
-        new Menu("RAD",CalcEngine.TRIG_RAD),
       }),
       new Menu("base",new Menu[] {
         new Menu("DEC",CalcEngine.BASE_DEC),
@@ -168,33 +173,38 @@ public class CalcCanvas
         new Menu("OCT",CalcEngine.BASE_OCT),
         new Menu("BIN",CalcEngine.BASE_BIN),
       }),
+      new Menu("font",new Menu[] {
+        new Menu("medium",FONT_MEDIUM),
+        new Menu("small",FONT_SMALL),
+        new Menu("large",FONT_LARGE),
+      }),
     }),
   });
   
   private static final Menu numberMenu = new Menu(null,new Menu[] {
-    new Menu("0-3",new Menu[] {
-      new Menu("0",NUMBER_0),
-      new Menu("1",NUMBER_1),
-      new Menu("2",NUMBER_2),
-      new Menu("3",NUMBER_3),
+    new Menu("<0-3>",new Menu[] {
+      new Menu("<0>",NUMBER_0),
+      new Menu("<1>",NUMBER_1),
+      new Menu("<2>",NUMBER_2),
+      new Menu("<3>",NUMBER_3),
     }),
-    new Menu("4-7",new Menu[] {
-      new Menu("4",NUMBER_4),
-      new Menu("5",NUMBER_5),
-      new Menu("6",NUMBER_6),
-      new Menu("7",NUMBER_7),
+    new Menu("<4-7>",new Menu[] {
+      new Menu("<4>",NUMBER_4),
+      new Menu("<5>",NUMBER_5),
+      new Menu("<6>",NUMBER_6),
+      new Menu("<7>",NUMBER_7),
     }),
-    new Menu("8-11",new Menu[] {
-      new Menu("8",NUMBER_8),
-      new Menu("9",NUMBER_9),
-      new Menu("10",NUMBER_10),
-      new Menu("11",NUMBER_11),
+    new Menu("<8-11>",new Menu[] {
+      new Menu("<8>",NUMBER_8),
+      new Menu("<9>",NUMBER_9),
+      new Menu("<10>",NUMBER_10),
+      new Menu("<11>",NUMBER_11),
     }),
-    new Menu("12-15",new Menu[] {
-      new Menu("12",NUMBER_12),
-      new Menu("13",NUMBER_13),
-      new Menu("14",NUMBER_14),
-      new Menu("15",NUMBER_15),
+    new Menu("<12-15>",new Menu[] {
+      new Menu("<12>",NUMBER_12),
+      new Menu("<13>",NUMBER_13),
+      new Menu("<14>",NUMBER_14),
+      new Menu("<15>",NUMBER_15),
     }),
   });
 
@@ -223,11 +233,11 @@ public class CalcCanvas
       new Menu("log_2",CalcEngine.LOG2),
       new Menu("log_10",CalcEngine.LOG10),
     }),
-    new Menu("comb",new Menu[] {
+    new Menu("prob",new Menu[] {
       new Menu("P y,x",CalcEngine.PYX),
       new Menu("C y,x",CalcEngine.CYX),
       new Menu("x!",CalcEngine.FACT),
-      new Menu("$x",CalcEngine.GAMMA),
+      new Menu("random",CalcEngine.RANDOM),
     }),
   });
   private static final Menu trig = new Menu("trig",new Menu[] {
@@ -251,7 +261,13 @@ public class CalcCanvas
       new Menu("acosh",CalcEngine.ACOSH),
       new Menu("atanh",CalcEngine.ATANH),
     }),
-    new Menu("�",CalcEngine.PI),
+    new Menu("more",new Menu[] {
+      new Menu("RAD",CalcEngine.TRIG_RAD),
+      new Menu("DEG",CalcEngine.TRIG_DEG),
+      new Menu("\\RAD",CalcEngine.TO_RAD),
+      new Menu("\\DEG",CalcEngine.TO_DEG),
+      new Menu("�",CalcEngine.PI),
+    }),
   });
   private static final Menu bitOp = new Menu("bitop",new Menu[] {
     new Menu("and",CalcEngine.AND),
@@ -266,15 +282,14 @@ public class CalcCanvas
   });
 
   private static final int menuColor [] = {
-    0x00e0e0,0x00fc00,0xe0e000,0xfca800,0xfc5400
+    0x00e0e0,0x00fc00,0xe0e000,0xfca800,0xfc5400,0xfc0000,
   };
 
-  private GFont mediumFont,smallFont,largeFont;
-  private GFont currentFont;
   private Font menuFont;
   private Font boldMenuFont;
   private Font smallMenuFont;
   private Font smallBoldMenuFont;
+  private GFont numberFont;
   private CalcEngine calc;
 
   private final Command add;
@@ -282,22 +297,40 @@ public class CalcCanvas
 
   private final Calc midlet;
 
-  private int numRepaintLines = 0;
+  private int numRepaintLines;
   private boolean repeating = false;
   private boolean internalRepaint = false;
-  private int offX, offY, width, height, charWidth, charHeight;
+  private int offX, offY, nDigits, nLines, numberWidth, numberHeight;
 
   private Menu [] menuStack;
   private int menuStackPtr;
   private int menuCommand;
 
+  private PropertyStore propertyStore;
+  private static final byte PROPERTY_SCREEN_STATE = 20;
+
   public CalcCanvas(Calc m) {
     midlet = m;
 
-    mediumFont = new GFont(GFont.MEDIUM);
-    smallFont  = new GFont(GFont.SMALL);
-    largeFont  = new GFont(GFont.LARGE);
-    currentFont = mediumFont;
+    calc = new CalcEngine();
+
+    propertyStore = PropertyStore.open("CalcData");
+    int numberFontStyle = GFont.MEDIUM;
+    if (propertyStore != null) {
+      calc.restoreState(propertyStore);
+      byte [] buf = new byte[2];
+      buf[0] = PROPERTY_SCREEN_STATE;
+      int length = propertyStore.getProperty(buf);
+      if (length >= 2)
+        numberFontStyle = buf[1];
+    }
+
+    enter = new Command("ENTER", Command.OK    , 1);
+    add   = new Command("+"    , Command.SCREEN, 1);
+    addCommand(enter);
+    addCommand(add);
+    setCommandListener(this);
+
     menuFont = Font.getFont(
       Font.FACE_PROPORTIONAL,Font.STYLE_PLAIN,Font.SIZE_MEDIUM);
     boldMenuFont = Font.getFont(
@@ -306,26 +339,54 @@ public class CalcCanvas
       Font.FACE_PROPORTIONAL,Font.STYLE_PLAIN,Font.SIZE_SMALL);
     smallBoldMenuFont = Font.getFont(
       Font.FACE_PROPORTIONAL,Font.STYLE_BOLD,Font.SIZE_SMALL);
+    setNumberFont(numberFontStyle);
 
-    enter = new Command("ENTER", Command.OK    , 1);
-    add   = new Command("+"    , Command.SCREEN, 1);
-    addCommand(enter);
-    addCommand(add);
-    setCommandListener(this);
-
-    charWidth = currentFont.charWidth();
-    width = getWidth()/charWidth;
-    offX = (getWidth()-width*charWidth)/2;
-    charHeight = currentFont.getHeight();
-    height = getHeight()/charHeight;
-    offY = (getHeight()-height*charHeight)/2;
-
-    calc = new CalcEngine();
-    calc.setMaxWidth(width);
-    numRepaintLines = 100;
-
-    menuStack = new Menu[5];
+    menuStack = new Menu[6]; // One too many, I think
     menuStackPtr = -1;
+
+    numRepaintLines = 100;
+  }
+
+  void setNumberFont(int size) {
+    numberFont = null;
+    numberFont = new GFont(size);
+    numberWidth = numberFont.charWidth();
+    nDigits = getWidth()/numberWidth;
+    offX = (getWidth()-nDigits*numberWidth)/2;
+    numberHeight = numberFont.getHeight();
+    nLines = (getHeight()-smallMenuFont.getHeight())/numberHeight;
+    offY = (getHeight()-smallMenuFont.getHeight()-nLines*numberHeight)/2 +
+      smallMenuFont.getHeight();
+    calc.setMaxWidth(nDigits);
+  }
+
+  private void clearScreen(Graphics g) {
+    // Clear screen and draw mode indicators
+    g.setColor(0xffffff);
+    g.fillRect(0,0,getWidth(),smallMenuFont.getHeight()-1);
+    g.setColor(0);
+    g.setFont(smallMenuFont);
+    if (calc.degrees)
+      g.drawString("DEG",10,0,g.TOP|g.LEFT);
+    else
+      g.drawString("RAD",10,0,g.TOP|g.LEFT);
+      
+    if (calc.format.fse == Real.NumberFormat.FSE_FIX)
+      g.drawString("FIX",40,0,g.TOP|g.LEFT);
+    else if (calc.format.fse == Real.NumberFormat.FSE_SCI)
+      g.drawString("SCI",40,0,g.TOP|g.LEFT);
+    else if (calc.format.fse == Real.NumberFormat.FSE_ENG)
+      g.drawString("ENG",40,0,g.TOP|g.LEFT);
+      
+    if (calc.format.base == 2)
+      g.drawString("BIN",70,0,g.TOP|g.LEFT);
+    else if (calc.format.base == 8)
+      g.drawString("OCT",70,0,g.TOP|g.LEFT);
+    else if (calc.format.base == 16)
+      g.drawString("HEX",70,0,g.TOP|g.LEFT);
+
+    g.fillRect(0,smallMenuFont.getHeight()-1,getWidth(),
+               getHeight()-smallMenuFont.getHeight()+1);
   }
 
   private boolean plainLabel(String label) {
@@ -474,93 +535,102 @@ public class CalcCanvas
     drawLabel(g,menu.label,bold,x,y);
   }
 
+  void drawMenu(Graphics g) {
+    int x = getWidth()/12;
+    int w = getWidth()-2*x;
+    int h = getHeight()/2;
+    int y = smallMenuFont.getHeight()+
+      (getHeight()-h-smallMenuFont.getHeight())/2;
+    int ym = ((y+h-3)-menuFont.getHeight()+(y+3))/2;
+    g.setColor(menuColor[menuStackPtr]);
+    g.fillRoundRect(x,y,w,h,21,21);
+    g.setColor(menuColor[menuStackPtr]/2);
+    g.drawRoundRect(x,y,w,h,21,21);
+    g.setColor(0);
+    Menu [] subMenu = menuStack[menuStackPtr].subMenu;
+    if (subMenu.length>=1)
+      drawMenuItem(g,subMenu[0],getWidth()/2,y+3,g.TOP|g.HCENTER);
+    if (subMenu.length>=2)
+      drawMenuItem(g,subMenu[1],x+3,ym,g.TOP|g.LEFT);
+    if (subMenu.length>=3)
+      drawMenuItem(g,subMenu[2],x+w-3,ym,g.TOP|g.RIGHT);
+    if (subMenu.length>=4)
+      drawMenuItem(g,subMenu[3],getWidth()/2,y+h-3,g.BOTTOM|g.HCENTER);
+    if (subMenu.length>=5)
+      drawMenuItem(g,subMenu[4],getWidth()/2,ym,
+                   g.TOP|g.HCENTER);
+    else {
+      // Draw a small "joystick" in the center
+      y = (getHeight()+smallMenuFont.getHeight())/2;
+      x = getWidth()/2;
+      g.setColor(menuColor[menuStackPtr]/4*3);
+      g.fillRect(x-1,y-10,3,20);
+      g.fillRect(x-10,y-1,20,3);
+      g.fillArc(x-5,y-5,11,11,0,360);
+    }
+  }
+
   public void paint(Graphics g) {
     boolean cleared = false;
     if (numRepaintLines == 100 || !internalRepaint) {
-      g.setColor(0);
-      g.fillRect(0,0,getWidth(),getHeight());
+      clearScreen(g);
       cleared = true;
       numRepaintLines = 100;
     }
 
-    if (numRepaintLines > 0) {
+    if (numRepaintLines >= 0) {
       if (menuStackPtr < 0 || !internalRepaint) {
-        if (numRepaintLines > height)
-          numRepaintLines = height;
+        if (numRepaintLines > nLines)
+          numRepaintLines = nLines;
+        if (numRepaintLines > 16)
+          numRepaintLines = 16;
 
         for (int i=0; i<numRepaintLines; i++) {
           if (i==0 && calc.inputInProgress) {
             StringBuffer tmp = calc.inputBuf;
             tmp.append('_');
-            if (tmp.length()>width)
-              currentFont.drawString(g,offX,offY+(height-1)*charHeight,tmp,
-                                     tmp.length()-width);
+            if (tmp.length()>nDigits)
+              numberFont.drawString(g,offX,offY+(nLines-1)*numberHeight,tmp,
+                                    tmp.length()-nDigits);
             else {
-              currentFont.drawString(g,offX,offY+(height-1)*charHeight,tmp,0);
+              numberFont.drawString(g,offX,offY+(nLines-1)*numberHeight,tmp,0);
               if (!cleared) {
                 g.setColor(0);
-                g.fillRect(offX+tmp.length()*charWidth,
-                           offY+(height-1)*charHeight,
-                           (width-tmp.length())*charWidth,charHeight);
+                g.fillRect(offX+tmp.length()*numberWidth,
+                           offY+(nLines-1)*numberHeight,
+                           (nDigits-tmp.length())*numberWidth,numberHeight);
               }
             }
             tmp.setLength(tmp.length()-1);
           } else {
             String tmp = calc.getStackElement(i);
-            if (tmp.length()>width)
+            if (tmp.length()>nDigits)
               tmp = "*****";
-            currentFont.drawString(
-              g,offX+(width-tmp.length())*charWidth,
-              offY+(height-1-i)*charHeight,tmp);
+            numberFont.drawString(
+              g,offX+(nDigits-tmp.length())*numberWidth,
+              offY+(nLines-1-i)*numberHeight,tmp);
             if (!cleared) {
               g.setColor(0);
-              g.fillRect(offX,offY+(height-1-i)*charHeight,
-                         (width-tmp.length())*charWidth,charHeight);
+              g.fillRect(offX,offY+(nLines-1-i)*numberHeight,
+                         (nDigits-tmp.length())*numberWidth,numberHeight);
             }
           }
         }
       }
-      if (menuStackPtr >= 0) {
-        int x = getWidth()/12;
-        int w = getWidth()-2*x;
-        int y = getHeight()/4;
-        int h = getHeight()-2*y;
-        int fm = menuFont.getBaselinePosition()/2;
-        g.setColor(menuColor[menuStackPtr]);
-        g.fillRoundRect(x,y,w,h,21,21);
-        g.setColor(menuColor[menuStackPtr]/2);
-        g.drawRoundRect(x,y,w,h,21,21);
-        g.setColor(0);
-        Menu [] subMenu = menuStack[menuStackPtr].subMenu;
-        if (subMenu.length>=1)
-          drawMenuItem(g,subMenu[0],getWidth()/2,y+3,g.TOP|g.HCENTER);
-        if (subMenu.length>=2)
-          drawMenuItem(g,subMenu[1],x+3,getHeight()/2-fm,g.TOP|g.LEFT);
-        if (subMenu.length>=3)
-          drawMenuItem(g,subMenu[2],x+w-3,getHeight()/2-fm,g.TOP|g.RIGHT);
-        if (subMenu.length>=4)
-          drawMenuItem(g,subMenu[3],getWidth()/2,y+h-3,g.BOTTOM|g.HCENTER);
-        if (subMenu.length>=5)
-          drawMenuItem(g,subMenu[4],getWidth()/2,getHeight()/2-fm,
-                       g.TOP|g.HCENTER);
-        else {
-          // Draw a small "joystick" in the center
-          g.setColor(menuColor[menuStackPtr]/4*3);
-          g.fillRect(getWidth()/2-1,getHeight()/2-10,3,20);
-          g.fillRect(getWidth()/2-10,getHeight()/2-1,20,3);
-          g.fillArc(getWidth()/2-5,getHeight()/2-5,10,10,0,360);
-        }
-      }
+      if (menuStackPtr >= 0)
+        drawMenu(g);
     }
     internalRepaint = false;
-    numRepaintLines = 0;
+    numRepaintLines = -1;
   }
 
   private void checkRepaint() {
     int repaintLines = calc.numRepaintLines();
+    if (repaintLines == 0)
+      repaintLines = -1; // Because "0" repaints menu
     if (repaintLines > numRepaintLines)
       numRepaintLines = repaintLines;
-    if (numRepaintLines > 0) {
+    if (numRepaintLines >= 0) {
       internalRepaint = true;
       repaint();
     }
@@ -578,7 +648,7 @@ public class CalcCanvas
           {
             calc.command(menuCommand,key-'0');
             menuStackPtr = -1;
-            numRepaintLines = 100; // Force repaint
+            numRepaintLines = 100; // Force repaint of all
             break;
           } else {
             return;
@@ -600,9 +670,9 @@ public class CalcCanvas
         if (menuStackPtr >= 0) {
           menuStackPtr--;
           if (menuStackPtr >= 0)
-            numRepaintLines = 1;
+            numRepaintLines = 0; // Force repaint of menu
           else
-            numRepaintLines = 100;
+            numRepaintLines = 100; // Force repaint of all
           break;
         }
         calc.command(CalcEngine.CLEAR,0);
@@ -637,11 +707,11 @@ public class CalcCanvas
         menuStack[0] = menu;
         menuStack[1] = menu.subMenu[menuIndex];
         menuStackPtr = 1;
-        numRepaintLines = 1; // Force repaint
+        numRepaintLines = 0; // Force repaint of menu
       } else if (menuStackPtr < 0) {
         menuStack[0] = menu;
         menuStackPtr = 0;
-        numRepaintLines = 1; // Force repaint
+        numRepaintLines = 0; // Force repaint of menu
       } else if (menuStack[menuStackPtr].subMenu.length > menuIndex) {
         Menu [] subMenu = menuStack[menuStackPtr].subMenu;
         if (subMenu[menuIndex] == null) {
@@ -649,26 +719,30 @@ public class CalcCanvas
         } else if (subMenu[menuIndex].subMenu != null) {
           menuStackPtr++;
           menuStack[menuStackPtr] = subMenu[menuIndex];
-          numRepaintLines = 1; // Force repaint
+          numRepaintLines = 0; // Force repaint of menu
         } else if (subMenu[menuIndex].numberRequired) {
           menuCommand = subMenu[menuIndex].command;
           menuStackPtr++;
           menuStack[menuStackPtr] = numberMenu;
-          numRepaintLines = 1; // Force repaint
+          numRepaintLines = 0; // Force repaint of menu
         } else {
           int command = subMenu[menuIndex].command;
           if (command == EXIT) {
             midlet.exitRequested();
             menuStackPtr = -1;
-            numRepaintLines = 100; // Force repaint
+            numRepaintLines = 100; // Force repaint of all
+          } else if (command >= FONT_SMALL && command <= FONT_LARGE) {
+            setNumberFont(command-FONT_SMALL);
+            menuStackPtr = -1;
+            numRepaintLines = 100; // Force repaint of all
           } else if (command >= NUMBER_0 && command <= NUMBER_15) {
             calc.command(menuCommand,command-NUMBER_0);
             menuStackPtr = -1;
-            numRepaintLines = 100; // Force repaint
+            numRepaintLines = 100; // Force repaint of all
           } else {
             calc.command(command,0);
             menuStackPtr = -1;
-            numRepaintLines = 100; // Force repaint
+            numRepaintLines = 100; // Force repaint of all
           }
         }
       }
@@ -684,9 +758,14 @@ public class CalcCanvas
         calc.command(CalcEngine.DIGIT_A+key-'1',0);
         break;
       case -8:
-        if (!calc.inputInProgress || menuStackPtr >= 0)
-          return;
-        calc.command(CalcEngine.CLEAR,0);
+        if (menuStackPtr >= 0) {
+          menuStackPtr = -2; // should not continue by clearing the input...
+          numRepaintLines = 100; // Force repaint of all
+        } else {
+          if (!calc.inputInProgress || menuStackPtr == -2)
+            return;
+          calc.command(CalcEngine.CLEAR,0);
+        }
         break;
     }
     repeating = true;
@@ -705,6 +784,19 @@ public class CalcCanvas
       calc.command(CalcEngine.ADD,0);
     }
     checkRepaint();
+  }
+
+  public void quit() {
+    calc.command(CalcEngine.FINALIZE,0);
+    if (propertyStore != null) {
+      int numberFontStyle = numberFont.getStyle();
+      numberFont = null; // Free some memory before saveState()
+      byte [] buf = new byte[2];
+      buf[0] = PROPERTY_SCREEN_STATE;
+      buf[1] = (byte)numberFontStyle;
+      propertyStore.setProperty(buf,2);
+      calc.saveState(propertyStore);
+    }
   }
 
 }
