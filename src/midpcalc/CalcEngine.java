@@ -159,13 +159,19 @@ public final class CalcEngine
   public static final int MONITOR_MEM    = 150;
   public static final int MONITOR_STAT   = 151;
   public static final int MONITOR_FINANCE= 152;
+  public static final int SIGN_POINT_E   = 153;
+  public static final int TO_CPLX        = 154;
+  public static final int CPLX_SPLIT     = 155;
+  public static final int CPLX_ABS       = 156;
+  public static final int CPLX_ARG       = 157;
+  public static final int CPLX_CONJ      = 158;
+  // These commands are handled from CalcCanvas
   public static final int AVG_DRAW       = 200;
   public static final int LIN_DRAW       = 201;
   public static final int LOG_DRAW       = 202;
   public static final int EXP_DRAW       = 203;
   public static final int POW_DRAW       = 204;
-  public static final int SIGN_POINT_E   = 205;
-
+  // Special commands
   public static final int FINALIZE       = 500;
   public static final int FREE_MEM       = 501;
   
@@ -178,19 +184,26 @@ public final class CalcEngine
   private static final Real Real180 = new Real(180);
   private static final String empty = "";
 
-  public Real.NumberFormat format;
   public Real [] stack;
+  public Real [] imagStack;
   public String [] strStack;
+  public Real lastx,lasty,lastz;
+  public Real lastxi,lastyi,lastzi;
+
   public Real [] mem;
+  public Real [] imagMem;
+
   public Real SUM1,SUMx,SUMx2,SUMy,SUMy2,SUMxy;
   public Real SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMxlny,SUMylnx,SUMlnxlny;
   public Real [] stat;
   public int [] statLog; // Low-precision statistics log
+  public int statLogStart,statLogSize;
+
   public Real PV,FV,NP,PMT,IR;
   public Real [] finance;
   public boolean begin;
-  public int statLogStart,statLogSize;
-  public Real lastx,lasty,lastz;
+
+  public Real.NumberFormat format;
   public boolean degrees;
   public StringBuffer inputBuf;
   public boolean inputInProgress;
@@ -200,6 +213,7 @@ public final class CalcEngine
   public int monitorMode;
   public int monitorSize;
   public Real [] monitors;
+  public Real [] imagMonitors;
   public String [] monitorStr;
   public String [] monitorLabels;  
   private static final String [] memLabels =
@@ -272,7 +286,19 @@ public final class CalcEngine
       stack[i].makeZero(0);
       strStack[i] = empty;
     }
+    clearImagStack();
     repaint(-1);
+  }
+  
+  private void clearImagStack() {
+    if (imagStack == null)
+      return;
+    lastxi = null;
+    lastyi = null;
+    lastzi = null;
+    for (int i=0; i<STACK_SIZE; i++)
+      imagStack[i] = null;
+    imagStack = null;
   }
   
   private void clearMem() {
@@ -283,6 +309,15 @@ public final class CalcEngine
     for (int i=0; i<MEM_SIZE; i++)
       mem[i] = null;
     mem = null;
+    clearImagMem();
+  }
+  
+  private void clearImagMem() {
+    if (imagMem == null)
+      return;
+    for (int i=0; i<MEM_SIZE; i++)
+      imagMem[i] = null;
+    imagMem = null;
   }
   
   private void clearStat() {
@@ -324,19 +359,80 @@ public final class CalcEngine
     finance = null;
   }
 
+  private void tryClearImag(boolean clearStack, boolean clearMem) {
+    int i;
+    if (clearStack && imagStack != null) {
+      for (i=0; i<STACK_SIZE; i++)
+        if (!imagStack[i].isZero())
+          break;
+      if (i==STACK_SIZE)
+        clearImagStack();
+    }
+    if (clearMem && imagMem != null) {
+      for (i=0; i<MEM_SIZE; i++)
+        if (!imagMem[i].isZero())
+          break;
+      if (i==MEM_SIZE)
+        clearImagMem();
+    }
+  }
+
+  private void tryClearModules(boolean clearMem, boolean clearFinance) {
+    int i;
+    if (clearMem && mem != null) {
+      for (i=0; i<MEM_SIZE; i++)
+        if (!mem[i].isZero())
+          break;
+      if (i==MEM_SIZE)
+        clearMem();
+    }
+    if (clearFinance && finance != null) {
+      for (i=0; i<FINANCE_SIZE; i++)
+        if (!finance[i].isZero())
+          break;
+      if (i==FINANCE_SIZE)
+        clearFinance();
+    }
+  }
+
+  private void allocImagStack() {
+    if (imagStack != null)
+      return;
+    imagStack = new Real[STACK_SIZE];
+    for (int i=0; i<STACK_SIZE; i++)
+      imagStack[i] = new Real();
+    lastxi = new Real();
+    lastyi = new Real();
+    lastzi = new Real();
+  }
+  
   private void allocMem() {
     if (mem != null)
       return;
+    tryClearImag(true,false);
     mem = new Real[MEM_SIZE];
     for (int i=0; i<MEM_SIZE; i++)
       mem[i] = new Real();
-    if (monitorMode == MONITOR_MEM)
+    if (monitorMode == MONITOR_MEM) {
       monitors = mem;
+      imagMonitors = null;
+    }
+  }
+  
+  private void allocImagMem() {
+    if (imagMem != null)
+      return;
+    imagMem = new Real[MEM_SIZE];
+    for (int i=0; i<MEM_SIZE; i++)
+      imagMem[i] = new Real();
+    if (monitorMode == MONITOR_MEM)
+      imagMonitors = imagMem;
   }
   
   private void allocStat() {
     if (SUM1 != null)
       return;
+    tryClearImag(true,true);
     stat = new Real[STAT_SIZE];
     stat[ 0] = SUM1      = new Real();
     stat[ 1] = SUMx      = new Real();
@@ -353,21 +449,26 @@ public final class CalcEngine
     stat[12] = SUMlnxlny = new Real();
     statLog = new int[STATLOG_SIZE*2];
     statLogStart = statLogSize = 0;
-    if (monitorMode == MONITOR_STAT)
+    if (monitorMode == MONITOR_STAT) {
       monitors = stat;
+      imagMonitors = null;
+    }
   }
 
   private void allocFinance() {
     if (finance != null)
       return;
+    tryClearImag(true,true);
     finance = new Real[FINANCE_SIZE];
     finance[0] = PV  = new Real();
     finance[1] = FV  = new Real();
     finance[2] = NP  = new Real();
     finance[3] = PMT = new Real();
     finance[4] = IR  = new Real();
-    if (monitorMode == MONITOR_FINANCE)
+    if (monitorMode == MONITOR_FINANCE) {
       monitors = finance;
+      imagMonitors = null;
+    }
   }
 
   private static final byte PROPERTY_SETTINGS = 10;
@@ -376,9 +477,15 @@ public final class CalcEngine
   private static final byte PROPERTY_STAT     = 13;
   private static final byte PROPERTY_FINANCE  = 14;
 
-  public void saveState(PropertyStore propertyStore) {
+  public void saveState(PropertyStore propertyStore)
+  {
+    tryClearImag(true,true);
+    tryClearModules(true,true);
+
     int i;
     byte [] buf = new byte[1+STAT_SIZE*12+STATLOG_SIZE*2*4+2];
+
+    // Stack
     int stackHeight;
     for (stackHeight=0; stackHeight<STACK_SIZE; stackHeight++)
       if (strStack[stackHeight] == empty)
@@ -387,18 +494,34 @@ public final class CalcEngine
     if (stackHeight > 0) {
       for (i=0; i<STACK_SIZE; i++)
         stack[i].toBytes(buf, 1+i*12);
-      propertyStore.setProperty(buf,1+STACK_SIZE*12);
+      if (imagStack != null) {
+        for (i=0; i<STACK_SIZE; i++)
+          imagStack[i].toBytes(buf, 1+STACK_SIZE*12+i*12);
+        propertyStore.setProperty(buf,1+STACK_SIZE*12*2);
+      } else {
+        propertyStore.setProperty(buf,1+STACK_SIZE*12);
+      }
     } else {
       propertyStore.setProperty(buf,1);
     }
+
+    //Memory
     buf[0] = PROPERTY_MEM;
     if (mem != null) {
       for (i=0; i<MEM_SIZE; i++)
         mem[i].toBytes(buf, 1+i*12);
-      propertyStore.setProperty(buf,1+MEM_SIZE*12);
+      if (imagMem != null) {
+        for (i=0; i<MEM_SIZE; i++)
+          imagMem[i].toBytes(buf, 1+MEM_SIZE*12+i*12);
+        propertyStore.setProperty(buf,1+MEM_SIZE*12*2);
+      } else {
+        propertyStore.setProperty(buf,1+MEM_SIZE*12);
+      }
     } else {
       propertyStore.setProperty(buf,1);
     }
+
+    // Statistics
     buf[0] = PROPERTY_STAT;
     if (SUM1 != null) {
       for (i=0; i<STAT_SIZE; i++)
@@ -415,6 +538,8 @@ public final class CalcEngine
     } else {
       propertyStore.setProperty(buf,1);
     }
+
+    // Finance
     buf[0] = PROPERTY_FINANCE;
     if (finance != null) {
       for (i=0; i<FINANCE_SIZE; i++)
@@ -423,6 +548,7 @@ public final class CalcEngine
     } else {
       propertyStore.setProperty(buf,1);
     }
+    
     // Settings
     buf[ 0] = PROPERTY_SETTINGS;
     buf[ 1] = (byte)stackHeight;
@@ -458,18 +584,35 @@ public final class CalcEngine
   public void restoreState(PropertyStore propertyStore) {
     int length,i;
     byte [] buf = new byte[1+STAT_SIZE*12+STATLOG_SIZE*2*4+2];
+
+    // Stack
     buf[0] = PROPERTY_STACK;
     length = propertyStore.getProperty(buf);
-    if (length >= 1+STACK_SIZE*12)
+    if (length >= 1+STACK_SIZE*12) {
       for (i=0; i<STACK_SIZE; i++)
         stack[i].assign(buf, 1+i*12);
+      if (length >= 1+STACK_SIZE*12*2) {
+        allocImagStack();
+        for (i=0; i<STACK_SIZE; i++)
+          imagStack[i].assign(buf, 1+STACK_SIZE*12+i*12);
+      }
+    }
+
+    // Memory
     buf[0] = PROPERTY_MEM;
     length = propertyStore.getProperty(buf);
     if (length >= 1+MEM_SIZE*12) {
       allocMem();
       for (i=0; i<MEM_SIZE; i++)
         mem[i].assign(buf, 1+i*12);
+      if (length >= 1+MEM_SIZE*12*2) {
+        allocImagMem();
+        for (i=0; i<MEM_SIZE; i++)
+          imagMem[i].assign(buf, 1+MEM_SIZE*12+i*12);
+      }
     }
+
+    // Statistics
     buf[0] = PROPERTY_STAT;
     length = propertyStore.getProperty(buf);
     if (length >= 1+STAT_SIZE*12+STATLOG_SIZE*2*4+2) {
@@ -485,6 +628,8 @@ public final class CalcEngine
       statLogStart = buf[1+STAT_SIZE*12+4*i+0]&0xff;
       statLogSize  = buf[1+STAT_SIZE*12+4*i+1]&0xff;
     }
+
+    // Finance
     buf[0] = PROPERTY_FINANCE;
     length = propertyStore.getProperty(buf);
     if (length >= 1+FINANCE_SIZE*12) {
@@ -492,6 +637,7 @@ public final class CalcEngine
       for (i=0; i<FINANCE_SIZE; i++)
         finance[i].assign(buf, 1+i*12);
     }
+
     // Settings
     buf[0] = PROPERTY_SETTINGS;
     length = propertyStore.getProperty(buf);
@@ -529,12 +675,15 @@ public final class CalcEngine
         monitorSize = buf[26+12]&0x1f;
         if (monitorMode == MONITOR_MEM) {
           monitors = mem;
+          imagMonitors = imagMem;
           monitorLabels = memLabels;
         } else if (monitorMode == MONITOR_STAT) {
           monitors = stat;
+          imagMonitors = null;
           monitorLabels = statLabels;
         } else if (monitorMode == MONITOR_FINANCE) {
           monitors = finance;
+          imagMonitors = null;
           monitorLabels = financeLabels;
         }
       }
@@ -548,22 +697,51 @@ public final class CalcEngine
     return tmp;
   }
 
-  public String getStackElement(int elementNo) {
-    if (strStack[elementNo] == null)
-      strStack[elementNo] = stack[elementNo].toString(format);
-    return strStack[elementNo];
+  private String makeString(Real x, Real xi) {
+    String s;
+    if (xi != null && !xi.isZero()) {
+      int maxwidth = format.maxwidth;
+      int imagSign = xi.isNegative() && format.base==10 ? 0 : 1;
+      format.maxwidth = (maxwidth-1-imagSign)/2;
+      String imag = xi.toString(format);
+      format.maxwidth = maxwidth-1-imagSign-imag.length();
+      String real = x.toString(format);
+      if (real.length() < format.maxwidth) {
+        format.maxwidth = maxwidth-1-imagSign-real.length();          
+        imag = xi.toString(format);
+      }
+      s = real+(imagSign!=0?"+":"")+imag+'i';
+      format.maxwidth = maxwidth;
+    } else {
+      s = x.toString(format);
+    }
+    return s;
   }
 
-  public String getMonitorElement(int elementNo) {
-    if (monitorStr[elementNo] == null) {
-      format.maxwidth -= monitorLabels[elementNo].length();
-      if (monitors != null && monitors[elementNo] != null)
-        monitorStr[elementNo] = monitors[elementNo].toString(format);
+  public String getStackElement(int n) {
+    if (strStack[n] == null) {
+      if (imagStack != null)
+        strStack[n] = makeString(stack[n],imagStack[n]);
       else
-        monitorStr[elementNo] = Real.ZERO.toString(format);
-      format.maxwidth += monitorLabels[elementNo].length();
+        strStack[n] = makeString(stack[n],null);
     }
-    return monitorStr[elementNo];
+    return strStack[n];
+  }
+
+  public String getMonitorElement(int n) {
+    if (monitorStr[n] == null) {
+      format.maxwidth -= monitorLabels[n].length();
+      if (monitors != null && monitors[n] != null) {
+        if (imagMonitors != null)
+          monitorStr[n] = makeString(monitors[n],imagMonitors[n]);
+        else
+          monitorStr[n] = makeString(monitors[n],null);
+      } else {
+        monitorStr[n] = Real.ZERO.toString(format);
+      }
+      format.maxwidth += monitorLabels[n].length();
+    }
+    return monitorStr[n];
   }
 
   public String getMonitorLabel(int elementNo) {
@@ -593,9 +771,10 @@ public final class CalcEngine
 
     // Switch base to 10 after exponent marker (E)
     int base = format.base;
+    char exp = 'e';
     if (cmd >= DIGIT_2 && cmd <= DIGIT_F)
       for (i=0; i<inputBuf.length(); i++)
-        if (inputBuf.charAt(i)=='E') {
+        if (inputBuf.charAt(i)==exp) {
           base = 10;
           break;
         }
@@ -618,7 +797,7 @@ public final class CalcEngine
         }
         for (i=0; i<inputBuf.length(); i++)
           if (inputBuf.charAt(i)==format.point ||
-              inputBuf.charAt(i)=='E')
+              inputBuf.charAt(i)==exp)
             return;
         if (inputBuf.length()==0 || inputBuf.charAt(inputBuf.length()-1)=='-')
           inputBuf.append('0');
@@ -638,14 +817,14 @@ public final class CalcEngine
         if (inputBuf.length()==1 && inputBuf.charAt(0)=='/')
           inputBuf.setLength(0);
 
-        if (inputBuf.length()==0 || inputBuf.charAt(inputBuf.length()-1)=='E'){
+        if (inputBuf.length()==0 || inputBuf.charAt(inputBuf.length()-1)==exp){
           inputBuf.append('-');
           break;
         }
         for (i=0; i<inputBuf.length(); i++)
-          if (inputBuf.charAt(i)=='E')
+          if (inputBuf.charAt(i)==exp)
             return;
-        inputBuf.append('E');
+        inputBuf.append(exp);
         break;
       case SIGN_POINT_E:
         if (inputBuf.length()>0 && inputBuf.charAt(inputBuf.length()-1)=='-'){
@@ -659,13 +838,13 @@ public final class CalcEngine
         if (inputBuf.length()==1 && inputBuf.charAt(0)=='/')
           inputBuf.setLength(0);
 
-        if (inputBuf.length()==0 || inputBuf.charAt(inputBuf.length()-1)=='E'){
+        if (inputBuf.length()==0 || inputBuf.charAt(inputBuf.length()-1)==exp){
           inputBuf.append('-');
           break;
         }
         boolean hasE = false, hasPoint = false;
         for (i=0; i<inputBuf.length(); i++) {
-          if (inputBuf.charAt(i)=='E')
+          if (inputBuf.charAt(i)==exp)
             hasE = true;
           if (inputBuf.charAt(i)==format.point)
             hasPoint = true;
@@ -678,7 +857,7 @@ public final class CalcEngine
             inputBuf.charAt(inputBuf.length()-1)==format.point)
           inputBuf.setLength(inputBuf.length()-1);
         if (!hasE)
-          inputBuf.append('E');
+          inputBuf.append(exp);
         break;
       case DIGIT_9:
       case DIGIT_8:
@@ -706,7 +885,7 @@ public final class CalcEngine
           return;
         if (inputBuf.length()>0) // Just in case... shouldn't happen
           inputBuf.setLength(inputBuf.length()-1);
-        inputBuf.append((char)('a'+cmd-DIGIT_A));
+        inputBuf.append((char)('A'+cmd-DIGIT_A));
         break;
       default:
         return;
@@ -720,6 +899,8 @@ public final class CalcEngine
 
   private void parseInput() {
     stack[0].assign(inputBuf.toString(),format.base);
+    if (imagStack != null)
+      imagStack[0].makeZero(0);
     strStack[0] = null;
     repaint(1);
     inputInProgress = false;
@@ -728,23 +909,37 @@ public final class CalcEngine
   private void rollUp() {
     Real tmp = stack[STACK_SIZE-1];
     String tmpStr = strStack[STACK_SIZE-1];
+    Real imagTmp = null;
+    if (imagStack != null)
+      imagTmp = imagStack[STACK_SIZE-1];
     for (int i=STACK_SIZE-1; i>0; i--) {
       stack[i] = stack[i-1];
       strStack[i] = strStack[i-1];
+      if (imagStack != null)
+        imagStack[i] = imagStack[i-1];
     }
     stack[0] = tmp;
     strStack[0] = tmpStr;
+    if (imagStack != null)
+      imagStack[0] = imagTmp;
   }
 
   private void rollDown() {
     Real tmp = stack[0];
     String tmpStr = strStack[0];
+    Real imagTmp = null;
+    if (imagStack != null)
+      imagTmp = imagStack[0];
     for (int i=0; i<STACK_SIZE-1; i++) {
       stack[i] = stack[i+1];
       strStack[i] = strStack[i+1];
+      if (imagStack != null)
+        imagStack[i] = imagStack[i+1];
     }
     stack[STACK_SIZE-1] = tmp;
     strStack[STACK_SIZE-1] = tmpStr;
+    if (imagStack != null)
+      imagStack[STACK_SIZE-1] = imagTmp;
   }
 
   private void enter() {
@@ -753,9 +948,13 @@ public final class CalcEngine
     else {
       rollUp();
       lasty.assign(stack[0]);
+      if (imagStack != null)
+        lastyi.assign(imagStack[0]);
       undoStackEmpty = strStack[0]==empty ? 1 : 0;
       undoOp = UNDO_PUSH;
       stack[0].assign(stack[1]);
+      if (imagStack != null)
+        imagStack[0].assign(imagStack[1]);
       strStack[0] = strStack[1];
       repaint(-1);
     }
@@ -818,14 +1017,21 @@ public final class CalcEngine
     lasty.assign(y);
     undoStackEmpty = strStack[1]==empty ? strStack[0]==empty ? 2 : 1 : 0;
     undoOp = UNDO_BINARY;
+
+    if (imagStack != null) {
+      lastxi.assign(imagStack[0]);
+      lastyi.assign(imagStack[1]);
+      if (!imagStack[0].isZero() || !imagStack[1].isZero()) {
+        imagStack[1].makeZero(0);
+        y.makeNan();
+        cmd = -1;
+      }
+    }
+
     switch (cmd) {
-      case ADD:   y.add(x);                break;
-      case SUB:   x.neg();    y.add(x);    break;
-      case MUL:   y.mul(x);                break;
-      case DIV:   x.recip();  y.mul(x);    break;
       case YPOWX: y.pow(x);                break;
       case XRTY:  y.nroot(x);              break;
-      case ATAN2: y.atan2(x); fromRAD(x);  break;
+      case ATAN2: y.atan2(x); fromRAD(y);  break;
       case HYPOT: y.hypot(x);              break;
       case AND:   y.and(x);                break;
       case OR:    y.or(x);                 break;
@@ -835,9 +1041,9 @@ public final class CalcEngine
       case YDNX:  x.round(); y.scalbn(-x.toInteger());break;
       case PERCENT_CHG:
         x.sub(y);
-        y.recip();
-        y.mul(x);
-        y.mul(Real.HUNDRED);
+        x.div(y);
+        x.mul(Real.HUNDRED);
+        y.assign(x);
         break;
       case DHMS_PLUS:
         x.fromDHMS();
@@ -878,13 +1084,97 @@ public final class CalcEngine
         y.sub(Real.ONE);
         y.mul(Real.HUNDRED);
         break;
+    }
+    rollDown();
+    stack[STACK_SIZE-1].makeZero(0);
+    if (imagStack != null)
+      imagStack[STACK_SIZE-1].makeZero(0);
+    strStack[STACK_SIZE-1] = empty;
+    strStack[0] = null;
+    repaint(-1);
+  }
+
+  private void binaryCplx(int cmd) {
+    if (inputInProgress)
+      parseInput();
+    Real x = stack[0];
+    Real y = stack[1];
+    Real xi = null;
+    Real yi = null;
+    boolean imag = false;
+    if (imagStack != null) {
+      xi = imagStack[0];
+      yi = imagStack[1];
+      imag = !xi.isZero() || !yi.isZero();
+      lastxi.assign(xi);
+      lastyi.assign(yi);
+    }
+
+    lastx.assign(x);
+    lasty.assign(y);
+    undoStackEmpty = strStack[1]==empty ? strStack[0]==empty ? 2 : 1 : 0;
+    undoOp = UNDO_BINARY;
+    switch (cmd) {
+      case ADD:
+        if (imag) yi.add(xi);
+        y.add(x);
+        break;
+      case SUB:
+        if (imag) yi.sub(xi);
+        y.sub(x);
+        break;
+      case MUL:
+        if (imag) {
+          rTmp.assign(yi);
+          rTmp.mul(xi);
+          rTmp2.assign(y);
+          rTmp2.mul(xi);
+          y.mul(x);
+          y.sub(rTmp);
+          yi.mul(x);
+          yi.add(rTmp2);
+        } else {
+          y.mul(x);
+        }
+        break;
+      case DIV:
+        if (imag) {
+          if (xi.isZero()) {
+            y.div(x);
+            yi.div(x);
+          } else {
+            rTmp.assign(yi);
+            rTmp.mul(xi);
+            rTmp2.assign(y);
+            rTmp2.mul(xi);
+            y.mul(x);
+            y.add(rTmp);
+            yi.mul(x);
+            yi.sub(rTmp2);
+            x.sqr();
+            xi.sqr();
+            x.add(xi);
+            y.div(x);
+            yi.div(x);
+          }
+        } else {
+          y.div(x);
+        }
+        break;
+      case TO_CPLX:
+        allocImagStack();
+        imagStack[1].assign(y);
+        y.assign(x);
+        break;
       case CLEAR:
         break;
     }
     rollDown();
-    stack[STACK_SIZE-1].assign(Real.ZERO);
+    stack[STACK_SIZE-1].makeZero(0);
+    if (imagStack != null)
+      imagStack[STACK_SIZE-1].makeZero(0);
     strStack[STACK_SIZE-1] = empty;
-    if (cmd!=CLEAR)
+    if (cmd != CLEAR)
       strStack[0] = null;
     repaint(-1);
   }
@@ -915,16 +1205,22 @@ public final class CalcEngine
   private void unary(int cmd, int param) {
     if (inputInProgress)
       parseInput();
-    Real x = stack[0];
     Real tmp;
+    Real x = stack[0];
     lastx.assign(x);
     undoStackEmpty = strStack[0]==empty ? 1 : 0;
     undoOp = UNDO_UNARY;
+
+    if (imagStack != null) {
+      lastxi.assign(imagStack[0]);
+      if (!imagStack[0].isZero()) {
+        imagStack[0].makeZero(0);
+        x.makeNan();
+        cmd = -1;
+      }
+    }
+
     switch (cmd) {
-      case NEG:   x.neg();   break;
-      case RECIP: x.recip(); break;
-      case SQR:   x.sqr();   break;
-      case SQRT:  x.sqrt();  break;
       case LN:    x.ln();    break;
       case EXP:   x.exp();   break;
       case LOG10: x.log10(); break;
@@ -1031,6 +1327,112 @@ public final class CalcEngine
     repaint(1);
   }
 
+  private void unaryCplx(int cmd, int param) {
+    if (inputInProgress)
+      parseInput();
+    Real tmp;
+    Real x = stack[0];
+    Real xi = null;
+    boolean imag = false;
+    if (imagStack != null) {
+      xi = imagStack[0];
+      imag = !xi.isZero();
+      lastxi.assign(xi);
+    }
+    lastx.assign(x);
+    undoStackEmpty = strStack[0]==empty ? 1 : 0;
+    undoOp = UNDO_UNARY;
+    switch (cmd) {
+      case NEG:
+        if (imag)
+          xi.neg();
+        x.neg();
+        break;
+      case SQR:
+        if (imag) {
+          rTmp.assign(xi);
+          rTmp.sqr();
+          xi.mul(x);
+          xi.scalbn(1);
+          x.sqr();
+          x.sub(rTmp);
+        } else {
+          x.sqr();
+        }
+        break;
+      case RECIP:
+        if (imag) {
+          rTmp.assign(x);
+          rTmp.sqr();
+          rTmp2.assign(xi);
+          rTmp2.sqr();
+          rTmp.add(rTmp2);
+          x.div(rTmp);
+          xi.div(rTmp);
+          xi.neg();
+        } else {
+          x.recip();
+        }
+        break;
+      case SQRT:
+        if (imag) {
+          rTmp.assign(x);
+          rTmp.hypot(xi);
+          rTmp2.assign(x);
+          rTmp2.abs();
+          rTmp.add(rTmp2);
+          rTmp.scalbn(1);
+          rTmp.sqrt();
+          if (!x.isNegative()) {
+            x.assign(rTmp);
+            x.scalbn(-1);
+            xi.div(rTmp);
+          } else {
+            x.assign(xi);
+            x.abs();
+            x.div(rTmp);
+            rTmp.copysign(xi);
+            xi.assign(rTmp);
+            xi.scalbn(-1);
+          }
+        } else if (x.isNegative() && !x.isZero()) {
+          allocImagStack();
+          xi = imagStack[0];
+          xi.assign(x);
+          xi.neg();
+          xi.sqrt();
+          x.makeZero(0);
+        } else {
+          x.sqrt();
+        }
+        break;
+      case CPLX_ABS:
+        if (imag) {
+          x.hypot(xi);
+          xi.makeZero(0);
+        } else {
+          x.abs();
+        }
+        break;
+      case CPLX_ARG:
+        if (imag) {
+          xi.atan2(x);
+          x.assign(xi);
+          fromRAD(x);
+          xi.makeZero(0);
+        } else {
+          x.makeZero(0);
+        }
+        break;
+      case CPLX_CONJ:
+        if (imag)
+          xi.neg();
+        break;
+    }
+    strStack[0] = null;
+    repaint(1);
+  }
+
   private void xyOp(int cmd) {
     if (inputInProgress)
       parseInput();
@@ -1038,6 +1440,10 @@ public final class CalcEngine
     Real y = stack[1];
     lastx.assign(x);
     lasty.assign(y);
+    if (imagStack != null) {
+      lastxi.assign(imagStack[0]);
+      lastyi.assign(imagStack[1]);
+    }
     undoStackEmpty = strStack[1]==empty ? strStack[0]==empty ? 2 : 1 : 0;
     undoOp = UNDO_XY;
     switch (cmd) {
@@ -1064,6 +1470,11 @@ public final class CalcEngine
         Real tmp = stack[0];
         stack[0] = stack[1];
         stack[1] = tmp;
+        if (imagStack != null) {
+          tmp = imagStack[0];
+          imagStack[0] = imagStack[1];
+          imagStack[1] = tmp;
+        }
         String tmpStr = strStack[0];
         strStack[0] = strStack[1];
         strStack[1] = tmpStr;
@@ -1072,14 +1483,22 @@ public final class CalcEngine
     repaint(2);
   }
 
-  private void push(Real x) {
+  private void push(Real x, Real xi) {
     if (inputInProgress)
       parseInput();
     rollUp();
     lasty.assign(stack[0]);
+    if (imagStack != null)
+      lastyi.assign(imagStack[0]);
     undoStackEmpty = strStack[0]==empty ? 1 : 0;
     undoOp = UNDO_PUSH;
     stack[0].assign(x);
+    if (xi != null) {
+      allocImagStack();
+      imagStack[0].assign(xi);
+    } else if (imagStack != null) {
+      imagStack[0].makeZero(0);
+    }
     strStack[0] = null;
     repaint(-1);
   }
@@ -1190,7 +1609,7 @@ public final class CalcEngine
       clearMonitorStrings();
       repaint(-1);
     }
-    push(SUM1);
+    push(SUM1,null);
   }
 
   private void stat2(int cmd) {
@@ -1201,6 +1620,10 @@ public final class CalcEngine
     rollUp();
     lasty.assign(stack[0]);
     lastz.assign(stack[1]);
+    if (imagStack != null) {
+      lastyi.assign(imagStack[0]);
+      lastzi.assign(imagStack[1]);
+    }
     undoStackEmpty = strStack[1]==empty ? strStack[0]==empty ? 2 : 1 : 0;
     undoOp = UNDO_PUSH2;
     Real x = stack[0];
@@ -1288,6 +1711,8 @@ public final class CalcEngine
     allocStat();
     rollUp();
     lasty.assign(stack[0]);
+    if (imagStack != null)
+      lastyi.assign(imagStack[0]);
     undoStackEmpty = strStack[0]==empty ? 1 : 0;
     undoOp = UNDO_PUSH;
     Real x = stack[0];
@@ -1519,7 +1944,7 @@ public final class CalcEngine
         IR.mul(Real.HUNDRED);
         break;
     }
-    push(finance[which]);
+    push(finance[which],null);
   }
 
   private void undo() {
@@ -1530,6 +1955,8 @@ public final class CalcEngine
         break;
       case UNDO_UNARY:
         stack[0].assign(lastx);
+        if (imagStack != null)
+          imagStack[0].assign(lastxi);
         strStack[0] = undoStackEmpty >= 1 ? empty : null;
         repaint(1);
         break;
@@ -1537,12 +1964,18 @@ public final class CalcEngine
         rollUp();
         stack[0].assign(lastx);
         stack[1].assign(lasty);
+        if (imagStack != null) {
+          imagStack[0].assign(lastxi);
+          imagStack[1].assign(lastyi);
+        }          
         strStack[0] = undoStackEmpty >= 2 ? empty : null;
         strStack[1] = undoStackEmpty >= 1 ? empty : null;
         repaint(-1);
         break;
       case UNDO_PUSH:
         stack[0].assign(lasty);
+        if (imagStack != null)
+          imagStack[0].assign(lastyi);
         strStack[0] = undoStackEmpty >= 1 ? empty : null;
         rollDown();
         repaint(-1);
@@ -1550,6 +1983,10 @@ public final class CalcEngine
       case UNDO_PUSH2:
         stack[0].assign(lasty);
         stack[1].assign(lastz);
+        if (imagStack != null) {
+          imagStack[0].assign(lastyi);
+          imagStack[1].assign(lastzi);
+        }          
         strStack[0] = undoStackEmpty >= 2 ? empty : null;
         strStack[1] = undoStackEmpty >= 1 ? empty : null;
         rollDown();
@@ -1559,6 +1996,10 @@ public final class CalcEngine
       case UNDO_XY:
         stack[0].assign(lastx);
         stack[1].assign(lasty);
+        if (imagStack != null) {
+          imagStack[0].assign(lastxi);
+          imagStack[1].assign(lastyi);
+        }          
         strStack[0] = undoStackEmpty >= 2 ? empty : null;
         strStack[1] = undoStackEmpty >= 1 ? empty : null;
         repaint(2);
@@ -1566,6 +2007,10 @@ public final class CalcEngine
       case UNDO_PUSHXY:
         stack[0].assign(lasty);
         stack[1].assign(lastx);
+        if (imagStack != null) {
+          imagStack[0].assign(lastyi);
+          imagStack[1].assign(lastxi);
+        }          
         strStack[0] = undoStackEmpty >= 1 ? empty : null;
         strStack[1] = undoStackEmpty >= 2 ? empty : null;
         // Different this time         ^^^
@@ -1594,9 +2039,12 @@ public final class CalcEngine
         if (inputInProgress)
           input(cmd);
         else
-          binary(cmd);
+          binaryCplx(cmd);
         break;
       case ADD:   case SUB:   case MUL:   case DIV:
+      case TO_CPLX:
+        binaryCplx(cmd);
+        break;
       case PERCENT_CHG:
       case YPOWX: case XRTY:
       case ATAN2: case HYPOT:
@@ -1608,6 +2056,9 @@ public final class CalcEngine
         binary(cmd);
         break;
       case NEG:   case RECIP: case SQR:   case SQRT:
+      case CPLX_ABS: case CPLX_ARG: case CPLX_CONJ:
+        unaryCplx(cmd,param);
+        break;
       case LN:    case EXP:   case LOG10: case EXP10: case LOG2: case EXP2:
       case FACT:  case GAMMA:
       case SIN:   case COS:   case TAN:
@@ -1624,19 +2075,19 @@ public final class CalcEngine
         unary(cmd,param);
         break;
       case PI:
-        push(Real.PI);
+        push(Real.PI,null);
         break;
       case RANDOM:
         rTmp.random();
-        push(rTmp);
+        push(rTmp,null);
         break;
       case TIME:
         rTmp.time();
-        push(rTmp);
+        push(rTmp,null);
         break;
       case DATE:
         rTmp.date();
-        push(rTmp);
+        push(rTmp,null);
         break;
       case RP:
       case PR:
@@ -1645,14 +2096,22 @@ public final class CalcEngine
         break;
       case CLS:
         lastx.assign(stack[0]);
+        if (imagStack != null)
+          lastxi.assign(imagStack[0]);
         clearStack();
         undoOp = UNDO_NONE; // Cannot undo this
         break;
       case RCLST:
-        push(stack[param]);
+        if (imagStack != null)
+          push(stack[param],imagStack[param]);
+        else
+          push(stack[param],null);
         break;
       case LASTX:
-        push(lastx);
+        if (imagStack != null)
+          push(lastx,lastxi);
+        else
+          push(lastx,null);
         break;
       case UNDO:
         undo();
@@ -1662,6 +2121,10 @@ public final class CalcEngine
           parseInput();
         allocMem();
         mem[param].assign(stack[0]);
+        if (imagStack != null && !imagStack[0].isZero()) {
+          allocImagMem();
+          imagMem[param].assign(imagStack[0]);
+        }
         if (monitorMode == MONITOR_MEM) {
           monitorStr[param] = null;
           repaint(-1);
@@ -1672,16 +2135,25 @@ public final class CalcEngine
           parseInput();
         allocMem();
         mem[param].add(stack[0]);
+        if (imagStack != null && !imagStack[0].isZero()) {
+          allocImagMem();
+          imagMem[param].add(imagStack[0]);
+        }
         if (monitorMode == MONITOR_MEM) {
           monitorStr[param] = null;
           repaint(-1);
         }
         break;
       case RCL:
-        if (mem != null)
-          push(mem[param]);
-        else
-          push(Real.ZERO);
+        if (mem != null) {
+          if (imagMem != null && !imagMem[param].isZero()) {
+            push(mem[param],imagMem[param]);
+          } else {
+            push(mem[param],null);
+          }
+        } else {
+          push(Real.ZERO,null);
+        }
         break;
       case CLMEM:
         clearMem();
@@ -1718,63 +2190,99 @@ public final class CalcEngine
         stat1(cmd);
         break;
       case N:
-        push(SUM1);
+        push(SUM1,null);
         break;
       case SUMX:
-        push(SUMx);
+        push(SUMx,null);
         break;
       case SUMXX:
-        push(SUMx2);
+        push(SUMx2,null);
         break;
       case SUMY:
-        push(SUMy);
+        push(SUMy,null);
         break;
       case SUMYY:
-        push(SUMy2);
+        push(SUMy2,null);
         break;
       case SUMXY:
-        push(SUMxy);
+        push(SUMxy,null);
         break;
       case SUMLNX:
-        push(SUMlnx);
+        push(SUMlnx,null);
         break;
       case SUMLN2X:
-        push(SUMln2x);
+        push(SUMln2x,null);
         break;
       case SUMLNY:
-        push(SUMlny);
+        push(SUMlny,null);
         break;
       case SUMLN2Y:
-        push(SUMln2y);
+        push(SUMln2y,null);
         break;
       case SUMXLNY:
-        push(SUMxlny);
+        push(SUMxlny,null);
         break;
       case SUMYLNX:
-        push(SUMylnx);
+        push(SUMylnx,null);
         break;
       case SUMLNXLNY:
-        push(SUMlnxlny);
+        push(SUMlnxlny,null);
         break;
       case FACTORIZE:
         if (inputInProgress)
           parseInput();
         lastx.assign(stack[0]);
+        if (imagStack != null)
+          lastxi.assign(imagStack[0]);
         stack[0].round();
-        if (stack[0].exponent > 0x4000001e) {
-          push(Real.NAN);
+        if (stack[0].exponent > 0x4000001e ||
+            (imagStack != null && !imagStack[0].isZero()))
+        {
+          push(Real.NAN,null);
         } else {
           int a = stack[0].toInteger();
           int b = greatestFactor(a);
           rollUp();
           lasty.assign(stack[0]);
+          if (imagStack != null)
+            lastyi.assign(imagStack[0]);
           undoStackEmpty = strStack[0]==empty ? strStack[1]==empty ? 2 : 1 : 0;
           stack[0].assign((b!=0) ? a/b : 0);
           stack[1].assign(b);
+          if (imagStack != null) {
+            imagStack[0].makeZero(0);
+            imagStack[1].makeZero(0);
+          }
           strStack[0] = null;
           strStack[1] = null;
           repaint(-1);
         }
+        undoOp = UNDO_PUSHXY;
+        break;
+      case CPLX_SPLIT:
+        if (inputInProgress)
+          parseInput();
+        if (imagStack != null) {
+          lastx.assign(stack[0]);
+          lastxi.assign(imagStack[0]);
+          rollUp();
+          lasty.assign(stack[0]);
+          lastyi.assign(imagStack[0]);
+          stack[0].assign(stack[1]);
+          stack[1].assign(imagStack[1]);
+          imagStack[0].makeZero(0);
+          imagStack[1].makeZero(0);
+        } else {
+          lastx.assign(stack[0]);
+          rollUp();
+          lasty.assign(stack[0]);
+          stack[0].assign(stack[1]);
+          stack[1].makeZero(0);
+        }
+        undoStackEmpty = strStack[0]==empty ? strStack[1]==empty ? 2 : 1 : 0;
+        strStack[0] = null;
+        strStack[1] = null;
+        repaint(-1);
         undoOp = UNDO_PUSHXY;
         break;
 
@@ -1790,9 +2298,9 @@ public final class CalcEngine
         break;
       case FINANCE_RCL:
         if (finance != null)
-          push(finance[param]);
+          push(finance[param],null);
         else
-          push(Real.ZERO);
+          push(Real.ZERO,null);
         break;
       case FINANCE_SOLVE:
         financeSolve(param);
@@ -1828,6 +2336,7 @@ public final class CalcEngine
         monitorMode = cmd;
         monitorSize = param > MEM_SIZE ? MEM_SIZE : param;
         monitors = mem;
+        imagMonitors = imagMem;
         monitorLabels = memLabels;
         clearMonitorStrings();
         repaint(-1);
@@ -1838,6 +2347,7 @@ public final class CalcEngine
         monitorMode = cmd;
         monitorSize = param > STAT_SIZE ? STAT_SIZE : param;
         monitors = stat;
+        imagMonitors = null;
         monitorLabels = statLabels;
         clearMonitorStrings();
         repaint(-1);
@@ -1848,6 +2358,7 @@ public final class CalcEngine
         monitorMode = cmd;
         monitorSize = FINANCE_SIZE;
         monitors = finance;
+        imagMonitors = null;
         monitorLabels = financeLabels;
         clearMonitorStrings();
         repaint(-1);
