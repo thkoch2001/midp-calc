@@ -1,4 +1,4 @@
-VERSION = 0.99.5
+VERSION = 0.99.6
 TARGETS = Calc.jar Calc.jad
 
 WTK_HOME = /home/roarl/ant/WTK104
@@ -31,7 +31,7 @@ Calc.jad: Makefile
 	echo "MIDlet-Vendor: Roar Lauritzsen"        >> $@
 	echo "MicroEdition-Profile: MIDP-1.0"        >> $@
 	echo "MicroEdition-Configuration: CLDC-1.0"  >> $@
-	echo "MIDlet-Jar-URL: Calc.jar"              >> $@
+	echo "MIDlet-Jar-URL: http://gridbug.ods.org/~roarl/Calc.jar" >> $@
 	echo "MIDlet-Jar-Size: 0"                    >> $@
 	echo "MIDlet-1: Calc, , ral.Calc"            >> $@
 
