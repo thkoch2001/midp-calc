@@ -53,10 +53,14 @@ public final class CalcCanvas
 //   mode     -> number  -> normal FIX#   SCI#   ENG#                  ( -> # )
 //                       -> sepr   -> decimal  -> dot comma remove keep
 //                                 -> thousand -> dot/comma space ' none
-//            -> prog[1] -> run    -> a b c d e
-//                       -> new    -> name?
-//                       -> clear  -> a b c d e
-//                       -> draw   -> a b c d e
+//            -> prog[1] -> run    -> #
+//                       -> new    -> # -> name?
+//                       -> clear  -> #
+//                       -> draw   -> #
+//                       -> more   -> integrate     -> #
+//                                 -> differentiate -> #
+//                                 -> solve         -> #
+//                                 -> min/max       -> #
 //            -> prog[2] -> finish
 //                       -> cond   -> x=y? x!=y? x<y? x<=y? x>y?
 //                       -> util   -> abs max min sgn select
@@ -71,9 +75,6 @@ public final class CalcCanvas
 // * replaces math/trig in hex/oct/bin mode
 //
 // Extensions:
-//   prog[1]  -> more    -> solve   -> a b c d e
-//                       -> diff    -> a b c d e
-//                       -> int     -> a b c d e
 
 // Complex operations:
 //   + - * / +/- 1/x x² sqrt
@@ -587,6 +588,12 @@ public final class CalcCanvas
     new Menu("new",CalcEngine.PROG_NEW,Menu.PROG_REQUIRED),
     new Menu("run",CalcEngine.PROG_RUN,Menu.PROG_REQUIRED),
     new Menu("draw",CalcEngine.PROG_DRAW,Menu.PROG_REQUIRED),
+    new Menu("more",Menu.TITLE_SKIP,new Menu[] {
+      new Menu("integrate",CalcEngine.PROG_INTEGR,Menu.PROG_REQUIRED),
+      new Menu("diff.",CalcEngine.PROG_DIFF,Menu.PROG_REQUIRED),
+      new Menu("solve",CalcEngine.PROG_SOLVE,Menu.PROG_REQUIRED),
+      new Menu("min/max",CalcEngine.PROG_MINMAX,Menu.PROG_REQUIRED),
+    }),
     new Menu("clear",CalcEngine.PROG_CLEAR,Menu.PROG_REQUIRED),
   });
   private Menu prog2 = new Menu("prog",new Menu[] {
@@ -1268,7 +1275,10 @@ public final class CalcCanvas
           setNumberFont(command-FONT_SMALL);
         } else if (command >= NUMBER_0 && command <= NUMBER_15) {
           // Number has been entered for previous command
-          if (menuCommand == CalcEngine.PROG_DRAW) {
+          if (menuCommand == CalcEngine.PROG_DRAW ||
+	      menuCommand == CalcEngine.PROG_SOLVE ||
+	      menuCommand == CalcEngine.PROG_INTEGR ||
+	      menuCommand == CalcEngine.PROG_MINMAX) {
             menuCommand += command-NUMBER_0;
             graph = true;
           } if (menuCommand == CalcEngine.PROG_NEW) {

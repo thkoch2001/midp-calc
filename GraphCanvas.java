@@ -15,7 +15,7 @@ public final class GraphCanvas
   public GraphCanvas(Calc m, CalcCanvas c) {
     midlet = m;
     cc = c;
-    addCommand(new Command("Back", Command.BACK, 1));
+    addCommand(new Command("Break", Command.BACK, 1));
     setCommandListener(this);
   }
 
@@ -44,6 +44,9 @@ public final class GraphCanvas
       cc.calc.continueGraph(g,gx,gy,gw,gh);
       if (cc.calc.progRunning)
         midlet.display.callSerially(this); // Calls back run() below later
+      else
+        // If "continueGraph()" halts, go back to main screen
+        midlet.displayScreen();
     } else {
       cc.drawModeIndicators(g, false);
     }
