@@ -7,13 +7,15 @@ public final class Calc
     extends MIDlet
 {
   private CalcCanvas screen;
+  public Display display;
   
   public Calc() {
+    display = Display.getDisplay(this);
     screen = new CalcCanvas(this);
   }
   
   public void startApp() {
-    Display.getDisplay(this).setCurrent(screen);
+    display.setCurrent(screen);
   }
 
   public void pauseApp() {

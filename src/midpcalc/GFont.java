@@ -8,28 +8,40 @@ final class GFont
   static final int SMALL  = 0;
   static final int MEDIUM = 1;
   static final int LARGE  = 2;
+  static final int SYSTEM = 3;
 
   private final String char_bits;
   private final int char_width;
   private final int char_height;
   private Image [] char_cache;
   private final int style;
+  private final Font systemFont;
 
   public GFont(int style)
   {
     this.style = style;
-    if ((style & MEDIUM) != 0) {
+    if (style == MEDIUM) {
+      systemFont = null;
       char_width = medium_char_width;
       char_height = medium_char_height;
       char_bits = medium_char_bits;
-    } else if ((style & LARGE) != 0) {
+    } else if (style == LARGE) {
+      systemFont = null;
       char_width = large_char_width;
       char_height = large_char_height;
       char_bits = large_char_bits;
-    } else {
+    } else if (style == SMALL) {
+      systemFont = null;
       char_width = small_char_width;
       char_height = small_char_height;
       char_bits = small_char_bits;
+    } else { // SYSTEM font
+      systemFont = Font.getFont(Font.FACE_SYSTEM,
+                                Font.SIZE_MEDIUM,
+                                Font.STYLE_PLAIN);
+      char_width = systemFont.charWidth('0');
+      char_height = systemFont.getHeight();
+      char_bits = null;
     }
     char_cache = new Image[32*3];
   }
@@ -82,11 +94,21 @@ final class GFont
   }
 
   public int stringWidth(String string) {
+    if (systemFont != null)
+      return systemFont.stringWidth(string);
     return char_width*string.length();
   }
 
   public int drawString(Graphics g, int x, int y, String string)
   {
+    if (systemFont != null) {
+      g.setFont(systemFont);
+      g.setColor(0);
+      g.fillRect(x,y,char_width*string.length(),char_height);
+      g.setColor(0xffffff);
+      g.drawString(string,x,y,g.TOP|g.LEFT);
+      return x + systemFont.stringWidth(string);
+    }
     int length;
     length = string.length();
     for (int i=0; i<length; i++) {
@@ -101,6 +123,15 @@ final class GFont
 
   public int drawString(Graphics g, int x, int y,StringBuffer string,int start)
   {
+    if (systemFont != null) {
+      String s = string.toString();
+      g.setColor(0);
+      g.fillRect(x,y,char_width*s.length()-start,char_height);
+      g.setColor(0xffffff);
+      g.setFont(systemFont);
+      g.drawSubstring(s,start,s.length()-start,x,y,g.TOP|g.LEFT);
+      return x + systemFont.substringWidth(s,start,s.length()-start);
+    }
     int length;
     length = string.length();
     for (int i=start; i<length; i++) {

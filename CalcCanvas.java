@@ -69,6 +69,7 @@ public class CalcCanvas
   private static final int FONT_SMALL  = -50+GFont.SMALL;
   private static final int FONT_MEDIUM = -50+GFont.MEDIUM;
   private static final int FONT_LARGE  = -50+GFont.LARGE;
+  private static final int FONT_SYSTEM = -50+GFont.SYSTEM;
   private static final int NUMBER_0 = -20+0;
   private static final int NUMBER_1 = -20+1;
   private static final int NUMBER_2 = -20+2;
@@ -177,6 +178,7 @@ public class CalcCanvas
         new Menu("medium",FONT_MEDIUM),
         new Menu("small",FONT_SMALL),
         new Menu("large",FONT_LARGE),
+        new Menu("system",FONT_SYSTEM),
       }),
     }),
   });
@@ -323,6 +325,12 @@ public class CalcCanvas
       if (length >= 2)
         numberFontStyle = buf[1];
     }
+    if (!midlet.display.isColor()) {
+      numberFontStyle = GFont.SYSTEM;
+      // Now, remove the font menu.
+      // !!! NB !!! Beware if you change the menu layout
+      menu.subMenu[4].subMenu[3] = null;
+    }
 
     enter = new Command("ENTER", Command.OK    , 1);
     add   = new Command("+"    , Command.SCREEN, 1);
@@ -346,7 +354,7 @@ public class CalcCanvas
     numRepaintLines = 100;
   }
 
-  void setNumberFont(int size) {
+  private void setNumberFont(int size) {
     numberFont = null;
     numberFont = new GFont(size);
     numberWidth = numberFont.charWidth();
@@ -498,6 +506,7 @@ public class CalcCanvas
             g.drawLine(x,y+h/3,x,y+h/3+1);
             g.drawLine(x+5,y+h/3,x+5,y+h-1);
             g.drawLine(x+6,y+h/3,x+6,y+h-1);
+            g.drawLine(x+6,y+h-1,x+7,y+h-1);
             break;
         }
         x += w;
@@ -534,7 +543,7 @@ public class CalcCanvas
     drawLabel(g,menu.label,bold,x,y);
   }
 
-  void drawMenu(Graphics g) {
+  private void drawMenu(Graphics g) {
     int x = getWidth()/12;
     int w = getWidth()-2*x;
     int h = getHeight()/2;
@@ -569,6 +578,38 @@ public class CalcCanvas
     }
   }
 
+  private void drawNumber(Graphics g, int i, boolean cleared) {
+    if (i==0 && calc.inputInProgress) {
+      StringBuffer tmp = calc.inputBuf;
+      tmp.append('_');
+      if (tmp.length()>nDigits)
+        numberFont.drawString(g,offX,offY+(nLines-1)*numberHeight,tmp,
+                              tmp.length()-nDigits);
+      else {
+        numberFont.drawString(g,offX,offY+(nLines-1)*numberHeight,tmp,0);
+        if (!cleared) {
+          g.setColor(0);
+          g.fillRect(offX+tmp.length()*numberWidth,
+                     offY+(nLines-1)*numberHeight,
+                     (nDigits-tmp.length())*numberWidth,numberHeight);
+        }
+      }
+      tmp.setLength(tmp.length()-1);
+    } else {
+      String tmp = calc.getStackElement(i);
+      if (tmp.length()>nDigits)
+        tmp = "*****";
+      numberFont.drawString(
+        g,offX+(nDigits-tmp.length())*numberWidth,
+        offY+(nLines-1-i)*numberHeight,tmp);
+      if (!cleared) {
+        g.setColor(0);
+        g.fillRect(offX,offY+(nLines-1-i)*numberHeight,
+                   (nDigits-tmp.length())*numberWidth,numberHeight);
+      }
+    }
+  }
+
   public void paint(Graphics g) {
     boolean cleared = false;
     if (numRepaintLines == 100 || !internalRepaint) {
@@ -584,37 +625,8 @@ public class CalcCanvas
         if (numRepaintLines > 16)
           numRepaintLines = 16;
 
-        for (int i=0; i<numRepaintLines; i++) {
-          if (i==0 && calc.inputInProgress) {
-            StringBuffer tmp = calc.inputBuf;
-            tmp.append('_');
-            if (tmp.length()>nDigits)
-              numberFont.drawString(g,offX,offY+(nLines-1)*numberHeight,tmp,
-                                    tmp.length()-nDigits);
-            else {
-              numberFont.drawString(g,offX,offY+(nLines-1)*numberHeight,tmp,0);
-              if (!cleared) {
-                g.setColor(0);
-                g.fillRect(offX+tmp.length()*numberWidth,
-                           offY+(nLines-1)*numberHeight,
-                           (nDigits-tmp.length())*numberWidth,numberHeight);
-              }
-            }
-            tmp.setLength(tmp.length()-1);
-          } else {
-            String tmp = calc.getStackElement(i);
-            if (tmp.length()>nDigits)
-              tmp = "*****";
-            numberFont.drawString(
-              g,offX+(nDigits-tmp.length())*numberWidth,
-              offY+(nLines-1-i)*numberHeight,tmp);
-            if (!cleared) {
-              g.setColor(0);
-              g.fillRect(offX,offY+(nLines-1-i)*numberHeight,
-                         (nDigits-tmp.length())*numberWidth,numberHeight);
-            }
-          }
-        }
+        for (int i=0; i<numRepaintLines; i++)
+          drawNumber(g,i,cleared);
       }
       if (menuStackPtr >= 0)
         drawMenu(g);
@@ -632,6 +644,89 @@ public class CalcCanvas
     if (numRepaintLines >= 0) {
       internalRepaint = true;
       repaint();
+    }
+  }
+
+  private void clearKeyPressed() {
+    if (menuStackPtr >= 0) {
+      menuStackPtr--;
+      if (menuStackPtr >= 0)
+        numRepaintLines = 0; // Force repaint of menu
+      else
+        numRepaintLines = 100; // Force repaint of all
+      return;
+    }
+    menuStackPtr = -1; // In case it was -2, which signals no-repeat
+    calc.command(CalcEngine.CLEAR,0);
+  }
+
+  private void clearKeyRepeated() {
+    if (menuStackPtr >= 0) {
+      menuStackPtr = -2; // should not continue by clearing the input...
+      numRepaintLines = 100; // Force repaint of all
+    } else {
+      if (!calc.inputInProgress || menuStackPtr == -2)
+        return;
+      calc.command(CalcEngine.CLEAR,0);
+    }
+  }
+
+  private void menuAction(int menuIndex) {
+    if (menuStackPtr < 0) {
+      // On entering the menu, switch math/trig menus with bit-op
+      // menus if not base-10
+      if (calc.format.base == 10) {
+        menu.subMenu[1] = math;
+        menu.subMenu[2] = trig;
+      } else {
+        menu.subMenu[1] = bitOp;
+        menu.subMenu[2] = bitMath;
+      }
+    }
+    if (menuStackPtr < 0 && menuIndex < 4) {
+      // Go directly to submenu
+      menuStack[0] = menu;
+      menuStack[1] = menu.subMenu[menuIndex];
+      menuStackPtr = 1;
+      numRepaintLines = 0; // Force repaint of menu
+    } else if (menuStackPtr < 0) {
+      // Open top level menu
+      menuStack[0] = menu;
+      menuStackPtr = 0;
+      numRepaintLines = 0; // Force repaint of menu
+    } else if (menuStack[menuStackPtr].subMenu.length > menuIndex) {
+      Menu [] subMenu = menuStack[menuStackPtr].subMenu;
+      if (subMenu[menuIndex] == null) {
+        ; // NOP
+      } else if (subMenu[menuIndex].subMenu != null) {
+        // Open submenu
+        menuStackPtr++;
+        menuStack[menuStackPtr] = subMenu[menuIndex];
+        numRepaintLines = 0; // Force repaint of menu
+      } else if (subMenu[menuIndex].numberRequired) {
+        // Open number submenu
+        menuCommand = subMenu[menuIndex].command; // Save current command
+        menuStackPtr++;
+        menuStack[menuStackPtr] = numberMenu;
+        numRepaintLines = 0; // Force repaint of menu
+      } else {
+        int command = subMenu[menuIndex].command;
+        if (command == EXIT) {
+          // Internal exit command
+          midlet.exitRequested();
+        } else if (command >= FONT_SMALL && command <= FONT_SYSTEM) {
+          // Internal font command
+          setNumberFont(command-FONT_SMALL);
+        } else if (command >= NUMBER_0 && command <= NUMBER_15) {
+          // Number has been entered for previous command
+          calc.command(menuCommand,command-NUMBER_0);
+        } else {
+          // Normal calculator command
+          calc.command(command,0);
+        }
+        menuStackPtr = -1;     // Remove menu
+        numRepaintLines = 100; // Force repaint of all
+      }
     }
   }
 
@@ -665,88 +760,39 @@ public class CalcCanvas
           return;
         calc.command(CalcEngine.DEC_POINT,0);
         break;
-      case -8:
-        if (menuStackPtr >= 0) {
-          menuStackPtr--;
-          if (menuStackPtr >= 0)
-            numRepaintLines = 0; // Force repaint of menu
-          else
-            numRepaintLines = 100; // Force repaint of all
-          break;
+      default:
+        switch (getGameAction(key)) {
+          case UP:    menuIndex = 0; break;
+          case DOWN:  menuIndex = 3; break;
+          case LEFT:  menuIndex = 1; break;
+          case RIGHT: menuIndex = 2; break;
+          case FIRE:  menuIndex = 4; break;
+          case GAME_A: case GAME_B: case GAME_C: case GAME_D:
+            // I have no idea how these keys are mapped, I just hope
+            // one of them is mapped to something that we can use as
+            // a "clear" key
+            clearKeyPressed();
+            break;
+          default:
+            // Some keys are not mapped to game keys and must be
+            // handled directly in this dirty fashion...
+            switch (key) {
+              case -1: menuIndex = 0; break; // UP
+              case -2: menuIndex = 3; break; // DOWN
+              case -3: menuIndex = 1; break; // LEFT
+              case -4: menuIndex = 2; break; // RIGHT
+              case -5: menuIndex = 4; break; // PUSH
+              case -8:
+                clearKeyPressed();
+                break;
+            }
+            break;
         }
-        menuStackPtr = -1; // In case it was -2, which signals no-repeat
-        calc.command(CalcEngine.CLEAR,0);
-        break;
-      case -1: // UP
-        menuIndex = 0;
-        break;
-      case -2: // DOWN
-        menuIndex = 3;
-        break;
-      case -3: // LEFT
-        menuIndex = 1;
-        break;
-      case -4: // RIGHT
-        menuIndex = 2;
-        break;
-      case -5: // PUSH
-        menuIndex = 4;
         break;
     }
-    if (menuIndex >= 0) {
-      if (menuStackPtr < 0) {
-        if (calc.format.base == 10) {
-          menu.subMenu[1] = math;
-          menu.subMenu[2] = trig;
-        } else {
-          menu.subMenu[1] = bitOp;
-          menu.subMenu[2] = bitMath;
-        }
-      }
-      if (menuStackPtr < 0 && menuIndex < 4) {
-        menuStack[0] = menu;
-        menuStack[1] = menu.subMenu[menuIndex];
-        menuStackPtr = 1;
-        numRepaintLines = 0; // Force repaint of menu
-      } else if (menuStackPtr < 0) {
-        menuStack[0] = menu;
-        menuStackPtr = 0;
-        numRepaintLines = 0; // Force repaint of menu
-      } else if (menuStack[menuStackPtr].subMenu.length > menuIndex) {
-        Menu [] subMenu = menuStack[menuStackPtr].subMenu;
-        if (subMenu[menuIndex] == null) {
-          ; // NOP
-        } else if (subMenu[menuIndex].subMenu != null) {
-          menuStackPtr++;
-          menuStack[menuStackPtr] = subMenu[menuIndex];
-          numRepaintLines = 0; // Force repaint of menu
-        } else if (subMenu[menuIndex].numberRequired) {
-          menuCommand = subMenu[menuIndex].command;
-          menuStackPtr++;
-          menuStack[menuStackPtr] = numberMenu;
-          numRepaintLines = 0; // Force repaint of menu
-        } else {
-          int command = subMenu[menuIndex].command;
-          if (command == EXIT) {
-            midlet.exitRequested();
-            menuStackPtr = -1;
-            numRepaintLines = 100; // Force repaint of all
-          } else if (command >= FONT_SMALL && command <= FONT_LARGE) {
-            setNumberFont(command-FONT_SMALL);
-            menuStackPtr = -1;
-            numRepaintLines = 100; // Force repaint of all
-          } else if (command >= NUMBER_0 && command <= NUMBER_15) {
-            calc.command(menuCommand,command-NUMBER_0);
-            menuStackPtr = -1;
-            numRepaintLines = 100; // Force repaint of all
-          } else {
-            calc.command(command,0);
-            menuStackPtr = -1;
-            numRepaintLines = 100; // Force repaint of all
-          }
-        }
-      }
-    }
+    if (menuIndex >= 0)
+      menuAction(menuIndex);
+
     checkRepaint();
   }
 
@@ -757,14 +803,15 @@ public class CalcCanvas
           return;
         calc.command(CalcEngine.DIGIT_A+key-'1',0);
         break;
-      case -8:
-        if (menuStackPtr >= 0) {
-          menuStackPtr = -2; // should not continue by clearing the input...
-          numRepaintLines = 100; // Force repaint of all
-        } else {
-          if (!calc.inputInProgress || menuStackPtr == -2)
-            return;
-          calc.command(CalcEngine.CLEAR,0);
+      default:
+        switch (getGameAction(key)) {
+          case GAME_A: case GAME_B: case GAME_C: case GAME_D:
+            clearKeyRepeated();
+            break;
+          default:
+            if (key == -8)
+              clearKeyRepeated();
+            break;
         }
         break;
     }
