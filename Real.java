@@ -46,6 +46,7 @@
 //   asinh()
 //   acosh()
 //   atanh()
+//   fact()
 //   gamma()
 //
 // Binary functions:
@@ -103,8 +104,8 @@
 //   E       = e
 //   LN2     = ln(2)
 //   LN10    = ln(10)
-//   LOG2E   = log2(e)
-//   LOG10E  = log10(e)
+//   LOG2E   = log2(e)  = 1/log(2)
+//   LOG10E  = log10(e) = 1/log(10)
 //   LN10_LN2= ln(10)/ln(2)
 //   MAX     = max non-infinite positive number = 4.197E+323228496
 //   MIN     = min non-zero positive number     = 2.383E-323228497
@@ -165,6 +166,10 @@ public final class Real
   }
 
   public Real(final String a) {
+    if (a==null) {
+      assign(ZERO);
+      return;
+    }
     atof(a);
   }
   
@@ -531,20 +536,17 @@ public final class Real
       if (shift>=64)
         return;
 
-      if (shift==0) {
-        if (sign == s)
-          mantissa += m;
-        else
-          mantissa -= m;
-      } else {
-        if (sign == s)
-          mantissa += (m+(1<<(shift-1)))>>>shift;
-        else
-          mantissa -= (m-(1<<(shift-1)))>>>shift;
-      }
+      if (shift!=0)
+        m = (m+(1<<(shift-1)))>>>shift;
+
+      if (sign == s)
+        mantissa += m;
+      else
+        mantissa -= m;
+
+      normalize();
     }
 
-    normalize();
     if (isZero())
       sign=0;
   }
@@ -710,12 +712,10 @@ public final class Real
     // First establish approximate result
     
     mantissa = start-(mantissa>>>2);
-    boolean flag=false;
-    if ((exponent&1) != 0)
-      flag=true;
+    boolean oddexp = ((exponent&1) != 0);
     exponent = 0x20000000+(exponent>>1);
     normalize();
-    if (flag)
+    if (oddexp)
       mul(SQRT1_2);
 
     // Now perform Newton-Raphson iteration
@@ -1192,11 +1192,11 @@ public final class Real
     mul(PI2);
 
     // Since sin(pi*2 - x) = -sin(x) we can reduce the range 0 < x < pi
-    boolean neg = false;
+    boolean negative = false;
     if (greaterThan(PI)) {
       sub(PI2);
       neg();
-      neg = true;
+      negative = true;
     }
 
     // Since sin(x) = sin(pi - x) we can reduce the range to 0 < x < pi/2
@@ -1214,7 +1214,7 @@ public final class Real
       sinInternal();
     }
 
-    if (neg)
+    if (negative)
       neg();
   }
 
@@ -1241,9 +1241,7 @@ public final class Real
   }
 
   public void acos() {
-    boolean negative = false;
-    if (sign!=0)
-      negative = true;
+    boolean negative = (sign!=0);
     abs();
 
     tmp1.assign(this);
@@ -1408,8 +1406,77 @@ public final class Real
     scalbn(-1);
   }
 
+  public void fact() {
+    if (isNan() || isInfinity())
+      return;
+
+    tmp1.assign(this);
+    tmp1.floor();
+    tmp2.assign(25);
+    if (this.notEqualTo(tmp1) || this.lessThan(ZERO) || this.greaterThan(tmp2))
+    {
+      // x<0, x>25 or not integer: fact(x) = gamma(x+1)
+      add(ONE);
+      gamma();
+      return;
+    }
+    assign(ONE);
+    while (tmp1.toInteger()>1) {
+      mul(tmp1);
+      tmp1.sub(ONE);
+    }
+  }
+
   public void gamma() {
-    //...
+    if (isNan() || isInfinity())
+      return;
+
+    // x<0: gamma(-x) = -pi/(x*gamma(x)*sin(pi*x))
+    boolean negative = (sign != 0);
+    abs();
+    tmp1.assign(this);
+
+    // x<n: gamma(x) = gamma(x+m)/x*(x+1)*(x+2)*...*(x+m-1)
+    int n=20;
+    tmp3.assign(n);
+    tmp2.assign(ONE);
+    boolean divide = false;
+    while (this.lessThan(tmp3)) {
+      divide = true;
+      tmp2.mul(this);
+      add(ONE);
+    }
+
+    // x>n: gamma(x) = exp((x-1/2)*ln(x)-x+ln(2*pi)/2+1/12x-1/360x³+1/1260x^5
+    //                     -1/1680x^7+1/1188x^9)
+    tmp3.assign(this); // x
+    tmp4.assign(this);
+    tmp4.sqr();        // x²
+
+    // (x-1/2)*ln(x)-x
+    ln(); tmp5.assign(tmp3); tmp5.sub(HALF); mul(tmp5); sub(tmp3);
+    // + ln(2*pi)/2
+    tmp5.assign( PI2); tmp5.ln();   tmp5.scalbn(-1); add(tmp5);
+    // + 1/12x
+    tmp5.assign(  12); tmp5.mul(tmp3); tmp5.recip(); add(tmp5); tmp3.mul(tmp4);
+    // - 1/360x³
+    tmp5.assign( 360); tmp5.mul(tmp3); tmp5.recip(); sub(tmp5); tmp3.mul(tmp4);
+    // + 1/1260x^5
+    tmp5.assign(1260); tmp5.mul(tmp3); tmp5.recip(); add(tmp5); tmp3.mul(tmp4);
+    // - 1/1680x^7
+    tmp5.assign(1680); tmp5.mul(tmp3); tmp5.recip(); sub(tmp5); tmp3.mul(tmp4);
+    // + 1/1188x^9
+    tmp5.assign(1188); tmp5.mul(tmp3); tmp5.recip(); add(tmp5);
+
+    exp();
+
+    if (divide)
+      div(tmp2);
+
+    if (negative) {
+      // -pi/(x*gamma(x)*sin(pi*x))
+      mul(tmp1); tmp1.mul(PI); tmp1.sin(); mul(tmp1); recip(); mul(PI); neg();
+    }
   }
 
   private void atof(final String a) {
@@ -1558,19 +1625,44 @@ public final class Real
       return ((sign!=0)?"-":"")+"0x"+Long.toHexString(mantissa)+" E"+
         ((exponent>=0x40000000)?"+":"")+(exponent-0x40000000);
     } else if (base==10) {
+      int i;
       tmp4.assign(this);
       tmp4.toBCD();
       ftoaBuf.setLength(0);
       if (tmp4.sign!=0)
         ftoaBuf.append('-');
-      ftoaBuf.append((char)('0'+(tmp4.mantissa>>>60)));
-      ftoaBuf.append('.');
-      for (int i=56; i>=0; i-=4)
-        ftoaBuf.append((char)('0'+((tmp4.mantissa>>>i)&0xf)));
-      ftoaBuf.append(" E");
-      if (tmp4.exponent>=0)
-        ftoaBuf.append('+');
-      ftoaBuf.append(tmp4.exponent);
+
+      // Add fractional part
+      if (tmp4.exponent>=0 && tmp4.exponent<16)
+      {
+        for (i=0; i<=tmp4.exponent; i++)
+          ftoaBuf.append((char)('0'+((tmp4.mantissa>>>(60-i*4))&0xf)));
+        ftoaBuf.append('.');
+        for (; i<16; i++)
+          ftoaBuf.append((char)('0'+((tmp4.mantissa>>>(60-i*4))&0xf)));
+        tmp4.exponent = 0;
+      }
+      else
+      {
+        ftoaBuf.append((char)('0'+(tmp4.mantissa>>>60)));
+        ftoaBuf.append('.');
+        for (i=56; i>=0; i-=4)
+          ftoaBuf.append((char)('0'+((tmp4.mantissa>>>i)&0xf)));
+      }
+
+      // Remove trailing zeros and dot
+      while (ftoaBuf.charAt(ftoaBuf.length()-1) == '0')
+        ftoaBuf.setLength(ftoaBuf.length()-1);
+      while (ftoaBuf.charAt(ftoaBuf.length()-1) == '.')
+        ftoaBuf.setLength(ftoaBuf.length()-1);
+
+      // Add exponent
+      if (tmp4.exponent != 0) {
+        ftoaBuf.append(" E");
+        if (tmp4.exponent>=0)
+          ftoaBuf.append('+');
+        ftoaBuf.append(tmp4.exponent);
+      }
       return ftoaBuf.toString();
     } else {
       return ((sign!=0)?"-?":"?");
