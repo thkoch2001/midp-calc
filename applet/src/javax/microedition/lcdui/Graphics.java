@@ -10,7 +10,7 @@ public class Graphics
   public static final int TOP = 16;
   public static final int VCENTER = 2;
 
-  java.awt.Graphics g;
+  public java.awt.Graphics g;
   java.applet.Applet applet;
   Font font;
 
@@ -46,7 +46,7 @@ public class Graphics
   }
 
   public void setClip(int x, int y, int width, int height) {
-    g.setClip(x,y,width,height);
+    g.clipRect(x,y,width,height);
   }
 
   public void drawString(String str, int x, int y, int anchor) {

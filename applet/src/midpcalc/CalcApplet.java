@@ -12,17 +12,15 @@ public class CalcApplet
   private static CalcApplet currentApplet;
   
   public void paint(Graphics g) {
-    Display.getDisplay(calc).getCurrent().paint(g);
+    Display.getDisplay(calc).getCurrent().processRepaint(g);
   }
 
   public void keyReleased(KeyEvent e) { }
   public void keyTyped(KeyEvent e) {
     int key = e.getKeyChar();
-    System.out.println("keyTyped("+key+")");
     Display.getDisplay(calc).getCurrent().processKeyPress(key);
   }
   public void keyPressed(KeyEvent e) {
-    System.out.println("keyPressed("+e.getKeyCode()+")");
     int key = 0;
     switch (e.getKeyCode()) {
       case KeyEvent.VK_UP:

@@ -21,7 +21,7 @@ public abstract class Canvas extends Displayable
     image = new java.awt.image.BufferedImage(
       getWidth(),getHeight(),java.awt.image.BufferedImage.TYPE_INT_RGB);
     graphics = new Graphics(image.getGraphics(),
-			    ral.CalcApplet.getCurrentApplet());
+      ral.CalcApplet.getCurrentApplet());
   }
 
   public int getGameAction(int keyCode) {
@@ -40,31 +40,15 @@ public abstract class Canvas extends Displayable
     return 0;
   }
 
-  public int getHeight() {
-    return ral.CalcApplet.getCurrentApplet().getHeight(); // ... -kanter
-  }
-
-  public int getWidth() {
-    return ral.CalcApplet.getCurrentApplet().getWidth(); // ... -kanter
-  }
-
   public boolean hasPointerEvents() {
     return true;
-  }
-
-  public void repaint() {
-    ral.CalcApplet.getCurrentApplet().repaint();
-  }
-
-  public void repaint(int x, int y, int width, int height) {
-    ral.CalcApplet.getCurrentApplet().repaint(x,y,width,height);
   }
 
   protected abstract void paint(Graphics g);
 
   public void paint(java.awt.Graphics g) {
-    // ... draw commands
-    // ... clipping
+    g.drawImage(image,0,0,ral.CalcApplet.getCurrentApplet());
+    graphics.g.setClip(0,0,getWidth(),getHeight());
     paint(graphics);
     g.drawImage(image,0,0,ral.CalcApplet.getCurrentApplet());
   }

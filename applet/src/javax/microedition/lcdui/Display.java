@@ -5,8 +5,7 @@ public class Display
   Displayable current;
 
   public void callSerially(Runnable r) {
-    System.out.println("callSerially");
-    // ..
+    java.awt.EventQueue.invokeLater(r);
   }
   
   public Displayable getCurrent() {

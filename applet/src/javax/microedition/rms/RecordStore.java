@@ -6,8 +6,9 @@ public class RecordStore
   }
 
   public static RecordStore openRecordStore(String a, boolean create)
+    throws Exception
   {
-    return new RecordStore();
+    throw new Exception();
   }
 
   public static void deleteRecordStore(String a) {

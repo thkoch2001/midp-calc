@@ -669,7 +669,7 @@ public final class CalcCanvas
 
     calc = new CalcEngine();
 
-    numberFontStyle = GFont.MEDIUM;
+    numberFontStyle = getWidth()>=128 ? GFont.LARGE : GFont.MEDIUM;
     if (in != null)
       restoreState(in);
     if (!midlet.display.isColor()) {
@@ -1349,7 +1349,7 @@ public final class CalcCanvas
       case '\b':
         clearKeyPressed();
         break;
-      case '#': case 'e': case 'E':
+      case '#': case '-': case 'e': case 'E':
         if (!midlet.hasClearKey) {
           clearKeyPressed();
           break;

@@ -80,17 +80,13 @@ public class SetupCanvas
     alertText =
       "To adapt the user interface, please complete the following setup.";
     alertHeading = "Setup";
+    setupKeys();
 
     // Preset setup values for known devices
     String name = null;
     try {
       name = System.getProperty("microedition.platform");
     } catch (Exception e) {
-      midlet.hasClearKey = true;
-      midlet.commandArrangement = 0;
-      midlet.bgrDisplay = false;
-      query = QUERY_FINISHED;
-      finish();
     }
     if (name != null) {
       if (name.startsWith("Nokia")) {
@@ -143,24 +139,6 @@ public class SetupCanvas
 
   public void paint(Graphics g) {
     String text,heading;
-    if (yes!=null) removeCommand(yes);
-    if (no !=null) removeCommand(no);
-    if (left!=null) removeCommand(left);
-    if (right!=null) removeCommand(right);
-    removeCommand(ok);
-    if (alertText != null) {
-      addCommand(ok);
-    } else if (query == COMMAND_QUERY) {
-      no  = new Command("no",  commandArrangement[2*arrangement], 1);
-      yes = new Command("yes", commandArrangement[2*arrangement+1], 1);
-      addCommand(no);
-      addCommand(yes);
-    } else if (query == BGR_QUERY) {
-      left = new Command("left",  commandArrangement[2*arrangement], 1);
-      right = new Command("right", commandArrangement[2*arrangement+1], 1);
-      addCommand(left);
-      addCommand(right);
-    }
     if (alertText != null) {
       g.setColor(216,156,156);
       text = alertText;
@@ -187,6 +165,32 @@ public class SetupCanvas
     }
   }
 
+  private void setupKeys() {
+    if (yes!=null) removeCommand(yes);
+    if (no !=null) removeCommand(no);
+    if (left!=null) removeCommand(left);
+    if (right!=null) removeCommand(right);
+    removeCommand(ok);
+    if (alertText != null) {
+      addCommand(ok);
+    } else if (query == COMMAND_QUERY) {
+      no  = new Command("no",  commandArrangement[2*arrangement], 1);
+      yes = new Command("yes", commandArrangement[2*arrangement+1], 1);
+      addCommand(no);
+      addCommand(yes);
+    } else if (query == BGR_QUERY) {
+      left = new Command("left",  commandArrangement[2*arrangement], 1);
+      right = new Command("right", commandArrangement[2*arrangement+1], 1);
+      addCommand(left);
+      addCommand(right);
+    }
+  }
+  
+  private void doRepaint() {
+    setupKeys();
+    repaint();
+  }
+
   private void clearKeyPressed(boolean hasClearKey) {
     midlet.hasClearKey = hasClearKey;
     if (midlet.display.isColor()) {
@@ -200,13 +204,13 @@ public class SetupCanvas
       alertHeading = "Setup";
       query = QUERY_FINISHED;
     }
-    repaint();
+    doRepaint();
   }
 
   private void clearKeyInUse() {
     alertText = "Sorry, that key is used for something else";
     alertHeading = setupHeading;
-    repaint();
+    doRepaint();
   }
 
   private void nextCommandArrangement() {
@@ -216,7 +220,7 @@ public class SetupCanvas
     else
       alertText = "Okay, trying next key arrangement ["+arrangement+"]";
     alertHeading = setupHeading;
-    repaint();
+    doRepaint();
   }
 
   private void finish() {
@@ -283,7 +287,7 @@ public class SetupCanvas
     }
     if (alertText != null) {
       alertText = null;
-      repaint();
+      doRepaint();
       return;
     }
     if (query == CLEAR_QUERY) {
@@ -305,7 +309,7 @@ public class SetupCanvas
       query = QUERY_FINISHED;
       midlet.bgrDisplay = c == right;
     }
-    repaint();
+    doRepaint();
   }
 
 }

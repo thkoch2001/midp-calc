@@ -122,7 +122,7 @@ public final class Calc
   public void destroyApp(boolean unconditional) {
     if (dataStore != null) {
       DataOutputStream out = dataStore.startWriting();
-      if (out != null) {
+      if (out != null && screen != null) {
         try {
           saveSetup(out);
           screen.saveState(out);
@@ -130,6 +130,7 @@ public final class Calc
         }
       }
       dataStore.close();
+      dataStore = null;
     }
   }
     
