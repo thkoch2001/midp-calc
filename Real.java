@@ -1,5 +1,10 @@
 // class Real: Integer implementation of 64-bit precision floating point
 //
+// Public fields:
+//   long mantissa
+//   int exponent
+//   byte sign
+//
 // Constructors/assignment:
 //   Real()                                 <==  0
 //   Real(Real)                             <==  Real

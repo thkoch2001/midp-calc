@@ -53,6 +53,7 @@ instead of "(" and ")". Additionally, being able to store and see
 intermediate results on the stack is very advantageous.<br>
 
 <br>
+Using my <a href="Real.html">Real</a> Java floating point library,
 Calc has 63 bits internal precision, which amounts to approximately 19
 decimal digits accuracy, considerably <em>more</em> than mere
 calculators and computers (mention them not). The exponent is 31 bits,
@@ -452,6 +453,43 @@ to &#960; (or -180 to 180 in DEG mode)</li>
 </ul>
 
 <h2>Notes</h2>
+
+<h3>Abnormal results</h3>
+
+The calculator implements infinites and nan following the IEEE754
+logic. It is impossible to enter abnormal numbers through the
+keyboard, but they are easily obtained by calculation. If an operation
+produces a result larger than the largest representable number, an
+infinity value is generated, and "inf" or "-inf" is displayed. If an
+operation produces a result smaller than the smallest representable
+number, zero is generated. To be able to use this result properly in
+further calculations, the number "-0" may also be produced. If an
+operation would produce a complex result or is otherwise impossible, a
+nan value is produced and "nan" is displayed (not-a-number).<br>
+
+<br>
+Abnormal numbers are often fine to use in further calculations. In
+most cases where the final result would be meaningful, abnormal
+numbers accomplish this. For instance, atan(inf)=pi/2, 1/inf=0,
+etc. In most cases where the final result is not meaningful, a nan
+will be produced.<br>
+
+<br>
+Examples of operations with abnormal numbers are:<br>
+1/0 = inf<br>
+1+inf = inf<br>
+1*inf = inf<br>
+0/0 = nan<br>
+0*inf = nan<br>
+inf/inf = nan<br>
+inf-inf = nan<br>
+sqrt(-1) = nan<br>
+ln(-1) = nan<br>
+1/inf = 0<br>
+-1*0 = -0<br>
+Any operation involving nan produces nan, except nan to the power of
+0:<br>
+nan^0 = 1<br>
 
 <h3>Financial calculation</h3>
 
