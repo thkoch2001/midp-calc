@@ -6,8 +6,7 @@ public class SetupCanvas
     extends Canvas
     implements CommandListener
 {
-  private Font menuFont;
-  private Font boldMenuFont;
+  private final Calc midlet;
 
   private Command yes;
   private Command no;
@@ -15,42 +14,51 @@ public class SetupCanvas
   private Command left;
   private Command right;
 
-  private final Calc midlet;
-
+  // The main queries consists of a heading and a text
   private String setupHeading;
   private String setupText;
+
+  // I try to make the query texts as short as possible to make them fit on
+  // really small screens such as Nokia 3510i
   private String commandQueryHeading = "Setup: keys";
   private String commandQueryText =
-    "Press \"yes\" if you see \"no\" and \"yes\" mapped to the left and right keys below";
+    "Press \"yes\" if you see \"no\" and \"yes\" mapped to the "+
+    "left and right keys below";
+  
   private String clearQueryHeading = "Setup: clear key";
   private String clearQueryText =
     "If you have a \"clear\" key, press it now, otherwise use #";
 
   private String bgrQueryHeading = "Setup: font";
-  private String bgrQueryText = "What looks best, left or right numbers?";
-  
-  private String alertString;
-  private String alertHeading;
+  private String bgrQueryText =
+    "What looks best, left or right numbers?";
 
+  // Alert texts inform the user between the main queries
+  private String alertHeading;
+  private String alertText;
+
+  // Setup states to keep track of progress
   private static final int COMMAND_QUERY = 0;
   private static final int CLEAR_QUERY = 1;
   private static final int BGR_QUERY = 2;
   private static final int QUERY_FINISHED = 3;
-  
   private int query;
 
+  private Font menuFont;
+  private Font boldMenuFont;
   private GFont fontLeft,fontRight;
 
   public static final int [] commandArrangement = {
-    Command.OK, Command.SCREEN,
+    // Pairs of command types that lead to different command arrangements
+    Command.OK,   Command.SCREEN,
     Command.ITEM, Command.BACK,
     Command.ITEM, Command.SCREEN,
-    Command.OK, Command.ITEM,
+    Command.OK,   Command.ITEM,
     Command.ITEM, Command.CANCEL,
     Command.ITEM, Command.STOP,
-    Command.OK, Command.BACK,
-    Command.OK, Command.CANCEL,
-    Command.OK, Command.STOP,
+    Command.OK,   Command.BACK,
+    Command.OK,   Command.CANCEL,
+    Command.OK,   Command.STOP,
   };
   private int arrangement = 0;
 
@@ -69,15 +77,18 @@ public class SetupCanvas
     setupHeading = commandQueryHeading;
     setupText = commandQueryText;
 
-    alertString =
+    alertText =
       "To adapt the user interface, please complete the following setup.";
     alertHeading = "Setup";
 
+    // Preset setup values for known devices
     String name = System.getProperty("microedition.platform");
     if (name != null) {
       if (name.startsWith("Nokia")) {
+        // Just start with the most likely command arrangement for Nokia
         arrangement = 1;
-      } else if (name.indexOf("T610")>0 || name.indexOf("Z600")>0) {
+      } else if (name.indexOf("T610")>0 || name.indexOf("Z600")>0 ||
+                 name.indexOf("Z1010")>0) {
         midlet.hasClearKey = true;
         midlet.commandArrangement = 0;
         midlet.bgrDisplay = false;
@@ -122,12 +133,13 @@ public class SetupCanvas
   }
 
   public void paint(Graphics g) {
+    String text,heading;
     if (yes!=null) removeCommand(yes);
     if (no !=null) removeCommand(no);
     if (left!=null) removeCommand(left);
     if (right!=null) removeCommand(right);
     removeCommand(ok);
-    if (alertString != null) {
+    if (alertText != null) {
       addCommand(ok);
     } else if (query == COMMAND_QUERY) {
       no  = new Command("no",  commandArrangement[2*arrangement], 1);
@@ -140,10 +152,9 @@ public class SetupCanvas
       addCommand(left);
       addCommand(right);
     }
-    String text,heading;
-    if (alertString != null) {
+    if (alertText != null) {
       g.setColor(216,156,156);
-      text = alertString;
+      text = alertText;
       heading = alertHeading;
     } else {
       g.setColor(156,216,216);
@@ -156,7 +167,7 @@ public class SetupCanvas
     g.drawString(heading,2,0,g.TOP|g.LEFT);
     g.setFont(menuFont);
     drawWrapped(g,2,boldMenuFont.getHeight()+3,getWidth()-3,text);
-    if (alertString == null && query == BGR_QUERY) {
+    if (alertText == null && query == BGR_QUERY) {
       if (fontLeft == null) {
         fontLeft = new GFont(GFont.MEDIUM);
         fontRight = new GFont(GFont.MEDIUM|GFont.BGR_ORDER);
@@ -170,13 +181,13 @@ public class SetupCanvas
   private void clearKeyPressed(boolean hasClearKey) {
     midlet.hasClearKey = hasClearKey;
     if (midlet.display.isColor()) {
-      alertString = "Thank you - next setup item";
+      alertText = "Thank you - next setup item";
       alertHeading = "Setup";
       query = BGR_QUERY;
       setupHeading = bgrQueryHeading;
       setupText = bgrQueryText;
     } else {
-      alertString = "Thank you - setup finished";
+      alertText = "Thank you - setup finished";
       alertHeading = "Setup";
       query = QUERY_FINISHED;
     }
@@ -184,7 +195,7 @@ public class SetupCanvas
   }
 
   private void clearKeyInUse() {
-    alertString = "Sorry, that key is used for something else";
+    alertText = "Sorry, that key is used for something else";
     alertHeading = setupHeading;
     repaint();
   }
@@ -192,9 +203,9 @@ public class SetupCanvas
   private void nextCommandArrangement() {
     arrangement = (arrangement+1)%(commandArrangement.length/2);
     if (arrangement == 0)
-      alertString = "All arrangements tried, trying first again";
+      alertText = "All arrangements tried, trying first again";
     else
-      alertString = "Okay, trying next key arrangement";
+      alertText = "Okay, trying next key arrangement";
     alertHeading = setupHeading;
     repaint();
   }
@@ -209,11 +220,6 @@ public class SetupCanvas
       finish();
       return;
     }
-    //if (alertString != null) {
-    //  alertString = null;
-    //  repaint();
-    //  return;
-    //}
     if (query == COMMAND_QUERY) {
       nextCommandArrangement();
       return;
@@ -267,8 +273,8 @@ public class SetupCanvas
       finish();
       return;
     }
-    if (alertString != null) {
-      alertString = null;
+    if (alertText != null) {
+      alertText = null;
       repaint();
       return;
     }
@@ -277,7 +283,7 @@ public class SetupCanvas
       return;
     }
     if (c == yes) {
-      alertString = "Thank you - next setup item";
+      alertText = "Thank you - next setup item";
       alertHeading = "Setup";
       midlet.commandArrangement = (byte)arrangement;
       query = CLEAR_QUERY;
@@ -286,7 +292,7 @@ public class SetupCanvas
     } else if (c == no) {
       nextCommandArrangement();
     } else if (c == left || c == right) {
-      alertString = "Thank you - setup finished";
+      alertText = "Thank you - setup finished";
       alertHeading = "Setup";
       query = QUERY_FINISHED;
       midlet.bgrDisplay = c == right;
