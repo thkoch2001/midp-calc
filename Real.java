@@ -250,12 +250,12 @@ public final class Real
   }
 
   public void assign(byte [] data, int offset) {
-    sign = (byte)((data[offset]>>7)&1);
+    sign = (byte)((data[offset+4]>>7)&1);
     exponent = (((data[offset   ]&0x7f)<<24)+
                 ((data[offset +1]&0xff)<<16)+
                 ((data[offset +2]&0xff)<<8)+
                 ((data[offset +3]&0xff)));
-    mantissa = (((long)(data[offset+ 4]&0xff)<<56)+
+    mantissa = (((long)(data[offset+ 4]&0x7f)<<56)+
                 ((long)(data[offset+ 5]&0xff)<<48)+
                 ((long)(data[offset+ 6]&0xff)<<40)+
                 ((long)(data[offset+ 7]&0xff)<<32)+
@@ -266,11 +266,11 @@ public final class Real
   }
 
   public void toBytes(byte [] data, int offset) {
-    data[offset   ] = (byte)((sign<<7)+(exponent>>24));
+    data[offset   ] = (byte)(exponent>>24);
     data[offset+ 1] = (byte)(exponent>>16);
     data[offset+ 2] = (byte)(exponent>>8);
     data[offset+ 3] = (byte)(exponent);
-    data[offset+ 4] = (byte)(mantissa>>56);
+    data[offset+ 4] = (byte)((sign<<7)+(mantissa>>56));
     data[offset+ 5] = (byte)(mantissa>>48);
     data[offset+ 6] = (byte)(mantissa>>40);
     data[offset+ 7] = (byte)(mantissa>>32);
@@ -299,15 +299,15 @@ public final class Real
   }
 
   public boolean isZero() {
-    return (mantissa == 0 && exponent == 0);
+    return (exponent == 0 && mantissa == 0);
   }
 
   public boolean isInfinity() {
-    return (mantissa == 0 && exponent < 0);
+    return (exponent < 0 && mantissa == 0);
   }
 
   public boolean isNan() {
-    return (mantissa != 0 && exponent < 0);
+    return (exponent < 0 && mantissa != 0);
   }
 
   public boolean isFinite() {
@@ -317,7 +317,7 @@ public final class Real
 
   public boolean isFiniteNonZero() {
     // That is, non-infinite and non-nan and non-zero
-    return (mantissa != 0 && exponent >= 0);
+    return (exponent >= 0 && mantissa != 0);
   }
 
   public void abs() {
@@ -609,6 +609,7 @@ public final class Real
     return sign!=0;
   }
 
+  // Temporary values used by functions (to avoid "new" inside functions)
   private static Real subTmp = new Real();
   private static Real recipTmp = new Real();
   private static Real recipTmp2 = new Real();
@@ -1047,12 +1048,25 @@ public final class Real
       return;
 
     byte s = sign;
-    sign = 0;
+    abs();
     log2();
     mul(THIRD);
     exp2();
     if (!isNan())
       sign = s;
+  }
+
+  public void nroot(Real root) {
+    boolean negative = false;
+    if (isNegative() && root.isIntegral() && root.isOdd()) {
+      negative = true;
+      abs();
+    }
+    tmp2.assign(root);
+    tmp2.recip();
+    pow(tmp2);
+    if (negative)
+      neg();
   }
 
   public void hypot(final Real a) {
@@ -1399,19 +1413,6 @@ public final class Real
     exp2();
     if (!isNan())
       sign = s;
-  }
-
-  public void nroot(Real root) {
-    boolean negative = false;
-    if (isNegative() && root.isIntegral() && root.isOdd()) {
-      negative = true;
-      abs();
-    }
-    tmp2.assign(root);
-    tmp2.recip();
-    pow(tmp2);
-    if (negative)
-      neg();
   }
 
   private void sinInternal() {
