@@ -77,7 +77,7 @@ public class SetupCanvas
     if (name != null) {
       if (name.startsWith("Nokia")) {
         arrangement = 1;
-      } else if (name.indexOf("T610")>0) {
+      } else if (name.indexOf("T610")>0 || name.indexOf("Z600")>0) {
         midlet.hasClearKey = true;
         midlet.commandArrangement = 0;
         midlet.bgrDisplay = false;
