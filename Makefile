@@ -19,6 +19,9 @@ default: $(TARGETS)
 pgm2java: pgm2java.c
 	gcc -o $@ $< -Wall -O2
 
+Real.java: Real.jpp Makefile
+	cpp -C -P -DDO_INLINE -o $@ $<
+
 GFontBase.java: pgm2java large.pgm medium.pgm small.pgm Makefile
 	echo "package ral;"                          >  $@
 	echo "abstract class GFontBase {"            >> $@
