@@ -1282,6 +1282,7 @@ public final class CalcEngine
         } else {
           y.nroot(x);
         }
+        break;
       case TO_CPLX:
         allocImagStack();
         cplx = true;
