@@ -205,7 +205,7 @@ public class SetupCanvas
     if (arrangement == 0)
       alertText = "All arrangements tried, trying first again";
     else
-      alertText = "Okay, trying next key arrangement";
+      alertText = "Okay, trying next key arrangement ["+arrangement+"]";
     alertHeading = setupHeading;
     repaint();
   }
