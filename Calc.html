@@ -1,20 +1,12 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
 <head>
-  <meta http-equiv="content-type"
- content="text/html; charset=ISO-8859-1">
+  <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
   <title>Calc - Java Calculator: Scientific, Statistical, Financial,
   Progarmmable, Graphing, RPN</title>
-<style type="text/css">
-<!--
-  A.black:link {color: #000000}
-  A.black:visited {color: #000000}
-  A.black:hover {color: #000000}
-  A.black:active {color: #000000}  
--->
 </style>
 </head>
-<body>
+<body bgcolor="#f0f0c0">
 
 <h1>Calc - Java Calculator for cell-phones and MIDP devices</h1>
 <b><font size="+1">
@@ -450,6 +442,7 @@ The following operations are available through the menu system:
     when x elements is taken from a population of y
     <li><b>x!</b> : Calculate the factorial of x. For non-integer values,
     &#915;(x+1) is calculated
+    <li><b>&#915;x</b> : Calculate the gamma function
     <li><b>erfc</b>: Calculate the complementary error function,
   1-erf(x), equal to the integral from x to infinity of
   2/&#8730;<span style="text-decoration:
@@ -466,7 +459,7 @@ The following operations are available through the menu system:
     <li><b>hypot</b>: Calculate &#8730;<span
     style="text-decoration: overline;">x²+y²</span>
     <li><b>r&rarr;cplx</b>: Convert rectangular coordinates
-    (x=re,&nbspy=im) to complex number
+    (x=re,&nbsp;y=im) to complex number
   </ul>
   <li>Complex numbers (available instead of coordinate menu if x or y
   is complex) <a href="Calc.html#ComplexNote"><b>(*)</b></a>
@@ -1188,7 +1181,9 @@ tell Calc the ranges along the x axis and y axis that you want to see
 during drawing. If the program does not clutter the stack, the graph
 limits will remain on the stack when graph drawing is finished. If a
 program returns a complex value, the graph will split into two lines
-of different color.<br>
+of different color. This is a neat way to display two (non-complex)
+graphs at once, placing both graph values in x and y and using
+"r&rarr;cplx".<br>
 
 <br>
 While drawing a graph, Calc will continue calculating new graph points

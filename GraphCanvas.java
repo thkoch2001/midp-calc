@@ -28,16 +28,21 @@ public final class GraphCanvas
   }
 
   public void paint(Graphics g) {
+    cc.drawModeIndicators(g);
     if (!internalRepaint) {
       // Clear screen
       g.setColor(0);
       g.fillRect(gx,gy,gw,gh);
       cc.calc.startGraph(g,gx,gy,gw,gh);
+      if (!cc.calc.progRunning) {
+        // Make sure "RUN" indicator is turned off by yet another redraw
+        midlet.display.callSerially(this); // Calls back run() below later
+        return;
+      }
     }
     internalRepaint = false;
 
     if (cc.calc.progRunning) {
-      cc.drawModeIndicators(g);
       cc.calc.continueGraph(g,gx,gy,gw,gh);
       if (cc.calc.progRunning)
         midlet.display.callSerially(this); // Calls back run() below later
@@ -45,11 +50,15 @@ public final class GraphCanvas
   }
 
   public void run() {
-    internalRepaint = true;
-    repaint();
+    if (isShown()) {
+      internalRepaint = true;
+      repaint();
+    }
   }
 
   public void commandAction(Command c, Displayable d) {
+    cc.calc.progRunning = false;
+    internalRepaint = false;
     midlet.displayScreen();
   }
 }

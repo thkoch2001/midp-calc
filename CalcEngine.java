@@ -3271,7 +3271,7 @@ public final class CalcEngine
 
   private int rangeScale(Real x, Real min, Real max, int size, Real offset) {
     if (!x.isFinite())
-      return 0x7fffffff;
+      return (x.sign*2-1)*0x4000;
     rTmp.assign(x);
     rTmp.sub(min);
     rTmp2.assign(max);
@@ -3281,7 +3281,8 @@ public final class CalcEngine
     rTmp.mul(rTmp2);
     rTmp.add(offset);
     rTmp.round();
-    return rTmp.toInteger();
+    int i = rTmp.toInteger();
+    return (i < -0x4000) ? -0x4000 : ((i > 0x4000) ? 0x4000 : i);
   }
 
   private int findTickStep(Real step, Real min, Real max, int size) {
@@ -3360,7 +3361,8 @@ public final class CalcEngine
     }
     if (xMin.equals(xMax) || yMin.equals(yMax))
       return false;
-    
+
+    progRunning = true;
     return true;
   }
 
@@ -3456,7 +3458,6 @@ public final class CalcEngine
       currentProg = graphCmd-PROG_DRAW;
       a.assign(0, 0x3fffffff, 0x4f1bbcdcbfa53e0bL); // a = golden ratio, 0.618
       b.makeZero();
-      progRunning = true;
       return;
     }
     
@@ -3537,6 +3538,8 @@ public final class CalcEngine
         g.fillRect(xi-1,yi-1,3,3);
       }
     }
+
+    progRunning = false;
   }
 
   public void continueGraph(Graphics g, int gx, int gy, int gw, int gh) {
