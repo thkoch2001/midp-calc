@@ -117,6 +117,10 @@ public final class CalcEngine
   private Real.NumberFormat format;
   private Real [] stack;
   private String [] strStack;
+  private Real [] memory;
+  private Real [] stat;
+  private Real lastx;
+  private Real tmp;
   private StringBuffer inputBuf;
   private boolean degrees;
   private boolean clearOnInput;
@@ -127,7 +131,8 @@ public final class CalcEngine
     if (inputInProgress)
       parseInput();
     for (int i=0; i<stack.length; i++)
-      strStack[i] = null;
+      if (strStack[i] != "")
+        strStack[i] = null;
     repaint(-1);
     clearOnInput = false;
   }
@@ -136,17 +141,34 @@ public final class CalcEngine
     inputInProgress = false;
     clearOnInput = false;
     for (int i=0; i<stack.length; i++) {
-      stack[i] = new Real(Real.NAN);
+      stack[i].assign(Real.ZERO);
       strStack[i] = "";
     }
     repaint(-1);
   }
   
+  private void clearStat() {
+    if (inputInProgress)
+      parseInput();
+    for (int i=0; i<stat.length; i++)
+      stat[i].assign(Real.ZERO);
+  }
+  
   public CalcEngine()
   {
-    stack = new Real[20];
-    strStack = new String[stack.length];
+    int i;
     format = new Real.NumberFormat();
+    stack = new Real[20];
+    for (i=0; i<stack.length; i++)
+      stack[i] = new Real();
+    strStack = new String[stack.length];
+    memory = new Real[16];
+    for (i=0; i<memory.length; i++)
+      memory[i] = new Real();
+    stat = new Real[6];
+    for (i=0; i<stat.length; i++)
+      stat[i] = new Real();
+    tmp = new Real();
     inputBuf = new StringBuffer(40);
     degrees = false;
     clearStack();
@@ -327,6 +349,7 @@ public final class CalcEngine
     if (inputInProgress)
       parseInput();
     Real x = stack[0];
+    lastx.assign(x);
     Real y = stack[1];
     switch (cmd) {
       case ADD:   y.add(x);               break;
@@ -350,7 +373,7 @@ public final class CalcEngine
       case CLEAR:                         break;
     }
     rollDown();
-    stack[stack.length-1].assign(Real.NAN);
+    stack[stack.length-1].assign(Real.ZERO);
     strStack[stack.length-1] = "";
     if (cmd!=CLEAR)
       strStack[0] = null;
@@ -358,10 +381,11 @@ public final class CalcEngine
     repaint(-1);
   }
 
-  private void unary(int cmd) {
+  private void unary(int cmd, int param) {
     if (inputInProgress)
       parseInput();
     Real x = stack[0];
+    lastx.assign(x);
     switch (cmd) {
       case NEG:   x.neg();   break;
       case ABS:   x.abs();   break;
@@ -394,11 +418,108 @@ public final class CalcEngine
       case FLOOR: x.floor(); break;
       case TRUNC: x.trunc(); break;
       case FRAC:  x.frac();  break;
-      case XCHGN: return; // NOP for now
+      case XCHGN:
+        tmp = stack[0];
+        stack[0] = stack[param];
+        stack[param] = tmp;
+        strStack[param] = strStack[0];
+        repaint(-1);
+        return;
     }
     strStack[0] = null;
     clearOnInput = false;
     repaint(1);
+  }
+
+  private void xyOp(int cmd) {
+    if (inputInProgress)
+      parseInput();
+    Real x = stack[0];
+    lastx.assign(x);
+    Real y = stack[1];
+    switch (cmd) {
+      case RP:
+        tmp.assign(y);
+        tmp.atan2(x);
+        x.hypot(y);
+        y.assign(tmp);
+        fromRAD(y);
+        strStack[0] = null;
+        strStack[1] = null;
+        break;
+      case PR:
+        toRAD(y);
+        tmp.assign(y);
+        tmp.cos();
+        y.sin();
+        y.mul(x);
+        x.mul(tmp);
+        strStack[0] = null;
+        strStack[1] = null;
+        break;
+      case XCHG:
+        tmp = stack[0];
+        stack[0] = stack[1];
+        stack[1] = tmp;
+        String tmpStr = strStack[0];
+        strStack[0] = strStack[1];
+        strStack[1] = tmpStr;
+        break;
+    }
+    clearOnInput = false;
+    repaint(2);
+  }
+
+  private void recall(Real x) {
+    if (inputInProgress)
+      parseInput();
+    if (clearOnInput) {
+      repaint(1);
+    } else {
+      rollUp();
+      repaint(-1);
+    }
+    stack[0].assign(x);
+    strStack[0] = null;
+    clearOnInput = false;
+  }
+
+  private void sum(int cmd) {
+    if (inputInProgress)
+      parseInput();
+    Real x = stack[0];
+    Real y = stack[1];
+    switch (cmd) {
+      case SUMPL:
+        stat[0].add(Real.ONE);
+        stat[1].add(x);
+        tmp.assign(x);
+        tmp.sqr();
+        stat[2].add(tmp);
+        stat[3].add(y);
+        tmp.assign(y);
+        tmp.sqr();
+        stat[4].add(tmp);
+        tmp.assign(x);
+        tmp.mul(y);
+        stat[5].add(tmp);
+        break;
+      case SUMMI:
+        stat[0].sub(Real.ONE);
+        stat[1].sub(x);
+        tmp.assign(x);
+        tmp.sqr();
+        stat[2].sub(tmp);
+        stat[3].sub(y);
+        tmp.assign(y);
+        tmp.sqr();
+        stat[4].sub(tmp);
+        tmp.assign(x);
+        tmp.mul(y);
+        stat[5].sub(tmp);
+        break;
+    }
+    clearOnInput = false;
   }
 
   public void command(int cmd, int param) {
@@ -438,35 +559,63 @@ public final class CalcEngine
       case NOT:
       case ROUND: case CEIL:  case FLOOR: case TRUNC: case FRAC:
       case XCHGN:
-        unary(cmd);
+        unary(cmd,param);
+        break;
+      case PI:
+        recall(Real.PI);
         break;
       case RP:
       case PR:
-      case PI:
       case XCHG:
-        break; // NOP for now
+        xyOp(cmd);
+        break;
       case CLS:
         clearStack();
-        break; // NOP for now
+        break;
       case RCLN:
+        recall(stack[param]);
+        break;
       case LASTX:
+        recall(lastx);
+        break; // NOP for now
       case STO:
+        memory[param].assign(stack[0]);
+        break;
       case STP:
+        memory[param].add(stack[0]);
+        break;
       case RCL:
+        recall(memory[param]);
+        break;
       case SUMPL:
       case SUMMI:
+        sum(cmd);
+        break;
       case CLST:
+        clearStat();
+        break;
       case AVG:
       case S:
       case LR:
       case YR:
       case N:
+        recall(stat[0]);
+        break;
       case SUMX:
+        recall(stat[1]);
+        break;
       case SUMXX:
+        recall(stat[2]);
+        break;
       case SUMY:
+        recall(stat[3]);
+        break;
       case SUMYY:
+        recall(stat[4]);
+        break;
       case SUMXY:
-        break; // NOP for now
+        recall(stat[5]);
+        break;
       case NORM:
         if (format.fse != Real.NumberFormat.FSE_NONE) {
           format.fse = Real.NumberFormat.FSE_NONE;
