@@ -2234,7 +2234,7 @@ public final class Real
     if (isInfinity())
       return (sign!=0)?"-inf":"inf";
     if (isZero() && format.fse == NumberFormat.FSE_NONE && format.removePoint)
-      return (sign!=0)?"-0":"0";
+      return (sign!=0 && format.base==10)?"-0":"0";
 
     int bitsPerDigit,digitsPerThousand;
     switch (format.base) {
@@ -2263,10 +2263,20 @@ public final class Real
     tmp4.assign(this);
     if (isZero()) {
       tmp4.exponent = 0;
+      if (format.base != 10)
+        tmp4.sign = 0; // Two's complement cannot display -0
     } else {
       if (format.base == 10) {
         tmp4.toBCD();
       } else {
+        if (tmp4.sign != 0) {
+          tmp4.mantissa = -tmp4.mantissa;
+          if ((tmp4.mantissa >>> 62) == 3) {
+            tmp4.mantissa <<= 1;
+            tmp4.exponent--;
+            accurateBits--;
+          }
+        }
         tmp4.exponent -= 0x40000000-1;
         int shift = bitsPerDigit-1 - floorMod(tmp4.exponent,bitsPerDigit);
         tmp4.exponent = floorDiv(tmp4.exponent,bitsPerDigit);
@@ -2277,7 +2287,7 @@ public final class Real
           accurateBits--;
         }
         else if (shift>0)
-          tmp4.mantissa = (tmp4.mantissa+(1L<<(shift-1)))>>>shift;
+          tmp4.mantissa = (tmp4.mantissa+(1L<<(shift-1)))>>shift; // >> not >>>
       }
     }
     int accurateDigits = (accurateBits+bitsPerDigit-1)/bitsPerDigit;
@@ -2287,8 +2297,12 @@ public final class Real
     do
     {
       int width = format.maxwidth-1; // subtract 1 for decimal point
-      if (tmp4.sign!=0)
+      int prefix = 0;
+      if (tmp4.sign!=0) {
         width--; // subtract 1 for sign
+        if (format.base != 10)
+          prefix = 1; // want room for at least one "f/7/1", too
+      }
 
       boolean useExp = false;
       switch (format.fse) {
@@ -2307,7 +2321,7 @@ public final class Real
           precision = 1000;
           if (format.fse == NumberFormat.FSE_FIX)
             precision = format.precision+1;
-          if (tmp4.exponent+1 > width-tmp4.exponent/digitsPerThousand ||
+          if (tmp4.exponent+1 > width-tmp4.exponent/digitsPerThousand-prefix ||
               tmp4.exponent+1 > accurateDigits ||
               -tmp4.exponent >= width ||
               -tmp4.exponent >= precision)
@@ -2321,6 +2335,9 @@ public final class Real
           }
           break;
       }
+
+      if (prefix!=0 && pointPos>=0)
+        width -= prefix;
 
       ftoaExp.setLength(0);
       if (useExp) {
@@ -2345,16 +2362,17 @@ public final class Real
 
     // Start generating the string. First the sign
     ftoaBuf.setLength(0);
-    if (tmp4.sign!=0) {
+    if (tmp4.sign!=0 && format.base == 10)
       ftoaBuf.append('-');
-    }
 
     // Add leading zeros
     if (pointPos < 0) {
-      ftoaBuf.append('0');
+      char lead = (format.base==10 || tmp4.sign==0) ? '0' :
+                    hexChar.charAt(format.base-1);
+      ftoaBuf.append(lead);
       ftoaBuf.append(format.point);
       while (pointPos < -1) {
-        ftoaBuf.append('0');
+        ftoaBuf.append(lead);
         pointPos++;
       }
     }
@@ -2384,6 +2402,13 @@ public final class Real
 
     // Add exponent
     ftoaBuf.append(ftoaExp);
+
+    // In case of negative hex/oct/bin number, prefix with "..." and f/7/1's
+    if (tmp4.sign!=0 && format.base!=10) {
+      ftoaBuf.insert(0,(char)127); // Assuming this is char looks like "..."
+      while (ftoaBuf.length()<format.maxwidth)
+        ftoaBuf.insert(1,hexChar.charAt(format.base-1)); // f/7/1
+    }
 
     return ftoaBuf.toString();
   }
