@@ -15,9 +15,9 @@ public final class CalcCanvas
 //            -> pow     -> y^x    y^1/x  ln      e^x
 //                       -> pow10/2 -> log10 10^x log2 2^x
 //            -> prob    -> Py,x   Cy,x   x!      erfc
-//            -> coord   -> r->p   p->r   atan2   hypot   ->cplx
 //            -> misc    -> mod    div    random  factorize
-//   math     -> cplx    -> split  abs    arg     conj
+//            -> coord   -> r->p   p->r   atan2   hypot   ->cplx
+//            -> cplx    -> split  abs    arg     conj
 //   trig     -> normal  -> sin    cos    tan
 //            -> arc     -> asin   acos   atan
 //            -> hyp     -> sinh   cosh   tanh
@@ -54,7 +54,10 @@ public final class CalcCanvas
 // * replaces math/trig in hex/oct/bin mode
 //
 // Extensions:
-//   spceial  -> stat    -> S_xw s_xw
+//   spceial  -> stat    -> result  -> avg -> S_xw s_xw
+//   special  -> conv    -> time    -> H->unix  unix->H
+//                                     H->JD    JD->H
+//                                     H->MJD   MJD->H
 //
 ///  special  -> run                                                -> #
 ///  mode     -> prog    -> new                                     -> #
