@@ -46,15 +46,15 @@ final class GFont
       for (int y2=0; y2<char_height; y2++)
         for (int x2=0; x2<char_width; x2++) {
           int red,green,blue;
-          int bitPos = (index*char_width*char_height+y2*char_width+x2-1)*2;
+          int bitPos = (index*char_width*char_height+y2*char_width+x2)*4-2;
           if (x2>0)
-            red = ((char_bits.charAt(bitPos/8)>>(7-(bitPos&7)))&0x3)*85;
+            red = ((char_bits.charAt(bitPos/8)>>(bitPos&7))&3)*85;
           else
             red = 0;
           bitPos += 2;
-          green = ((char_bits.charAt(bitPos/8)>>(7-(bitPos&7)))&0x3)*85;
+          green = ((char_bits.charAt(bitPos/8)>>(bitPos&7))&3)*70;
           bitPos += 2;
-          blue = ((char_bits.charAt(bitPos/8)>>(7-(bitPos&7)))&0x3)*85;
+          blue = ((char_bits.charAt(bitPos/8)>>(bitPos&7))&3)*85;
           g2.setColor(red,green,blue);
           g2.fillRect(x2,y2,1,1);
         }

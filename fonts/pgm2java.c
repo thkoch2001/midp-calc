@@ -46,7 +46,7 @@ void scan(unsigned char *image, int x, int y, int height, int width,
     for (x2=0; x2<width; x2++) {
       bitPos = (y2*width+x2)*2;
       b = (image[(y+y2)*iW+x+x2]+85/2)/85;
-      bits[bitPos/8] |= b<<(7-(bitPos&7));
+      bits[bitPos/8] |= b<<(bitPos&7);
     }
 }
 
