@@ -233,14 +233,15 @@ public final class CalcEngine
   public static final int MJD_TO_DHMS    = 224;
   public static final int SGN            = 225;
   public static final int PUSH_ZERO      = 226;
-  public static final int PUSH_INF       = 227;
-  public static final int PUSH_INF_N     = 228;
-  public static final int PROG_NEW       = 229;
-  public static final int PROG_FINISH    = 230;
-  public static final int PROG_RUN       = 231;
-  public static final int PROG_PURGE     = 232;
-  public static final int PROG_CLEAR     = 233;
-  public static final int PROG_DIFF      = 234;
+  public static final int PUSH_ZERO_N    = 227;
+  public static final int PUSH_INF       = 228;
+  public static final int PUSH_INF_N     = 229;
+  public static final int PROG_NEW       = 230;
+  public static final int PROG_FINISH    = 231;
+  public static final int PROG_RUN       = 232;
+  public static final int PROG_PURGE     = 233;
+  public static final int PROG_CLEAR     = 234;
+  public static final int PROG_DIFF      = 235;
 
   // These commands are handled from CalcCanvas
   public static final int AVG_DRAW       = 300;
@@ -335,7 +336,7 @@ public final class CalcEngine
     { "M0=","M1=","M2=","M3=","M4=","M5=","M6=","M7=",
       "M8=","M9=","M10=","M11=","M12=","M13=","M14=","M15=" };
   private static final String [] statLabels =
-    { "n=","$x=","$y=","$x\"=","$y\"=","$xy=","$&x=","$&\"x=",
+    { "n=","$x=","$x\"=","$y=","$y\"=","$xy=","$&x=","$&\"x=",
       "$&y=","$&\"y=","$x&y=","$y&x=","$&x&y=" };
   private static final String [] financeLabels =
     { "pv=","fv=","np=","pmt=","ir%=" };
@@ -2760,7 +2761,7 @@ public final class CalcEngine
       prog[currentProg] = prog2;
     }
     if (x.isZero())
-      prog[currentProg][progCounter++] = (short)PUSH_ZERO;
+      prog[currentProg][progCounter++] = (short)(PUSH_ZERO + x.sign);
     else if (x.isInfinity())
       prog[currentProg][progCounter++] = (short)(PUSH_INF + x.sign);
     else {
@@ -2990,6 +2991,7 @@ public final class CalcEngine
       case CONST_ml_floz:push(0x40000004,0x764b4b5568e820e6L); break;
       case CONST_K_C:   push(0x40000008, 0x444999999999999aL); break;
       case PUSH_ZERO:   push(Real.ZERO,  null);                break;
+      case PUSH_ZERO_N: push(Real.ZERO_N,null);                break;
       case PUSH_INF:    push(Real.INF,   null);                break;
       case PUSH_INF_N:  push(Real.INF_N, null);                break;
       case RANDOM:
