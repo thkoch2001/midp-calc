@@ -254,7 +254,7 @@ public final class Real
 
   public void assign(byte [] data, int offset) {
     sign = (byte)((data[offset+4]>>7)&1);
-    exponent = (((data[offset   ]&0x7f)<<24)+
+    exponent = (((data[offset   ]&0xff)<<24)+
                 ((data[offset +1]&0xff)<<16)+
                 ((data[offset +2]&0xff)<<8)+
                 ((data[offset +3]&0xff)));
@@ -710,10 +710,9 @@ public final class Real
       makeInfinity(sign);
       return;
     }
-    int e = a.exponent;
     exponent += a.exponent-0x40000000;
     if (exponent < 0) {
-      if (e<0x4000000)
+      if (a.exponent < 0x40000000)
         makeZero(sign);     // Underflow
       else
         makeInfinity(sign); // Overflow
@@ -966,7 +965,7 @@ public final class Real
     int e = exponent;
     exponent += exponent-0x40000000;
     if (exponent < 0) {
-      if (e<0x4000000)
+      if (e < 0x40000000)
         makeZero(sign);     // Underflow
       else
         makeInfinity(sign); // Overflow
