@@ -10,12 +10,13 @@ public class CalcCanvas
 //               ENTER  +  0-9a-f  .  -/E  clear  menu
 // Menu:
 //   basic    ->            -      *      /       +/-     %
-//   math     -> simple  -> 1/x    x^2    x^1/2   %chg
-//                          int -> round ceil floor trunc frac
+//   math     -> simple  -> 1/x    x^2    sqrt    %chg
+//                       -> int -> round ceil floor trunc frac
 //            -> pow     -> y^x    y^1/x  ln      e^x
-//            -> comb    -> Py,x   Cy,x   x!      random  factorize
-//            -> pow10/2 -> log    10^x   log2    2^x
+//                       -> pow10/2 -> log10 10^x log2 2^x
+//            -> prob    -> Py,x   Cy,x   x!      erfc
 //            -> coord   -> r->p   p->r   atan2   hypot   ->cplx
+//            -> misc    -> mod    div    random  factorize
 //   math     -> cplx    -> split  abs    arg     conj
 //   trig     -> normal  -> sin    cos    tan
 //            -> arc     -> asin   acos   atan
@@ -25,8 +26,8 @@ public class CalcCanvas
 //   bitop*   ->            and    or     xor     bic
 //   bitop2*  ->            not    y<<x   y>>x
 //                          int -> round ceil floor trunc frac
-//   special  -> stack   -> x<->y  clear  RCL st# LASTx  undo     ( -> # )
-//            -> int     -> round  ceil   floor   trunc  frac
+//   special  -> stack   -> x<->y  clear  LASTx   undo     ( -> # )
+//                       -> more   -> rolldn rollup RCLst# x<->st#
 //            -> mem     -> STO#   STO+#  RCL#    x<->mem#          -> #
 //            -> stat    -> SUM+   SUM-   clear
 //                       -> result -> avg    -> x,y sx,sy dx,dy xw draw
@@ -38,12 +39,12 @@ public class CalcCanvas
 //                                 -> x      -> SUMx SUMx² SUMlnx SUMln²x
 //                                 -> y      -> SUMy SUMy² SUMlny SUMln²y
 //                                 -> xy     -> SUMxy SUMxlny SUMylnx SUMlnxlny
-//               finance -> STO RCL solve -> pv fv np pmt ir
-//                          clear
+//            -> finance -> STO RCL solve -> pv fv np pmt ir
+//                       -> clear
 //            -> time    -> ->DH.MS ->H   DH.MS+ time   date
 //   mode     -> number  -> normal FIX#   SCI#   ENG#             ( -> # )
 //            -> sepr    -> decimal  ->   dot comma remove keep
-//                          thousand ->   dot/comma space ' none
+//                       -> thousand ->   dot/comma space ' none
 //            -> base    -> dec    hex    oct    bin
 //            -> monitor -> mem    stat   finance                 ( -> # )
 //            -> font    -> small  medium large  system
@@ -51,7 +52,6 @@ public class CalcCanvas
 // * replaces math/trig in hex/oct/bin mode
 //
 // Extensions:
-//   math     -> modulo  -> mod    rem
 //   spceial  -> stat    -> S_xw s_xw
 //
 ///  special  -> run                                                -> #
@@ -65,6 +65,17 @@ public class CalcCanvas
 ///           -> flags   -> sf cf fs? fc?                           -> #
 ///           -> progoff
 
+// Complex operations:
+//   + - * / +/- 1/x x² sqrt
+//   <pow> <pow10/2> <trig/normal> <trig/hyp>
+//   <cplx> <stack> <mem> <int>
+// Not yet complex:
+//   <trig/arc> <trig/archyp>
+// Not complex:
+//   % %chg and or xor bic not y<<x y>>x RAD/DEG ->RAD ->DEG
+//   <prob> <coord> <misc> <stat> <finance> <time>
+//
+  
   private static class Menu
   {
     public String label;
@@ -134,7 +145,12 @@ public class CalcCanvas
         new Menu("LAST x",CalcEngine.LASTX),
         new Menu("x=y",CalcEngine.XCHG),
         new Menu("undo",CalcEngine.UNDO),
-        new Menu("RCL st#",CalcEngine.RCLST,Menu.NUMBER_REQUIRED),
+        new Menu("more",Menu.TITLE_SKIP,new Menu [] {
+          new Menu("RCL st#",CalcEngine.RCLST,Menu.NUMBER_REQUIRED),
+          new Menu("rolldn",CalcEngine.ROLLDN),
+          new Menu("rollup",CalcEngine.ROLLUP),
+          new Menu("x=st#",CalcEngine.XCHGST,Menu.NUMBER_REQUIRED),
+        }),
         new Menu("clear",CalcEngine.CLS),
       }),
       new Menu("mem",new Menu[] {
@@ -341,20 +357,25 @@ public class CalcCanvas
       new Menu("y^x",CalcEngine.YPOWX),
       new Menu("ln",CalcEngine.LN),
       new Menu("^x^Qy",CalcEngine.XRTY),
+      new Menu("pow_10,2",new Menu[] {
+        new Menu("2^x",CalcEngine.EXP2),
+        new Menu("10^x",CalcEngine.EXP10),
+        new Menu("log_2",CalcEngine.LOG2),
+        new Menu("log_10",CalcEngine.LOG10),
+      }),
     }),
     null, // coord or cplx
-    new Menu("pow_10,2",new Menu[] {
-      new Menu("2^x",CalcEngine.EXP2),
-      new Menu("10^x",CalcEngine.EXP10),
-      new Menu("log_2",CalcEngine.LOG2),
-      new Menu("log_10",CalcEngine.LOG10),
-    }),
-    new Menu("comb",new Menu[] {
+    new Menu("misc",new Menu[] {
       new Menu("random",CalcEngine.RANDOM),
+      new Menu("mod",CalcEngine.MOD),
+      new Menu("div",CalcEngine.DIVF),
+      new Menu("factorize",CalcEngine.FACTORIZE),
+    }),
+    new Menu("prob",new Menu[] {
       new Menu("P y,x",CalcEngine.PYX),
       new Menu("C y,x",CalcEngine.CYX),
-      new Menu("factorize",CalcEngine.FACTORIZE),
       new Menu("x!",CalcEngine.FACT),
+      new Menu("erfc",CalcEngine.ERFC),
     }),
   });
   private static final Menu trig = new Menu("trig",new Menu[] {
