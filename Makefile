@@ -41,6 +41,7 @@ Calc.jad: Makefile
 	echo "MIDlet-Data-Size: 2048"                >> $@
 	echo "MIDlet-Jar-URL: http://gridbug.ods.org/Calc.jar" >> $@
 	echo "MIDlet-Jar-Size: 0"                    >> $@
+	echo "MIDletX-LG-Contents: G7100"            >> $@
 	echo "MicroEdition-Profile: MIDP-1.0"        >> $@
 	echo "MicroEdition-Configuration: CLDC-1.0"  >> $@
 	echo "MIDlet-1: Calc, /ral/Calc.png, ral.Calc" >> $@
