@@ -33,6 +33,7 @@ public final class CalcEngine
   public static final int RECIP          =  25;
   public static final int SQR            =  26;
   public static final int SQRT           =  27;
+  public static final int PERCENT        = 300;
   public static final int PERCENT_CHG    =  28;
   public static final int YPOWX          =  29;
   public static final int XRTY           =  30;
@@ -72,9 +73,9 @@ public final class CalcEngine
   public static final int YDNX           =  64;
   public static final int XCHG           =  65;
   public static final int CLS            =  66;
-  public static final int XCHGST         =  67;
-  public static final int RCLST          =  68;
-  public static final int LASTX          =  69;
+  public static final int RCLST          =  67;
+  public static final int LASTX          =  68;
+  public static final int UNDO           =  69;
   public static final int ROUND          =  70;
   public static final int CEIL           =  71;
   public static final int FLOOR          =  72;
@@ -189,7 +190,7 @@ public final class CalcEngine
   public Real [] finance;
   public boolean begin;
   public int statLogStart,statLogEnd;
-  public Real lastx;
+  public Real lastx,lasty,lastz;
   public boolean degrees;
   public StringBuffer inputBuf;
   public boolean inputInProgress;
@@ -209,6 +210,16 @@ public final class CalcEngine
       "$&y=","$&\"y=","$x&y=","$y&x=","$&x&y=" };
   private static final String [] financeLabels =
     { "pv=","fv=","np=","pmt=","ir%=" };
+
+  private static final int UNDO_NONE   = 0;
+  private static final int UNDO_UNARY  = 1;
+  private static final int UNDO_BINARY = 2;
+  private static final int UNDO_PUSH   = 3;
+  private static final int UNDO_PUSH2  = 4;
+  private static final int UNDO_XY     = 5;
+  private static final int UNDO_PUSHXY = 6;
+  private int undoStackEmpty = 0;
+  private int undoOp = UNDO_NONE;
   
   public CalcEngine()
   {
@@ -220,6 +231,8 @@ public final class CalcEngine
     monitorStr = new String[MEM_SIZE];
 
     lastx = new Real();
+    lasty = new Real();
+    lastz = new Real();
     rTmp = new Real();
     rTmp2 = new Real();
     rTmp3 = new Real();
@@ -586,7 +599,7 @@ public final class CalcEngine
       case CLEAR:
         if (inputBuf.length()==0) {
           inputInProgress = false;
-          binary(CLEAR);
+          undo(); // This will undo the "enter" that input started with
           return;
         }
         inputBuf.setLength(inputBuf.length()-1);
@@ -734,6 +747,9 @@ public final class CalcEngine
       parseInput();
     else {
       rollUp();
+      lasty.assign(stack[0]);
+      undoStackEmpty = strStack[0]==empty ? 1 : 0;
+      undoOp = UNDO_PUSH;
       stack[0].assign(stack[1]);
       strStack[0] = strStack[1];
       repaint(-1);
@@ -792,8 +808,11 @@ public final class CalcEngine
     if (inputInProgress)
       parseInput();
     Real x = stack[0];
-    lastx.assign(x);
     Real y = stack[1];
+    lastx.assign(x);
+    lasty.assign(y);
+    undoStackEmpty = strStack[1]==empty ? strStack[0]==empty ? 2 : 1 : 0;
+    undoOp = UNDO_BINARY;
     switch (cmd) {
       case ADD:   y.add(x);                break;
       case SUB:   x.neg();    y.add(x);    break;
@@ -811,9 +830,9 @@ public final class CalcEngine
       case YDNX:  x.round(); y.scalbn(-x.toInteger());break;
       case PERCENT_CHG:
         x.sub(y);
-        x.div(y);
-        y.assign(100);
+        y.recip();
         y.mul(x);
+        y.mul(Real.HUNDRED);
         break;
       case DHMS_PLUS:
         x.fromDHMS();
@@ -841,20 +860,18 @@ public final class CalcEngine
         y.div(x);
         break;
       case FINANCE_DIVINT:
-        rTmp.assign(100);
-        y.div(rTmp);
+        y.mul(Real.PERCENT);
         y.add(Real.ONE);
         y.nroot(x);
         y.sub(Real.ONE);
-        y.mul(rTmp);
+        y.mul(Real.HUNDRED);
         break;
       case FINANCE_MULINT:
-        rTmp.assign(100);
-        y.div(rTmp);
+        y.mul(Real.PERCENT);
         y.add(Real.ONE);
         y.pow(x);
         y.sub(Real.ONE);
-        y.mul(rTmp);        
+        y.mul(Real.HUNDRED);
         break;
       case CLEAR:
         break;
@@ -896,6 +913,8 @@ public final class CalcEngine
     Real x = stack[0];
     Real tmp;
     lastx.assign(x);
+    undoStackEmpty = strStack[0]==empty ? 1 : 0;
+    undoOp = UNDO_UNARY;
     switch (cmd) {
       case NEG:   x.neg();   break;
       case RECIP: x.recip(); break;
@@ -927,14 +946,9 @@ public final class CalcEngine
       case FLOOR: x.floor(); break;
       case TRUNC: x.trunc(); break;
       case FRAC:  x.frac();  break;
-      case XCHGST:
-        if (strStack[param] != empty) {
-          tmp = stack[0];
-          stack[0] = stack[param];
-          stack[param] = tmp;
-          strStack[param] = strStack[0];
-          repaint(param+1);
-        }
+      case PERCENT:
+        x.mul(Real.PERCENT);
+        x.mul(stack[1]/*y*/);
         break;
       case XCHGMEM:
         allocMem();
@@ -1016,8 +1030,11 @@ public final class CalcEngine
     if (inputInProgress)
       parseInput();
     Real x = stack[0];
-    lastx.assign(x);
     Real y = stack[1];
+    lastx.assign(x);
+    lasty.assign(y);
+    undoStackEmpty = strStack[1]==empty ? strStack[0]==empty ? 2 : 1 : 0;
+    undoOp = UNDO_XY;
     switch (cmd) {
       case RP:
         rTmp.assign(y);
@@ -1050,10 +1067,13 @@ public final class CalcEngine
     repaint(2);
   }
 
-  private void recall(Real x) {
+  private void push(Real x) {
     if (inputInProgress)
       parseInput();
     rollUp();
+    lasty.assign(stack[0]);
+    undoStackEmpty = strStack[0]==empty ? 1 : 0;
+    undoOp = UNDO_PUSH;
     stack[0].assign(x);
     strStack[0] = null;
     repaint(-1);
@@ -1149,7 +1169,7 @@ public final class CalcEngine
       clearMonitorStrings();
       repaint(-1);
     }
-    recall(SUM1);
+    push(SUM1);
   }
 
   private void stat2(int cmd) {
@@ -1158,6 +1178,10 @@ public final class CalcEngine
     allocStat();
     rollUp();
     rollUp();
+    lasty.assign(stack[0]);
+    lastz.assign(stack[1]);
+    undoStackEmpty = strStack[1]==empty ? strStack[0]==empty ? 2 : 1 : 0;
+    undoOp = UNDO_PUSH2;
     Real x = stack[0];
     Real y = stack[1];
     switch (cmd) {
@@ -1242,6 +1266,9 @@ public final class CalcEngine
       parseInput();
     allocStat();
     rollUp();
+    lasty.assign(stack[0]);
+    undoStackEmpty = strStack[0]==empty ? 1 : 0;
+    undoOp = UNDO_PUSH;
     Real x = stack[0];
     switch (cmd) {
       case AVGXW:
@@ -1279,9 +1306,8 @@ public final class CalcEngine
           PV.neg();
         } else {
           // pv = -(((1+ir)^np-1)*pmt*(1+ir*bgn)/ir + fv)/((1+ir)^np)
-          rTmp.assign(100);
-          rTmp.recip();
-          rTmp.mul(IR);
+          rTmp.assign(IR);
+          rTmp.mul(Real.PERCENT);
           rTmp2.assign(rTmp);
           rTmp2.add(Real.ONE);
           rTmp2.pow(NP);
@@ -1307,9 +1333,8 @@ public final class CalcEngine
           FV.neg();
         } else {
           // fv = -((1+ir)^np*pv + ((1+ir)^np - 1)*pmt*(1+ir*bgn)/ir)
-          rTmp.assign(100);
-          rTmp.recip();
-          rTmp.mul(IR);
+          rTmp.assign(IR);
+          rTmp.mul(Real.PERCENT);
           rTmp2.assign(rTmp);
           rTmp2.add(Real.ONE);
           rTmp2.pow(NP);
@@ -1339,9 +1364,8 @@ public final class CalcEngine
           // np = ln((pmt/ir + pmt*bgn - fv) /
           //         (pmt/ir + pmt*bgn + pv)) /
           //      ln(1 + ir)
-          rTmp.assign(100);
-          rTmp.recip();
-          rTmp.mul(IR);
+          rTmp.assign(IR);
+          rTmp.mul(Real.PERCENT);
           NP.assign(PMT);
           NP.div(rTmp);
           if (begin)
@@ -1367,9 +1391,8 @@ public final class CalcEngine
           }
         } else {
           // pmt = -(((1+ir)^np*pv+fv)*ir)/(((1+ir)^np-1)*(1 + ir*bgn));
-          rTmp.assign(100);
-          rTmp.recip();
-          rTmp.mul(IR);
+          rTmp.assign(IR);
+          rTmp.mul(Real.PERCENT);
           rTmp2.assign(rTmp);
           rTmp2.add(Real.ONE);
           rTmp2.pow(NP);
@@ -1409,11 +1432,10 @@ public final class CalcEngine
           IR.div(rTmp);
         } else {
           // If start value fails, use ir itself
-          rTmp.assign(100);
-          IR.div(rTmp);
+          IR.mul(Real.PERCENT);
         }
         if (!IR.isFiniteNonZero())
-          IR.makeExp10(-2); // When all else fails, just start with 0.01
+          IR.makeExp10(-2); // When all else fails, just start with 1%
         Real X1 = new Real();
         Real Y1 = new Real();
         Real X2 = new Real();
@@ -1473,11 +1495,64 @@ public final class CalcEngine
           IR.makeNan();
           break;
         }
-        rTmp.assign(100);
-        IR.mul(rTmp);
+        IR.mul(Real.HUNDRED);
         break;
     }
-    recall(finance[which]);
+    push(finance[which]);
+  }
+
+  private void undo() {
+    if (inputInProgress)
+      parseInput();
+    switch (undoOp) {
+      case UNDO_NONE:
+        break;
+      case UNDO_UNARY:
+        stack[0].assign(lastx);
+        strStack[0] = undoStackEmpty >= 1 ? empty : null;
+        repaint(1);
+        break;
+      case UNDO_BINARY:
+        rollUp();
+        stack[0].assign(lastx);
+        stack[1].assign(lasty);
+        strStack[0] = undoStackEmpty >= 2 ? empty : null;
+        strStack[1] = undoStackEmpty >= 1 ? empty : null;
+        repaint(-1);
+        break;
+      case UNDO_PUSH:
+        stack[0].assign(lasty);
+        strStack[0] = undoStackEmpty >= 1 ? empty : null;
+        rollDown();
+        repaint(-1);
+        break;
+      case UNDO_PUSH2:
+        stack[0].assign(lasty);
+        stack[1].assign(lastz);
+        strStack[0] = undoStackEmpty >= 2 ? empty : null;
+        strStack[1] = undoStackEmpty >= 1 ? empty : null;
+        rollDown();
+        rollDown();
+        repaint(-1);
+        break;
+      case UNDO_XY:
+        stack[0].assign(lastx);
+        stack[1].assign(lasty);
+        strStack[0] = undoStackEmpty >= 2 ? empty : null;
+        strStack[1] = undoStackEmpty >= 1 ? empty : null;
+        repaint(2);
+        break;
+      case UNDO_PUSHXY:
+        stack[0].assign(lasty);
+        stack[1].assign(lastx);
+        strStack[0] = undoStackEmpty >= 1 ? empty : null;
+        strStack[1] = undoStackEmpty >= 2 ? empty : null;
+        // Different this time         ^^^
+        rollDown();
+        repaint(-1);
+        break;
+    }
+    undoOp = UNDO_NONE; // Cannot undo this
   }
 
   public void command(int cmd, int param) {
@@ -1520,7 +1595,7 @@ public final class CalcEngine
       case ASINH: case ACOSH: case ATANH:
       case NOT:
       case ROUND: case CEIL:  case FLOOR: case TRUNC: case FRAC:
-      case XCHGST:
+      case PERCENT:
       case XCHGMEM:
       case TO_DEG: case TO_RAD: case TO_DHMS: case TO_H:
       case LIN_YEST: case LIN_XEST: case LOG_YEST: case LOG_XEST:
@@ -1528,19 +1603,19 @@ public final class CalcEngine
         unary(cmd,param);
         break;
       case PI:
-        recall(Real.PI);
+        push(Real.PI);
         break;
       case RANDOM:
         rTmp.random();
-        recall(rTmp);
+        push(rTmp);
         break;
       case TIME:
         rTmp.time();
-        recall(rTmp);
+        push(rTmp);
         break;
       case DATE:
         rTmp.date();
-        recall(rTmp);
+        push(rTmp);
         break;
       case RP:
       case PR:
@@ -1548,14 +1623,19 @@ public final class CalcEngine
         xyOp(cmd);
         break;
       case CLS:
+        lastx.assign(stack[0]);
         clearStack();
+        undoOp = UNDO_NONE; // Cannot undo this
         break;
       case RCLST:
-        recall(stack[param]);
+        push(stack[param]);
         break;
       case LASTX:
-        recall(lastx);
-        break; // NOP for now
+        push(lastx);
+        break;
+      case UNDO:
+        undo();
+        break;
       case STO:
         if (inputInProgress)
           parseInput();
@@ -1578,9 +1658,9 @@ public final class CalcEngine
         break;
       case RCL:
         if (mem != null)
-          recall(mem[param]);
+          push(mem[param]);
         else
-          recall(Real.ZERO);
+          push(Real.ZERO);
         break;
       case CLMEM:
         clearMem();
@@ -1617,60 +1697,64 @@ public final class CalcEngine
         stat1(cmd);
         break;
       case N:
-        recall(SUM1);
+        push(SUM1);
         break;
       case SUMX:
-        recall(SUMx);
+        push(SUMx);
         break;
       case SUMXX:
-        recall(SUMx2);
+        push(SUMx2);
         break;
       case SUMY:
-        recall(SUMy);
+        push(SUMy);
         break;
       case SUMYY:
-        recall(SUMy2);
+        push(SUMy2);
         break;
       case SUMXY:
-        recall(SUMxy);
+        push(SUMxy);
         break;
       case SUMLNX:
-        recall(SUMlnx);
+        push(SUMlnx);
         break;
       case SUMLN2X:
-        recall(SUMln2x);
+        push(SUMln2x);
         break;
       case SUMLNY:
-        recall(SUMlny);
+        push(SUMlny);
         break;
       case SUMLN2Y:
-        recall(SUMln2y);
+        push(SUMln2y);
         break;
       case SUMXLNY:
-        recall(SUMxlny);
+        push(SUMxlny);
         break;
       case SUMYLNX:
-        recall(SUMylnx);
+        push(SUMylnx);
         break;
       case SUMLNXLNY:
-        recall(SUMlnxlny);
+        push(SUMlnxlny);
         break;
       case FACTORIZE:
         if (inputInProgress)
           parseInput();
+        lastx.assign(stack[0]);
         stack[0].round();
         if (stack[0].exponent > 0x4000001e) {
-          recall(Real.NAN);
+          push(Real.NAN);
         } else {
           int a = stack[0].toInteger();
           int b = greatestFactor(a);
           rollUp();
+          lasty.assign(stack[0]);
+          undoStackEmpty = strStack[0]==empty ? strStack[1]==empty ? 2 : 1 : 0;
           stack[0].assign((b!=0) ? a/b : 0);
           stack[1].assign(b);
           strStack[0] = null;
           strStack[1] = null;
           repaint(-1);
         }
+        undoOp = UNDO_PUSHXY;
         break;
 
       case FINANCE_STO:
@@ -1685,9 +1769,9 @@ public final class CalcEngine
         break;
       case FINANCE_RCL:
         if (finance != null)
-          recall(finance[param]);
+          push(finance[param]);
         else
-          recall(Real.ZERO);
+          push(Real.ZERO);
         break;
       case FINANCE_SOLVE:
         financeSolve(param);

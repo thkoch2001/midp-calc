@@ -9,21 +9,21 @@ public class CalcCanvas
 // Commands:
 //               ENTER  +  0-9a-f  .  -/E  clear  menu
 // Menu:
-//   basic    ->            -      *      /      +/-
-//   math     -> simple  -> 1/x    x^2    x^1/2  %chg
+//   basic    ->            -      *      /       +/-     %
+//   math     -> simple  -> 1/x    x^2    x^1/2   %chg
 //                          int -> round ceil floor trunc frac
-//            -> pow     -> y^x    y^1/x  ln     e^x
-//            -> comb    -> Py,x   Cy,x   x!     random  factorize
-//            -> pow10/2 -> log    10^x   log2   2^x
-//            -> pol     -> r->p   p->r   atan2  hypot
+//            -> pow     -> y^x    y^1/x  ln      e^x
+//            -> comb    -> Py,x   Cy,x   x!      random  factorize
+//            -> pow10/2 -> log    10^x   log2    2^x
+//            -> pol     -> r->p   p->r   atan2   hypot
 //   trig     -> normal  -> sin    cos    tan
 //            -> arc     -> asin   acos   atan
 //            -> hyp     -> sinh   cosh   tanh
 //            -> archyp  -> asinh  acosh  atanh
 //            -> more    -> RAD/DEG ->RAD  ->DEG  pi
-//   bitop*   ->            and    or     xor    bic
+//   bitop*   ->            and    or     xor     bic
 //   bitop2*  ->            not    y<<x   y>>x
-//   special  -> stack   -> x<->y  clear  x<->st# RCL st#  LASTx  ( -> # )
+//   special  -> stack   -> x<->y  clear  RCL st# LASTx  undo     ( -> # )
 //            -> int     -> round  ceil   floor   trunc  frac
 //            -> mem     -> STO#   STO+#  RCL#    x<->mem#          -> #
 //            -> stat    -> SUM+   SUM-   clear
@@ -123,20 +123,24 @@ public class CalcCanvas
       new Menu("*",CalcEngine.MUL),
       new Menu("/",CalcEngine.DIV),
       new Menu("+/-",CalcEngine.NEG),
+      new Menu("%",CalcEngine.PERCENT),
     }),
     null, // math or binop
     null, // trig or binop2
     new Menu("special",new Menu [] {
-      new Menu("finance",new Menu [] {
-        new Menu("STO",CalcEngine.FINANCE_STO,Menu.FINANCE_REQUIRED),
-        new Menu("RCL",CalcEngine.FINANCE_RCL,Menu.FINANCE_REQUIRED),
-        new Menu("solve",CalcEngine.FINANCE_SOLVE,Menu.FINANCE_REQUIRED),
-        new Menu("more",Menu.TITLE_SKIP,new Menu [] {
-          new Menu("END/BGN",CalcEngine.FINANCE_BGNEND),
-          new Menu("y%*x",CalcEngine.FINANCE_MULINT),
-          new Menu("y%/x",CalcEngine.FINANCE_DIVINT),
-        }),
-        new Menu("clear",CalcEngine.FINANCE_CLEAR),
+      new Menu("stack",new Menu[] {
+        new Menu("LAST x",CalcEngine.LASTX),
+        new Menu("x=y",CalcEngine.XCHG),
+        new Menu("undo",CalcEngine.UNDO),
+        new Menu("RCL st#",CalcEngine.RCLST,Menu.NUMBER_REQUIRED),
+        new Menu("clear",CalcEngine.CLS),
+      }),
+      new Menu("mem",new Menu[] {
+        new Menu("STO",CalcEngine.STO,Menu.NUMBER_REQUIRED),
+        new Menu("RCL",CalcEngine.RCL,Menu.NUMBER_REQUIRED),
+        new Menu("STO+",CalcEngine.STP,Menu.NUMBER_REQUIRED),
+        new Menu("x=mem",CalcEngine.XCHGMEM,Menu.NUMBER_REQUIRED),
+        new Menu("clear",CalcEngine.CLMEM),
       }),
       new Menu("stat",new Menu[] {
         new Menu("Z+",CalcEngine.SUMPL),
@@ -201,19 +205,16 @@ public class CalcCanvas
         }),
         new Menu("clear",CalcEngine.CLST),
       }),
-      new Menu("mem",new Menu[] {
-        new Menu("STO",CalcEngine.STO,Menu.NUMBER_REQUIRED),
-        new Menu("STO+",CalcEngine.STP,Menu.NUMBER_REQUIRED),
-        new Menu("RCL",CalcEngine.RCL,Menu.NUMBER_REQUIRED),
-        new Menu("x=mem",CalcEngine.XCHGMEM,Menu.NUMBER_REQUIRED),
-        new Menu("clear",CalcEngine.CLMEM),
-      }),
-      new Menu("stack",new Menu[] {
-        new Menu("LAST x",CalcEngine.LASTX),
-        new Menu("x=y",CalcEngine.XCHG),
-        new Menu("x=st#",CalcEngine.XCHGST,Menu.NUMBER_REQUIRED),
-        new Menu("RCL st#",CalcEngine.RCLST,Menu.NUMBER_REQUIRED),
-        new Menu("clear",CalcEngine.CLS),
+      new Menu("finance",new Menu [] {
+        new Menu("STO",CalcEngine.FINANCE_STO,Menu.FINANCE_REQUIRED),
+        new Menu("RCL",CalcEngine.FINANCE_RCL,Menu.FINANCE_REQUIRED),
+        new Menu("solve",CalcEngine.FINANCE_SOLVE,Menu.FINANCE_REQUIRED),
+        new Menu("more",Menu.TITLE_SKIP,new Menu [] {
+          new Menu("END/BGN",CalcEngine.FINANCE_BGNEND),
+          new Menu("y%*x",CalcEngine.FINANCE_MULINT),
+          new Menu("y%/x",CalcEngine.FINANCE_DIVINT),
+        }),
+        new Menu("clear",CalcEngine.FINANCE_CLEAR),
       }),
       new Menu("time",new Menu[] {
         new Menu("\\DH.MS",CalcEngine.TO_DHMS),

@@ -17,7 +17,9 @@
 
 <h1>Calc - Scientific, Statistical & Financial Java Calculator</h1>
 
-<b>Current version: 1.02</b><br>
+<img src="Calc.jpg" align=right>
+
+<b>Current version: 1.08</b><br>
 
 Author: Roar Lauritzsen, email: <a
 href="&#109;&#097;&#105;&#108;&#116;&#111;&#058;&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;">&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;</a><br>
@@ -154,6 +156,8 @@ The following operations are available through the menu system:
   <li>* : Multiply x and y</li>
   <li>/ : Divide y by x</li>
   <li>+/- : Change sign of x</li>
+  <li>% : Calculate x percent of y. This operation leaves y standing,
+  so you can add or subtract the result directly using + or -</li>
 </ul>
 
 <h3>Math</h3>
@@ -272,8 +276,11 @@ to &#960; (or -180 to 180 in DEG mode)</li>
   <li>Stack</li>
   <ul>
     <li>LAST x: Recall value of x before last operation</li>
+    <li>undo: Undo previous stack operation. Memory, statistical and
+  financial operations, in addition to clear stack, cannot be
+  undone. In operations involving both stack and one of the other
+  modules, such as x&harr;mem, only the stack is restored</li>
     <li>x&harr;y: Exchange x and y elements of the stack</li>
-    <li>x&harr;st#: Exchange x with any element on the stack</li>
     <li>RCL st#: Copy any stack location</li>
     <li>clear: Clear the stack</li>
   </ul>
