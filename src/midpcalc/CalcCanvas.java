@@ -1,6 +1,7 @@
 package ral;
 
 import javax.microedition.lcdui.*;
+import java.io.*;
 
 public final class CalcCanvas
     extends Canvas
@@ -620,6 +621,7 @@ public final class CalcCanvas
   private Font smallMenuFont;
   private Font smallBoldMenuFont;
   private GFont numberFont;
+  private int numberFontStyle;
   public CalcEngine calc;
 
   private final Command add;
@@ -639,15 +641,14 @@ public final class CalcCanvas
   private int menuStackPtr;
   private int menuCommand;
 
-  private static final byte PROPERTY_SCREEN_STATE = 20;
-
-  public CalcCanvas(Calc m) {
+  public CalcCanvas(Calc m, DataInputStream in) {
     midlet = m;
 
     calc = new CalcEngine();
 
-    int numberFontStyle = GFont.MEDIUM;
-    restoreState();
+    numberFontStyle = GFont.MEDIUM;
+    if (in != null)
+      restoreState(in);
     if (!midlet.display.isColor()) {
       numberFontStyle = GFont.SYSTEM;
       // Now, remove the font menu.
@@ -682,26 +683,28 @@ public final class CalcCanvas
     checkRepaint();
   }
 
-  private void saveState() {
-    if (midlet.propertyStore != null) {
-      int numberFontStyle = numberFont.getStyle();
+  public void saveState(DataOutputStream out) {
+    try {
+      numberFontStyle = numberFont.getStyle();
       numberFont = null; // Free some memory before saveState()
-      byte [] buf = new byte[2];
-      buf[0] = PROPERTY_SCREEN_STATE;
-      buf[1] = (byte)numberFontStyle;
-      midlet.propertyStore.setProperty(buf,2);
-      calc.saveState(midlet.propertyStore);
+      out.writeShort(1);
+      out.writeByte(numberFontStyle);
+      calc.command(CalcEngine.FINALIZE,0);
+      calc.saveState(out);
+    } catch (IOException ioe) {
     }
   }
   
-  private void restoreState() {
-    if (m.propertyStore != null) {
-      byte [] buf = new byte[2];
-      buf[0] = PROPERTY_SCREEN_STATE;
-      int length = m.propertyStore.getProperty(buf);
-      if (length >= 2)
-        numberFontStyle = buf[1];
-      calc.restoreState(m.propertyStore);
+  private void restoreState(DataInputStream in) {
+    try {
+      short length = in.readShort();
+      if (length >= 1) {
+        numberFontStyle = in.readByte();
+        length -= 1;
+      }
+      in.skip(length);
+      calc.restoreState(in);
+    } catch (IOException ioe) {
     }
   }
 
@@ -1404,11 +1407,6 @@ public final class CalcCanvas
       calc.command(CalcEngine.ADD,0);
     }
     checkRepaint();
-  }
-
-  public void quit() {
-    calc.command(CalcEngine.FINALIZE,0);
-    saveState();
   }
 
 }

@@ -2,6 +2,7 @@ package ral;
 
 import javax.microedition.midlet.*;
 import javax.microedition.lcdui.*;
+import java.io.*;
 
 public final class Calc
     extends MIDlet
@@ -10,7 +11,7 @@ public final class Calc
   public CalcCanvas screen;
   public SetupCanvas setup;
   public Display display;
-  public PropertyStore propertyStore;
+  public DataStore dataStore;
 
   public TextBox newProgram;
   public Command okCommand;
@@ -24,11 +25,9 @@ public final class Calc
   public byte commandArrangement = 0;
   public boolean bgrDisplay = false;
   
-  public static final byte PROPERTY_SETUP = 0;
-
   public Calc() {
     display = Display.getDisplay(this);
-    propertyStore = PropertyStore.open("CalcData");
+    dataStore = DataStore.open("CalcData");
 
     newProgram = new TextBox("New program", "", CalcEngine.PROGLABEL_SIZE,
                              TextField.ANY);
@@ -40,13 +39,28 @@ public final class Calc
   }
   
   public void startApp() {
-    restoreSetup();
+    DataInputStream in = null;
+    if (dataStore != null)
+      in = dataStore.startReading();
+    if (in != null) {
+      try {
+        restoreSetup(in);
+        screen = new CalcCanvas(this,in);
+      } catch (IOException ioe) {
+      }
+    } else {
+      setup = new SetupCanvas(this);
+      if (!setup.isFinished()) {
+        display.setCurrent(setup);
+        return;
+      }
+    }
     displayScreen();
   }
 
   public void displayScreen() {
     if (screen == null)
-      screen = new CalcCanvas(this);
+      screen = new CalcCanvas(this,null);
     display.setCurrent(screen);
   }
 
@@ -75,11 +89,16 @@ public final class Calc
   }
 
   public void destroyApp(boolean unconditional) {
-    if (propertyStore != null) {
-      
-      saveSetup();
-      screen.quit();
-      propertyStore.close();
+    if (dataStore != null) {
+      DataOutputStream out = dataStore.startWriting();
+      if (out != null) {
+        try {
+          saveSetup(out);
+          screen.saveState(out);
+        } catch (IOException ioe) {
+        }
+      }
+      dataStore.close();
     }
   }
     
@@ -88,33 +107,22 @@ public final class Calc
     notifyDestroyed();
   }
 
-  public void saveSetup() {
-    if (propertyStore != null) {
-      byte [] buf = new byte[4];
-      buf[0] = PROPERTY_SETUP;
-      buf[1] = (byte)(hasClearKey ? 1 : 0);
-      buf[2] = commandArrangement;
-      buf[3] = (byte)(bgrDisplay ? 1 : 0);
-      propertyStore.setProperty(buf,4);
-    }
+  public void saveSetup(DataOutputStream out) throws IOException {
+    out.writeShort(3);
+    out.writeBoolean(hasClearKey);
+    out.writeByte(commandArrangement);
+    out.writeBoolean(bgrDisplay);
   }
 
-  public void restoreSetup() {
-    if (propertyStore != null) {
-      byte [] buf = new byte[4];
-      buf[0] = PROPERTY_SETUP;
-      int length = propertyStore.getProperty(buf);
-      if (length >= 4) {
-        hasClearKey = buf[1] != 0;
-        commandArrangement = buf[2];
-        bgrDisplay = buf[3] != 0;
-      } else {
-        setup = new SetupCanvas(this);
-        if (!setup.isFinished())
-          display.setCurrent(setup);
-        return;
-      }
+  public void restoreSetup(DataInputStream in) throws IOException {
+    short length = in.readShort();
+    if (length >= 3) {
+      hasClearKey = in.readBoolean();
+      commandArrangement = in.readByte();
+      bgrDisplay = in.readBoolean();
+      length -= 3;
     }
+    in.skip(length);
   }
 
 }

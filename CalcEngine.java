@@ -1,6 +1,7 @@
 package ral;
 
 import javax.microedition.lcdui.*;
+import java.io.*;
 
 public final class CalcEngine
 {
@@ -555,288 +556,238 @@ public final class CalcEngine
     }
   }
 
-  private static final byte PROPERTY_SETTINGS = 10;
-  private static final byte PROPERTY_STACK    = 11;
-  private static final byte PROPERTY_MEM      = 12;
-  private static final byte PROPERTY_STAT     = 13;
-  private static final byte PROPERTY_FINANCE  = 14;
-  private static final byte PROPERTY_PROG     = 15;
-  //private static final byte PROPERTY_PROG2  = 16;
-  //private static final byte PROPERTY_PROG3  = 17;
-  //private static final byte PROPERTY_PROG4  = 18;
-  //private static final byte PROPERTY_PROG5  = 19;
-
-  public void saveState(PropertyStore propertyStore)
+  public void saveState(DataOutputStream out) throws IOException
   {
     tryClearImag(true,true);
     tryClearModules(true,true);
 
     int i,j;
-    byte [] buf = new byte[1+STAT_SIZE*12+STATLOG_SIZE*2*4+2];
+    byte [] realBuf = new byte[12];
 
     // Stack
     int stackHeight;
     for (stackHeight=0; stackHeight<STACK_SIZE; stackHeight++)
       if (strStack[stackHeight] == empty)
         break;
-    buf[0] = PROPERTY_STACK;
     if (stackHeight > 0) {
-      for (i=0; i<STACK_SIZE; i++)
-        stack[i].toBytes(buf, 1+i*12);
-      if (imagStack != null) {
-        for (i=0; i<STACK_SIZE; i++)
-          imagStack[i].toBytes(buf, 1+STACK_SIZE*12+i*12);
-        propertyStore.setProperty(buf,1+STACK_SIZE*12*2);
-      } else {
-        propertyStore.setProperty(buf,1+STACK_SIZE*12);
+      out.writeShort(imagStack != null ? STACK_SIZE*12*2 : STACK_SIZE*12);
+      for (i=0; i<STACK_SIZE; i++) {
+        stack[i].toBytes(realBuf,0);
+        out.write(realBuf);
       }
+      if (imagStack != null)
+        for (i=0; i<STACK_SIZE; i++) {
+          imagStack[i].toBytes(realBuf,0);
+          out.write(realBuf);
+        }
     } else {
-      propertyStore.setProperty(buf,1);
+      out.writeShort(0);
     }
 
     //Memory
-    buf[0] = PROPERTY_MEM;
+
     if (mem != null) {
-      for (i=0; i<MEM_SIZE; i++)
-        mem[i].toBytes(buf, 1+i*12);
-      if (imagMem != null) {
-        for (i=0; i<MEM_SIZE; i++)
-          imagMem[i].toBytes(buf, 1+MEM_SIZE*12+i*12);
-        propertyStore.setProperty(buf,1+MEM_SIZE*12*2);
-      } else {
-        propertyStore.setProperty(buf,1+MEM_SIZE*12);
+      out.writeShort(imagMem != null ? MEM_SIZE*12*2 : MEM_SIZE*12);
+      for (i=0; i<MEM_SIZE; i++) {
+        mem[i].toBytes(realBuf,0);
+        out.write(realBuf);
       }
+      if (imagMem != null)
+        for (i=0; i<MEM_SIZE; i++) {
+          imagMem[i].toBytes(realBuf,0);
+          out.write(realBuf);
+        }
     } else {
-      propertyStore.setProperty(buf,1);
+      out.writeShort(0);
     }
 
     // Statistics
-    buf[0] = PROPERTY_STAT;
     if (SUM1 != null) {
-      for (i=0; i<STAT_SIZE; i++)
-        stat[i].toBytes(buf, 1+i*12);
-      for (i=0; i<STATLOG_SIZE*2; i++) {
-        buf[1+STAT_SIZE*12+4*i+0] = (byte)(statLog[i]>>24);
-        buf[1+STAT_SIZE*12+4*i+1] = (byte)(statLog[i]>>16);
-        buf[1+STAT_SIZE*12+4*i+2] = (byte)(statLog[i]>>8);
-        buf[1+STAT_SIZE*12+4*i+3] = (byte)(statLog[i]);
+      out.writeShort(STAT_SIZE*12+STATLOG_SIZE*2*4+2);
+      for (i=0; i<STAT_SIZE; i++) {
+        stat[i].toBytes(realBuf,0);
+        out.write(realBuf);
       }
-      buf[1+STAT_SIZE*12+4*i+0] = (byte)(statLogStart);
-      buf[1+STAT_SIZE*12+4*i+1] = (byte)(statLogSize);
-      propertyStore.setProperty(buf,1+STAT_SIZE*12+STATLOG_SIZE*2*4+2);
+      for (i=0; i<STATLOG_SIZE*2; i++)
+        out.writeInt(statLog[i]);
+      out.writeByte(statLogStart);
+      out.writeByte(statLogSize);
     } else {
-      propertyStore.setProperty(buf,1);
+      out.writeShort(0);
     }
 
     // Finance
-    buf[0] = PROPERTY_FINANCE;
     if (finance != null) {
-      for (i=0; i<FINANCE_SIZE; i++)
-        finance[i].toBytes(buf, 1+i*12);
-      propertyStore.setProperty(buf,1+FINANCE_SIZE*12);
+      out.writeShort(FINANCE_SIZE*12);
+      for (i=0; i<FINANCE_SIZE; i++) {
+        finance[i].toBytes(realBuf,0);
+        out.write(realBuf);
+      }
     } else {
-      propertyStore.setProperty(buf,1);
+      out.writeShort(0);
     }
 
-    // Max program length
-    int maxProgLen = 0;
-    for (i=0; i<5; i++)
-      if (prog!=null && prog[i]!=null && prog[i].length > maxProgLen)
-        maxProgLen = prog[i].length;
-
     // Settings
-    buf[ 0] = PROPERTY_SETTINGS;
-    buf[ 1] = (byte)stackHeight;
-    buf[ 2] = (byte)((degrees ? 1 : 0) + (begin ? 2 : 0));
-    buf[ 3] = (byte)format.base;
-    buf[ 4] = (byte)format.maxwidth;
-    buf[ 5] = (byte)format.precision;
-    buf[ 6] = (byte)format.fse;
-    buf[ 7] = (byte)format.point;
-    buf[ 8] = (byte)(format.removePoint ? 1 : 0);
-    buf[ 9] = (byte)format.thousand;
-    buf[10] = (byte)(Real.randSeedA>>56);
-    buf[11] = (byte)(Real.randSeedA>>48);
-    buf[12] = (byte)(Real.randSeedA>>40);
-    buf[13] = (byte)(Real.randSeedA>>32);
-    buf[14] = (byte)(Real.randSeedA>>24);
-    buf[15] = (byte)(Real.randSeedA>>16);
-    buf[16] = (byte)(Real.randSeedA>>8);
-    buf[17] = (byte)(Real.randSeedA);
-    buf[18] = (byte)(Real.randSeedB>>56);
-    buf[19] = (byte)(Real.randSeedB>>48);
-    buf[20] = (byte)(Real.randSeedB>>40);
-    buf[21] = (byte)(Real.randSeedB>>32);
-    buf[22] = (byte)(Real.randSeedB>>24);
-    buf[23] = (byte)(Real.randSeedB>>16);
-    buf[24] = (byte)(Real.randSeedB>>8);
-    buf[25] = (byte)(Real.randSeedB);    
-    lastx.toBytes(buf,26);
-    buf[26+12+0] = (byte)(((monitorMode-MONITOR_NONE)<<5) + monitorSize);
-    buf[26+12+1] = (byte)(maxProgLen>>8);
-    buf[26+12+2] = (byte)(maxProgLen);
-    propertyStore.setProperty(buf,26+12+3);
+    out.writeShort(10+8*2+12);
+    out.writeByte(stackHeight);
+    out.writeByte((degrees ? 1 : 0) + (begin ? 2 : 0));
+    out.writeByte(format.base);
+    out.writeByte(format.maxwidth);
+    out.writeByte(format.precision);
+    out.writeByte(format.fse);
+    out.writeByte(format.point);                          
+    out.writeBoolean(format.removePoint);
+    out.writeByte(format.thousand);
+    out.writeByte(((monitorMode-MONITOR_NONE)<<5) + monitorSize);
+    out.writeLong(Real.randSeedA);
+    out.writeLong(Real.randSeedB);
+    lastx.toBytes(realBuf,0);
+    out.write(realBuf);
 
     // Programs
-    if (1+PROGLABEL_SIZE*2+maxProgLen*2 > buf.length)
-      buf = new byte[1+PROGLABEL_SIZE*2+maxProgLen*2];
-
     for (i=0; i<5; i++) {
-      buf[0] = (byte)(PROPERTY_PROG+i);
       if (prog!=null && prog[i]!=null && prog[i].length!=0) {
-        for (j=0; j<PROGLABEL_SIZE; j++) {
-          char c = j<progLabels[i].length() ? progLabels[i].charAt(j) : 0;
-          buf[1+2*j+0] = (byte)(c>>8);
-          buf[1+2*j+1] = (byte)(c);
-        }
-        for (j=0; j<prog[i].length; j++) {
-          buf[1+PROGLABEL_SIZE*2+2*j+0] = (byte)(prog[i][j]>>8);
-          buf[1+PROGLABEL_SIZE*2+2*j+1] = (byte)(prog[i][j]);
-        }
-        propertyStore.setProperty(buf,1+PROGLABEL_SIZE*2+prog[i].length*2);
+        out.writeShort(PROGLABEL_SIZE*2+prog[i].length*2);
+        for (j=0; j<PROGLABEL_SIZE; j++)
+          out.writeChar(j<progLabels[i].length() ? progLabels[i].charAt(j):0);
+        for (j=0; j<prog[i].length; j++)
+          out.writeShort(prog[i][j]);
       } else {
-        propertyStore.setProperty(buf,1);
+        out.writeShort(0);
       }
     }
   }
   
-  public void restoreState(PropertyStore propertyStore) {
+  public void restoreState(DataInputStream in) throws IOException {
     int length,i,j;
-    byte [] buf = new byte[1+STAT_SIZE*12+STATLOG_SIZE*2*4+2];
+    byte [] realBuf = new byte[12];
 
     // Stack
-    buf[0] = PROPERTY_STACK;
-    length = propertyStore.getProperty(buf);
-    if (length >= 1+STACK_SIZE*12) {
-      for (i=0; i<STACK_SIZE; i++)
-        stack[i].assign(buf, 1+i*12);
-      if (length >= 1+STACK_SIZE*12*2) {
+    length = in.readShort();
+    if (length >= STACK_SIZE*12) {
+      for (i=0; i<STACK_SIZE; i++) {
+        in.read(realBuf);
+        stack[i].assign(realBuf,0);
+      }
+      length -= STACK_SIZE*12;
+      if (length >= STACK_SIZE*12) {
         allocImagStack();
-        for (i=0; i<STACK_SIZE; i++)
-          imagStack[i].assign(buf, 1+STACK_SIZE*12+i*12);
+        for (i=0; i<STACK_SIZE; i++) {
+          in.read(realBuf);
+          imagStack[i].assign(realBuf,0);
+        }
+        length -= STACK_SIZE*12;
       }
     }
+    in.skip(length);
 
     // Memory
-    buf[0] = PROPERTY_MEM;
-    length = propertyStore.getProperty(buf);
-    if (length >= 1+MEM_SIZE*12) {
+    length = in.readShort();
+    if (length >= MEM_SIZE*12) {
       allocMem();
-      for (i=0; i<MEM_SIZE; i++)
-        mem[i].assign(buf, 1+i*12);
-      if (length >= 1+MEM_SIZE*12*2) {
+      for (i=0; i<MEM_SIZE; i++) {
+        in.read(realBuf);
+        mem[i].assign(realBuf,0);
+      }
+      length -= MEM_SIZE*12;
+      if (length >= MEM_SIZE*12) {
         allocImagMem();
-        for (i=0; i<MEM_SIZE; i++)
-          imagMem[i].assign(buf, 1+MEM_SIZE*12+i*12);
+        for (i=0; i<MEM_SIZE; i++) {
+          in.read(realBuf);
+          imagMem[i].assign(realBuf,0);
+        }
+        length -= MEM_SIZE*12;
       }
     }
+    in.skip(length);
 
     // Statistics
-    buf[0] = PROPERTY_STAT;
-    length = propertyStore.getProperty(buf);
-    if (length >= 1+STAT_SIZE*12+STATLOG_SIZE*2*4+2) {
+    length = in.readShort();
+    if (length >= STAT_SIZE*12+STATLOG_SIZE*2*4+2) {
       allocStat();
-      for (i=0; i<STAT_SIZE; i++)
-        stat[i].assign(buf, 1+i*12);
-      for (i=0; i<STATLOG_SIZE*2; i++) {
-        statLog[i] = (((buf[1+STAT_SIZE*12+4*i+0]&0xff)<<24)+
-                      ((buf[1+STAT_SIZE*12+4*i+1]&0xff)<<16)+
-                      ((buf[1+STAT_SIZE*12+4*i+2]&0xff)<<8)+
-                      ((buf[1+STAT_SIZE*12+4*i+3]&0xff)));
+      for (i=0; i<STAT_SIZE; i++) {
+        in.read(realBuf);
+        stat[i].assign(realBuf,0);
       }
-      statLogStart = buf[1+STAT_SIZE*12+4*i+0]&0xff;
-      statLogSize  = buf[1+STAT_SIZE*12+4*i+1]&0xff;
+      for (i=0; i<STATLOG_SIZE*2; i++)
+        statLog[i] = in.readInt();
+      statLogStart = in.readByte();
+      statLogSize  = in.readByte();
+      length -= STAT_SIZE*12+STATLOG_SIZE*2*4+2;
     }
+    in.skip(length);
 
     // Finance
-    buf[0] = PROPERTY_FINANCE;
-    length = propertyStore.getProperty(buf);
-    if (length >= 1+FINANCE_SIZE*12) {
+    length = in.readShort();
+    if (length >= FINANCE_SIZE*12) {
       allocFinance();
-      for (i=0; i<FINANCE_SIZE; i++)
-        finance[i].assign(buf, 1+i*12);
+      for (i=0; i<FINANCE_SIZE; i++) {
+        in.read(realBuf);
+        finance[i].assign(realBuf,0);
+      }
+      length -= FINANCE_SIZE*12;
     }
+    in.skip(length);
 
     // Settings
-    buf[0] = PROPERTY_SETTINGS;
-    length = propertyStore.getProperty(buf);
-    int maxProgLen = 0;
-    if (length >= 26+12) {
+    length = in.readShort();
+    if (length >= 10+8*2+12) {
+      int stackHeight = in.readByte();
       for (i=0; i<STACK_SIZE; i++)
-        strStack[i] = i<buf[1] ? null : empty;
-      degrees            = (buf[2]&1) != 0;
-      begin              = (buf[2]&2) != 0;
-      format.base        = buf[3];
-      format.maxwidth    = buf[4];
-      format.precision   = buf[5];
-      format.fse         = buf[6];
-      format.point       = (char)buf[7];
-      format.removePoint = buf[8] != 0;
-      format.thousand    = (char)buf[9];
-      Real.randSeedA = (((long)(buf[10]&0xff)<<56)+
-                        ((long)(buf[11]&0xff)<<48)+
-                        ((long)(buf[12]&0xff)<<40)+
-                        ((long)(buf[13]&0xff)<<32)+
-                        ((long)(buf[14]&0xff)<<24)+
-                        ((long)(buf[15]&0xff)<<16)+
-                        ((long)(buf[16]&0xff)<< 8)+
-                        ((long)(buf[17]&0xff)));
-      Real.randSeedB = (((long)(buf[18]&0xff)<<56)+
-                        ((long)(buf[19]&0xff)<<48)+
-                        ((long)(buf[20]&0xff)<<40)+
-                        ((long)(buf[21]&0xff)<<32)+
-                        ((long)(buf[22]&0xff)<<24)+
-                        ((long)(buf[23]&0xff)<<16)+
-                        ((long)(buf[24]&0xff)<< 8)+
-                        ((long)(buf[25]&0xff)));
-      lastx.assign(buf,26);
-      if (length >= 26+12+1) {
-        monitorMode = MONITOR_NONE+((buf[26+12]>>5)&7);
-        monitorSize = buf[26+12]&0x1f;
-        if (monitorMode == MONITOR_MEM) {
-          monitors = mem;
-          imagMonitors = imagMem;
-          monitorLabels = memLabels;
-        } else if (monitorMode == MONITOR_STAT) {
-          monitors = stat;
-          imagMonitors = null;
-          monitorLabels = statLabels;
-        } else if (monitorMode == MONITOR_FINANCE) {
-          monitors = finance;
-          imagMonitors = null;
-          monitorLabels = financeLabels;
-        }
+        strStack[i] = i<stackHeight ? null : empty;
+      int flags = in.readByte();
+      degrees            = (flags&1) != 0;
+      begin              = (flags&2) != 0;
+      format.base        = in.readByte();
+      format.maxwidth    = in.readByte();
+      format.precision   = in.readByte();
+      format.fse         = in.readByte();
+      format.point       = (char)in.readByte();
+      format.removePoint = in.readBoolean();
+      format.thousand    = (char)in.readByte();
+      int monitor        = in.readByte();
+      Real.randSeedA     = in.readLong();
+      Real.randSeedB     = in.readLong();
+      in.read(realBuf);
+      lastx.assign(realBuf,0);
+      monitorMode = MONITOR_NONE+((monitor>>5)&7);
+      monitorSize = monitor&0x1f;
+      if (monitorMode == MONITOR_MEM) {
+        monitors = mem;
+        imagMonitors = imagMem;
+        monitorLabels = memLabels;
+      } else if (monitorMode == MONITOR_STAT) {
+        monitors = stat;
+        imagMonitors = null;
+        monitorLabels = statLabels;
+      } else if (monitorMode == MONITOR_FINANCE) {
+        monitors = finance;
+        imagMonitors = null;
+        monitorLabels = financeLabels;
       }
-      if (length >= 26+12+1+2)
-        maxProgLen = (((buf[26+12+1]&0xff)<<8)+
-                      ((buf[26+12+2]&0xff)));
+      length -= 10+8*2+12;
     }
-
-    // Programs
-    if (1+PROGLABEL_SIZE*2+maxProgLen*2 > buf.length)
-      buf = new byte[1+PROGLABEL_SIZE*2+maxProgLen*2];
+    in.skip(length);
 
     char [] label = new char[PROGLABEL_SIZE];
     for (i=0; i<5; i++) {
-      buf[0] = (byte)(PROPERTY_PROG+i);
-      length = propertyStore.getProperty(buf);
-      if (length >= 1+PROGLABEL_SIZE*2+2) {
+      length = in.readShort();
+      if (length >= PROGLABEL_SIZE*2+2) {
         int labelLen=0;
         for (j=0; j<PROGLABEL_SIZE; j++) {
-          label[j] = (char)(((buf[1+2*j+0]&0xff)<<8)+
-                            ((buf[1+2*j+1]&0xff)));
+          label[j] = in.readChar();
           if (label[j] != 0)
             labelLen = j+1;
         }
         progLabels[i] = new String(label,0,labelLen);
         if (prog == null)
           prog = new short[5][];
-        prog[i] = new short[(length-1-PROGLABEL_SIZE*2)/2];
-        for (j=0; j<prog[i].length; j++) {
-          prog[i][j] = (short)(((buf[1+PROGLABEL_SIZE*2+2*j+0]&0xff)<<8)+
-                               ((buf[1+PROGLABEL_SIZE*2+2*j+1]&0xff)));
-        }
+        prog[i] = new short[(length-PROGLABEL_SIZE*2)/2];
+        for (j=0; j<prog[i].length; j++)
+          prog[i][j] = in.readShort();
+        length -= PROGLABEL_SIZE*2+prog[i].length*2;
       }
+      in.skip(length);
     }
 
     repaint(-1);

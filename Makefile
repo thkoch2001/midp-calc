@@ -11,7 +11,7 @@ JAVAFILES  = Calc.java \
              GraphCanvas.java \
              GFont.java \
              GFontBase.java \
-             PropertyStore.java \
+             DataStore.java \
              SetupCanvas.java \
              Real.java
 

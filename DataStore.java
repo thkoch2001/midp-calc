@@ -1,0 +1,75 @@
+package ral;
+
+import javax.microedition.rms.*;
+import java.io.*;
+
+public final class DataStore
+    extends ByteArrayOutputStream
+{
+  private final RecordStore rs;
+  private final static int magic = 0x526f6172;
+
+  private DataStore(RecordStore rs) {
+    this.rs = rs;
+  }
+  
+  public static DataStore open(String name) {
+    RecordStore rs;
+    try {
+      rs = RecordStore.openRecordStore(name,true);
+    } catch (Exception e) {
+      // Fatal error.
+      System.out.println(e);
+      return null;
+    }
+    return new DataStore(rs);
+  }
+
+  public DataInputStream startReading() {
+    try {
+      RecordEnumeration re = rs.enumerateRecords(null, null, false);
+      DataInputStream dis =
+        new DataInputStream(new ByteArrayInputStream(re.nextRecord()));
+      re.destroy();
+      if (dis.readInt() != magic) {
+        dis.close();
+        return null;
+      }
+      return dis;
+    } catch (RecordStoreException rse) {
+      return null;
+    } catch (IOException ioe) {
+      return null;
+    }
+  }
+
+  public DataOutputStream startWriting() {
+    reset();
+    DataOutputStream dos = new DataOutputStream(this);
+    try {
+      dos.writeInt(magic);
+      return dos;
+    } catch (IOException ioe) {
+      return null;
+    }
+  }
+
+  public void close() {
+    try {
+      RecordEnumeration re = rs.enumerateRecords(null, null, false);
+      if (re.hasNextElement()) {
+        int id = re.nextRecordId();
+        rs.setRecord(id,buf,0,count);
+      } else {
+        rs.addRecord(buf,0,count);
+      }
+      re.destroy();
+    } catch (RecordStoreException rse) {
+    }      
+    try {
+      super.close();
+      rs.closeRecordStore();
+    } catch (Exception e) {
+    }
+  }
+}
