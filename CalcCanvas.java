@@ -57,9 +57,9 @@ public final class CalcCanvas
 //
 // Extensions:
 //   spceial  -> stat    -> result  -> avg -> S_xw s_xw
-//   special  -> conv    -> time    -> H->unix  unix->H
-//                                     H->JD    JD->H
-//                                     H->MJD   MJD->H
+//   special  -> conv    -> time    -> DH.MS->unix  unix->DH.MS
+//                                     DH.MS->JD    JD->DH.MS
+//                                     DH.MS->MJD   MJD->DH.MS
 //   prog[1]  -> run     -> a b c d e
 //            -> new     -> name?
 //            -> clear   -> a b c d e
