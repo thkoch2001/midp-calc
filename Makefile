@@ -1,8 +1,7 @@
 VERSION = 0.99
 TARGETS = Calc.jar Calc.jad
 
-JFLAGS = --bootclasspath=/home/roarl/midpapi.jar -C -d . -O2
-#JFLAGS = --bootclasspath=/home/roarl/s1studio/me/emulator/j2mewtk-1_0_4-linux/lib/midpapi.zip -C -d . -O2
+JFLAGS = --bootclasspath=/home/roarl/ant/WTK2.0/lib/midpapi.zip -C -d . -O2
 
 JAVAFILES  = Calc.java \
              CalcCanvas.java \
@@ -59,7 +58,6 @@ Calc.jad: Calc.jar Makefile
 	echo "MIDlet-Jar-URL: Calc.jar"              >> $@
 	echo "MIDlet-Jar-Size:" `perl -e 'print -s "Calc.jar"'` >> $@
 	echo "MIDlet-1: Calc, , ral.Calc"            >> $@
-	echo ""                                      >> $@
 
 clean:
 	rm -rf $(TARGETS) ral GFontBase.java pgm2java calcManifest
