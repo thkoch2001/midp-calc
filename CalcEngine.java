@@ -1282,7 +1282,69 @@ public final class CalcEngine
         PMT.neg();
         break;
       case 4: // IR
-        //IR.assign(Real.NAN);
+        if ((FV.isZero() && PV.isZero()) ||
+            !PV.isFinite() ||
+            !FV.isFinite() ||
+            !NP.isFinite() ||
+            !PMT.isFinite())
+        {
+          IR.makeNan();
+          break;
+        }
+        rTmp.assign(100);
+        IR.div(rTmp);
+        if (!IR.isFiniteNonZero())
+          IR.makeExp10(-2); // Start with 0.01
+        Real X1 = new Real();
+        Real Y1 = new Real();
+        Real X2 = new Real();
+        Real Y2 = new Real();
+        for (int n=0; n<20; n++) {
+          if (n>=2) {
+            // Calculate secant approximation:
+            // ir = X1 - Y1*(X1-X2)/(Y1-Y2)
+            rTmp.assign(X1);
+            rTmp.sub(X2);
+            rTmp2.assign(Y1);
+            rTmp2.sub(Y2);
+            if (!rTmp.isFinite() || !rTmp2.isFinite() ||
+                rTmp.exponent <= 0x40000000-56 ||
+                rTmp2.exponent <= 0x40000000-46)
+              break;
+            rTmp.div(rTmp2);
+            rTmp.mul(Y1);
+            rTmp.neg();
+            rTmp.add(X1);
+            IR.assign(rTmp);
+          } else if (n==1) {
+            // Use ir and 2*ir as starting values
+            IR.scalbn(1);
+          }
+          // Calculate f(ir) = (1+ir)^np * (pmt+pv*ir) + fv*ir - pmt
+          rTmp.assign(IR);
+          rTmp.add(Real.ONE);
+          rTmp.pow(NP);
+          rTmp2.assign(IR);
+          rTmp2.mul(PV);
+          rTmp2.add(PMT);
+          rTmp.mul(rTmp2);
+          rTmp2.assign(IR);
+          rTmp2.mul(FV);
+          rTmp.add(rTmp2);
+          rTmp.sub(PMT);
+
+          X2.assign(X1);
+          Y2.assign(Y1);
+          X1.assign(IR);
+          Y1.assign(rTmp);
+        }
+        if (!Y1.isFinite() || Y1.exponent > 0x40000000-16) {
+          // We didn't reach zero
+          IR.makeNan();
+          break;
+        }
+        rTmp.assign(100);
+        IR.mul(rTmp);
         break;
     }
     recall(finance[which]);
