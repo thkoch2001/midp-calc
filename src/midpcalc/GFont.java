@@ -89,11 +89,11 @@ final class GFont
     return x;
   }
 
-  public int drawString(Graphics g, int x, int y, StringBuffer string)
+  public int drawString(Graphics g, int x, int y,StringBuffer string,int start)
   {
     int length;
     length = string.length();
-    for (int i=0; i<length; i++) {
+    for (int i=start; i<length; i++) {
       int index = charToIndex(string.charAt(i));
       if (index>0) {
         drawChar(g,x,y,index);
