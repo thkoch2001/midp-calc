@@ -1,4 +1,28 @@
-// class Real: Integer implementation of 64-bit precision floating point
+// Real: Java integer implementation of 64-bit precision floating point
+// Version 1.0
+//
+// Copyright 2004 Roar Lauritzsen <roarl@pvv.org>
+//
+// This library is free software; you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation; either version 2 of the License, or
+// (at your option) any later version.
+//
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// The following link provides a copy of the GNU General Public License:
+//     http://www.gnu.org/licenses/gpl.txt
+// If you are unable to obtain the copy from this address, write to
+// the Free Software Foundation, Inc., 59 Temple Place, Suite 330,
+// Boston, MA 02111-1307 USA
+//
+// 
+// ----------------------------------------------------------------------------
+//
+// class Real
 //
 // Public fields:
 //   long mantissa
