@@ -12,11 +12,26 @@ Financial Java Calculator</h1>
 
 <h2>Changelog:</h2>
 
+<h3>Version 1.12, 2004-03-10</h3>
+
+<ul>
+  <li>More accurate rounding in multiplication routine
+  <li>More accurate exponential functions due to better multiplications
+  <li>atan<sub>2</sub> result correctly converted in DEG mode
+  <li>Changed exponent marker from "E" to "e", and hex digits from
+  "abcdef" to "ABCDEF" to improve visibility of complex numbers
+  <li>Removed "+" sign from positive exponents
+  <li>Rudimentary complex math works for +, -, *, /, +/-, &#8730;<span
+  style="text-decoration: overline;">x</span>, 1/x,
+  x², split, abs, arg, conj and STO/RCL
+  <li>sqrt(-0) correctly returns 0
+</ul>
+
 <h3>Version 1.11, 2004-02-23</h3>
 
 <ul>
   <li>Made "int" submenu accessible in hex/oct/bin mode
-  <li>Hex number "1.fffffffffffffffc" displays correctly as "2"
+  <li>Hex number "1.fffffffffffffffc" correctly displays "2"
   <li>Faster and more accurate division routine
   <li>Statistics log (used in "draw") now stores 64 x/y pairs and
   removes correctly on &#931;-
@@ -30,7 +45,7 @@ Financial Java Calculator</h1>
 
 <ul>
   <li>Added percent command to basic menu
-  <li>Added undo command to stack menu (removed x<>st#)
+  <li>Added undo command to stack menu (removed x&harr;st#)
   <li>atan<sub>2</sub>(0,0) correctly returns 0
 </ul>
 
@@ -52,6 +67,17 @@ Financial Java Calculator</h1>
 <br>
 <br>
 
+<h2>Bugs:</h2>
+
+<ul>
+  <li>Doesn't work on Siemens phones
+  <li>LASTx does not always keep its imaginary part
+  <li>Sometimes the stack contents are forgotten when you exit
+  <li>Setup settings are not reversible
+</ul>
+<br>
+<br>
+
 <h2>Todo-list:</h2>
 
 <ul>
@@ -60,17 +86,34 @@ Financial Java Calculator</h1>
   <li>Profit!
   <li>&nbsp;
   <li>&nbsp;
-  <li>Bypassing setup dialog on known devices (T610, ?...)
+  <li>Bypassing setup dialogs on known devices (T610, ?...)
+  <li>Further improve accuracy of exponential operations
   <li>Modulo operation (menu position?)
   <li>Stack roll-up and roll-down (rolls using current stack size)
 </ul>
-Things that I am not going to implement unless somebody begs me:
+
+Long-term plans, that I am not going to implement unless I find myself
+with weeks of spare time or somebody <a
+href="https://www.&#112;&#097;&#121;&#112;&#097;&#108;.com/xclick/business=&#114;&#111;&#097;&#114;&#108;%40&#112;&#118;&#118;&#046;&#111;&#114;&#103;&#038;item_name=Calc+-+Java+Calculator">begs</a>
+me:
+
 <ul>
+  <li>Complex versions of y<sup>x</sup>, <sup>x</sup>&#8730;<span
+  style="text-decoration: overline;">y</span>, e<sup>x</sup>, ln, sin,
+  cos, tan, ...
   <li>Simple programmability in the form of command macro
-  <li>Graph drawing, root finding, differentiation and integration of
-  macro program
-  <li>Complex arithmetic
+  <li>Graph drawing, root finding and differentiation of macro
+  program. Integration only if I can find a simple, fast and accurate
+  algorithm
+</ul>
+Things that <i>cannot</i> be implemented because the increased complexity
+will make the application too large:
+<ul>
+  <li>Full programming mode with program listing, editing, and
+  flow control operations such as IF, GOTO etc.
   <li>Vector and matrix arithmetic
+  <li>Expression evaluation, e.g. "2+3-5*sin(34.5)^2"
+  <li>Symbolic differentiation and integration
 </ul>
 
 </body>
