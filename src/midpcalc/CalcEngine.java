@@ -525,8 +525,8 @@ public final class CalcEngine
       case OR:    y.or(x);                 break;
       case XOR:   y.xor(x);                break;
       case BIC:   y.bic(x);                break;
-      case YUPX:  y.scalbn(x.toInteger()); break;
-      case YDNX:  y.scalbn(-x.toInteger());break;
+      case YUPX:  x.round(); y.scalbn(x.toInteger()); break;
+      case YDNX:  x.round(); y.scalbn(-x.toInteger());break;
       case PERCENT_CHG:
         x.sub(y);
         x.div(y);
