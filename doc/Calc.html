@@ -6,11 +6,13 @@
   <title>Calc: Scientific Java Calculator</title>
 </head>
 <body>
+
 <h1>Calc - Scientific Java Calculator</h1>
+
 Author: Roar Lauritzsen, <a
 href="&#109;&#097;&#105;&#108;&#116;&#111;&#058;&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;">&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;</a><br>
-<br>
 
+<br>
 Calc is a scientific Java calculator for MIDP devices, such as a
 Java-enabled cell-phone or PDA. Currently, it has only been tested on
 a Sony Ericsson T610, which is my current phone but which has such a
@@ -27,15 +29,17 @@ simultaneously. I have chosen to use RPN logic (Reverse Polish
 Notation), because operating it requires less keys, you need only ENTER
 instead of "(" and ")". Additionally, being able to store and see
 intermediate results on the stack is very advantageous.<br>
+
 <br>
-Calc has 63 bits internal precision,
-considerably <span style="font-style: italic;">more</span> than normal
-calculators and computers, approximately 19 decimal digits accuracy.
-The exponent is 31 bits, which allows for numbers up to
-4.197E+323228496. Handy when you want to calculate the factorial of
-40000000.<br>
+Calc has 63 bits internal precision, approximately 19 decimal digits
+accuracy, considerably <span style="font-style: italic;">more</span>
+than normal calculators and computers.  The exponent is 31 bits, which
+allows for numbers up to 4.197E+323228496. Handy when you want to
+calculate the factorial of 40000000.<br>
+
 <br>
 You can download it into your phone using this link: <a href="http://gridbug.ods.org/~roarl/Calc.jad">http://gridbug.ods.org/~roarl/Calc.jad</a>
+
 <h2>Keys</h2>
 
 To be able to navigate efficiently through function menus, Calc can
@@ -55,7 +59,7 @@ keys 1-6 until the digit changes.</li>
   and should be read as "an infinite number of 1-bits preceding the
   number". Pressing the # key again exchanges the "/" with a normal
   minus sign, indicating the input of a normal negative number
-  with will be converted to two's complement on ENTER.</li>
+  which will be converted to two's complement on ENTER.</li>
   <li>ENTER: This key finishes the currently entered number and puts
   it on the stack. If no number is being entered, the lowest element
   on the stack is duplicated.</li>
@@ -69,7 +73,9 @@ keys 1-6 until the digit changes.</li>
   by further navigation with the joystick until an actual operation is
   activated.</li>
 </ul>
+
 <h2>Operations</h2>
+
 In the following operations, x represents the lowest element on the
 stack, y represents the element above x. In operations with two inputs,
 such as +,-,* and /, the x and y stack elements are removed from the
@@ -79,16 +85,21 @@ stack and the result is placed on the stack instead. To add 3 and 7,
 for example, one would press the following sequence of keys: 3, ENTER,
 7, +. The result, 10 will now be the lowest element on the stack, ready
 for further calculations.<br>
+
 <br>
 The following operations are available through the menu system:
+
 <h3>Basic</h3>
+
 <ul>
   <li>- : Subtracts x from y</li>
   <li>* : Multiplies x and y</li>
   <li>/ : Divides y by x</li>
   <li>+/- : Changes sign of x</li>
 </ul>
+
 <h3>Math</h3>
+
 <ul>
   <li>Simple</li>
   <ul>
@@ -138,7 +149,9 @@ to &#960; (or -180 to 180 in DEG mode)</li>
     <li>hypot: Calculates &#8730;<span style="text-decoration: overline;">x²+y²</span></li>
   </ul>
 </ul>
+
 <h3>Trigonometric</h3>
+
 <ul>
   <li>Normal</li>
   <ul>
@@ -172,7 +185,9 @@ to &#960; (or -180 to 180 in DEG mode)</li>
     <li>&#960;: Enters the number &#960;</li>
   </ul>
 </ul>
+
 <h3>Bitwise operations (available in HEX/OCT/BIN mode)</h3>
+
 <ul>
   <li>and: Calculate bitwise AND of x and y</li>
   <li>or: Calculate bitwise OR of x and y</li>
@@ -184,7 +199,9 @@ to &#960; (or -180 to 180 in DEG mode)</li>
   <li>not: Invert all bits in x. Fractional bits are ignored,
   i.e. the calculated value is x XOR -1</li>
 </ul>
+
 <h3>Special</h3>
+
 <ul>
   <li>Stack</li>
   <ul>
@@ -272,7 +289,7 @@ to &#960; (or -180 to 180 in DEG mode)</li>
     <li>trunc: Remove fractional part of x (round towards zero)</li>
     <li>frac: Remove integer part of x, i.e. calculate x-trunc(x)</li>
   </ul>
-  <li>Time</li>
+  <li>Time and date</li>
   <ul>
     <li>&rarr;DH.MS: Convert x from hours to date, hours, minutes and
 seconds. Date format is yyyymmddHH.MMSS. If x&nbsp;&#8804;&nbsp;24000
@@ -286,7 +303,9 @@ is number of days.</li>
     <li>DH.MS+: Add x and y as date, hours, minutes and seconds</li>
   </ul>
 </ul>
+
 <h3>Mode</h3>
+
 <ul>
   <li>Number</li>
   <ul>
@@ -311,7 +330,8 @@ is number of days.</li>
     </ul>
     <li>thousand</li>
     <ul>
-      <li>. or , : Display thousands separator as period or comma </li>
+      <li>. or , : Display thousands separator as period or comma
+      (depending on decimal point)</li>
       <li>space: Display thousands separator as space</li>
       <li>' : Display thousands separator as '</li>
       <li>none: Display no thousands separator</li>
@@ -333,5 +353,64 @@ is number of days.</li>
     <li>system: Set system font</li>
   </ul>
 </ul>
+
+<h2>Notes</h2>
+
+<h3>Binary representation</h3>
+
+In binary modes (HEX, OCT and BIN), fractional numbers are not
+displayed as integers, but are instead displayed with the fraction
+visible in exactly the same manner as decimal numbers, depending on
+the number format (normal, FIX, SCI and ENG).<br>
+
+<br>
+Negative numbers are displayed as a generalized form of "twos
+complement", with the following interpretation: Negating the number
+inverts all bits, including an infinite number of 1-bits before the
+radix point and an infinite number of 1-bits after the radix
+point. The infinite number of 1-bits before the radix is represented
+by an "f" prefix (or 7 or 1 in OCT and BIN modes). The infinite number
+of 1-bits after the radix is rounded upwards producing an infinite
+number of 0-bits, until the first 0-bit is encountered which will be
+switched to a 1. For example, the number "1", inverted, will become
+...1111110.111111.... Rounding of the infinite number of 1's after the
+radix gives the number ...1111111.000000..., which is exactly the way
+we usually see "-1" as two's complement.<br>
+
+<br>
+Bitwise operations (and, or, xor and bic) with negative numbers use
+this representation of the number when interpreting the bits, but
+beware that rounding may cause inexact values to appear different than
+their internal representation.<br>
+
+<h3>Date representation</h3>
+
+The calendar implemented by the DH.MS operations is strictly
+Gregorian, which did not take effect until 1582 in Catholic states and
+not until 1752 in Britain and her colonies (including the United
+States). Dates before these years will be extrapolations of the
+Gregorian calendar and will not match the Julian calendar of the
+time.<br>
+
+<br>
+Beware that you must specify the year with all four digits. If you
+specify a year with two digits only, you will be calculating dates in
+a Gregorian calendar extrapolated to the years AD 1-99.<br>
+
+<br>
+When converted to hours, a date is represented by the number of hours
+since the imaginary date January 1st year 0 (in the Gregorian
+calendar). Negative dates are not interpreted as years BC, but are
+instead represented as a negative amount of equal magnitude as the
+date interpreted as a positive number. In this way, you can subtract
+dates by entering a negative date and using "DH.MS+".<br>
+
+<br>
+Because date-time is represented with many digits, inexact
+intermediate representation may cause inaccuracies to escalate. To
+alleviate this, some magic rounding has been implemented so that
+e.g. 99 minutes and 99.999 seconds is instead interpreted as 1 hour, 0
+minutes and 0 seconds.
+
 </body>
 </html>
