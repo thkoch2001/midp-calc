@@ -62,7 +62,7 @@ public abstract class Displayable
           if (b != null && commandListener != null)
             commandListener.commandAction(b, this);
         }
-      } else if (y<height-(commandFont.getHeight()+1)*4) {
+      } else if (y<=height-(commandFont.getHeight()+1)*4) {
         keyPressed('\b');
       } else {
         x = x*3/width;
