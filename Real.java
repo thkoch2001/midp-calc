@@ -810,7 +810,7 @@ public final class Real
     
     mantissa = start-(mantissa>>>2);
     boolean oddexp = ((exponent&1) != 0);
-    exponent = 0x20000000+(exponent>>1);
+    exponent = 0x60000000-(exponent>>1);
     normalize();
     if (oddexp)
       mul(SQRT1_2);
@@ -1519,6 +1519,7 @@ public final class Real
       gamma();
       return;
     }
+    tmp1.assign(this);
     assign(ONE);
     while (tmp1.greaterThan(ONE)) {
       mul(tmp1);
@@ -1765,6 +1766,8 @@ public final class Real
   }
 
   private void round(int base, int bitsPerDigit, int precision) {
+    if (isZero())
+      return;
     int shift = 64-precision*bitsPerDigit;
     if (shift<=0)
       return; // too high precision -> no rounding necessary
@@ -1828,7 +1831,7 @@ public final class Real
       return "nan";
     if (isInfinity())
       return (sign!=0)?"-inf":"inf";
-    if (isZero() && format.fse == NumberFormat.FSE_NONE)
+    if (isZero() && format.fse == NumberFormat.FSE_NONE && format.removePoint)
       return (sign!=0)?"-0":"0";
 
     int bitsPerDigit,digitsPerThousand;
@@ -1856,7 +1859,9 @@ public final class Real
 
     int accurateBits = 64;
     tmp4.assign(this);
-    if (!isZero())
+    if (isZero()) {
+      tmp4.exponent = 0;
+    } else {
       if (format.base == 10) {
         tmp4.toBCD();
       } else {
@@ -1872,6 +1877,7 @@ public final class Real
         else if (shift>0)
           tmp4.mantissa = (tmp4.mantissa+(1L<<(shift-1)))>>>shift;
       }
+    }
     int accurateDigits = (accurateBits+bitsPerDigit-1)/bitsPerDigit;
 
     int precision;
@@ -1901,15 +1907,15 @@ public final class Real
             precision = format.precision+1;
           if (tmp4.exponent+1 > width-tmp4.exponent/digitsPerThousand ||
               tmp4.exponent+1 > accurateDigits ||
-              -tmp4.exponent+1 > width)
+              -tmp4.exponent >= width ||
+              -tmp4.exponent >= precision)
           {
             useExp = true;
           } else {
             pointPos = tmp4.exponent;
-            if (tmp4.exponent >= 0) {
-              precision += tmp4.exponent;
+            precision += tmp4.exponent;
+            if (tmp4.exponent > 0)
               width -= tmp4.exponent/digitsPerThousand;
-            }
           }
           break;
       }
