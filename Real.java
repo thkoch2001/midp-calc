@@ -571,18 +571,18 @@ public final class Real
       return 0;
     if (isInfinity()) {
       if (sign==0)
-        return 0x7fffffffffffffff;
+        return 0x7fffffffffffffffL;
       else
-        return 0x8000000000000001; // So that you can take -x.toLong()
+        return 0x8000000000000001L; // So that you can take -x.toLong()
     }
     if (exponent < 0x40000000)
       return 0;
     int shift = 0x4000003e-exponent;
     if (shift < 0) {
       if (sign==0)
-        return 0x7fffffffffffffff;
+        return 0x7fffffffffffffffL;
       else
-        return 0x8000000000000001; // So that you can take -x.toLong()
+        return 0x8000000000000001L; // So that you can take -x.toLong()
     }
     return (sign==0) ? (mantissa>>>shift) : -(mantissa>>>shift);
   }
@@ -1836,6 +1836,25 @@ public final class Real
     m = toInteger();
     frac();
     mul(tmp1);
+
+    // MAGIC ROUNDING: Check if we are 2^-16 second short of a whole minute
+    // i.e. "seconds" > 59.999985
+    tmp2.assign(ONE);
+    tmp2.scalbn(-16);
+    add(tmp2);
+    if (this.greaterEqual(tmp1)) {
+      // Yes. So set zero seconds instead and carry over to minutes and hours
+      assign(ZERO);
+      m++;
+      if (m >= 60) {
+        m -= 60;
+        h++;
+      }
+      // Phew! That was close. From now on it is integer arithmetic...
+    } else {
+      // Nope. So try to undo the damage...
+      sub(tmp2);
+    }
 
     D = (int)(h/24);
     h %= 24;
