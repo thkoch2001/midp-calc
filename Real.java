@@ -16,6 +16,7 @@
 //   assign(String, int base)
 //   assign(int s, int e, long m)
 //   assign(byte[] data, int offset)
+//   assignFloatBits(int)                   <==  float 32-bits representation
 //
 // Output:
 //   String toString()                      ==>  "-1.234E+56"
@@ -24,6 +25,7 @@
 //   int toInteger()                        ==>  int
 //   long toLong()                          ==>  long
 //   void toBytes(byte[] data, int offset)  ==>  data[offset]..data[offset+11]
+//   int toFloatBits()                      ==>  float 32-bits representation
 //
 // Binary operators:
 //   add(Real)
@@ -211,6 +213,10 @@ public final class Real
   }
 
   public void assign(final Real a) {
+    if (a == null) {
+      makeZero(0);
+      return;
+    }
     sign = a.sign;
     exponent = a.exponent;
     mantissa = a.mantissa;
@@ -287,6 +293,52 @@ public final class Real
     data[offset+11] = (byte)(mantissa);
   }
 
+  public void assignFloatBits(int c) {
+    sign = (byte)(c>>>31);
+    exponent = (c>>23)&0xff;
+    mantissa = (long)(c&0x7fffff)<<39;
+    if (exponent == 0 && mantissa == 0)
+      return; // Valid zero
+    if (exponent == 0 && mantissa != 0) {
+      // Degenerate small float
+      exponent = 0x40000000-126;
+      normalize();
+      return;
+    }
+    if (exponent <= 254) {
+      // Normal IEEE 754 float
+      exponent += 0x40000000-127;
+      mantissa |= 1L<<62;
+      return;
+    }
+    if (mantissa == 0)
+      makeInfinity(sign);
+    else
+      makeNan();
+  }
+
+  public int toFloatBits() {
+    if (isNan())
+      return 0x7fffffff; // nan
+    int e = exponent-0x40000000+127;
+    long m = mantissa;
+    // Round properly!
+    m += 1L<<38;
+    if (m<0) {
+      m >>>= 1;
+      e++;
+    }
+    if (isInfinity() || e > 254)
+      return (sign<<31)|0x7f800000; // inf
+    if (isZero() || e < -22)
+      return (sign<<31); // zero
+    if (e > 0)
+      // Normal IEEE 754 float
+      return (sign<<31)|(e<<23)|((int)(m>>>39)&0x7fffff);
+    // Degenerate small float
+    return (sign<<31)|((int)(m>>>(40-e))&0x7fffff);
+  }
+
   public void makeZero(int s) {
     sign = (byte)s;
     mantissa = 0;
@@ -350,7 +402,7 @@ public final class Real
         makeZero(sign);
       return;
     }
-    if ((mantissa >>> 63) != 0) {
+    if (mantissa < 0) {
       mantissa = (mantissa+1)>>>1;
       exponent ++;
       if (exponent < 0) // Overflow
@@ -751,11 +803,14 @@ public final class Real
   private void recipInternal() {
     // Calculates recipocal of normalized Real, not zero, nan or infinity
 
+    byte s = sign;
+    sign = 0;
+
     // Special case, simple power of 2
     if (mantissa == 0x4000000000000000L) {
       exponent = 0x80000000-exponent;
       if (exponent<0) // Overflow
-        makeInfinity(sign);
+        makeInfinity(s);
       return;
     }
 
@@ -785,6 +840,9 @@ public final class Real
 
     // Fix exponent
     scalbn(exp);
+    // Fix sign
+    if (!isNan())
+      sign = s;
   }
 
   public void recip() {
@@ -806,23 +864,26 @@ public final class Real
       makeNan();
       return;
     }
-    sign ^= a.sign;
     if (isInfinity()) {
       if (a.isInfinity())
         makeNan();
+      else
+        sign ^= a.sign;
       return;
     }
     if (a.isInfinity()) {
-      makeZero(sign);
+      makeZero(sign^a.sign);
       return;
     }
     if (isZero()) {
       if (a.isZero())
         makeNan();
+      else
+        sign ^= a.sign;
       return;
     }
     if (a.isZero()) {
-      makeInfinity(sign);
+      makeInfinity(sign^a.sign);
       return;
     }
     divTmp.assign(a);
