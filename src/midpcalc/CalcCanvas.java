@@ -236,10 +236,11 @@ public class CalcCanvas
       new Menu("log_10",CalcEngine.LOG10),
     }),
     new Menu("prob",new Menu[] {
+      new Menu("random",CalcEngine.RANDOM),
       new Menu("P y,x",CalcEngine.PYX),
       new Menu("C y,x",CalcEngine.CYX),
+      new Menu("factorize",CalcEngine.FACTORIZE),
       new Menu("x!",CalcEngine.FACT),
-      new Menu("random",CalcEngine.RANDOM),
     }),
   });
   private static final Menu trig = new Menu("trig",new Menu[] {
@@ -506,7 +507,6 @@ public class CalcCanvas
             g.drawLine(x,y+h/3,x,y+h/3+1);
             g.drawLine(x+5,y+h/3,x+5,y+h-1);
             g.drawLine(x+6,y+h/3,x+6,y+h-1);
-            g.drawLine(x+6,y+h-1,x+7,y+h-1);
             break;
         }
         x += w;

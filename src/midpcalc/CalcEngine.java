@@ -121,6 +121,7 @@ public final class CalcEngine
   public static final int DHMS_PLUS      = 115;
   public static final int TIME           = 116;
   public static final int DATE           = 117;
+  public static final int FACTORIZE      = 118;
   public static final int FINALIZE       = 500;
 
   private static final Real Real180 = new Real(180);
@@ -464,6 +465,29 @@ public final class CalcEngine
       x.div(Real.PI);
       x.mul(Real180);
     }
+  }
+
+  private int greatestFactor(int a) {
+    if (a<0) a = -a;
+    if (a<=3)
+      return a;
+    while (2*2<=a && (a&1) == 0)
+      a >>= 1;
+    while (3*3<=a && a%3 == 0)
+      a /= 3;
+    int x=5;
+    int s=5*5;
+    do {
+      while (s<=a && a%x == 0)
+        a /= x;
+      x += 2;
+      s = x*x;
+      while (s<=a && a%x == 0)
+        a /= x;
+      x += 4;
+      s = x*x;
+    } while (s<=a && x<46343);
+    return a;
   }
 
   private void binary(int cmd) {
@@ -883,6 +907,18 @@ public final class CalcEngine
         break;
       case SUMXY:
         recall(stat[5]);
+        break;
+      case FACTORIZE:
+        if (inputInProgress)
+          parseInput();
+        int a = stack[0].toInteger();
+        int b = greatestFactor(a);
+        rollUp();
+        stack[0].assign(a/b);
+        stack[1].assign(b);
+        strStack[0] = null;
+        strStack[1] = null;
+        repaint(-1);
         break;
       case NORM:
         if (inputInProgress)
