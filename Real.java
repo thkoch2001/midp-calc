@@ -100,6 +100,7 @@
 //   makeInfinity(int sign)
 //   makeNan()
 //   makeExp10(int power)
+//   int lowPow10()           // Convert to lower power of 10, return exponent
 //
 // Query state:
 //   boolean isZero()
@@ -431,14 +432,15 @@ public final class Real
       return 0;
     if (sign != a.sign)
       return a.sign-sign;
+    int s = sign==0 ? 1 : -1;
     if (isInfinity())
-      return sign==0 ? 1 : -1;
+      return s;
     if (a.isInfinity())
-      return a.sign==0 ? -1 : 1;
+      return -s;
     if (exponent != a.exponent)
-      return exponent<a.exponent ? -1 : 1;
+      return exponent<a.exponent ? -s : s;
     if (mantissa != a.mantissa)
-      return mantissa<a.mantissa ? -1 : 1;
+      return mantissa<a.mantissa ? -s : s;
     return 0;
   }
 
@@ -1450,6 +1452,28 @@ public final class Real
     mul(LOG10E);
   }
 
+  public int lowPow10() {
+    if (!isFiniteNonZero())
+      return 0;
+    tmp2.assign(this);
+    // Approximate log10 using exponent only
+    int e = exponent - 0x40000000;
+    if (e<0) // it's important to achieve floor(exponent*ln2/ln10)
+      e = -(int)(((-e)*0x4d104d43L+((1L<<32)-1)) >> 32);
+    else
+      e = (int)(e*0x4d104d43L >> 32);
+    // Now, e < log10(this) < e+1
+    makeExp10(e);
+    tmp3.assign(this);
+    tmp3.mul10();
+    if (tmp3.lessEqual(tmp2)) {
+      // First estimate of log10 was too low
+      e++;
+      assign(tmp3);
+    }
+    return e;
+  }
+
   public void pow(final Real exp) {
     // Special cases:
     // if y is 0.0 or -0.0 then result is 1.0
@@ -2335,23 +2359,10 @@ public final class Real
   private void toBCD() {
     // Convert normal nonzero finite Real to BCD format, represented by 16
     // 4-bit decimal digits in the mantissa, and exponent as a power of 10
-    tmp2.assign(this);
-    tmp2.abs();
-    // Approximate log10 using exponent only
-    exponent -= 0x40000000;
-    if (exponent<0) // it's important to achieve floor(exponent*ln2/ln10)
-      exponent = -(int)(((-exponent)*0x4d104d43L+((1L<<32)-1)) >> 32);
-    else
-      exponent = (int)(exponent*0x4d104d43L >> 32);
-    // Now, exponent < log10(this) < exponent+1
-    tmp1.makeExp10(exponent);
-    tmp3.assign(tmp1);
-    tmp3.mul10();
-    if (tmp3.lessEqual(tmp2)) {
-      // First estimate of log10 was too low
-      exponent++;
-      tmp1.assign(tmp3);
-    }
+    tmp1.assign(this);
+    tmp1.abs();
+    tmp2.assign(tmp1);
+    exponent = tmp1.lowPow10();
     if (exponent > 300000000 || exponent < -300000000) {
       // Kludge to be able to print very large and very small numbers
       // without causing over/underflows
