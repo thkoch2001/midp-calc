@@ -212,11 +212,22 @@ public final class CalcEngine
   public static final int CONST_K_C      = 204;
   public static final int CONV_C_F       = 205;
   public static final int CONV_F_C       = 206;
-  public static final int PROG_NEW       = 207;
-  public static final int PROG_FINISH    = 208;
-  public static final int PROG_RUN       = 209;
-  public static final int PROG_PURGE     = 210;
-  public static final int PROG_CLEAR     = 211;
+  public static final int IF_EQUAL       = 207;
+  public static final int IF_NEQUAL      = 208;
+  public static final int IF_LESS        = 209;
+  public static final int IF_LEQUAL      = 210;
+  public static final int IF_GREATER     = 211;
+  public static final int MIN            = 212;
+  public static final int MAX            = 213;
+  public static final int SELECT         = 214;
+  public static final int RCL_X          = 215;
+  public static final int STO_X          = 216;
+  public static final int STP_X          = 217;
+  public static final int PROG_NEW       = 218;
+  public static final int PROG_FINISH    = 219;
+  public static final int PROG_RUN       = 220;
+  public static final int PROG_PURGE     = 221;
+  public static final int PROG_CLEAR     = 222;
 
   // These commands are handled from CalcCanvas
   public static final int AVG_DRAW       = 300;
@@ -287,20 +298,21 @@ public final class CalcEngine
   private static final int UNDO_NONE   = 0;
   private static final int UNDO_UNARY  = 1;
   private static final int UNDO_BINARY = 2;
-  private static final int UNDO_PUSH   = 3;
-  private static final int UNDO_PUSH2  = 4;
-  private static final int UNDO_XY     = 5;
-  private static final int UNDO_PUSHXY = 6;
-  private static final int UNDO_ROLLDN = 7;
-  private static final int UNDO_ROLLUP = 8;
-  private static final int UNDO_XCHGST = 9;
+  private static final int UNDO_TRINARY= 3;
+  private static final int UNDO_PUSH   = 4;
+  private static final int UNDO_PUSH2  = 5;
+  private static final int UNDO_XY     = 6;
+  private static final int UNDO_PUSHXY = 7;
+  private static final int UNDO_ROLLDN = 8;
+  private static final int UNDO_ROLLUP = 9;
+  private static final int UNDO_XCHGST =10;
   private int undoStackEmpty = 0;
   private int undoOp = UNDO_NONE;
 
   public boolean progRecording;
   public boolean progRunning;
   public static final int PROGLABEL_SIZE = 5;
-  public static final String emptyProg = "<->";
+  public static final String emptyProg = "< >";
   public String [] progLabels =
     { emptyProg, emptyProg, emptyProg, emptyProg, emptyProg };
   private short [][] prog;
@@ -338,8 +350,6 @@ public final class CalcEngine
   }
 
   private void clearStrings() {
-    if (inputInProgress)
-      parseInput();
     for (int i=0; i<STACK_SIZE; i++)
       if (strStack[i] != empty)
         strStack[i] = null;
@@ -375,8 +385,6 @@ public final class CalcEngine
   }
   
   private void clearMem() {
-    if (inputInProgress)
-      parseInput();
     if (mem == null)
       return;
     for (int i=0; i<MEM_SIZE; i++)
@@ -394,8 +402,6 @@ public final class CalcEngine
   }
   
   private void clearStat() {
-    if (inputInProgress)
-      parseInput();
     if (stat == null)
       return;
     SUM1      = null;
@@ -418,8 +424,6 @@ public final class CalcEngine
   }
 
   private void clearFinance() {
-    if (inputInProgress)
-      parseInput();
     if (finance == null)
       return;
     PV  = null;
@@ -667,25 +671,26 @@ public final class CalcEngine
     propertyStore.setProperty(buf,26+12+3);
 
     // Programs
-    if (1+maxProgLen*2+PROGLABEL_SIZE*2 > buf.length)
-      buf = new byte[1+maxProgLen*2+PROGLABEL_SIZE*2];
+    if (1+PROGLABEL_SIZE*2+maxProgLen*2 > buf.length)
+      buf = new byte[1+PROGLABEL_SIZE*2+maxProgLen*2];
 
-    for (i=0; i<5; i++)
+    for (i=0; i<5; i++) {
       buf[0] = (byte)(PROPERTY_PROG+i);
       if (prog!=null && prog[i]!=null && prog[i].length!=0) {
         for (j=0; j<PROGLABEL_SIZE; j++) {
           char c = j<progLabels[i].length() ? progLabels[i].charAt(j) : 0;
-          buf[1+2*i+0] = (byte)(c>>8);
-          buf[1+2*i+1] = (byte)(c);
+          buf[1+2*j+0] = (byte)(c>>8);
+          buf[1+2*j+1] = (byte)(c);
         }
         for (j=0; j<prog[i].length; j++) {
-          buf[1+PROGLABEL_SIZE*2+2*i+0] = (byte)(prog[i][j]>>8);
-          buf[1+PROGLABEL_SIZE*2+2*i+1] = (byte)(prog[i][j]);
+          buf[1+PROGLABEL_SIZE*2+2*j+0] = (byte)(prog[i][j]>>8);
+          buf[1+PROGLABEL_SIZE*2+2*j+1] = (byte)(prog[i][j]);
         }
         propertyStore.setProperty(buf,1+PROGLABEL_SIZE*2+prog[i].length*2);
       } else {
         propertyStore.setProperty(buf,1);
       }
+    }
   }
   
   public void restoreState(PropertyStore propertyStore) {
@@ -801,28 +806,28 @@ public final class CalcEngine
     }
 
     // Programs
-    if (1+maxProgLen*2+PROGLABEL_SIZE*2 > buf.length)
-      buf = new byte[1+maxProgLen*2+PROGLABEL_SIZE*2];
+    if (1+PROGLABEL_SIZE*2+maxProgLen*2 > buf.length)
+      buf = new byte[1+PROGLABEL_SIZE*2+maxProgLen*2];
 
     char [] label = new char[PROGLABEL_SIZE];
     for (i=0; i<5; i++) {
       buf[0] = (byte)(PROPERTY_PROG+i);
       length = propertyStore.getProperty(buf);
       if (length >= 1+PROGLABEL_SIZE*2+2) {
-        int len=0;
+        int labelLen=0;
         for (j=0; j<PROGLABEL_SIZE; j++) {
-          label[j] = (char)(((buf[1+2*i+0]&0xff)<<8)+
-                            ((buf[1+2*i+1]&0xff)));
+          label[j] = (char)(((buf[1+2*j+0]&0xff)<<8)+
+                            ((buf[1+2*j+1]&0xff)));
           if (label[j] != 0)
-            len = j+1;
+            labelLen = j+1;
         }
-        progLabels[i] = new String(label,0,len);
+        progLabels[i] = new String(label,0,labelLen);
         if (prog == null)
           prog = new short[5][];
         prog[i] = new short[(length-1-PROGLABEL_SIZE*2)/2];
         for (j=0; j<prog[i].length; j++) {
-          prog[i][j] = (short)(((buf[1+PROGLABEL_SIZE*2+2*i+0]&0xff)<<8)+
-                               ((buf[1+PROGLABEL_SIZE*2+2*i+1]&0xff)));
+          prog[i][j] = (short)(((buf[1+PROGLABEL_SIZE*2+2*j+0]&0xff)<<8)+
+                               ((buf[1+PROGLABEL_SIZE*2+2*j+1]&0xff)));
         }
       }
     }
@@ -893,6 +898,8 @@ public final class CalcEngine
 
   public void setMaxWidth(int max) {
     format.maxwidth = max;
+    if (inputInProgress)
+      parseInput();
     clearStrings();
   }
 
@@ -1186,8 +1193,6 @@ public final class CalcEngine
   }
 
   private void binary(int cmd) {
-    if (inputInProgress)
-      parseInput();
     Real x = stack[0];
     Real y = stack[1];
     lastx.assign(x);
@@ -1261,6 +1266,20 @@ public final class CalcEngine
         y.sub(Real.ONE);
         y.mul(Real.HUNDRED);
         break;
+      case MAX:
+        if (x.isNan() || y.isNan() ||
+            (x.isInfinity() && y.isInfinity() && x.sign == y.sign))
+          y.makeNan();
+        else if (x.greaterThan(y))
+          y.assign(x);
+        break;
+      case MIN:
+        if (x.isNan() || y.isNan() ||
+            (x.isInfinity() && y.isInfinity() && x.sign == y.sign))
+          y.makeNan();
+        else if (x.lessThan(y))
+          y.assign(x);
+        break;
     }
     rollDown(true);
     stack[STACK_SIZE-1].makeZero();
@@ -1299,8 +1318,6 @@ public final class CalcEngine
   }
 
   private void binaryCplx(int cmd) {
-    if (inputInProgress)
-      parseInput();
     Real x = stack[0];
     Real y = stack[1];
     Real xi = null;
@@ -1421,8 +1438,6 @@ public final class CalcEngine
   }
 
   private void unary(int cmd, int param) {
-    if (inputInProgress)
-      parseInput();
     Real tmp;
     Real x = stack[0];
     lastx.assign(x);
@@ -1657,9 +1672,7 @@ public final class CalcEngine
     xi.atan2(rTmp);
   }
 
-  private void unaryCplx(int cmd, int param) {
-    if (inputInProgress)
-      parseInput();
+  private void unaryCplx(int cmd) {
     Real tmp;
     Real x = stack[0];
     Real xi = null;
@@ -1968,8 +1981,6 @@ public final class CalcEngine
   }
 
   private void xyOp(int cmd) {
-    if (inputInProgress)
-      parseInput();
     Real x = stack[0];
     Real y = stack[1];
     lastx.assign(x);
@@ -2026,8 +2037,6 @@ public final class CalcEngine
   }
 
   private void push(Real x, Real xi) {
-    if (inputInProgress)
-      parseInput();
     rollUp(true);
     lasty.assign(stack[0]);
     if (imagStack != null)
@@ -2035,7 +2044,7 @@ public final class CalcEngine
     undoStackEmpty = strStack[0]==empty ? 1 : 0;
     undoOp = UNDO_PUSH;
     stack[0].assign(x);
-    if (xi != null) {
+    if (xi != null && !xi.isZero()) {
       allocImagStack();
       imagStack[0].assign(xi);
     } else if (imagStack != null) {
@@ -2045,9 +2054,95 @@ public final class CalcEngine
     repaint(-1);
   }
 
+  private void push(int e, long m) {
+    rTmp.assign(0,e,m);
+    push(rTmp,null);
+  }
+
+  private void cond(int cmd) {
+    Real x = stack[0];
+    Real y = stack[1];
+    if (x.isNan() || y.isNan() ||
+        (x.isInfinity() && y.isInfinity() && x.sign == y.sign) ||
+        (imagStack!=null && (!imagStack[0].isZero()|| !imagStack[1].isZero())))
+    {
+      push(Real.NAN, null);
+      return;
+    }
+    switch (cmd) {
+      case IF_EQUAL:   push(x.equalTo(y)    ?Real.ONE:Real.ZERO, null); break;
+      case IF_NEQUAL:  push(x.notEqualTo(y) ?Real.ONE:Real.ZERO, null); break;
+      case IF_LESS:    push(x.lessThan(y)   ?Real.ONE:Real.ZERO, null); break;
+      case IF_LEQUAL:  push(x.lessEqual(y)  ?Real.ONE:Real.ZERO, null); break;
+      case IF_GREATER: push(x.greaterThan(y)?Real.ONE:Real.ZERO, null); break;
+    }
+  }
+
+  private void trinaryCplx(int cmd) {
+    Real x = stack[0];
+    Real y = stack[1];
+    Real z = stack[2];
+    Real xi = null;
+    Real yi = null;
+    Real zi = null;
+    boolean cplx = false;
+    if (imagStack != null) {
+      xi = imagStack[0];
+      yi = imagStack[1];
+      zi = imagStack[2];
+      cplx = !xi.isZero() || !yi.isZero() || !zi.isZero();
+      lastxi.assign(xi);
+      lastyi.assign(yi);
+      lastzi.assign(zi);
+    }
+
+    lastx.assign(x);
+    lasty.assign(y);
+    lastz.assign(z);
+    undoStackEmpty = strStack[2]==empty ? strStack[1]==empty ?
+      strStack[0]==empty ? 3 : 2 : 1 : 0;
+    undoOp = UNDO_TRINARY;
+
+    switch (cmd) {
+      case SELECT:
+        rTmp3.assign(Real.ONE);
+        rTmp3.sub(x);
+        if (cplx) {
+          rTmp4.assign(xi);
+          rTmp4.neg();
+          cplxMul(z,zi,rTmp3,rTmp4);
+          cplxMul(y,yi,x,xi);
+          z.add(y);
+          zi.add(yi);
+        } else {
+          z.mul(rTmp3);
+          y.mul(x);
+          z.add(y);
+        }
+        break;
+    }
+    // Result is in z...
+    if (cplx && (z.isNan() || zi.isNan())) {
+      z.makeNan();
+      zi.makeZero();
+    }
+    if (cplx && z.isZero())
+      z.abs(); // Remove annoying "-"
+    rollDown(true);
+    rollDown(true);
+    stack[STACK_SIZE-1].makeZero();
+    stack[STACK_SIZE-2].makeZero();
+    if (imagStack != null) {
+      imagStack[STACK_SIZE-1].makeZero();
+      imagStack[STACK_SIZE-2].makeZero();
+    }
+    strStack[STACK_SIZE-1] = empty;
+    strStack[STACK_SIZE-2] = empty;
+    strStack[0] = null;
+    repaint(-1);
+  }
+
   private void sum(int cmd) {
-    if (inputInProgress)
-      parseInput();
     allocStat();
     Real x = stack[0];
     Real y = stack[1];
@@ -2155,8 +2250,6 @@ public final class CalcEngine
   }
 
   private void stat2(int cmd) {
-    if (inputInProgress)
-      parseInput();
     allocStat();
     rollUp(true);
     rollUp(true);
@@ -2250,8 +2343,6 @@ public final class CalcEngine
   }
 
   private void stat1(int cmd) {
-    if (inputInProgress)
-      parseInput();
     allocStat();
     rollUp(true);
     lasty.assign(stack[0]);
@@ -2285,8 +2376,6 @@ public final class CalcEngine
   }
 
   private void financeSolve(int which) {
-    if (inputInProgress)
-      parseInput();
     allocFinance();
     switch (which) {
       case 0: // PV
@@ -2496,8 +2585,6 @@ public final class CalcEngine
   }
 
   private void undo() {
-    if (inputInProgress)
-      parseInput();
     switch (undoOp) {
       case UNDO_NONE:
         break;
@@ -2518,6 +2605,22 @@ public final class CalcEngine
         }          
         strStack[0] = undoStackEmpty >= 2 ? empty : null;
         strStack[1] = undoStackEmpty >= 1 ? empty : null;
+        repaint(-1);
+        break;
+      case UNDO_TRINARY:
+        rollUp(true);
+        rollUp(true);
+        stack[0].assign(lastx);
+        stack[1].assign(lasty);
+        stack[2].assign(lastz);
+        if (imagStack != null) {
+          imagStack[0].assign(lastxi);
+          imagStack[1].assign(lastyi);
+          imagStack[2].assign(lastzi);
+        }          
+        strStack[0] = undoStackEmpty >= 3 ? empty : null;
+        strStack[1] = undoStackEmpty >= 2 ? empty : null;
+        strStack[2] = undoStackEmpty >= 1 ? empty : null;        
         repaint(-1);
         break;
       case UNDO_PUSH:
@@ -2598,6 +2701,8 @@ public final class CalcEngine
   }
   
   public void command(int cmd, int param) {
+    int i;
+
     if (progRecording && cmd!=PROG_FINISH)
       record(cmd, param);
 
@@ -2610,16 +2715,23 @@ public final class CalcEngine
       case DEC_POINT:
       case SIGN_POINT_E:
         input(cmd);
-        break;
+        return;
       case ENTER:
         enter();
-        break;
+        return;
       case CLEAR:
         if (inputInProgress)
           input(cmd);
         else
           binaryCplx(cmd);
-        break;
+        return;
+    }
+
+    // For all the commands below, do implicit enter
+    if (inputInProgress)
+      parseInput();
+    
+    switch (cmd) {
       case ADD:   case SUB:   case MUL:   case DIV:
       case YPOWX: case XRTY:
       case TO_CPLX:
@@ -2632,7 +2744,8 @@ public final class CalcEngine
       case YUPX:  case YDNX:
       case DHMS_PLUS:
       case FINANCE_MULINT: case FINANCE_DIVINT:
-      case MOD: case DIVF:
+      case MOD:   case DIVF:
+      case MAX:   case MIN:
         binary(cmd);
         break;
       case NEG:   case RECIP: case SQR:   case SQRT:
@@ -2645,7 +2758,7 @@ public final class CalcEngine
       case ASIN:  case ACOS:  case ATAN:
       case ASINH: case ACOSH: case ATANH:
       case ROUND: case CEIL:  case FLOOR: case TRUNC: case FRAC:
-        unaryCplx(cmd,param);
+        unaryCplx(cmd);
         break;
       case FACT:  case GAMMA: case ERFC:
       case NOT:
@@ -2656,165 +2769,46 @@ public final class CalcEngine
       case CONV_C_F: case CONV_F_C:
         unary(cmd,param);
         break;
-      case PI:
-        push(Real.PI,null);
-        break;
-      case CONST_c:
-        rTmp.assign(0, 0x4000001c, 0x4779e12800000000L);
-        push(rTmp,null);
-        break;
-      case CONST_h:
-        rTmp.assign(0, 0x3fffff91, 0x6e182e8b16bd5f42L);
-        push(rTmp,null);
-        break;
-      case CONST_mu_0:
-        rTmp.assign(0, 0x3fffffec, 0x5454dc3e67db2c21L);
-        push(rTmp,null);
-        break;
-      case CONST_eps_0:
-        rTmp.assign(0, 0x3fffffdb, 0x4de1dbc537b4c1b4L);
-        push(rTmp,null);
-        break;
-      case CONST_NA:
-        rTmp.assign(0, 0x4000004e, 0x7f86183045affe27L);
-        push(rTmp,null);
-        break;
-      case CONST_R:
-        rTmp.assign(0, 0x40000003, 0x428409e55c0fcb4fL);
-        push(rTmp,null);
-        break;
-      case CONST_k:
-        rTmp.assign(0, 0x3fffffb4, 0x42c3a0166b61ae01L);
-        push(rTmp,null);
-        break;
-      case CONST_F:
-        rTmp.assign(0, 0x40000010, 0x5e3955a6b50b0f28L);
-        push(rTmp,null);
-        break;
-      case CONST_alpha:
-        rTmp.assign(0, 0x3ffffff8, 0x778f50a81fcfba71L);
-        push(rTmp,null);
-        break;
-      case CONST_a_0:
-        rTmp.assign(0, 0x3fffffdd, 0x745e07537412adf4L);
-        push(rTmp,null);
-        break;
-      case CONST_R_inf:
-        rTmp.assign(0, 0x40000017, 0x53b911c8c56d5cfbL);
-        push(rTmp,null);
-        break;
-      case CONST_mu_B:
-        rTmp.assign(0, 0x3fffffb3, 0x59b155d92797eb1eL);
-        push(rTmp,null);
-        break;
-      case CONST_e:
-        rTmp.assign(0, 0x3fffffc1, 0x5e93683d3137633fL);
-        push(rTmp,null);
-        break;
-      case CONST_m_e:
-        rTmp.assign(0, 0x3fffff9c, 0x49e7728ced335c92L);
-        push(rTmp,null);
-        break;
-      case CONST_m_p:
-        rTmp.assign(0, 0x3fffffa7, 0x42426639a512e22fL);
-        push(rTmp,null);
-        break;
-      case CONST_m_n:
-        rTmp.assign(0, 0x3fffffa7, 0x4259c7d3bd6cba4fL);
-        push(rTmp,null);
-        break;
-      case CONST_m_u:
-        rTmp.assign(0, 0x3fffffa7, 0x41c7dd5a667f9950L);
-        push(rTmp,null);
-        break;
-      case CONST_G:
-        rTmp.assign(0, 0x3fffffde, 0x496233f0f7af9494L);
-        push(rTmp,null);
-        break;
-      case CONST_g_n:
-        rTmp.assign(0, 0x40000003, 0x4e7404ea4a8c154dL);
-        push(rTmp,null);
-        break;
-      case CONST_ly:
-        rTmp.assign(0, 0x40000035, 0x4338f7ee448d8000L);
-        push(rTmp,null);
-        break;
-      case CONST_AU:
-        rTmp.assign(0, 0x40000025, 0x45a974b4c6000000L);
-        push(rTmp,null);
-        break;
-      case CONST_pc:
-        rTmp.assign(0, 0x40000036, 0x6da012f9404b0988L);
-        push(rTmp,null);
-        break;
-      case CONST_km_mi:
-        rTmp.assign(0, 0x40000000, 0x66ff7dfa00e27e0fL);
-        push(rTmp,null);
-        break;
-      case CONST_m_ft:
-        rTmp.assign(0, 0x3ffffffe, 0x4e075f6fd21ff2e5L);
-        push(rTmp,null);
-        break;
-      case CONST_cm_in:
-        rTmp.assign(0, 0x40000001, 0x5147ae147ae147aeL);
-        push(rTmp,null);
-        break;
-      case CONST_km_nm:
-        rTmp.assign(0, 0x40000000, 0x76872b020c49ba5eL);
-        push(rTmp,null);
-        break;
-      case CONST_m_yd:
-        rTmp.assign(0, 0x3fffffff, 0x750b0f27bb2fec57L);
-        push(rTmp,null);
-        break;
-      case CONST_g_oz:
-        rTmp.assign(0, 0x40000004, 0x7165e963dc486ad3L);
-        push(rTmp,null);
-        break;
-      case CONST_kg_lb:
-        rTmp.assign(0, 0x3ffffffe, 0x741ea12add794261L);
-        push(rTmp,null);
-        break;
-      case CONST_mg_gr:
-        rTmp.assign(0, 0x40000006, 0x40cc855da272862fL);
-        push(rTmp,null);
-        break;
-      case CONST_kg_ton:
-        rTmp.assign(0, 0x40000009, 0x7165e963dc486ad3L);
-        push(rTmp,null);
-        break;
-      case CONST_J_cal:
-        rTmp.assign(0, 0x40000002, 0x42fd21ff2e48e8a7L);
-        push(rTmp,null);
-        break;
-      case CONST_J_Btu:
-        rTmp.assign(0, 0x4000000a, 0x41f0f5c28f5c28f6L);
-        push(rTmp,null);
-        break;
-      case CONST_W_hp:
-        rTmp.assign(0, 0x40000009, 0x5d36666666666666L);
-        push(rTmp,null);
-        break;
-      case CONST_l_pt:
-        rTmp.assign(0, 0x3ffffffe, 0x792217e4c58958fcL);
-        push(rTmp,null);
-        break;
-      case CONST_l_cup:
-        rTmp.assign(0, 0x3ffffffd, 0x792217e4c58958fcL);
-        push(rTmp,null);
-        break;
-      case CONST_l_gal:
-        rTmp.assign(0, 0x40000001, 0x792217e4c58958fcL);
-        push(rTmp,null);
-        break;
-      case CONST_ml_floz:
-        rTmp.assign(0, 0x40000004, 0x764b4b5568e820e6L);
-        push(rTmp,null);
-        break;
-      case CONST_K_C:
-        rTmp.assign(0, 0x40000008, 0x444999999999999aL);
-        push(rTmp,null);
-        break;
+      case PI:          push(Real.PI,null);                    break;
+      case CONST_c:     push(0x4000001c, 0x4779e12800000000L); break;
+      case CONST_h:     push(0x3fffff91, 0x6e182e8b16bd5f42L); break;
+      case CONST_mu_0:  push(0x3fffffec, 0x5454dc3e67db2c21L); break;
+      case CONST_eps_0: push(0x3fffffdb, 0x4de1dbc537b4c1b4L); break;
+      case CONST_NA:    push(0x4000004e, 0x7f86183045affe27L); break;
+      case CONST_R:     push(0x40000003, 0x428409e55c0fcb4fL); break;
+      case CONST_k:     push(0x3fffffb4, 0x42c3a0166b61ae01L); break;
+      case CONST_F:     push(0x40000010, 0x5e3955a6b50b0f28L); break;
+      case CONST_alpha: push(0x3ffffff8, 0x778f50a81fcfba71L); break;
+      case CONST_a_0:   push(0x3fffffdd, 0x745e07537412adf4L); break;
+      case CONST_R_inf: push(0x40000017, 0x53b911c8c56d5cfbL); break;
+      case CONST_mu_B:  push(0x3fffffb3, 0x59b155d92797eb1eL); break;
+      case CONST_e:     push(0x3fffffc1, 0x5e93683d3137633fL); break;
+      case CONST_m_e:   push(0x3fffff9c, 0x49e7728ced335c92L); break;
+      case CONST_m_p:   push(0x3fffffa7, 0x42426639a512e22fL); break;
+      case CONST_m_n:   push(0x3fffffa7, 0x4259c7d3bd6cba4fL); break;
+      case CONST_m_u:   push(0x3fffffa7, 0x41c7dd5a667f9950L); break;
+      case CONST_G:     push(0x3fffffde, 0x496233f0f7af9494L); break;
+      case CONST_g_n:   push(0x40000003, 0x4e7404ea4a8c154dL); break;
+      case CONST_ly:    push(0x40000035, 0x4338f7ee448d8000L); break;
+      case CONST_AU:    push(0x40000025, 0x45a974b4c6000000L); break;
+      case CONST_pc:    push(0x40000036, 0x6da012f9404b0988L); break;
+      case CONST_km_mi: push(0x40000000, 0x66ff7dfa00e27e0fL); break;
+      case CONST_m_ft:  push(0x3ffffffe, 0x4e075f6fd21ff2e5L); break;
+      case CONST_cm_in: push(0x40000001, 0x5147ae147ae147aeL); break;
+      case CONST_km_nm: push(0x40000000, 0x76872b020c49ba5eL); break;
+      case CONST_m_yd:  push(0x3fffffff, 0x750b0f27bb2fec57L); break;
+      case CONST_g_oz:  push(0x40000004, 0x7165e963dc486ad3L); break;
+      case CONST_kg_lb: push(0x3ffffffe, 0x741ea12add794261L); break;
+      case CONST_mg_gr: push(0x40000006, 0x40cc855da272862fL); break;
+      case CONST_kg_ton:push(0x40000009, 0x7165e963dc486ad3L); break;
+      case CONST_J_cal: push(0x40000002, 0x42fd21ff2e48e8a7L); break;
+      case CONST_J_Btu: push(0x4000000a, 0x41f0f5c28f5c28f6L); break;
+      case CONST_W_hp:  push(0x40000009, 0x5d36666666666666L); break;
+      case CONST_l_pt:  push(0x3ffffffe, 0x792217e4c58958fcL); break;
+      case CONST_l_cup: push(0x3ffffffd, 0x792217e4c58958fcL); break;
+      case CONST_l_gal: push(0x40000001, 0x792217e4c58958fcL); break;
+      case CONST_ml_floz:push(0x40000004,0x764b4b5568e820e6L); break;
+      case CONST_K_C:   push(0x40000008, 0x444999999999999aL); break;
       case RANDOM:
         rTmp.random();
         push(rTmp,null);
@@ -2826,6 +2820,16 @@ public final class CalcEngine
       case DATE:
         rTmp.date();
         push(rTmp,null);
+        break;
+      case IF_EQUAL:
+      case IF_NEQUAL:
+      case IF_LESS:
+      case IF_LEQUAL:
+      case IF_GREATER:
+        cond(cmd);
+        break;
+      case SELECT:
+        trinaryCplx(cmd);
         break;
       case RP:
       case PR:
@@ -2869,37 +2873,51 @@ public final class CalcEngine
       case UNDO:
         undo();
         break;
+
+      case STO_X:
+        param = stack[0].toInteger();
+        if (param<0 || param>15)
+          break;
+        // fall-through to next case...
       case STO:
-        if (inputInProgress)
-          parseInput();
+        i = cmd==STO ? 0 : 1;
         allocMem();
-        mem[param].assign(stack[0]);
-        if (imagStack != null && !imagStack[0].isZero()) {
+        mem[param].assign(stack[i]);
+        if (imagStack != null && !imagStack[i].isZero()) {
           allocImagMem();
-          imagMem[param].assign(imagStack[0]);
+          imagMem[param].assign(imagStack[i]);
         }
         if (monitorMode == MONITOR_MEM) {
           monitorStr[param] = null;
           repaint(-1);
         }
         break;
+      case STP_X:
+        param = stack[0].toInteger();
+        if (param<0 || param>15)
+          break;
+        // fall-through to next case...
       case STP:
-        if (inputInProgress)
-          parseInput();
+        i = cmd==STP ? 0 : 1;
         allocMem();
-        mem[param].add(stack[0]);
-        if (imagStack != null && !imagStack[0].isZero()) {
+        mem[param].add(stack[i]);
+        if (imagStack != null && !imagStack[i].isZero()) {
           allocImagMem();
-          imagMem[param].add(imagStack[0]);
+          imagMem[param].add(imagStack[i]);
         }
         if (monitorMode == MONITOR_MEM) {
           monitorStr[param] = null;
           repaint(-1);
         }
         break;
+      case RCL_X:
+        param = stack[0].toInteger();
+        if (param<0 || param>15)
+          break;
+        // fall-through to next case...
       case RCL:
         if (mem != null) {
-          if (imagMem != null && !imagMem[param].isZero()) {
+          if (imagMem != null) {
             push(mem[param],imagMem[param]);
           } else {
             push(mem[param],null);
@@ -2915,6 +2933,7 @@ public final class CalcEngine
           repaint(-1);
         }
         break;
+
       case SUMPL:
       case SUMMI:
         sum(cmd);
@@ -2942,48 +2961,21 @@ public final class CalcEngine
       case POW_R:
         stat1(cmd);
         break;
-      case N:
-        push(SUM1,null);
-        break;
-      case SUMX:
-        push(SUMx,null);
-        break;
-      case SUMXX:
-        push(SUMx2,null);
-        break;
-      case SUMY:
-        push(SUMy,null);
-        break;
-      case SUMYY:
-        push(SUMy2,null);
-        break;
-      case SUMXY:
-        push(SUMxy,null);
-        break;
-      case SUMLNX:
-        push(SUMlnx,null);
-        break;
-      case SUMLN2X:
-        push(SUMln2x,null);
-        break;
-      case SUMLNY:
-        push(SUMlny,null);
-        break;
-      case SUMLN2Y:
-        push(SUMln2y,null);
-        break;
-      case SUMXLNY:
-        push(SUMxlny,null);
-        break;
-      case SUMYLNX:
-        push(SUMylnx,null);
-        break;
-      case SUMLNXLNY:
-        push(SUMlnxlny,null);
-        break;
+      case N:         push(SUM1,     null); break;
+      case SUMX:      push(SUMx,     null); break;
+      case SUMXX:     push(SUMx2,    null); break;
+      case SUMY:      push(SUMy,     null); break;
+      case SUMYY:     push(SUMy2,    null); break;
+      case SUMXY:     push(SUMxy,    null); break;
+      case SUMLNX:    push(SUMlnx,   null); break;
+      case SUMLN2X:   push(SUMln2x,  null); break;
+      case SUMLNY:    push(SUMlny,   null); break;
+      case SUMLN2Y:   push(SUMln2y,  null); break;
+      case SUMXLNY:   push(SUMxlny,  null); break;
+      case SUMYLNX:   push(SUMylnx,  null); break;
+      case SUMLNXLNY: push(SUMlnxlny,null); break;
+
       case FACTORIZE:
-        if (inputInProgress)
-          parseInput();
         lastx.assign(stack[0]);
         if (imagStack != null)
           lastxi.assign(imagStack[0]);
@@ -3013,8 +3005,6 @@ public final class CalcEngine
         undoOp = UNDO_PUSHXY;
         break;
       case CPLX_SPLIT:
-        if (inputInProgress)
-          parseInput();
         if (imagStack != null) {
           lastx.assign(stack[0]);
           lastxi.assign(imagStack[0]);
@@ -3040,8 +3030,6 @@ public final class CalcEngine
         break;
 
       case FINANCE_STO:
-        if (inputInProgress)
-          parseInput();
         allocFinance();
         finance[param].assign(stack[0]);
         if (monitorMode == MONITOR_FINANCE) {
@@ -3070,22 +3058,16 @@ public final class CalcEngine
         }
         break;
       case FINANCE_BGNEND:
-        if (inputInProgress)
-          parseInput();
         begin = !begin;
         break;
 
       case MONITOR_NONE:
-        if (inputInProgress)
-          parseInput();
         monitorMode = cmd;
         monitorSize = 0;
         clearMonitorStrings();
         repaint(-1);
         break;
       case MONITOR_MEM:
-        if (inputInProgress)
-          parseInput();
         monitorMode = cmd;
         monitorSize = param > MEM_SIZE ? MEM_SIZE : param;
         monitors = mem;
@@ -3095,8 +3077,6 @@ public final class CalcEngine
         repaint(-1);
         break;
       case MONITOR_STAT:
-        if (inputInProgress)
-          parseInput();
         monitorMode = cmd;
         monitorSize = param > STAT_SIZE ? STAT_SIZE : param;
         monitors = stat;
@@ -3106,8 +3086,6 @@ public final class CalcEngine
         repaint(-1);
         break;
       case MONITOR_FINANCE:
-        if (inputInProgress)
-          parseInput();
         monitorMode = cmd;
         monitorSize = FINANCE_SIZE;
         monitors = finance;
@@ -3118,16 +3096,12 @@ public final class CalcEngine
         break;
 
       case NORM:
-        if (inputInProgress)
-          parseInput();
         if (format.fse != Real.NumberFormat.FSE_NONE) {
           format.fse = Real.NumberFormat.FSE_NONE;
           clearStrings();
         }
         break;
       case FIX:
-        if (inputInProgress)
-          parseInput();
         if (format.fse != Real.NumberFormat.FSE_FIX ||
             format.precision != param)
         {
@@ -3137,8 +3111,6 @@ public final class CalcEngine
         }
         break;
       case SCI:
-        if (inputInProgress)
-          parseInput();
         if (format.fse != Real.NumberFormat.FSE_SCI ||
             format.precision != param)
         {
@@ -3148,8 +3120,6 @@ public final class CalcEngine
         }
         break;
       case ENG:
-        if (inputInProgress)
-          parseInput();
         if (format.fse != Real.NumberFormat.FSE_ENG ||
             format.precision != param)
         {
@@ -3159,8 +3129,6 @@ public final class CalcEngine
         }
         break;
       case POINT_DOT:
-        if (inputInProgress)
-          parseInput();
         if (format.point != '.') {
           format.point = '.';
           if (format.thousand == '.')
@@ -3169,8 +3137,6 @@ public final class CalcEngine
         }
         break;
       case POINT_COMMA:
-        if (inputInProgress)
-          parseInput();
         if (format.point != ',') {
           format.point = ',';
           if (format.thousand == ',')
@@ -3179,97 +3145,69 @@ public final class CalcEngine
         }
         break;
       case POINT_REMOVE:
-        if (inputInProgress)
-          parseInput();
         if (!format.removePoint) {
           format.removePoint = true;
           clearStrings();
         }
         break;
       case POINT_KEEP:
-        if (inputInProgress)
-          parseInput();
         if (format.removePoint) {
           format.removePoint = false;
           clearStrings();
         }
         break;
       case THOUSAND_DOT:
-        if (inputInProgress)
-          parseInput();
         if (format.thousand != '.' && format.thousand != ',') {
           format.thousand = (format.point=='.') ? ',' : '.';
           clearStrings();
         }
         break;
       case THOUSAND_SPACE:
-        if (inputInProgress)
-          parseInput();
         if (format.thousand != ' ') {
           format.thousand = ' ';
           clearStrings();
         }
         break;
       case THOUSAND_QUOTE:
-        if (inputInProgress)
-          parseInput();
         if (format.thousand != '\'') {
           format.thousand = '\'';
           clearStrings();
         }
         break;
       case THOUSAND_NONE:
-        if (inputInProgress)
-          parseInput();
         if (format.thousand != 0) {
           format.thousand = 0;
           clearStrings();
         }
         break;
       case BASE_BIN:
-        if (inputInProgress)
-          parseInput();
         if (format.base != 2) {
           format.base = 2;
           clearStrings();
         }
         break;
       case BASE_OCT:
-        if (inputInProgress)
-          parseInput();
         if (format.base != 8) {
           format.base = 8;
           clearStrings();
         }
         break;
       case BASE_DEC:
-        if (inputInProgress)
-          parseInput();
         if (format.base != 10) {
           format.base = 10;
           clearStrings();
         }
         break;
       case BASE_HEX:
-        if (inputInProgress)
-          parseInput();
         if (format.base != 16) {
           format.base = 16;
           clearStrings();
         }
         break;
       case TRIG_DEGRAD:
-        if (inputInProgress)
-          parseInput();
         degrees = !degrees;
         break;
-      case FINALIZE:
-        if (inputInProgress)
-          parseInput();
-        break;
       case FREE_MEM:
-        if (inputInProgress)
-          parseInput();
         rollUp(true);
         rollUp(true);
         Runtime.getRuntime().gc();
@@ -3285,8 +3223,6 @@ public final class CalcEngine
         break;
 
       case PROG_NEW:
-        if (inputInProgress)
-          parseInput();
         progRecording = true;
         currentProg = param;
         if (prog == null)
@@ -3294,27 +3230,25 @@ public final class CalcEngine
         prog[currentProg] = new short[10];
         progCounter = 0;
         break;
+      case FINALIZE:
       case PROG_FINISH:
-        if (inputInProgress)
-          parseInput();
-        // I assume you cannot reach this command other than in PRG mode
-        progRecording = false;
-        if (progCounter > 0) {
-          short [] prog2 = new short[progCounter];
-          System.arraycopy(prog[currentProg],0,prog2,0,progCounter);
-          prog[currentProg] = prog2;
-        } else {
-          prog[currentProg] = null;
+        if (progRecording && prog!=null && prog[currentProg]!=null) {
+          progRecording = false;
+          if (progCounter > 0) {
+            short [] prog2 = new short[progCounter];
+            System.arraycopy(prog[currentProg],0,prog2,0,progCounter);
+            prog[currentProg] = prog2;
+          } else {
+            prog[currentProg] = null;
+          }
         }
         break;
       case PROG_RUN:
-        if (inputInProgress)
-          parseInput();
         currentProg = param;
         if (prog != null && prog[currentProg] != null) {
           progRunning = true;
           progCounter = 0;
-          for (int i=0; i<prog[currentProg].length; i++)
+          for (i=0; i<prog[currentProg].length; i++)
             execute(prog[currentProg][i]);
           if (inputInProgress) // From the program...
             parseInput();
@@ -3322,13 +3256,9 @@ public final class CalcEngine
         }
         break;
       case PROG_PURGE:
-        if (inputInProgress)
-          parseInput();
         progCounter = 0;
         break;
       case PROG_CLEAR:
-        if (inputInProgress)
-          parseInput();
         currentProg = param;
         if (prog != null)
           prog[currentProg] = null;
@@ -3508,9 +3438,6 @@ public final class CalcEngine
       i++;
     }
 
-    // Graph color
-    g.setColor(255,0,128);
-    
     if (cmd >= PROG_DRAW) {
       // Draw program graph
       currentProg = cmd-PROG_DRAW;
@@ -3524,18 +3451,30 @@ public final class CalcEngine
         x.sub(xMin);
         x.mul(b);
         x.add(xMin);
+        
         push(x,null);
         for (i=0; i<prog[currentProg].length; i++)
           execute(prog[currentProg][i]);
         if (inputInProgress) // From the program... (boring graph)
           parseInput();
+        
         y.assign(stack[0]);
-        command(CLEAR,0);
-        if (x.isFinite() && y.isFinite()) {
-          xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
+        Real yimag = null;
+        if (imagStack!=null && !imagStack[0].isZero())
+          yimag = imagStack[0];
+        xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
+        yi = -100;
+        if (y.isFinite() && (!y.isZero() || yimag==null)) {
           yi = gy+rangeScale(y,yMax,yMin,gh,Real.HALF);
+          g.setColor(255,0,128);
           g.drawLine(xi,yi-1,xi,yi);
         }
+        if (yimag!=null && yimag.isFinite()) {
+          int yi2 = gy+rangeScale(yimag,yMax,yMin,gh,Real.HALF);
+          g.setColor(255,255,yi2==yi ? 255 : 0);
+          g.drawLine(xi,yi2-1,xi,yi2);
+        }
+        command(CLEAR,0); // Remove result from stack to avoid clutter
         b.add(a);
         if (b.greaterThan(Real.ONE))
           b.sub(Real.ONE);
@@ -3544,6 +3483,8 @@ public final class CalcEngine
     }
     
     // Draw statistics graph
+    g.setColor(255,0,128);
+    
     switch (cmd) {
       case LIN_DRAW:
         statAB(a,b,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
