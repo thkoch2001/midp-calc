@@ -1,8 +1,0 @@
-MIDlet-Version: 0.1 
-MIDlet-Vendor: Roar Lauritzsen 
-MIDlet-Jar-URL: Calc.jar 
-MicroEdition-Configuration: CLDC-1.0 
-MIDlet-1: Calc, , Calc 
-MicroEdition-Profile: MIDP-1.0 
-MIDlet-Jar-Size: 16862
-MIDlet-Name: Calc 
