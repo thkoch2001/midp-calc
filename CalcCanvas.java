@@ -8,6 +8,8 @@ public final class CalcCanvas
 {
 // Commands:
 //               ENTER  +  0-9a-f  .  -/E  clear  menu
+// Modes:
+//               DEG/RAD   FIX/SCI/ENG   BIN/OCT/HEX   BGN   PRG/RUN
 // Menu:
 //   basic    ->            -      *      /       +/-     %
 //   math     -> simple  -> 1/x    x^2    sqrt    %chg
@@ -58,17 +60,19 @@ public final class CalcCanvas
 //   special  -> conv    -> time    -> H->unix  unix->H
 //                                     H->JD    JD->H
 //                                     H->MJD   MJD->H
+//   prog[1]  -> run     -> a b c d e
+//            -> new     -> name?
+//            -> clear   -> a b c d e
+//            -> draw    -> a b c d e
+//   prog[2]  -> finish
+//            -> cond    -> x=y? x!=y? x<y? x<=y? x>y?
+//            -> special -> abs max min
 //
-///  special  -> run                                                -> #
-///  mode     -> prog    -> new                                     -> #
-///                      -> delete                                  -> #
-///                      -> clear
-///  prog     -> if      -> x=y? x!=y? x<y? x<=y? x>y?
-///           -> loop    -> label goto isg dse                      -> #
+///  prog[1]  -> solve   -> a b c d e
+///  prog[2]  -> loop    -> label goto isg dse                      -> #
 ///           -> subr    -> gosub return                          ( -> # )
-///           -> special -> pause stop clx abs
+///           -> running -> pause stop
 ///           -> flags   -> sf cf fs? fc?                           -> #
-///           -> progoff
 
 // Complex operations:
 //   + - * / +/- 1/x x² sqrt
