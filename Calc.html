@@ -7,23 +7,21 @@
 </head>
 <body>
 <h1>Calc - Scientific Java Calculator</h1>
-<br>
-Do you miss a <span style="font-style: italic;">real</span> calculator
-for your java-enabled phone (especially the T610)? Do you sometimes
-need to calculate the sine of an angle but left your real calculator at
-home? Calc is a Java application for your phone that gives you more
-than you probably need.
-<h2>Function</h2>
 Calc works much like a good old HP calculator with RPN logic, but the
 stack has 16 elements and you can see many of the elements on the stack
 simultaneously. I have chosen to use RPN logic (Reverse Polish
 Notation), because operating it requires less keys, you need only ENTER
-instead of "(" and ")". Calc has 63 bits internal precision,
+instead of "(" and ")". Additionally, being able to store and see
+intermediate results on the stack is very advantageous.<br>
+<br>
+Calc has 63 bits internal precision,
 considerably <span style="font-style: italic;">more</span> than normal
 calculators and computers, approximately 19 decimal digits accuracy.
 The exponent is 31 bits, which allows for numbers up to
 4.197E+323228496. Handy when you want to calculate the factorial of
-40000000.
+40000000.<br>
+<br>
+You can download it into your phone using this link: <a href="http://gridbug.ods.org/~roarl/Calc.jad">http://gridbug.ods.org/~roarl/Calc.jad</a>
 <h2>Keys</h2>
 To be able to navigate efficiently through function menus, Calc can
 only be operated on a phone with a 5-way "joystick" or equivalent arrow
@@ -31,21 +29,23 @@ keys, plus a "clear" key, such as the Sony-Ericsson T610. The keys are
 mapped as follows:
 <ul>
   <li>0-9: The number keys are used to enter numbers and as shortcuts
-when executing commands that take a number argument. In hexadecimal
-mode, you can enter the digits a-f by holding the keys 1-6 down.</li>
+when executing commands that take a number argument (STO, FIX,
+etc). In hexadecimal mode, you can enter the digits a-f by holding down the
+keys 1-6 until the digit changes.</li> 
   <li>*: This key is used to enter the decimal point.</li>
   <li>#: This key is used to enter a minus sign or an "E" for exponent.</li>
-  <li>clear, 'c': This key deletes an entered number, clears the lowest
-element on the stack, and backtracks through menus.</li>
-  <li>ENTER: This key enters the currently edited number onto the
-stack. If no number is being edited, the lowest element on the stack is
-duplicated.</li>
+  <li>clear, 'c': This key deletes the last digit in an entered
+  number, clears the lowest element on the stack, and backtracks
+  through menus.</li> 
+  <li>ENTER: This key finishes the currently entered number and puts
+  it on the stack. If no number is being entered, the lowest element
+  on the stack is duplicated.</li>
   <li>+ : This key adds the two lowest elements on the stack.</li>
-  <li>Joystick: Pressing the middle of the joystick activates the menu.
-Pressing up/down/right/left on the joystick activates the corresponding
-sub-menu directly. Sub-menus are entered by further navigation with
-the joystick until an actual operation is activated.
-  </li>
+  <li>Joystick/arrow keys: Pressing the middle of the joystick
+  activates the menu. Pressing up/down/right/left on the joystick
+  activates the corresponding sub-menu directly. Sub-menus are entered
+  by further navigation with the joystick until an actual operation is
+  activated.</li>
 </ul>
 <h2>Operations</h2>
 In the following operations, x represents the lowest element on the
@@ -70,10 +70,11 @@ The following operations are available through the menu system:
 <ul>
   <li>Simple</li>
   <ul>
-    <li>abs: Makes x positive</li>
     <li>1/x: Calculates the reciprocal of x</li>
     <li>x²: Calculates the square of x</li>
-    <li>&#8730;<span style="text-decoration: overline;">x</span>: Calculates the square root of x</li>
+    <li>&#8730;<span style="text-decoration: overline;">x</span>:
+    Calculates the square root of x</li>
+    <li>%chg: Calculates percent change from x to y, i.e. 100·(x-y)/y</li>
   </ul>
   <li>Power</li>
   <ul>
@@ -92,15 +93,16 @@ values of y if x is an odd integer.</li>
   </ul>
   <li>Probability</li>
   <ul>
-    <li>P y,x: Calculates permutations of x elements taken from a
-    population of y</li>
-    <li>C y,x: Calculates combinations of x elements taken from a
-    population of y</li>
-    <li>x! : Calculates the factorial of x. For non-integral values,
+    <li>P y,x: Calculates number of permutations (unordered subsets)
+    when x elements is taken from a population of y</li>
+    <li>C y,x: Calculates number of combinations (ordered subsets)
+    when x elements is taken from a population of y</li>
+    <li>x! : Calculates the factorial of x. For non-integer values,
 calculates &#915;(x+1)</li>
-    <li>random: Calculates a random number between 0 and 1</li>
+    <li>random: Calculates a random number uniformly distributed
+    in the range [0.0, 1.0)</li>
   </ul>
-  <li>Polar</li>
+  <li>Polar coordinates</li>
   <ul>
     <li>r&rarr;p: Convert rectangular coordinates (x,y) to polar
 (x=radius, y=angle)</li>
@@ -139,8 +141,7 @@ to &#960; (or -180 to 180 in DEG mode)</li>
   </ul>
   <li>More</li>
   <ul>
-    <li>RAD: Sets radians as measure of angles (2&#960; is full circle)</li>
-    <li>DEG: Sets degrees as measure of angles (360 is full circle)</li>
+    <li>RAD/DEG: Switches between radians and degrees as measure of angles</li>
     <li>&rarr;RAD: Converts from degrees to radians</li>
     <li>&rarr;DEG: Converts from radians to degrees</li>
     <li>&#960;: Enters the number &#960;</li>
@@ -177,7 +178,7 @@ mean y values</li>
 x and y values</li>
       <li>L.R.: Linear regression, y=intersection, x=slope</li>
       <li>y<sup>*</sup>,r: Calculate estimated y for current x, and
-correlation coefficient</li>
+correlation coefficient (r)</li>
       <li>n: Recall number of statistics entered </li>
     </ul>
     <li>Registers</li>
@@ -204,12 +205,12 @@ correlation coefficient</li>
 seconds. Date format is yyyymmddHH.MMSS. If x&nbsp;&#8804;&nbsp;24000,
 it is converted
 to the format ddddHH.MMSS, where dddd is the number of days.</li>
-    <li>&rarr;H: Convert date, hours, minues and seconds to hours. If
+    <li>&rarr;H: Convert date, hours, minutes and seconds to hours. If
 yyyy is zero, format is understood as ddddHH.MMSS, where dddd is number
 of days.</li>
     <li>date: Get current date in DH.MS format</li>
     <li>time: Get current time in DH.MS format</li>
-    <li>DH.MS+: Add x and y as date, hours, minues and seconds</li>
+    <li>DH.MS+: Add x and y as date, hours, minutes and seconds</li>
   </ul>
 </ul>
 <h3>Mode</h3>
@@ -217,13 +218,14 @@ of days.</li>
   <li>Number</li>
   <ul>
     <li>normal: Set normal number mode, shows all digits but removes
-trailing zeros</li>
-    <li>FIX: Set fix number mode, shows a fixed number of digits after
-the decimal point</li>
-    <li>SCI: Set sci number mode, shows a fixed number of digits in
-scientific format</li>
-    <li>ENG: Set eng number mode, shows a fixed number of digits after
-the decimal point in engineering mode.</li>
+    trailing zeros</li>
+    <li>FIX: Set fixed-decimal number mode, shows a fixed number of
+    digits after the decimal point</li>
+    <li>SCI: Set scientific number mode, shows a fixed number of
+    digits after the decimal point in scientific format</li>
+    <li>ENG: Set engineering number mode, shows a fixed number of
+    digits after the decimal point in engineering format, i.e. exponent is a
+    multiple of 3</li>
   </ul>
   <li>Separators</li>
   <ul>
