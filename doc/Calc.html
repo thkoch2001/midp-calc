@@ -291,13 +291,13 @@ to &#960; (or -180 to 180 in DEG mode)</li>
   </ul>
   <li>Time and date</li>
   <ul>
+    <li>&rarr;H: Convert x, interpreted as date, hours, minutes and
+  seconds (format yyyymmddHH.MMSS) to hours. If year (yyyy) is zero,
+  the format is instead understood as ddddHH.MMSS, where dddd is
+  number of days.</li>
     <li>&rarr;DH.MS: Convert x from hours to date, hours, minutes and
-seconds. Date format is yyyymmddHH.MMSS. If x&nbsp;&#8804;&nbsp;24000
-hours, it is instead converted
-to the format ddddHH.MMSS, where dddd is the number of days.</li>
-    <li>&rarr;H: Convert date, hours, minutes and seconds to hours. If
-yyyy is zero, format is instead understood as ddddHH.MMSS, where dddd
-is number of days.</li>
+  seconds. If x&nbsp;&#8804;&nbsp;8784 hours, it is instead converted
+  to the format ddddHH.MMSS, where dddd is the number of days.</li> 
     <li>date: Get current date in DH.MS format</li>
     <li>time: Get current time in DH.MS format (inaccurate on T610)</li>
     <li>DH.MS+: Add x and y as date, hours, minutes and seconds</li>
@@ -350,7 +350,8 @@ is number of days.</li>
     <li>small: Set small font</li>
     <li>medium: Set medium font</li>
     <li>large: Set large font</li>
-    <li>system: Set system font</li>
+    <li>system: Set system font (should be monospaced, but this is not
+  the case on T610)</li>
   </ul>
 </ul>
 
@@ -372,16 +373,19 @@ point. The infinite number of 1-bits before the radix is represented
 by an "f" prefix (or 7 or 1 in OCT and BIN modes). The infinite number
 of 1-bits after the radix is rounded upwards producing an infinite
 number of 0-bits, until the first 0-bit is encountered which will be
-switched to a 1. For example, the number "1", inverted, will become
+switched to a 1 (rounded or not, these two forms are mathematically
+equivalent). For example, the number "1", inverted, will become
 ...1111110.111111.... Rounding of the infinite number of 1's after the
 radix gives the number ...1111111.000000..., which is exactly the way
 we usually see "-1" as two's complement.<br>
 
 <br>
-Bitwise operations (and, or, xor and bic) with negative numbers use
-this representation of the number when interpreting the bits, but
-beware that rounding may cause inexact values to appear different than
-their internal representation.<br>
+Bitwise operations with negative numbers (and, or, xor and bic) use
+the generalized "twos complement" representation of the number when
+interpreting the bits. However, beware that normal rounding that
+occurs when the display cannot display all the significant digits of a
+number may cause inexact values to appear different in the display
+than their internal representation.<br>
 
 <h3>Date representation</h3>
 
@@ -393,24 +397,104 @@ Gregorian calendar and will not match the Julian calendar of the
 time.<br>
 
 <br>
+When converted to hours, a date is represented by the number of hours
+since the imaginary date January 1st year 0 (in the extrapolated
+Gregorian calendar). Negative dates are not interpreted as years BC,
+but are instead represented as a negative amount of time equal in
+magnitude to the date interpreted as a positive number. In this way,
+you can subtract dates by entering a negative date and using
+"DH.MS+". However, it is impossible to extrapolate the Gregorian
+calendar to years BC.<br>
+
+<br>
+When converting from date-time format (yyyymmddHH.MMSS) to hours,
+several checks are performed. If year (yyyy) is zero (i.e. input is
+less than 1000000), the date-time format is instead interpreted as the
+days-time format ddddHH.MMSS, where dddd is the number of days. When
+you convert from hours back to date-time format, it is enough that the
+number of hours is greater than 8784 (i.e. 24 hours times 366, number
+of days in year 0) for the converter to switch back to yymmddHH.MMSS
+format. This means that for dddd between 366 and 9999, converting from
+ddddHH.MMSS to hours and back again will not yield the original
+input.</br>
+
+<br>
 Beware that you must specify the year with all four digits. If you
 specify a year with two digits only, you will be calculating dates in
-a Gregorian calendar extrapolated to the years AD 1-99.<br>
+a Gregorian calendar extrapolated to the years AD 1-99 *. As an
+intermediate result such dates are fine (e.g. a time interval,
+resulting from a DH.MS+ operation with one negative operand), but the
+result should be converted to hours or added to a proper date before
+it is meaningful. If an intermediate result like this represents a
+time interval less than one year, it will be comverted to the form
+"ddddHH.MMSS", where "dddd" is the number of days. Do not worry, this
+form will interpreted unambiguously in further calculations with
+DH.MS+.<br>
 
 <br>
-When converted to hours, a date is represented by the number of hours
-since the imaginary date January 1st year 0 (in the Gregorian
-calendar). Negative dates are not interpreted as years BC, but are
-instead represented as a negative amount of equal magnitude as the
-date interpreted as a positive number. In this way, you can subtract
-dates by entering a negative date and using "DH.MS+".<br>
+[* leap years in this period matches leap years in the period
+1900-1999, so you may get away with it. On the other hand, the year
+100 (in the extrapolated Gregorian calendar) was <em>not</em> a leap
+year while the year 2000 <em>was</em>.]<br>
 
 <br>
-Because date-time is represented with many digits, inexact
+If year is nonzero, and month (mm) is zero, the month will be
+interpreted as 1 (January). If day (dd) is zero, it is interpreted as
+1 (the 1st of the month). If seconds (SS) is greater than 59, the
+number is interpreted as that many seconds into the next minute. If
+minutes (MM) is greater than 59, the number is interpreted as that
+many minutes into the next hour. If hours (HH) is greater than 23, the
+number is interpreted as that many hours into the next day. If day
+(dd) is greater than the number of days in a month, the number is
+interpreted as that many days into the next month (or the months
+after). If month is greater than 12, the number is interpreted as that
+many months into the next year(s) (unspecified how many days there are
+in each of those months). E.g. the number 2003000000 is understood as
+January 1st, 2003, at 00:00.00. The number 1403.5901 is understood as
+14 days, 3 hours, 59 minutes and 1 second. Unfortunately, the number
+1.9999 is understood as 1 hour, 99 minutes and 99 seconds, actually
+2.6775 hours, considerably more than 2 hours (if that was
+intended).<br>
+
+<br>
+Because a date-time value is represented with many digits, inexact
 intermediate representation may cause inaccuracies to escalate. To
 alleviate this, some magic rounding has been implemented so that
 e.g. 99 minutes and 99.999 seconds is instead interpreted as 1 hour, 0
-minutes and 0 seconds.
+minutes and 0.000 seconds. This will catch a majority of the problems
+that may occur.<br>
+
+<br><i>Relation to Unix time</i><br>
+
+<br>
+Unix time starts with 0 at midnight (00:00 UTC) on January 1st,
+1970. Many operating systems and languages (including Java) use this
+time scale, although many use a local time zone instead of UTC.<br>
+
+<br>
+To convert from a date of the form yyyymmddHH.MMSS to Unix time,
+convert first to hours using "&rarr;H", subtract 17268672 (obtained
+e.g.  from 1970010100 &rarr;H), and multiply by 3600 to get number
+of seconds since January 1st 1970.<br>
+
+<br><i>Relation to Julian Days</i><br>
+
+<br>
+Astronomers often use Julian Day or Modified Julian Day as a practical
+format for doing arithmetic with dates. While the Julian era starts at
+noon on Monday, January 1st 4713 BC (in the Julian calendar), the
+calendar implemented by this calculator starts at midnight, January
+1st year 0 (in the extrapolated Gregorian calendar).<br>
+
+<br>
+To convert from a date to Julian Day, convert first to hours using
+"&rarr;H", divide by 24 to get days, and add 1721059.5.<br>
+
+<br>
+The Modified Julian Day is the number of days elapsed since midnight
+(00:00 UTC) on November 17, 1858. To convert from a date to Modified
+Julian Day, convert first to hours using "&rarr;H", divide by 24 to
+get days, and subtract 678941.<br>
 
 </body>
 </html>

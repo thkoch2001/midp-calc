@@ -2028,13 +2028,14 @@ public final class Real
   }
 
   public void toDHMS() {
-    // Actually, it converts to YYYYMMDDhh.mmss if input>240072
+    // Convert from "hours" to "days, hours, minutes and seconds"
+    // Actually, it converts to YYYYMMDDhh.mmss if input>=8784
     if (!isFiniteNonZero())
       return;
     boolean negative = sign != 0;
     abs();
 
-    int YMD,D,m;
+    int D,m;
     long h;
     h = toLong();
     frac();
@@ -2065,16 +2066,14 @@ public final class Real
 
     D = (int)(h/24);
     h %= 24;
-    if (D > 10003)
-      YMD = jd_to_gregorian(D);
-    else
-      YMD = D;
+    if (D >= 366)
+      D = jd_to_gregorian(D);
 
     tmp1.assign(m*100);
     add(tmp1);
     tmp1.assign(10000);
     div(tmp1);
-    tmp1.assign(YMD*100L+h);
+    tmp1.assign(D*100L+h);
     add(tmp1);
 
     if (negative)
@@ -2082,6 +2081,7 @@ public final class Real
   }
 
   public void fromDHMS() {
+    // Convert from "days, hours, minutes and seconds" to "hours"
     // Actually, it converts from YYYYMMDDhh.mmss, if input>=1000000
     if (!isFiniteNonZero())
       return;
@@ -2120,8 +2120,6 @@ public final class Real
     D = (int)(h/100);
     h %= 100;
     if (D>=10000) {
-      D += (int)(h/24);
-      h %= 24;
       M = D/100;
       D %= 100;
       if (D==0) D=1;
