@@ -6,6 +6,8 @@ public abstract class Displayable
   CommandListener commandListener;
   Font commandFont;
   int width, height;
+  String [] label = {"0",".","-/e","1","2","3","4","5","6","7","8","9"};
+  char [] key     = {'0','*','#','1','2','3','4','5','6','7','8','9'};
 
   Displayable() {
     commandFont = Font.getFont(
@@ -49,21 +51,29 @@ public abstract class Displayable
     keyRepeated(keyCode);
   }
   public void processPointerPress(int x, int y) {
-    if (y<height-commandFont.getHeight()-1)
+    if (y<height-(commandFont.getHeight()+1)*6)
       pointerPressed(x,y);
     else {
-      if (x<width/2) {
-        if (a != null && commandListener != null)
-          commandListener.commandAction(a, this);
+      if (y<height-(commandFont.getHeight()+1)*5) {
+	if (x<width/2) {
+          if (a != null && commandListener != null)
+	    commandListener.commandAction(a, this);
+	} else {
+	  if (b != null && commandListener != null)
+	    commandListener.commandAction(b, this);
+	}
+      } else if (y<height-(commandFont.getHeight()+1)*4) {
+        keyPressed('\b');
       } else {
-        if (b != null && commandListener != null)
-          commandListener.commandAction(b, this);
+        x = x*3/width;
+	y = (height-y)/(commandFont.getHeight()+1);
+	keyPressed(key[y*3+x]);
       }
     }
   }
   
   public int getHeight() {
-    return height - commandFont.getHeight()-1;
+    return height - (commandFont.getHeight()+1)*6;
   }
 
   public int getWidth() {
@@ -82,20 +92,38 @@ public abstract class Displayable
   
   public void processRepaint(java.awt.Graphics g) {
     g.setColor(java.awt.Color.WHITE);
-    g.fillRect(0,height-commandFont.getHeight(),width,commandFont.getHeight());
+    g.fillRect(0,height-(commandFont.getHeight()+1)*6,width,
+	       (commandFont.getHeight()+1)*6);
     g.setColor(java.awt.Color.LIGHT_GRAY);
-    g.fillRect(0,height-commandFont.getHeight()-1,width,1);
+    for (int i=1; i<=6; i++)
+      g.fillRect(0,height-(commandFont.getHeight()+1)*i,width,1);
+    g.fillRect(width/2,height-(commandFont.getHeight()+1)*6,
+               1,commandFont.getHeight()+1);
+    g.fillRect(width/3,height-(commandFont.getHeight()+1)*4,
+               1,(commandFont.getHeight()+1)*4);
+    g.fillRect(2*width/3,height-(commandFont.getHeight()+1)*4,
+               1,(commandFont.getHeight()+1)*4);
     g.setColor(java.awt.Color.BLACK);
     g.setFont(commandFont.font);
     if (a != null) {
-      g.drawString(a.getLabel(),3,height-commandFont.getHeight()+
+      g.drawString(a.getLabel(),3,height-(commandFont.getHeight()+1)*6+
                    commandFont.getBaselinePosition());
     }
     if (b != null) {
       g.drawString(b.getLabel(),width-3-commandFont.stringWidth(b.getLabel()),
-                   height-commandFont.getHeight()+
+                   height-(commandFont.getHeight()+1)*6+
                    commandFont.getBaselinePosition());
     }
+    g.drawString("<-",3+width/2-commandFont.stringWidth("<-")/2,
+                 height-(commandFont.getHeight()+1)*5+
+                 commandFont.getBaselinePosition());
+    for (int y=0; y<4; y++)
+      for (int x=0; x<3; x++)
+        g.drawString(label[y*3+x],
+                     (x*2+1)*width/6-commandFont.stringWidth(label[y*3+x])/2,
+                     height-(commandFont.getHeight()+1)*(y+1)+
+                     commandFont.getBaselinePosition());
+
     g.clipRect(0,0,width,height-commandFont.getHeight()-1);
     paint(g);
   }
