@@ -49,13 +49,19 @@ when executing commands that take a number argument (STO, FIX,
 etc). In hexadecimal mode, you can enter the digits a-f by holding down the
 keys 1-6 until the digit changes.</li> 
   <li>*: This key is used to enter the decimal point.</li>
-  <li>#: This key is used to enter a minus sign or an "E" for exponent.</li>
-  <li>clear, 'c': This key deletes the last digit in an entered
-  number, clears the lowest element on the stack, and backtracks
-  through menus.</li> 
+  <li>#: This key is used to enter a minus sign or an "E" for
+  exponent. In HEX/OCT/BIN mode, the same key can be used to enter a
+  "/". This sign is used to prefix a negative two's complement number
+  and should be read as "an infinite number of 1-bits preceding the
+  number". Pressing the # key again exchanges the "/" with a normal
+  minus sign, indicating the input of a normal negative number
+  with will be converted to two's complement on ENTER.</li>
   <li>ENTER: This key finishes the currently entered number and puts
   it on the stack. If no number is being entered, the lowest element
   on the stack is duplicated.</li>
+  <li>clear, 'c': This key deletes the last digit in an entered
+  number, clears the lowest element on the stack, and backtracks
+  through menus.</li> 
   <li>+ : This key adds the two lowest elements on the stack.</li>
   <li>Joystick/arrow keys: Pressing the middle of the joystick
   activates the menu. Pressing up/down/right/left on the joystick
@@ -165,6 +171,18 @@ to &#960; (or -180 to 180 in DEG mode)</li>
     <li>&rarr;DEG: Converts from radians to degrees</li>
     <li>&#960;: Enters the number &#960;</li>
   </ul>
+</ul>
+<h3>Bitwise operations (available in HEX/OCT/BIN mode)</h3>
+<ul>
+  <li>and: Calculate bitwise AND of x and y</li>
+  <li>or: Calculate bitwise OR of x and y</li>
+  <li>xor: Calculate bitwise XOR of x and y</li>
+  <li>bic: Bit-clear, clear all bits from y that is set in x,
+  i.e. calculate y AND NOT x</li>
+  <li>y&lt;&lt;x: Shift up y by integer number of bits in x</li>
+  <li>y&gt;&gt;x: Shift down y by integer number of bits in x</li>
+  <li>not: Invert all bits in x. Fractional bits are ignored,
+  i.e. the calculated value is x XOR -1</li>
 </ul>
 <h3>Special</h3>
 <ul>
