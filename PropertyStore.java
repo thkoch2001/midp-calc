@@ -15,7 +15,7 @@ public final class PropertyStore
     RecordStore rs;
     try {
       rs = RecordStore.openRecordStore(name,true);
-    } catch (RecordStoreException e) {
+    } catch (Exception e) {
       // Fatal error.
       System.out.println(e);
       return null;
@@ -26,7 +26,7 @@ public final class PropertyStore
   public void close() {
     try {
       rs.closeRecordStore();
-    } catch (RecordStoreException e) {
+    } catch (Exception e) {
     }
   }
   
@@ -38,11 +38,11 @@ public final class PropertyStore
         // Close repeatedly until an exception is thrown
         for (;;)
           rs.closeRecordStore();
-      } catch (RecordStoreException e) {
+      } catch (Exception e) {
         // Ignore this
       }
       RecordStore.deleteRecordStore(recordStoreName);
-    } catch (RecordStoreException e) {
+    } catch (Exception e) {
       System.out.println(e);
     }
   }
@@ -61,7 +61,7 @@ public final class PropertyStore
       int nBytes = rs.getRecord(re.nextRecordId(), propertyIDValue, 0);
       re.destroy();
       return nBytes;
-    } catch (RecordStoreException e) {
+    } catch (Exception e) {
       if (re != null)
         re.destroy();
       return 0;
@@ -80,7 +80,7 @@ public final class PropertyStore
         id = re.nextRecordId();
         re.destroy();
         re = null;
-      } catch (RecordStoreException e) {
+      } catch (Exception e) {
         id = -1;
       }
       if (id < 0) {
@@ -88,7 +88,7 @@ public final class PropertyStore
       } else {
         rs.setRecord(id,propertyIDValue,0,length);
       }
-    } catch (RecordStoreException e) {
+    } catch (Exception e) {
       if (re != null)
         re.destroy();
     }
@@ -103,7 +103,7 @@ public final class PropertyStore
       re.destroy();
       re = null;
       rs.deleteRecord(id);
-    } catch (RecordStoreException e) {
+    } catch (Exception e) {
       if (re != null)
         re.destroy();
     }

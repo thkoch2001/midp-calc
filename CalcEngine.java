@@ -160,6 +160,7 @@ public final class CalcEngine
   public static final int LOG_DRAW       = 202;
   public static final int EXP_DRAW       = 203;
   public static final int POW_DRAW       = 204;
+  public static final int SIGN_POINT_E   = 205;
 
   public static final int FINALIZE       = 500;
   public static final int FREE_MEM       = 501;
@@ -621,6 +622,39 @@ public final class CalcEngine
           if (inputBuf.charAt(i)=='E')
             return;
         inputBuf.append('E');
+        break;
+      case SIGN_POINT_E:
+        if (inputBuf.length()>0 && inputBuf.charAt(inputBuf.length()-1)=='-'){
+          inputBuf.setLength(inputBuf.length()-1);
+          break;
+        }
+        if (inputBuf.length()==0 && base!=10) {
+          inputBuf.append('/');
+          break;
+        }
+        if (inputBuf.length()==1 && inputBuf.charAt(0)=='/')
+          inputBuf.setLength(0);
+
+        if (inputBuf.length()==0 || inputBuf.charAt(inputBuf.length()-1)=='E'){
+          inputBuf.append('-');
+          break;
+        }
+        boolean hasE = false, hasPoint = false;
+        for (i=0; i<inputBuf.length(); i++) {
+          if (inputBuf.charAt(i)=='E')
+            hasE = true;
+          if (inputBuf.charAt(i)==format.point)
+            hasPoint = true;
+        }
+        if (!hasE && !hasPoint) {
+          inputBuf.append(format.point);
+          break;
+        }
+        if (inputBuf.length()>0 &&
+            inputBuf.charAt(inputBuf.length()-1)==format.point)
+          inputBuf.setLength(inputBuf.length()-1);
+        if (!hasE)
+          inputBuf.append('E');
         break;
       case DIGIT_9:
       case DIGIT_8:
@@ -1291,10 +1325,24 @@ public final class CalcEngine
           IR.makeNan();
           break;
         }
-        rTmp.assign(100);
-        IR.div(rTmp);
+        // Educated guess at start value = 2*(np*pmt+pv+fv)/(np*(fv-pv))
+        rTmp.assign(FV);
+        rTmp.sub(PV);
+        rTmp.mul(NP);
+        if (!rTmp.isZero()) {
+          IR.assign(NP);
+          IR.mul(PMT);
+          IR.add(PV);
+          IR.add(FV);
+          IR.scalbn(1);
+          IR.div(rTmp);
+        } else {
+          // If start value fails, use ir itself
+          rTmp.assign(100);
+          IR.div(rTmp);
+        }
         if (!IR.isFiniteNonZero())
-          IR.makeExp10(-2); // Start with 0.01
+          IR.makeExp10(-2); // When all else fails, just start with 0.01
         Real X1 = new Real();
         Real Y1 = new Real();
         Real X2 = new Real();
@@ -1358,6 +1406,7 @@ public final class CalcEngine
       case DIGIT_C: case DIGIT_D: case DIGIT_E: case DIGIT_F:
       case SIGN_E:
       case DEC_POINT:
+      case SIGN_POINT_E:
         input(cmd);
         break;
       case ENTER:

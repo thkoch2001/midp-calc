@@ -1,4 +1,4 @@
-VERSION = 0.99.44
+VERSION = 1.01
 TARGETS = Calc.jar Calc.jad
 
 WTK_HOME = /home/roarl/ant/WTK104
@@ -10,6 +10,7 @@ JAVAFILES  = Calc.java \
              GFont.java \
              GFontBase.java \
              PropertyStore.java \
+             SetupCanvas.java \
              Real.java
 
 default: $(TARGETS)

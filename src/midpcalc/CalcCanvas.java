@@ -405,7 +405,6 @@ public class CalcCanvas
   private int menuStackPtr;
   private int menuCommand;
 
-  private PropertyStore propertyStore;
   private static final byte PROPERTY_SCREEN_STATE = 20;
 
   public CalcCanvas(Calc m) {
@@ -413,13 +412,12 @@ public class CalcCanvas
 
     calc = new CalcEngine();
 
-    propertyStore = PropertyStore.open("CalcData");
     int numberFontStyle = GFont.MEDIUM;
-    if (propertyStore != null) {
-      calc.restoreState(propertyStore);
+    if (m.propertyStore != null) {
+      calc.restoreState(m.propertyStore);
       byte [] buf = new byte[2];
       buf[0] = PROPERTY_SCREEN_STATE;
-      int length = propertyStore.getProperty(buf);
+      int length = m.propertyStore.getProperty(buf);
       if (length >= 2)
         numberFontStyle = buf[1];
     }
@@ -430,8 +428,10 @@ public class CalcCanvas
       menu.subMenu[4].subMenu[4] = null;
     }
 
-    enter = new Command("ENTER", Command.OK    , 1);
-    add   = new Command("+"    , Command.SCREEN, 1);
+    enter = new Command(
+      "ENTER", SetupCanvas.commandArrangement[m.commandArrangement*2], 1);
+    add   = new Command(
+      "+",     SetupCanvas.commandArrangement[m.commandArrangement*2+1], 1);
     addCommand(enter);
     addCommand(add);
     setCommandListener(this);
@@ -937,12 +937,32 @@ public class CalcCanvas
             numRepaintLines = 100; // Force repaint of all
             break;
           } else {
-            return;
+            switch (getGameAction(key)) {
+              case UP:    menuIndex = 0; break;
+              case DOWN:  menuIndex = 3; break;
+              case LEFT:  menuIndex = 1; break;
+              case RIGHT: menuIndex = 2; break;
+              case FIRE:  menuIndex = 4; break;
+              default:
+                switch (key) {
+                  case '2': menuIndex = 0; break; // UP
+                  case '8': menuIndex = 3; break; // DOWN
+                  case '4': menuIndex = 1; break; // LEFT
+                  case '6': menuIndex = 2; break; // RIGHT
+                  case '5': menuIndex = 4; break; // PUSH
+                }
+                break;
+            }
+            break;
           }
         }
         calc.command(CalcEngine.DIGIT_0+key-'0',0);
         break;
       case '#':
+        if (!midlet.hasClearKey) {
+          clearKeyPressed();
+          break;
+        }
         if (menuStackPtr >= 0)
           return;
         calc.command(CalcEngine.SIGN_E,0);
@@ -950,7 +970,10 @@ public class CalcCanvas
       case '*':
         if (menuStackPtr >= 0)
           return;
-        calc.command(CalcEngine.DEC_POINT,0);
+        if (!midlet.hasClearKey)
+          calc.command(CalcEngine.SIGN_POINT_E,0);
+        else
+          calc.command(CalcEngine.DEC_POINT,0);
         break;
       default:
         switch (getGameAction(key)) {
@@ -975,6 +998,7 @@ public class CalcCanvas
               case -4: menuIndex = 2; break; // RIGHT
               case -5: menuIndex = 4; break; // PUSH
               case -8:
+              default: // Clear key could be mapped as something else...
                 clearKeyPressed();
                 break;
             }
@@ -996,7 +1020,11 @@ public class CalcCanvas
         calc.command(CalcEngine.DIGIT_A+key-'1',0);
         break;
       case '0': case '7': case '8': case '9':
-      case '#': case '*':
+      case '#':
+        if (!midlet.hasClearKey)
+          clearKeyRepeated();
+        break;
+      case '*':
         // Do nothing, but do not fall into the "default" below
         break;
       default:
@@ -1031,14 +1059,14 @@ public class CalcCanvas
 
   public void quit() {
     calc.command(CalcEngine.FINALIZE,0);
-    if (propertyStore != null) {
+    if (midlet.propertyStore != null) {
       int numberFontStyle = numberFont.getStyle();
       numberFont = null; // Free some memory before saveState()
       byte [] buf = new byte[2];
       buf[0] = PROPERTY_SCREEN_STATE;
       buf[1] = (byte)numberFontStyle;
-      propertyStore.setProperty(buf,2);
-      calc.saveState(propertyStore);
+      midlet.propertyStore.setProperty(buf,2);
+      calc.saveState(midlet.propertyStore);
     }
   }
 

@@ -16,12 +16,13 @@ href="&#109;&#097;&#105;&#108;&#116;&#111;&#058;&#114;&#111;&#097;&#114;&#108;&#
 Calc is a Java calculator for MIDP devices, such as a Java-enabled
 cell-phone or PDA. Currently, it has only been tested on a Sony
 Ericsson T610, which is my current phone but which has such a lousy
-built-in calculator that it forced me to develop this application. I
-would be glad to hear about success stories with other devices, but I
-am really not interested to know all the devices that it does
-<em>not</em> work on, unless it is obvious that a very minor
-modification will make it work. (If you have an early version of T610,
-consider upgrading the software, according to <a
+built-in calculator that it forced me to develop this
+application. (Now also tested on Nokia 3510i.) I would be glad to hear
+about success stories with other devices, but I am really not
+interested to know all the devices that it does <em>not</em> work on,
+unless it is obvious that a very minor modification will make it
+work. (If you have an early version of T610, consider upgrading the
+software, according to <a
 href="http://www.sonyericsson.com/developer/site/global/newsandevents/latestnews/newsaug03/p_j2me_app_t610.jsp">this</a>.
 It may make your Java applications run <em>much</em> faster, and fixes
 bugs.)<br>
@@ -42,7 +43,10 @@ allows for numbers up to 4.197E+323228496. Handy when you want to
 calculate the factorial of 40000000.<br>
 
 <br>
-You can download it into your phone using this link: <a href="http://gridbug.ods.org/~roarl/Calc.jad">http://gridbug.ods.org/~roarl/Calc.jad</a>
+You can download it into your phone using one of these links: <a
+href="http://gridbug.ods.org/~roarl/Calc.jad">http://gridbug.ods.org/~roarl/Calc.jad</a>,
+or <a
+href="http://gridbug.ods.org/~roarl/Calc.jar">http://gridbug.ods.org/~roarl/Calc.jar</a>
 
 <h2>Keys</h2>
 
@@ -77,6 +81,40 @@ keys 1-6 until the digit changes.</li>
   by further navigation with the joystick until an actual operation is
   activated.</li>
 </ul>
+
+<h2>Setup</h2>
+
+To be able to use Calc on devices with fewer keys than the T610 (most
+Nokias, that is), a couple of setup dialogs will appear the first time
+Calc is started. If you don't answer these dialogs correctly the first
+time, I'm afraid the only option is to delete the application and
+download it again (I may fix this in the future).<br>
+
+<br>
+First, to make sure that "ENTER" and "+" is immediately available,
+Calc will rotate through a set of command-key mappings until you
+answer "yes" to the question if you can see both "no" and "yes" mapped
+to the left and right soft-key simultaneously (These keys are located
+left and right directly below the display). (Most Nokias will at first
+map "yes" and "no" to a menu named "Options" on the left side, with
+nothing on the right side. If you select "yes" when this mapping is
+active, your "ENTER" and "+" key will be accessible in the same
+cumbersome manner.)<br>
+
+<br>
+Second, to make sure that a "clear" or "c" key is available (and
+recognizable by the application), you will be asked to press it. If
+you do not have a "clear" key, press "#" instead - this will be your
+clear key, and "*" will be used to magically enter both minus sign,
+decimal point and exponent marker.<br>
+
+<br>
+If your phone does not have a 5-way joystick, most times on Nokia you
+can use the "dial" button instead of the middle joystick button. If
+you only have a two-way joystick or none at all, the number keys 2, 4,
+5, 6 and 8 will work as joystick keys once a menu is activated. In
+that case, you can only hope that the menu will be activated by the
+"dial" button, otherwise you will be stuck.
 
 <h2>Operations</h2>
 
@@ -320,7 +358,7 @@ to &#960; (or -180 to 180 in DEG mode)</li>
   seconds. If x&nbsp;&#8804;&nbsp;8784 hours, it is instead converted
   to the format ddddHH.MMSS, where dddd is the number of days.</li> 
     <li>date: Get current date in DH.MS format</li>
-    <li>time: Get current time in DH.MS format (inaccurate on eary
+    <li>time: Get current time in DH.MS format (inaccurate on early
   versions of T610)</li>
     <li>DH.MS+: Add x and y as date, hours, minutes and seconds</li>
   </ul>
@@ -366,7 +404,7 @@ to &#960; (or -180 to 180 in DEG mode)</li>
     <li>BIN: Set binary (base-2) number mode</li>
     <li>OCT: Set octal (base-8) number mode</li>
   </ul>
-  <li>Monitornig</li>
+  <li>Monitoring</li>
   <ul>
     <li>mem: Monitor first <em>n</em> memory locations in upper part
     of the display</li>
@@ -379,7 +417,7 @@ to &#960; (or -180 to 180 in DEG mode)</li>
     <li>small: Set small font</li>
     <li>medium: Set medium font</li>
     <li>large: Set large font</li>
-    <li>system: Set system font (should be monospaced, but this is not
+    <li>system: Set system font (should be mono-spaced, but this is not
   the case on T610)</li>
   </ul>
 </ul>
@@ -436,7 +474,7 @@ overline;">1+ir/100</span>&nbsp;-&nbsp;1)*100 (yeah, that is twelfth
 root).]<br>
 
 <br>
-Solving for <em>interest rate</em> is done imlpicitly using an
+Solving for <em>interest rate</em> is done implicitly using an
 iterative approach. In the iteration, the start value used is the
 current value of the <em>ir</em> register, unless this value is zero,
 in which case 1% is used as a start value. If you get "nan"
@@ -488,7 +526,7 @@ intermediate result such dates are fine (e.g. a time interval,
 resulting from a DH.MS+ operation with one negative operand), but the
 result should be converted to hours or added to a proper date before
 it is meaningful. If an intermediate result like this represents a
-time interval less than one year, it will be comverted to the form
+time interval less than one year, it will be converted to the form
 "ddddHH.MMSS", where "dddd" is the number of days. Do not worry, this
 form will interpreted unambiguously in further calculations with
 DH.MS+.<br>
