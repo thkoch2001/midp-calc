@@ -165,6 +165,12 @@ public final class CalcEngine
   public static final int CPLX_ABS       = 156;
   public static final int CPLX_ARG       = 157;
   public static final int CPLX_CONJ      = 158;
+  public static final int ERFC           = 159;
+  public static final int MOD            = 160;
+  public static final int DIVF           = 161;
+  public static final int XCHGST         = 162;
+  public static final int ROLLDN         = 163;
+  public static final int ROLLUP         = 164;
   // These commands are handled from CalcCanvas
   public static final int AVG_DRAW       = 200;
   public static final int LIN_DRAW       = 201;
@@ -207,7 +213,7 @@ public final class CalcEngine
   public boolean degrees;
   public StringBuffer inputBuf;
   public boolean inputInProgress;
-  private Real rTmp,rTmp2,rTmp3;
+  private Real rTmp,rTmp2,rTmp3,rTmp4;
   private int repaintLines;
 
   public int monitorMode;
@@ -232,6 +238,9 @@ public final class CalcEngine
   private static final int UNDO_PUSH2  = 4;
   private static final int UNDO_XY     = 5;
   private static final int UNDO_PUSHXY = 6;
+  private static final int UNDO_ROLLDN = 7;
+  private static final int UNDO_ROLLUP = 8;
+  private static final int UNDO_XCHGST = 9;
   private int undoStackEmpty = 0;
   private int undoOp = UNDO_NONE;
   
@@ -250,6 +259,7 @@ public final class CalcEngine
     rTmp = new Real();
     rTmp2 = new Real();
     rTmp3 = new Real();
+    rTmp4 = new Real();
     inputBuf = new StringBuffer(40);
     degrees = false;
     begin = false;
@@ -906,13 +916,24 @@ public final class CalcEngine
     inputInProgress = false;
   }
 
-  private void rollUp() {
-    Real tmp = stack[STACK_SIZE-1];
-    String tmpStr = strStack[STACK_SIZE-1];
+  private void rollUp(boolean whole) {
+    int top;
+    if (whole) {
+      top = STACK_SIZE-1;
+    } else {
+      for (top=0; top<STACK_SIZE; top++)
+        if (strStack[top] == empty)
+          break;
+      if (top==0)
+        return;
+      top--;
+    }
+    Real tmp = stack[top];
+    String tmpStr = strStack[top];
     Real imagTmp = null;
     if (imagStack != null)
-      imagTmp = imagStack[STACK_SIZE-1];
-    for (int i=STACK_SIZE-1; i>0; i--) {
+      imagTmp = imagStack[top];
+    for (int i=top; i>0; i--) {
       stack[i] = stack[i-1];
       strStack[i] = strStack[i-1];
       if (imagStack != null)
@@ -924,29 +945,56 @@ public final class CalcEngine
       imagStack[0] = imagTmp;
   }
 
-  private void rollDown() {
+  private void rollDown(boolean whole) {
+    int top;
+    if (whole) {
+      top = STACK_SIZE-1;
+    } else {
+      for (top=0; top<STACK_SIZE; top++)
+        if (strStack[top] == empty)
+          break;
+      if (top==0)
+        return;
+      top--;
+    }
     Real tmp = stack[0];
     String tmpStr = strStack[0];
     Real imagTmp = null;
     if (imagStack != null)
       imagTmp = imagStack[0];
-    for (int i=0; i<STACK_SIZE-1; i++) {
+    for (int i=0; i<top; i++) {
       stack[i] = stack[i+1];
       strStack[i] = strStack[i+1];
       if (imagStack != null)
         imagStack[i] = imagStack[i+1];
     }
-    stack[STACK_SIZE-1] = tmp;
-    strStack[STACK_SIZE-1] = tmpStr;
+    stack[top] = tmp;
+    strStack[top] = tmpStr;
     if (imagStack != null)
-      imagStack[STACK_SIZE-1] = imagTmp;
+      imagStack[top] = imagTmp;
+  }
+
+  private void xchgSt(int n) {
+    Real tmp = stack[0];
+    String tmpStr = strStack[0];
+    Real imagTmp = null;
+    if (imagStack != null)
+      imagTmp = imagStack[0];
+    stack[0] = stack[n];
+    strStack[0] = strStack[n];
+    if (imagStack != null)
+      imagStack[0] = imagStack[n];
+    stack[n] = tmp;
+    strStack[n] = tmpStr;
+    if (imagStack != null)
+      imagStack[n] = imagTmp;
   }
 
   private void enter() {
     if (inputInProgress)
       parseInput();
     else {
-      rollUp();
+      rollUp(true);
       lasty.assign(stack[0]);
       if (imagStack != null)
         lastyi.assign(imagStack[0]);
@@ -1029,8 +1077,8 @@ public final class CalcEngine
     }
 
     switch (cmd) {
-      case YPOWX: y.pow(x);                break;
-      case XRTY:  y.nroot(x);              break;
+      case MOD:   y.mod(x);                break;
+      case DIVF:  y.divf(x);               break;
       case ATAN2: y.atan2(x); fromRAD(y);  break;
       case HYPOT: y.hypot(x);              break;
       case AND:   y.and(x);                break;
@@ -1085,13 +1133,40 @@ public final class CalcEngine
         y.mul(Real.HUNDRED);
         break;
     }
-    rollDown();
+    rollDown(true);
     stack[STACK_SIZE-1].makeZero();
     if (imagStack != null)
       imagStack[STACK_SIZE-1].makeZero();
     strStack[STACK_SIZE-1] = empty;
     strStack[0] = null;
     repaint(-1);
+  }
+
+  private void cplxMul(Real y, Real yi, Real x, Real xi) {
+    rTmp.assign(yi);
+    rTmp.mul(xi);
+    rTmp2.assign(y);
+    rTmp2.mul(xi);
+    y.mul(x);
+    y.sub(rTmp);
+    yi.mul(x);
+    yi.add(rTmp2);
+  }
+
+  private void cplxDiv(Real y, Real yi, Real x, Real xi) {
+    rTmp.assign(yi);
+    rTmp.mul(xi);
+    rTmp2.assign(y);
+    rTmp2.mul(xi);
+    y.mul(x);
+    y.add(rTmp);
+    yi.mul(x);
+    yi.sub(rTmp2);
+    x.sqr();
+    xi.sqr();
+    x.add(xi);
+    y.div(x);
+    yi.div(x);
   }
 
   private void binaryCplx(int cmd) {
@@ -1125,42 +1200,47 @@ public final class CalcEngine
         break;
       case MUL:
         if (cplx) {
-          rTmp.assign(yi);
-          rTmp.mul(xi);
-          rTmp2.assign(y);
-          rTmp2.mul(xi);
-          y.mul(x);
-          y.sub(rTmp);
-          yi.mul(x);
-          yi.add(rTmp2);
+          cplxMul(y,yi,x,xi);
         } else {
           y.mul(x);
         }
         break;
       case DIV:
         if (cplx) {
-          if (xi.isZero()) {
-            y.div(x);
-            yi.div(x);
-          } else {
-            rTmp.assign(yi);
-            rTmp.mul(xi);
-            rTmp2.assign(y);
-            rTmp2.mul(xi);
-            y.mul(x);
-            y.add(rTmp);
-            yi.mul(x);
-            yi.sub(rTmp2);
-            x.sqr();
-            xi.sqr();
-            x.add(xi);
-            y.div(x);
-            yi.div(x);
-          }
+          cplxDiv(y,yi,x,xi);
         } else {
           y.div(x);
         }
         break;
+      case YPOWX:
+        if (!y.isZero() && y.isNegative() && !x.isIntegral()) {
+          allocImagStack();
+          cplx = true;
+          xi = imagStack[0];
+          yi = imagStack[1];
+        }
+        if (cplx) {
+          cplxLn(y,yi);
+          cplxMul(y,yi,x,xi);
+          cplxExp(y,yi);
+        } else {
+          y.pow(x);
+        }
+        break;
+      case XRTY:
+        if (!y.isZero() && y.isNegative() && !(x.isIntegral() && x.isOdd())) {
+          allocImagStack();
+          cplx = true;
+          xi = imagStack[0];
+          yi = imagStack[1];
+        }
+        if (cplx) {
+          cplxLn(y,yi);
+          cplxDiv(y,yi,x,xi);
+          cplxExp(y,yi);
+        } else {
+          y.nroot(x);
+        }
       case TO_CPLX:
         allocImagStack();
         cplx = true;
@@ -1175,7 +1255,9 @@ public final class CalcEngine
       y.makeNan();
       yi.makeZero();
     }
-    rollDown();
+    if (cplx && y.isZero())
+      y.abs(); // Remove annoying "-"
+    rollDown(true);
     stack[STACK_SIZE-1].makeZero();
     if (imagStack != null)
       imagStack[STACK_SIZE-1].makeZero();
@@ -1227,36 +1309,10 @@ public final class CalcEngine
     }
 
     switch (cmd) {
-      case LN:    x.ln();    break;
-      case EXP:   x.exp();   break;
-      case LOG10: x.log10(); break;
-      case EXP10: x.exp10(); break;
-      case LOG2:  x.log2();  break;
-      case EXP2:  x.exp2();  break;
       case FACT:  x.fact();  break;
       case GAMMA: x.gamma(); break;
-      case SIN:   toRAD(x); x.sin();    break;
-      case COS:   toRAD(x); x.cos();    break;
-      case TAN:   toRAD(x); x.tan();    break;
-      case ASIN:  x.asin(); fromRAD(x); break;
-      case ACOS:  x.acos(); fromRAD(x); break;
-      case ATAN:  x.atan(); fromRAD(x); break;
-      case SINH:  x.sinh();  break;
-      case COSH:  x.cosh();  break;
-      case TANH:  x.tanh();  break;
-      case ASINH: x.asinh(); break;
-      case ACOSH: x.acosh(); break;
-      case ATANH: x.atanh(); break;
+      case ERFC:  x.erfc();  break;
       case NOT:   x.xor(Real.ONE_N); break;
-      case ROUND: x.round(); break;
-      case CEIL:  x.ceil();  break;
-      case FLOOR: x.floor(); break;
-      case TRUNC: x.trunc(); break;
-      case FRAC:  x.frac();  break;
-      case PERCENT:
-        x.mul(Real.PERCENT);
-        x.mul(stack[1]/*y*/);
-        break;
       case XCHGMEM:
         allocMem();
         tmp = stack[0];
@@ -1333,6 +1389,133 @@ public final class CalcEngine
     repaint(1);
   }
 
+  private void cplxSqr(Real x, Real xi) {
+    rTmp.assign(xi);
+    rTmp.sqr();
+    xi.mul(x);
+    xi.scalbn(1);
+    x.sqr();
+    x.sub(rTmp);
+  }
+
+  private void cplxSqrt(Real x, Real xi) {
+    rTmp.assign(x);
+    rTmp.hypot(xi);
+    rTmp2.assign(x);
+    rTmp2.abs();
+    rTmp.add(rTmp2);
+    rTmp.scalbn(1);
+    rTmp.sqrt();
+    if (!x.isNegative()) {
+      x.assign(rTmp);
+      x.scalbn(-1);
+      xi.div(rTmp);
+    } else {
+      x.assign(xi);
+      x.abs();
+      x.div(rTmp);
+      rTmp.copysign(xi);
+      xi.assign(rTmp);
+      xi.scalbn(-1);
+    }
+  }
+
+  private void cplxSinh(Real x, Real xi) {
+    degrees = false; // "Alert" the user to the fact that we use strictly RAD
+    rTmp.assign(x);
+    rTmp2.assign(xi);
+    x.sinh();
+    rTmp2.cos();
+    x.mul(rTmp2);
+    xi.sin();
+    rTmp.cosh();
+    xi.mul(rTmp);
+  }
+
+  private void cplxCosh(Real x, Real xi) {
+    degrees = false; // "Alert" the user to the fact that we use strictly RAD
+    rTmp.assign(x);
+    rTmp2.assign(xi);
+    x.cosh();
+    rTmp2.cos();
+    x.mul(rTmp2);
+    xi.sin();
+    rTmp.sinh();
+    xi.mul(rTmp);
+  }
+
+  private void cplxTanh(Real x, Real xi) {
+    rTmp3.assign(x);
+    rTmp4.assign(xi);
+    cplxSinh(x,xi);
+    cplxCosh(rTmp3,rTmp4);
+    cplxDiv(x,xi,rTmp3,rTmp4);
+  }
+  
+  private void cplxAsinh(Real x, Real xi) {
+    rTmp3.assign(x);
+    rTmp4.assign(xi);
+    cplxSqr(x,xi);
+    x.add(Real.ONE);
+    cplxSqrt(x,xi);
+    x.add(rTmp3);
+    xi.add(rTmp4);
+    cplxLn(x,xi);
+  }
+
+  private void cplxAcosh(Real x, Real xi) {
+    Real rTmp5 = new Real();
+    Real rTmp6 = new Real();
+    rTmp3.assign(x);
+    rTmp4.assign(xi);
+    rTmp3.add(Real.ONE);
+    cplxSqrt(rTmp3,rTmp4);
+    rTmp5.assign(x);
+    rTmp6.assign(xi);
+    rTmp5.sub(Real.ONE);
+    cplxSqrt(rTmp5,rTmp6);
+    cplxMul(rTmp3,rTmp4,rTmp5,rTmp6);
+    x.add(rTmp3);
+    xi.add(rTmp4);
+    cplxLn(x,xi);
+  }
+
+  private void cplxAtanh(Real x, Real xi) {
+    rTmp3.assign(x);
+    rTmp4.assign(xi);
+    x.add(Real.ONE);
+    cplxLn(x,xi);
+    rTmp3.neg();
+    rTmp4.neg();
+    rTmp3.add(Real.ONE);
+    cplxLn(rTmp3,rTmp4);
+    x.sub(rTmp3);
+    xi.sub(rTmp4);
+    x.scalbn(-1);
+    xi.scalbn(-1);
+  }
+
+  private void cplxExp(Real x, Real xi) {
+    degrees = false; // "Alert" the user to the fact that we use strictly RAD
+    x.exp();
+    rTmp.assign(xi);
+    xi.sin();
+    xi.mul(x);
+    rTmp.cos();
+    x.mul(rTmp);
+  }
+  
+  private void cplxLn(Real x, Real xi) {
+    degrees = false; // "Alert" the user to the fact that we use strictly RAD
+    rTmp.assign(x);
+    if (!xi.isZero())
+      x.hypot(xi);
+    else
+      x.abs();
+    x.ln();
+    xi.atan2(rTmp);
+  }
+
   private void unaryCplx(int cmd, int param) {
     if (inputInProgress)
       parseInput();
@@ -1354,14 +1537,20 @@ public final class CalcEngine
           xi.neg();
         x.neg();
         break;
+      case PERCENT:
+        if (imagStack != null)
+          cplx |= !imagStack[1].isZero();
+        x.mul(Real.PERCENT);
+        if (cplx) {
+          xi.mul(Real.PERCENT);
+          cplxMul(x,xi,stack[1]/*y*/,imagStack[1]/*yi*/);
+        } else {
+          x.mul(stack[1]/*y*/);
+        }
+        break;
       case SQR:
         if (cplx) {
-          rTmp.assign(xi);
-          rTmp.sqr();
-          xi.mul(x);
-          xi.scalbn(1);
-          x.sqr();
-          x.sub(rTmp);
+          cplxSqr(x,xi);
         } else {
           x.sqr();
         }
@@ -1382,25 +1571,7 @@ public final class CalcEngine
         break;
       case SQRT:
         if (cplx) {
-          rTmp.assign(x);
-          rTmp.hypot(xi);
-          rTmp2.assign(x);
-          rTmp2.abs();
-          rTmp.add(rTmp2);
-          rTmp.scalbn(1);
-          rTmp.sqrt();
-          if (!x.isNegative()) {
-            x.assign(rTmp);
-            x.scalbn(-1);
-            xi.div(rTmp);
-          } else {
-            x.assign(xi);
-            x.abs();
-            x.div(rTmp);
-            rTmp.copysign(xi);
-            xi.assign(rTmp);
-            xi.scalbn(-1);
-          }
+          cplxSqrt(x,xi);
         } else if (x.isNegative() && !x.isZero()) {
           allocImagStack();
           cplx = true;
@@ -1423,9 +1594,9 @@ public final class CalcEngine
         break;
       case CPLX_ARG:
         if (cplx) {
+          degrees = false;          
           xi.atan2(x);
           x.assign(xi);
-          fromRAD(x);
           xi.makeZero();
         } else {
           x.makeZero();
@@ -1435,11 +1606,222 @@ public final class CalcEngine
         if (cplx)
           xi.neg();
         break;
+      case COS:
+        if (cplx) {
+          x.swap(xi);
+          cplxCosh(x,xi);
+          xi.neg();
+        } else {
+          toRAD(x);
+          x.cos();
+        }
+        break;
+      case COSH:
+        if (cplx) {
+          cplxCosh(x,xi);
+        } else {
+          x.cosh();
+        }
+        break;
+      case SIN:
+        if (cplx) {
+          cplxSinh(xi,x);
+        } else {
+          toRAD(x);
+          x.sin();
+        }
+        break;
+      case SINH:
+        if (cplx) {
+          cplxSinh(x,xi);
+        } else {
+          x.sinh();
+        }
+        break;
+      case TAN:
+        if (cplx) {
+          xi.neg();
+          cplxTanh(xi,x);
+          xi.neg();
+        } else {
+          toRAD(x);
+          x.tan();
+        }
+        break;
+      case TANH:
+        if (cplx) {
+          cplxTanh(x,xi);
+        } else {
+          x.tanh();
+        }
+        break;
+      case ASIN:
+        if (!cplx && (x.greaterThan(Real.ONE) || x.lessThan(Real.ONE_N))) {
+          allocImagStack();
+          cplx = true;
+          xi = imagStack[0];
+        }
+        if (cplx) {
+          cplxAsinh(xi,x);
+        } else {
+          x.asin();
+          fromRAD(x);
+        }
+        break;
+      case ASINH:
+        if (cplx) {
+          cplxAsinh(x,xi);
+        } else {
+          x.asinh();
+        }
+        break;
+      case ACOS:
+        if (!cplx && (x.greaterThan(Real.ONE) || x.lessThan(Real.ONE_N))) {
+          allocImagStack();
+          cplx = true;
+          xi = imagStack[0];
+        }
+        if (cplx) {
+          cplxAsinh(xi,x);
+          x.neg();
+          xi.neg();
+          x.add(Real.PI_2);
+        } else {
+          x.acos();
+          fromRAD(x);
+        }
+        break;
+      case ACOSH:
+        if (!cplx && x.lessThan(Real.ONE)) {
+          allocImagStack();
+          cplx = true;
+          xi = imagStack[0];
+        }
+        if (cplx) {
+          cplxAcosh(x,xi);
+        } else {
+          x.acosh();
+        }
+        break;
+      case ATAN:
+        if (cplx) {
+          xi.neg();
+          cplxAtanh(xi,x);
+          xi.neg();
+        } else {
+          x.atan();
+          fromRAD(x);
+        }
+        break;
+      case ATANH:
+        if (!cplx && (x.greaterThan(Real.ONE) || x.lessThan(Real.ONE_N))) {
+          allocImagStack();
+          cplx = true;
+          xi = imagStack[0];
+        }
+        if (cplx) {
+          cplxAtanh(x,xi);
+        } else {
+          x.atanh();
+        }
+        break;
+      case EXP:
+        if (cplx) {
+          cplxExp(x,xi);
+        } else {
+          x.exp();
+        }
+        break;
+      case EXP2:
+        if (cplx) {
+          x.mul(Real.LN2);
+          xi.mul(Real.LN2);
+          cplxExp(x,xi);
+        } else {
+          x.exp2();
+        }
+        break;
+      case EXP10:
+        if (cplx) {
+          x.mul(Real.LN10);
+          xi.mul(Real.LN10);
+          cplxExp(x,xi);
+        } else {
+          x.exp10();
+        }
+        break;
+      case LN:
+        if (x.isNegative() && !x.isZero()) {
+          allocImagStack();
+          cplx = true;
+          xi = imagStack[0];
+        }
+        if (cplx) {
+          cplxLn(x,xi);
+        } else {
+          x.ln();
+        }
+        break;
+      case LOG2:
+        if (x.isNegative() && !x.isZero()) {
+          allocImagStack();
+          cplx = true;
+          xi = imagStack[0];
+        }
+        if (cplx) {
+          cplxLn(x,xi);
+          x.mul(Real.LOG2E);
+          xi.mul(Real.LOG2E);
+        } else {
+          x.log2();
+        }
+        break;
+      case LOG10:
+        if (x.isNegative() && !x.isZero()) {
+          allocImagStack();
+          cplx = true;
+          xi = imagStack[0];
+        }
+        if (cplx) {
+          cplxLn(x,xi);
+          x.mul(Real.LOG10E);
+          xi.mul(Real.LOG10E);
+        } else {
+          x.log10();
+        }
+        break;
+      case ROUND:
+        if (cplx)
+          xi.round();
+        x.round();
+        break;
+      case CEIL:
+        if (cplx)
+          xi.ceil();
+        x.ceil();
+        break;
+      case FLOOR:
+        if (cplx)
+          xi.floor();
+        x.floor();
+        break;
+      case TRUNC:
+        if (cplx)
+          xi.trunc();
+        x.trunc();
+        break;
+      case FRAC:
+        if (cplx)
+          xi.frac();
+        x.frac();
+        break;
     }
     if (cplx && (x.isNan() || xi.isNan())) {
       x.makeNan();
       xi.makeZero();
     }
+    if (cplx && x.isZero())
+      x.abs(); // Remove annoying "-"
     strStack[0] = null;
     repaint(1);
   }
@@ -1497,7 +1879,7 @@ public final class CalcEngine
   private void push(Real x, Real xi) {
     if (inputInProgress)
       parseInput();
-    rollUp();
+    rollUp(true);
     lasty.assign(stack[0]);
     if (imagStack != null)
       lastyi.assign(imagStack[0]);
@@ -1627,8 +2009,8 @@ public final class CalcEngine
     if (inputInProgress)
       parseInput();
     allocStat();
-    rollUp();
-    rollUp();
+    rollUp(true);
+    rollUp(true);
     lasty.assign(stack[0]);
     lastz.assign(stack[1]);
     if (imagStack != null) {
@@ -1720,7 +2102,7 @@ public final class CalcEngine
     if (inputInProgress)
       parseInput();
     allocStat();
-    rollUp();
+    rollUp(true);
     lasty.assign(stack[0]);
     if (imagStack != null)
       lastyi.assign(imagStack[0]);
@@ -1891,8 +2273,10 @@ public final class CalcEngine
           // If start value fails, use ir itself
           IR.mul(Real.PERCENT);
         }
-        if (!IR.isFiniteNonZero())
-          IR.makeExp10(-2); // When all else fails, just start with 1%
+        if (!IR.isFiniteNonZero()) {
+          IR.assign(Real.TEN);
+          IR.pow(-2); // When all else fails, just start with 1%
+        }
         Real X1 = new Real();
         Real Y1 = new Real();
         Real X2 = new Real();
@@ -1972,7 +2356,7 @@ public final class CalcEngine
         repaint(1);
         break;
       case UNDO_BINARY:
-        rollUp();
+        rollUp(true);
         stack[0].assign(lastx);
         stack[1].assign(lasty);
         if (imagStack != null) {
@@ -1988,7 +2372,7 @@ public final class CalcEngine
         if (imagStack != null)
           imagStack[0].assign(lastyi);
         strStack[0] = undoStackEmpty >= 1 ? empty : null;
-        rollDown();
+        rollDown(true);
         repaint(-1);
         break;
       case UNDO_PUSH2:
@@ -2000,8 +2384,8 @@ public final class CalcEngine
         }          
         strStack[0] = undoStackEmpty >= 2 ? empty : null;
         strStack[1] = undoStackEmpty >= 1 ? empty : null;
-        rollDown();
-        rollDown();
+        rollDown(true);
+        rollDown(true);
         repaint(-1);
         break;
       case UNDO_XY:
@@ -2025,8 +2409,17 @@ public final class CalcEngine
         strStack[0] = undoStackEmpty >= 1 ? empty : null;
         strStack[1] = undoStackEmpty >= 2 ? empty : null;
         // Different this time         ^^^
-        rollDown();
+        rollDown(true);
         repaint(-1);
+        break;
+      case UNDO_ROLLDN:
+        rollUp(false);
+        break;
+      case UNDO_ROLLUP:
+        rollDown(false);
+        break;
+      case UNDO_XCHGST:
+        xchgSt(undoStackEmpty);
         break;
     }
     undoOp = UNDO_NONE; // Cannot undo this
@@ -2053,32 +2446,34 @@ public final class CalcEngine
           binaryCplx(cmd);
         break;
       case ADD:   case SUB:   case MUL:   case DIV:
+      case YPOWX: case XRTY:
       case TO_CPLX:
         binaryCplx(cmd);
         break;
       case PERCENT_CHG:
-      case YPOWX: case XRTY:
       case ATAN2: case HYPOT:
       case PYX:   case CYX:
       case AND:   case OR:    case XOR:   case BIC:
       case YUPX:  case YDNX:
       case DHMS_PLUS:
       case FINANCE_MULINT: case FINANCE_DIVINT:
+      case MOD: case DIVF:
         binary(cmd);
         break;
       case NEG:   case RECIP: case SQR:   case SQRT:
+      case PERCENT:
       case CPLX_ABS: case CPLX_ARG: case CPLX_CONJ:
+      case LN:    case EXP:
+      case LOG10: case EXP10: case LOG2: case EXP2:
+      case SIN:   case COS:   case TAN:
+      case SINH:  case COSH:  case TANH:
+      case ASIN:  case ACOS:  case ATAN:
+      case ASINH: case ACOSH: case ATANH:
+      case ROUND: case CEIL:  case FLOOR: case TRUNC: case FRAC:
         unaryCplx(cmd,param);
         break;
-      case LN:    case EXP:   case LOG10: case EXP10: case LOG2: case EXP2:
-      case FACT:  case GAMMA:
-      case SIN:   case COS:   case TAN:
-      case ASIN:  case ACOS:  case ATAN:
-      case SINH:  case COSH:  case TANH:
-      case ASINH: case ACOSH: case ATANH:
+      case FACT:  case GAMMA: case ERFC:
       case NOT:
-      case ROUND: case CEIL:  case FLOOR: case TRUNC: case FRAC:
-      case PERCENT:
       case XCHGMEM:
       case TO_DEG: case TO_RAD: case TO_DHMS: case TO_H:
       case LIN_YEST: case LIN_XEST: case LOG_YEST: case LOG_XEST:
@@ -2117,6 +2512,21 @@ public final class CalcEngine
           push(stack[param],imagStack[param]);
         else
           push(stack[param],null);
+        break;
+      case ROLLDN:
+        rollDown(false);
+        undoOp = UNDO_ROLLDN;
+        break;
+      case ROLLUP:
+        rollUp(false);
+        undoOp = UNDO_ROLLUP;
+        break;
+      case XCHGST:
+        if (strStack[param] != empty) {
+          xchgSt(param);
+          undoOp = UNDO_XCHGST;
+          undoStackEmpty = param; // Using this otherwise unused variable
+        }
         break;
       case LASTX:
         if (imagStack != null)
@@ -2253,7 +2663,7 @@ public final class CalcEngine
         } else {
           int a = stack[0].toInteger();
           int b = greatestFactor(a);
-          rollUp();
+          rollUp(true);
           lasty.assign(stack[0]);
           if (imagStack != null)
             lastyi.assign(imagStack[0]);
@@ -2276,7 +2686,7 @@ public final class CalcEngine
         if (imagStack != null) {
           lastx.assign(stack[0]);
           lastxi.assign(imagStack[0]);
-          rollUp();
+          rollUp(true);
           lasty.assign(stack[0]);
           lastyi.assign(imagStack[0]);
           stack[0].assign(stack[1]);
@@ -2285,7 +2695,7 @@ public final class CalcEngine
           imagStack[1].makeZero();
         } else {
           lastx.assign(stack[0]);
-          rollUp();
+          rollUp(true);
           lasty.assign(stack[0]);
           stack[0].assign(stack[1]);
           stack[1].makeZero();
@@ -2528,8 +2938,8 @@ public final class CalcEngine
       case FREE_MEM:
         if (inputInProgress)
           parseInput();
-        rollUp();
-        rollUp();
+        rollUp(true);
+        rollUp(true);
         Runtime.getRuntime().gc();
         stack[0].assign(Runtime.getRuntime().freeMemory());
         stack[1].assign(Runtime.getRuntime().totalMemory());
