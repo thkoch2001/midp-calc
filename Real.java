@@ -2512,7 +2512,7 @@ public final class Real
           if ((tmp4.mantissa >>> 62) == 3) {
             tmp4.mantissa <<= 1;
             tmp4.exponent--;
-            accurateBits--;
+            accurateBits--; // ?
           }
         }
         tmp4.exponent -= 0x40000000-1;
@@ -2524,8 +2524,11 @@ public final class Real
           tmp4.exponent--;
           accurateBits--;
         }
-        else if (shift>0)
-          tmp4.mantissa = (tmp4.mantissa+(1L<<(shift-1)))>>shift; // >> not >>>
+        else if (shift>0) {
+          tmp4.mantissa = (tmp4.mantissa+(1L<<(shift-1)))>>>shift;
+          if (tmp4.sign != 0) // Need to fill in some 1's at the top
+            tmp4.mantissa |= 0x8000000000000000L>>(shift-1); // >> not >>>
+        }
       }
     }
     int accurateDigits = (accurateBits+bitsPerDigit-1)/bitsPerDigit;
