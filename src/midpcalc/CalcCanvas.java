@@ -95,7 +95,7 @@ public class CalcCanvas
   private static final int NUMBER_14 = -20+14;
   private static final int NUMBER_15 = -20+15;
   
-  private static final Menu menu = new Menu(null,new Menu[] {
+  private static final Menu menu = new Menu("menu",new Menu[] {
     new Menu("basic",new Menu[] {
       new Menu("-",CalcEngine.SUB),
       new Menu("*",CalcEngine.MUL),
@@ -361,6 +361,7 @@ public class CalcCanvas
   private Menu [] menuStack;
   private int menuStackPtr;
   private int menuCommand;
+  private String menuLabel;
 
   private PropertyStore propertyStore;
   private static final byte PROPERTY_SCREEN_STATE = 20;
@@ -604,10 +605,29 @@ public class CalcCanvas
     int y = smallMenuFont.getHeight()+
       (getHeight()-h-smallMenuFont.getHeight())/2;
     int ym = ((y+h-3)-menuFont.getHeight()+(y+3))/2;
+    // Draw menu title
+    g.setColor(0);
+    g.fillRect(x,y-menuFont.getHeight()-1,w/2,menuFont.getHeight()+1);
     g.setColor(menuColor[menuStackPtr]);
-    g.fillRoundRect(x,y,w,h,21,21);
+    g.setFont(menuFont);
+    String label = menuStack[menuStackPtr].label;
+    if (menuStack[menuStackPtr] == numberMenu ||
+        (menuStackPtr>=1 && menuStack[menuStackPtr-1] == numberMenu))
+      label = menuLabel;
+    drawLabel(g,label,false,x+2,y-menuFont.getHeight());
+    // Draw 3D menu background
+    g.fillRect(x+2,y+2,w-4,h-4);
+    g.setColor((menuColor[menuStackPtr]+0xfcfcfc)/2);
+    g.fillRect(x,y+1,2,h-1);
     g.setColor(menuColor[menuStackPtr]/2);
-    g.drawRoundRect(x,y,w,h,21,21);
+    g.fillRect(x+w-2,y+1,2,h-1);
+    g.setColor((menuColor[menuStackPtr]+0xfcfcfc)/2);
+    g.fillRect(x,y,w,1);
+    g.fillRect(x+1,y+1,w-2,1);
+    g.setColor(menuColor[menuStackPtr]/2);
+    g.fillRect(x+2,y+h-2,w-4,1);
+    g.fillRect(x+1,y+h-1,w-2,1);
+    // Draw menu items
     g.setColor(0);
     Menu [] subMenu = menuStack[menuStackPtr].subMenu;
     if (subMenu.length>=1)
@@ -623,8 +643,8 @@ public class CalcCanvas
                    g.TOP|g.HCENTER);
     else {
       // Draw a small "joystick" in the center
-      y = (getHeight()+smallMenuFont.getHeight())/2;
-      x = getWidth()/2;
+      y += h/2;
+      x += w/2;
       g.setColor(menuColor[menuStackPtr]/4*3);
       g.fillRect(x-1,y-10,3,20);
       g.fillRect(x-10,y-1,20,3);
@@ -755,17 +775,17 @@ public class CalcCanvas
         menu.subMenu[2] = bitMath;
       }
     }
-    if (menuStackPtr < 0 && menuIndex < 4) {
+    if (menuStackPtr < 0 && menuIndex <= 4) {
       // Go directly to submenu
       menuStack[0] = menu;
       menuStack[1] = menu.subMenu[menuIndex];
       menuStackPtr = 1;
       numRepaintLines = 0; // Force repaint of menu
-    } else if (menuStackPtr < 0) {
-      // Open top level menu
-      menuStack[0] = menu;
-      menuStackPtr = 0;
-      numRepaintLines = 0; // Force repaint of menu
+    //} else if (menuStackPtr < 0) {
+    //  // Open top level menu
+    //  menuStack[0] = menu;
+    //  menuStackPtr = 0;
+    //  numRepaintLines = 0; // Force repaint of menu
     } else if (menuStack[menuStackPtr].subMenu.length > menuIndex) {
       Menu [] subMenu = menuStack[menuStackPtr].subMenu;
       if (subMenu[menuIndex] == null) {
@@ -778,6 +798,7 @@ public class CalcCanvas
       } else if (subMenu[menuIndex].numberRequired) {
         // Open number submenu
         menuCommand = subMenu[menuIndex].command; // Save current command
+        menuLabel = subMenu[menuIndex].label;     // Save current command label
         menuStackPtr++;
         menuStack[menuStackPtr] = numberMenu;
         numRepaintLines = 0; // Force repaint of menu
