@@ -105,8 +105,8 @@
 //   LN10    = ln(10)
 //   LOG2E   = log2(e)
 //   LOG10E  = log10(e)
-//   MAX     = maximum representable non-infinite positive number
-//   MIN     = minimum representable non-zero positive number
+//   MAX     = max non-infinite positive number = 4.197E+323228496
+//   MIN     = min non-zero positive number     = 2.383E-323228497
 //   NAN     = not a number
 //   INF     = infinity
 //   INF_N   = -infinity
@@ -151,7 +151,7 @@ public final class Real
   }
 
   public Real(int s, int e, long m) {
-    assign((byte)s,e,m);
+    assign(s,e,m);
   }
   
   public Real(final Real a) {
@@ -166,8 +166,8 @@ public final class Real
     atof(a);
   }
   
-  public void assign(byte s, int e, long m) {
-    sign = s;
+  public void assign(int s, int e, long m) {
+    sign = (byte)s;
     exponent = e;
     mantissa = m;
   }
@@ -501,38 +501,45 @@ public final class Real
         makeInfinity(sign);
       return;
     }
-
-    byte s;
-    int e;
-    long m;
-    if (exponent > a.exponent ||
-        (exponent == a.exponent) && mantissa>=a.mantissa)
+    if (isZero() || a.isZero())
     {
-      s = a.sign;
-      e = a.exponent;
-      m = a.mantissa;
-    } else {
-      s = sign;
-      e = exponent;
-      m = mantissa;
-      sign = a.sign;
-      exponent = a.exponent;
-      mantissa = a.mantissa;
+      if (isZero())
+        assign(a);
     }
-    int shift = exponent-e;
-    if (shift>=64)
-      return;
+    else
+    {
+      byte s;
+      int e;
+      long m;
+      if (exponent > a.exponent ||
+          (exponent == a.exponent && mantissa>=a.mantissa))
+      {
+        s = a.sign;
+        e = a.exponent;
+        m = a.mantissa;
+      } else {
+        s = sign;
+        e = exponent;
+        m = mantissa;
+        sign = a.sign;
+        exponent = a.exponent;
+        mantissa = a.mantissa;
+      }
+      int shift = exponent-e;
+      if (shift>=64)
+        return;
 
-    if (shift==0) {
-      if (sign == s)
-        mantissa += m;
-      else
-        mantissa -= m;
-    } else {
-      if (sign == s)
-        mantissa += (m+(1<<(shift-1)))>>>shift;
-      else
-        mantissa -= (m-(1<<(shift-1)))>>>shift;
+      if (shift==0) {
+        if (sign == s)
+          mantissa += m;
+        else
+          mantissa -= m;
+      } else {
+        if (sign == s)
+          mantissa += (m+(1<<(shift-1)))>>>shift;
+        else
+          mantissa -= (m-(1<<(shift-1)))>>>shift;
+      }
     }
 
     normalize();
@@ -593,26 +600,33 @@ public final class Real
       return;
     }
 
+    // Normalize exponent
+    int exp = 0x40000000-exponent;
+    exponent = 0x40000000;
+
     // Save -A    
     recipTmp.assign(this);
     recipTmp.neg();
 
-    // First establish approximate result (actually 30 bit accurate)
-    
-    mantissa = (0x4000000000000000L/(mantissa>>>32))<<30;
-    exponent = 0x80000000-exponent;
+    // First establish approximate result (actually 31 bit accurate)
+
+    mantissa = (0x4000000000000000L/(mantissa>>>31))<<31;
     normalize();
 
     // Now perform Newton-Raphson iteration
     // Xn+1 = Xn + Xn*(1-A*Xn)
 
     for (int i=0; i<2; i++) {
+      // For speed, use only one iteration. Error will be max 10 ulp
       recipTmp2.assign(this);
       mul(recipTmp);
       add(ONE);
       mul(recipTmp2);
       add(recipTmp2);
     }
+
+    // Fix exponent
+    scalbn(exp);
   }
 
   public void recip() {
@@ -693,7 +707,7 @@ public final class Real
 
     // First establish approximate result
     
-    mantissa = start-(mantissa>>2);
+    mantissa = start-(mantissa>>>2);
     boolean flag=false;
     if ((exponent&1) != 0)
       flag=true;
@@ -865,9 +879,11 @@ public final class Real
   }
 
   public void makeExp10(int power) {
+    // Calculate power of 10 by successive squaring for increased accuracy
+    // (Perhaps it is not so accurate for large arguments?)
     boolean recp=false;
     if (power < 0) {
-      power = -power; // Also works for 0x80000000
+      power = -power; // Also works for 0x80000000 (but will underflow)
       recp = true;
     }
     assign(ONE);
@@ -1391,7 +1407,7 @@ public final class Real
     scalbn(-1);
   }
 
-  public void fact() {
+  public void gamma() {
     //...
   }
 
@@ -1418,10 +1434,10 @@ public final class Real
       index++;
       tmp2.assign(ONE);
       while (index<length && a.charAt(index)>='0' && a.charAt(index)<='9') {
+        tmp2.mul(TEN);
         mul(TEN);
         tmp1.assign((int)(a.charAt(index)-'0'));
         add(tmp1);
-        tmp2.mul(TEN);
         index++;
       }
       div(tmp2);
@@ -1456,19 +1472,20 @@ public final class Real
       exponent = 0;
       return;
     }
-    int carry=0;
+    int carry = 0;
     for (int i=0; i<64; i+=4) {
-      int d = (int)((mantissa>>>i)&0xf)+carry;
-      if (d>=10) {
+      int d = (int)((mantissa>>>i)&0xf) + carry;
+      carry = 0;
+      if (d >= 10) {
         d -= 10;
-        carry=1;
-        mantissa &= ~(0xfL<<i);
-        mantissa += (long)d<<i;
+        carry = 1;
       }
+      mantissa &= ~(0xfL<<i);
+      mantissa += (long)d<<i;
     }
     if (carry != 0) {
       if ((int)(mantissa&0xf)>=5)
-        mantissa += 0x10; // Rounding
+        mantissa += 0x10; // Rounding, may be inaccurate
       mantissa >>>= 4;
       mantissa += 1L<<60;
       exponent++;
@@ -1491,20 +1508,26 @@ public final class Real
     tmp2.assign(tmp1);
     tmp1.log10();
     tmp1.floor();
-    exponent = tmp1.toInteger();
+    exponent = tmp1.toInteger(); // Can not cause overflow
     tmp1.makeExp10(exponent);
     if (tmp1.greaterThan(tmp2)) {
       // Inaccuracy may cause log10(99999) to turn out as e.g. 5.0001
-      // (Inaccuracy the other way will be taken care of by normalizeBCD)
       exponent--;
       tmp1.makeExp10(exponent);
+    } else {
+      tmp3.makeExp10(exponent+1);
+      if (tmp3.lessEqual(tmp2)) {
+        // Inaccuracy may cause log10(100000) to turn out as e.g. 4.9999
+        exponent++;
+        tmp1.assign(tmp3);
+      }
     }
     if (exponent > 300000000 || exponent < -300000000) {
       // Kludge to be able to print very large and very small numbers
       // without causing over/underflows
       tmp1.makeExp10(exponent/2);
       tmp2.div(tmp1); // So, divide twice by not-so-extreme numbers
-      tmp1.makeExp10(exponent-exponent/2);
+      tmp1.makeExp10(exponent-(exponent/2));
     }
     tmp2.div(tmp1);
     mantissa = 0;
@@ -1533,21 +1556,23 @@ public final class Real
     if (base==16) {
       return ((sign!=0)?"-":"")+"0x"+Long.toHexString(mantissa)+" E"+
         ((exponent>=0x40000000)?"+":"")+(exponent-0x40000000);
-    } else {
-      tmp3.assign(this);
-      tmp3.toBCD();
+    } else if (base==10) {
+      tmp4.assign(this);
+      tmp4.toBCD();
       ftoaBuf.setLength(0);
-      if (tmp3.sign!=0)
+      if (tmp4.sign!=0)
         ftoaBuf.append('-');
-      ftoaBuf.append((char)('0'+(tmp3.mantissa>>>60)));
+      ftoaBuf.append((char)('0'+(tmp4.mantissa>>>60)));
       ftoaBuf.append('.');
       for (int i=56; i>=0; i-=4)
-        ftoaBuf.append((char)('0'+((tmp3.mantissa>>>i)&0xf)));
+        ftoaBuf.append((char)('0'+((tmp4.mantissa>>>i)&0xf)));
       ftoaBuf.append(" E");
-      if (tmp3.exponent>=0)
+      if (tmp4.exponent>=0)
         ftoaBuf.append('+');
-      ftoaBuf.append(tmp3.exponent);
+      ftoaBuf.append(tmp4.exponent);
       return ftoaBuf.toString();
+    } else {
+      return ((sign!=0)?"-?":"?");
     }
   }
 
