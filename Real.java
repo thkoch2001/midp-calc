@@ -122,6 +122,7 @@
 //   scalbn(int)                                      0             0.4
 //
 // Make special values:
+//   makeZero()                                       0            0.05
 //   makeZero(int sign)                               0            0.05
 //   makeInfinity(int sign)                           0            0.05
 //   makeNan()                                        0            0.05
@@ -220,7 +221,6 @@ public final class Real
   public static final Real ONE_N  = new Real(1,0x40000000,0x4000000000000000L);
   
   public Real() {
-    assign(ZERO);
   }
 
   public Real(final Real a) {
@@ -253,7 +253,7 @@ public final class Real
 
   public void assign(final Real a) {
     if (a == null) {
-      makeZero(0);
+      makeZero();
       return;
     }
     sign = a.sign;
@@ -376,6 +376,12 @@ public final class Real
       return (sign<<31)|(e<<23)|((int)(m>>>39)&0x7fffff);
     // Degenerate small float
     return (sign<<31)|((int)(m>>>(40-e))&0x7fffff);
+  }
+
+  public void makeZero() {
+    sign = 0;
+    mantissa = 0;
+    exponent = 0;
   }
 
   public void makeZero(int s) {
@@ -952,7 +958,7 @@ public final class Real
       return;
     }
     if (isZero() || a.isZero()) {
-      makeZero(0);
+      makeZero();
       return;
     }
     if (isInfinity() || a.isInfinity()) {
@@ -963,7 +969,7 @@ public final class Real
       else if (isInfinity() && a.isInfinity() && sign!=0 && a.sign!=0)
         ; // makeInfinity(1)
       else
-        makeZero(0);
+        makeZero();
       return;
     }
 
@@ -1128,7 +1134,7 @@ public final class Real
         if (a.isInfinity())
           makeInfinity(0);
         else
-          makeZero(0);
+          makeZero();
       }
       return;
     }
@@ -1567,12 +1573,12 @@ public final class Real
         if (exp.sign==0)
           makeInfinity(0);
         else
-          makeZero(0);
+          makeZero();
       } else if (test<0) {
         if (exp.sign!=0)
           makeInfinity(0);
         else
-          makeZero(0);
+          makeZero();
       } else {
         makeNan();
       }
@@ -1581,7 +1587,7 @@ public final class Real
     if (isZero()) {
       if (sign==0) {
         if (exp.sign==0)
-          makeZero(0);
+          makeZero();
         else
           makeInfinity(0);
       } else {
@@ -1592,7 +1598,7 @@ public final class Real
             makeInfinity(1);
         } else {
           if (exp.sign==0)
-            makeZero(0);
+            makeZero();
           else
             makeInfinity(0);
         }
@@ -1604,7 +1610,7 @@ public final class Real
         if (exp.sign==0)
           makeInfinity(0);
         else
-          makeZero(0);
+          makeZero();
       } else {
         if (exp.isIntegral()) {
           if (exp.isOdd()) {
@@ -1616,7 +1622,7 @@ public final class Real
             if (exp.sign==0)
               makeInfinity(0);
             else
-              makeZero(0);
+              makeZero();
           }
         } else {
           makeNan();
@@ -2289,7 +2295,7 @@ public final class Real
   }
 
   private void atof(final String a, int base) {
-    makeZero(0);
+    makeZero();
     int length = a.length();
     int index = 0;
     byte tmpSign = 0;
@@ -2737,7 +2743,7 @@ public final class Real
 //       int i;
 //       for (i=0; i<tmpArray.length; i++)
 //         if (tmpArray[i].isFree()) {
-//           tmpArray[i].makeZero(0);
+//           tmpArray[i].makeZero();
 //           return tmpArray[i];
 //         }
 //       Real [] newTmpArray = new Real[tmpArray.length*2];
@@ -2748,7 +2754,7 @@ public final class Real
 //       tmpArray = newTmpArray;
 //
 //       i = tmpArray.length;
-//       tmpArray[i].makeZero(0);
+//       tmpArray[i].makeZero();
 //       return tmpArray[i];
 //     }
 //   }

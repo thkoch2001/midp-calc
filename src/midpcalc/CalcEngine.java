@@ -283,7 +283,7 @@ public final class CalcEngine
   private void clearStack() {
     inputInProgress = false;
     for (int i=0; i<STACK_SIZE; i++) {
-      stack[i].makeZero(0);
+      stack[i].makeZero();
       strStack[i] = empty;
     }
     clearImagStack();
@@ -900,7 +900,7 @@ public final class CalcEngine
   private void parseInput() {
     stack[0].assign(inputBuf.toString(),format.base);
     if (imagStack != null)
-      imagStack[0].makeZero(0);
+      imagStack[0].makeZero();
     strStack[0] = null;
     repaint(1);
     inputInProgress = false;
@@ -1022,7 +1022,7 @@ public final class CalcEngine
       lastxi.assign(imagStack[0]);
       lastyi.assign(imagStack[1]);
       if (!imagStack[0].isZero() || !imagStack[1].isZero()) {
-        imagStack[1].makeZero(0);
+        imagStack[1].makeZero();
         y.makeNan();
         cmd = -1;
       }
@@ -1086,9 +1086,9 @@ public final class CalcEngine
         break;
     }
     rollDown();
-    stack[STACK_SIZE-1].makeZero(0);
+    stack[STACK_SIZE-1].makeZero();
     if (imagStack != null)
-      imagStack[STACK_SIZE-1].makeZero(0);
+      imagStack[STACK_SIZE-1].makeZero();
     strStack[STACK_SIZE-1] = empty;
     strStack[0] = null;
     repaint(-1);
@@ -1173,12 +1173,12 @@ public final class CalcEngine
     }
     if (cplx && (y.isNan() || yi.isNan())) {
       y.makeNan();
-      yi.makeZero(0);
+      yi.makeZero();
     }
     rollDown();
-    stack[STACK_SIZE-1].makeZero(0);
+    stack[STACK_SIZE-1].makeZero();
     if (imagStack != null)
-      imagStack[STACK_SIZE-1].makeZero(0);
+      imagStack[STACK_SIZE-1].makeZero();
     strStack[STACK_SIZE-1] = empty;
     if (cmd != CLEAR)
       strStack[0] = null;
@@ -1220,7 +1220,7 @@ public final class CalcEngine
     if (imagStack != null) {
       lastxi.assign(imagStack[0]);
       if (!imagStack[0].isZero()) {
-        imagStack[0].makeZero(0);
+        imagStack[0].makeZero();
         x.makeNan();
         cmd = -1;
       }
@@ -1408,7 +1408,7 @@ public final class CalcEngine
           xi.assign(x);
           xi.neg();
           xi.sqrt();
-          x.makeZero(0);
+          x.makeZero();
         } else {
           x.sqrt();
         }
@@ -1416,7 +1416,7 @@ public final class CalcEngine
       case CPLX_ABS:
         if (cplx) {
           x.hypot(xi);
-          xi.makeZero(0);
+          xi.makeZero();
         } else {
           x.abs();
         }
@@ -1426,9 +1426,9 @@ public final class CalcEngine
           xi.atan2(x);
           x.assign(xi);
           fromRAD(x);
-          xi.makeZero(0);
+          xi.makeZero();
         } else {
-          x.makeZero(0);
+          x.makeZero();
         }
         break;
       case CPLX_CONJ:
@@ -1438,7 +1438,7 @@ public final class CalcEngine
     }
     if (cplx && (x.isNan() || xi.isNan())) {
       x.makeNan();
-      xi.makeZero(0);
+      xi.makeZero();
     }
     strStack[0] = null;
     repaint(1);
@@ -1508,7 +1508,7 @@ public final class CalcEngine
       allocImagStack();
       imagStack[0].assign(xi);
     } else if (imagStack != null) {
-      imagStack[0].makeZero(0);
+      imagStack[0].makeZero();
     }
     strStack[0] = null;
     repaint(-1);
@@ -2261,8 +2261,8 @@ public final class CalcEngine
           stack[0].assign((b!=0) ? a/b : 0);
           stack[1].assign(b);
           if (imagStack != null) {
-            imagStack[0].makeZero(0);
-            imagStack[1].makeZero(0);
+            imagStack[0].makeZero();
+            imagStack[1].makeZero();
           }
           strStack[0] = null;
           strStack[1] = null;
@@ -2281,14 +2281,14 @@ public final class CalcEngine
           lastyi.assign(imagStack[0]);
           stack[0].assign(stack[1]);
           stack[1].assign(imagStack[1]);
-          imagStack[0].makeZero(0);
-          imagStack[1].makeZero(0);
+          imagStack[0].makeZero();
+          imagStack[1].makeZero();
         } else {
           lastx.assign(stack[0]);
           rollUp();
           lasty.assign(stack[0]);
           stack[0].assign(stack[1]);
-          stack[1].makeZero(0);
+          stack[1].makeZero();
         }
         undoStackEmpty = strStack[0]==empty ? strStack[1]==empty ? 2 : 1 : 0;
         strStack[0] = null;
@@ -2534,8 +2534,8 @@ public final class CalcEngine
         stack[0].assign(Runtime.getRuntime().freeMemory());
         stack[1].assign(Runtime.getRuntime().totalMemory());
         if (imagStack != null) {
-          imagStack[0].makeZero(0);
-          imagStack[1].makeZero(0);
+          imagStack[0].makeZero();
+          imagStack[1].makeZero();
         }
         strStack[0] = null;
         strStack[1] = null;
