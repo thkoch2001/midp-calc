@@ -120,6 +120,7 @@
 //   THREE    = 3
 //   FIVE     = 5
 //   TEN      = 10
+//   HUNDRED  = 100
 //   HALF     = 1/2
 //   THIRD    = 1/3
 //   PERCENT  = 1/100
@@ -133,8 +134,8 @@
 //   E        = e
 //   LN2      = ln(2)
 //   LN10     = ln(10)
-//   LOG2E    = log2(e)  = 1/log(2)
-//   LOG10E   = log10(e) = 1/log(10)
+//   LOG2E    = log2(e)  = 1/ln(2)
+//   LOG10E   = log10(e) = 1/ln(10)
 //   LN10_LN2 = ln(10)/ln(2)
 //   MAX      = max non-infinite positive number = 4.197E+323228496
 //   MIN      = min non-zero positive number     = 2.383E-323228497
@@ -2209,7 +2210,7 @@ public final class Real
   }
 
   // Get next bits from the pseudo-random sequence
-  public static long nextBits(int bits) {
+  private static long nextBits(int bits) {
     long answer = 0;
     while (bits-- > 0) {
       while (((int)(randSeedA>>>randBitPos)&1) == 0)
