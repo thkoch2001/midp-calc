@@ -125,7 +125,6 @@ public final class CalcEngine
   public static final int FINALIZE       = 500;
 
   private static final Real Real180 = new Real(180);
-  private static final Real RealFFFF = new Real("4294967295");
   private static final String empty = "";
   
   public Real.NumberFormat format;
@@ -359,6 +358,8 @@ public final class CalcEngine
             return;
         if (inputBuf.length()==0 || inputBuf.charAt(inputBuf.length()-1)=='-')
           inputBuf.append('0');
+        else if (inputBuf.length()==1 && inputBuf.charAt(0)=='/')
+          inputBuf.append(Real.hexChar.charAt(base-1));
         inputBuf.append(format.point);
         break;
       case SIGN_E:
@@ -366,6 +367,13 @@ public final class CalcEngine
           inputBuf.setLength(inputBuf.length()-1);
           break;
         }
+        if (inputBuf.length()==0 && base!=10) {
+          inputBuf.append('/');
+          break;
+        }
+        if (inputBuf.length()==1 && inputBuf.charAt(0)=='/')
+          inputBuf.setLength(0);
+
         if (inputBuf.length()==0 || inputBuf.charAt(inputBuf.length()-1)=='E'){
           inputBuf.append('-');
           break;
@@ -591,7 +599,7 @@ public final class CalcEngine
       case ASINH: x.asinh(); break;
       case ACOSH: x.acosh(); break;
       case ATANH: x.atanh(); break;
-      case NOT:   x.xor(RealFFFF); break;
+      case NOT:   x.xor(Real.ONE_N); break;
       case ROUND: x.round(); break;
       case CEIL:  x.ceil();  break;
       case FLOOR: x.floor(); break;
