@@ -15,7 +15,8 @@ public class CalcCanvas
 //            -> pow     -> y^x    y^1/x  ln      e^x
 //            -> comb    -> Py,x   Cy,x   x!      random  factorize
 //            -> pow10/2 -> log    10^x   log2    2^x
-//            -> pol     -> r->p   p->r   atan2   hypot
+//            -> coord   -> r->p   p->r   atan2   hypot   ->cplx
+//   math     -> cplx    -> split  abs    arg     conj
 //   trig     -> normal  -> sin    cos    tan
 //            -> arc     -> asin   acos   atan
 //            -> hyp     -> sinh   cosh   tanh
@@ -311,6 +312,21 @@ public class CalcCanvas
     new Menu("frac",CalcEngine.FRAC),
   });
 
+  private static final Menu coordMenu = new Menu("coord",new Menu[] {
+    new Menu("hypot",CalcEngine.HYPOT),
+    new Menu("r\\p",CalcEngine.RP),
+    new Menu("p\\r",CalcEngine.PR),
+    new Menu("atan_2",CalcEngine.ATAN2),
+    new Menu("\\cplx",CalcEngine.TO_CPLX),
+  });
+
+  private static final Menu cplxMenu = new Menu("cplx",new Menu[] {
+    new Menu("split",CalcEngine.CPLX_SPLIT),
+    new Menu("abs",CalcEngine.CPLX_ABS),
+    new Menu("arg",CalcEngine.CPLX_ARG),
+    new Menu("conj",CalcEngine.CPLX_CONJ),
+  });
+
   private static final Menu math = new Menu("math",new Menu[] {
     new Menu("simple",Menu.TITLE_SKIP,new Menu[] {
       new Menu("Qx",CalcEngine.SQRT),
@@ -325,12 +341,7 @@ public class CalcCanvas
       new Menu("ln",CalcEngine.LN),
       new Menu("^x^Qy",CalcEngine.XRTY),
     }),
-    new Menu("pol",new Menu[] {
-      new Menu("atan_2",CalcEngine.ATAN2),
-      new Menu("r\\p",CalcEngine.RP),
-      new Menu("p\\r",CalcEngine.PR),
-      new Menu("hypot",CalcEngine.HYPOT),
-    }),
+    null, // coord or cplx
     new Menu("pow_10,2",new Menu[] {
       new Menu("2^x",CalcEngine.EXP2),
       new Menu("10^x",CalcEngine.EXP10),
@@ -888,6 +899,14 @@ public class CalcCanvas
       } else {
         menu.subMenu[1] = bitOp;
         menu.subMenu[2] = bitMath;
+      }
+      // Also switch coord menu with cplx menu if x or y are complex
+      if (calc.imagStack != null &&
+          (!calc.imagStack[0].isZero() ||
+           !calc.imagStack[1].isZero())) {
+        math.subMenu[2] = cplxMenu;
+      } else {
+        math.subMenu[2] = coordMenu;
       }
     }
     if (menuStackPtr < 0 && menuIndex < 4) {
