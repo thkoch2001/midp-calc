@@ -4,7 +4,7 @@ import javax.microedition.lcdui.*;
 
 public final class CalcCanvas
     extends Canvas
-    implements CommandListener
+    implements CommandListener, Runnable
 {
 // Commands:
 //               ENTER  +  0-9a-f  .  -/E  clear  menu
@@ -608,6 +608,7 @@ public final class CalcCanvas
 
   private final Command add;
   private final Command enter;
+  private final Command breakCmd;
 
   private final Calc midlet;
 
@@ -650,6 +651,8 @@ public final class CalcCanvas
       "ENTER", SetupCanvas.commandArrangement[m.commandArrangement*2], 1);
     add   = new Command(
       "+",     SetupCanvas.commandArrangement[m.commandArrangement*2+1], 1);
+    breakCmd = new Command(
+      "BREAK", SetupCanvas.commandArrangement[m.commandArrangement*2+1], 1);
     addCommand(enter);
     addCommand(add);
     setCommandListener(this);
@@ -1062,14 +1065,34 @@ public final class CalcCanvas
       cleared = true;
       numRepaintLines = 100;
     }
+    internalRepaint = false;
 
     if (numRepaintLines >= 0) {
-      graphVisible = false;
+      if (!calc.progRunning)
+        graphVisible = false;
       if (graph) {
-        graphVisible = calc.draw(menuCommand,g,
-                                 0,smallMenuFont.getHeight()-1,getWidth(),
-                                 getHeight()-smallMenuFont.getHeight()+1);
-        graph = false;
+        if (!graphVisible) {
+          graphVisible = calc.draw(menuCommand,g,
+                                   0,smallMenuFont.getHeight()-1,getWidth(),
+                                   getHeight()-smallMenuFont.getHeight()+1);
+          if (!graphVisible || !calc.progRunning)
+            graph = false;
+          else {
+            removeCommand(enter);
+            removeCommand(add);
+            addCommand(breakCmd);
+            numRepaintLines = 1; // no clearScreen() !
+            midlet.display.callSerially(this);
+            return;
+          }
+        } else {
+          evenFrame = !evenFrame;
+          drawModeIndicators(g);
+          calc.continueGraph(g,0,smallMenuFont.getHeight()-1,getWidth(),
+                             getHeight()-smallMenuFont.getHeight()+1);
+          midlet.display.callSerially(this);
+          return;
+        }
       }
       if (!graphVisible) {
         if (menuStackPtr < 0 || cleared) {
@@ -1100,11 +1123,33 @@ public final class CalcCanvas
           drawMenu(g);
       }
     }
-    internalRepaint = false;
     if (graphVisible)
       numRepaintLines = 100; // Clear graph on next paint
     else
       numRepaintLines = -1;
+  }
+
+  public void run() {
+    // Called repeatedly when drawing graph
+    if (graphVisible && calc.progRunning) {
+      internalRepaint = true;
+      numRepaintLines = 1; // no clearScreen() !
+      repaint();
+    } else {
+      breakRun();
+      checkRepaint();
+    }
+  }
+
+  public void breakRun() {
+    removeCommand(breakCmd);
+    addCommand(enter);
+    addCommand(add);
+    graph = false;
+    graphVisible = false;
+    calc.progRunning = false;
+    evenFrame = true;
+    numRepaintLines = 100;
   }
 
   private void checkRepaint() {
@@ -1246,6 +1291,9 @@ public final class CalcCanvas
   }
 
   protected void keyPressed(int key) {
+    if (graphVisible && calc.progRunning)
+      return; // Only BREAK can stop this
+    
     repeating = false;
     int menuIndex = -1;
     switch (key) {
@@ -1336,6 +1384,9 @@ public final class CalcCanvas
   }
 
   protected void keyRepeated(int key) {
+    if (graphVisible && calc.progRunning)
+      return; // Only BREAK can stop this
+    
     switch (key) {
       case '1': case '2': case '3': case '4': case '5': case '6':
         if (repeating || menuStackPtr >= 0)
@@ -1368,7 +1419,9 @@ public final class CalcCanvas
 
   public void commandAction(Command c, Displayable d)
   {
-    if (c == enter) {
+    if (graphVisible && calc.progRunning) {
+      breakRun(); // Any command breaks because bug in Z1010 may not show BREAK
+    } else if (c == enter) {
       if (menuStackPtr >= 0)
         return;
       calc.command(CalcEngine.ENTER,0);

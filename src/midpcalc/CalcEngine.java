@@ -3309,6 +3309,8 @@ public final class CalcEngine
     return 10;
   }
 
+  Real xMin,xMax,yMin,yMax,a,b;
+
   public boolean draw(int cmd, Graphics g, int gx, int gy, int gw, int gh) {
     if (cmd >= PROG_DRAW) {
       if (prog == null)
@@ -3316,14 +3318,14 @@ public final class CalcEngine
     } else if (SUM1 == null || statLogSize == 0)
       return false;
 
-    Real xMin = new Real();
-    Real xMax = new Real();
-    Real yMin = new Real();
-    Real yMax = new Real();
+    xMin = new Real();
+    xMax = new Real();
+    yMin = new Real();
+    yMax = new Real();
+    a = new Real();
+    b = new Real();
     Real x = new Real();
     Real y = new Real();
-    Real a = new Real();
-    Real b = new Real();
     int i,xi,yi,pyi,inc,bigTick;
 
     // Find boundaries
@@ -3439,46 +3441,11 @@ public final class CalcEngine
     }
 
     if (cmd >= PROG_DRAW) {
-      // Draw program graph
+      // Return now to continue drawing graph indefinitely
       currentProg = cmd-PROG_DRAW;
-      a.assign(Real.FIVE);
-      a.sqrt();
-      a.sub(Real.ONE);
-      a.scalbn(-1); // a = golden ratio (sqrt(5)-1)/2
-      b.assign(a);
-      for (int j=0; j<1024; j++) {
-        x.assign(xMax);
-        x.sub(xMin);
-        x.mul(b);
-        x.add(xMin);
-        
-        push(x,null);
-        for (i=0; i<prog[currentProg].length; i++)
-          execute(prog[currentProg][i]);
-        if (inputInProgress) // From the program... (boring graph)
-          parseInput();
-        
-        y.assign(stack[0]);
-        Real yimag = null;
-        if (imagStack!=null && !imagStack[0].isZero())
-          yimag = imagStack[0];
-        xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
-        yi = -100;
-        if (y.isFinite() && (!y.isZero() || yimag==null)) {
-          yi = gy+rangeScale(y,yMax,yMin,gh,Real.HALF);
-          g.setColor(255,0,128);
-          g.drawLine(xi,yi-1,xi,yi);
-        }
-        if (yimag!=null && yimag.isFinite()) {
-          int yi2 = gy+rangeScale(yimag,yMax,yMin,gh,Real.HALF);
-          g.setColor(255,255,yi2==yi ? 255 : 0);
-          g.drawLine(xi,yi2-1,xi,yi2);
-        }
-        command(CLEAR,0); // Remove result from stack to avoid clutter
-        b.add(a);
-        if (b.greaterThan(Real.ONE))
-          b.sub(Real.ONE);
-      }
+      a.assign(0, 0x3fffffff, 0x4f1bbcdcbfa53e0bL); // a = golden ratio, 0.618
+      b.makeZero();
+      progRunning = true;
       return true;
     }
     
@@ -3561,5 +3528,54 @@ public final class CalcEngine
     }
 
     return true;
+  }
+
+  public void continueGraph(Graphics g, int gx, int gy, int gw, int gh) {
+    long start = System.currentTimeMillis();
+    Real x = rTmp3;
+    int i,xi,yi;
+
+    g.setClip(gx,gy,gw,gh);
+    // shrink window by 4 pixels
+    gx += 2;
+    gy += 2;
+    gw -= 4;
+    gh -= 4;
+
+    do
+    {
+      b.add(a);
+      if (b.greaterThan(Real.ONE))
+        b.sub(Real.ONE);
+      x.assign(xMax);
+      x.sub(xMin);
+      x.mul(b);
+      x.add(xMin);
+      xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
+      
+      push(x,null);
+      for (i=0; i<prog[currentProg].length; i++)
+        execute(prog[currentProg][i]);
+      if (inputInProgress) // From the program... (boring graph)
+        parseInput();
+        
+      Real y = stack[0];
+      Real yimag = null;
+      if (imagStack!=null && !imagStack[0].isZero())
+        yimag = imagStack[0];
+      yi = -100;
+      if (y.isFinite() && (!y.isZero() || yimag==null)) {
+        yi = gy+rangeScale(y,yMax,yMin,gh,Real.HALF);
+        g.setColor(255,0,128);
+        g.drawLine(xi,yi-1,xi,yi);
+      }
+      if (yimag!=null && yimag.isFinite()) {
+        int yi2 = gy+rangeScale(yimag,yMax,yMin,gh,Real.HALF);
+        g.setColor(255,255,yi2==yi ? 255 : 0);
+        g.drawLine(xi,yi2-1,xi,yi2);
+      }
+      command(CLEAR,0); // Remove result from stack to avoid clutter
+    }
+    while (System.currentTimeMillis()-start < 500);
   }
 }
