@@ -281,7 +281,7 @@ public class CalcCanvas
     new Menu("xor",CalcEngine.XOR),
   });
   private static final Menu bitMath = new Menu("bitop_2",new Menu[] {
-    new Menu("NOT",CalcEngine.NOT),
+    new Menu("not",CalcEngine.NOT),
     new Menu("y<<x",CalcEngine.YUPX),
     new Menu("y>>x",CalcEngine.YDNX),
   });
