@@ -68,10 +68,13 @@ Calc.jar: $(JAVAFILES) Calc.jad Calc.png
 	cp Calc.png ral/
 #	jar cf Calc.jar ral/*
 	ant -buildfile build.xml -lib $(WTK_HOME)/lib -Dwtk.home=${WTK_HOME} make-jar
+	touch Calc.jar
 
 CalcApplet.jar: CalcApplet.java $(JAVAFILES) $(MIDPFILES)
 	gcj --encoding="ISO 8859-1" -Wall -C -d midp -O2 CalcApplet.java $(JAVAFILES) $(MIDPFILES)
-	cd midp && jar cf ../CalcApplet.jar ral javax
+	cd midp && jar cf ../tmp.jar ral javax
+	java -jar $(WTK_HOME)/lib/proguard-3.0.7.jar -injars tmp.jar -outjars CalcApplet.jar -libraryjars "<java.home>/lib/rt.jar" -keep public class ral.CalcApplet
+	rm tmp.jar
 
 clean:
 	rm -rf $(TARGETS) midp/ral midp/javax Real.java GFontBase.java pgm2java *~ .\#* midp/*~ midp/.\#*
