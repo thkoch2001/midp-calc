@@ -1,46 +1,3 @@
-// basic keys -> 0-9 . -/E
-// menu keys  -> CLEAR  ENTER  +  menu  exit
-//
-// Menu:
-//   binop    ->            -      *      /      +/-
-//   math     -> elem    -> abs    1/x    x^2    x^1/2
-//            -> power   -> y^x    y^1/x  ln     e^x
-//            -> pow10/2 -> log    10^x   log2   2^x
-//            -> combin  -> Py,x   Cy,x   x!     gamma
-//            -> polar   -> r->p   p->r   atan2  hypot
-//   trig     -> normal  -> sin    cos    tan
-//            -> arc     -> asin   acos   atan
-//            -> hyp     -> sinh   cosh   tanh
-//            -> archyp  -> asinh  acosh  atanh
-//            -> pi
-//   bitop*   ->            and    or     xor    bic
-//   bitmath* ->            not    y<<x   y>>x
-//   special  -> stack   -> x<->y  clear  x<->#  RCL#  LASTx  ( -> # )
-//            -> integer -> round  ceil   floor  frac
-//            -> memory  -> STO#   STO+#  RCL#           -> #
-//            -> stat    -> SUM+   SUM-   clear
-//                          avg    s      L.R.   y,r
-//                          n      SUMx   SUMx²  SUMy  SUMy²  SUMxy
-//            -> user...
-//   mode     -> number  -> normal FIX#   SCI#   ENG#  ( -> # )
-//            -> sep     -> decimal  ->   dot comma remove keep
-//                          thousand ->   dot/comma space none
-//            -> base    -> dec    hex    oct    bin
-//            -> trig    -> deg    rad
-//
-// * replaces math/trig in hex/oct/bin mode
-//
-// Extensions:
-//   math     -> modulo  -> mod    rem
-//            -> percent -> %      %DIFF
-//            -> time    -> ->HMS  ->H
-//                          ->RAD  ->DEG
-//            -> random
-//   mode     -> font    -> small  medium large
-//            -> prog
-//
-// Symbols needed:
-//   sqrt -> <-> SUM E pi
 package ral;
 
 public final class CalcEngine
@@ -69,7 +26,7 @@ public final class CalcEngine
   public static final int SUB = 21;
   public static final int MUL = 22;
   public static final int DIV = 23;
-  public static final int CHS = 24;
+  public static final int NEG = 24;
   public static final int ABS = 25;
   public static final int RECIP = 26;
   public static final int SQR = 27;
@@ -142,8 +99,8 @@ public final class CalcEngine
   public static final int ENG = 94;
   public static final int POINT_DOT = 95;
   public static final int POINT_COMMA = 96;
-  public static final int REMOVE_POINT = 97;
-  public static final int KEEP_POINT = 98;
+  public static final int POINT_REMOVE = 97;
+  public static final int POINT_KEEP = 98;
   public static final int THOUSAND_DOT = 99;
   public static final int THOUSAND_SPACE = 100;
   public static final int THOUSAND_NONE = 101;
@@ -223,67 +180,72 @@ public final class CalcEngine
   }
 
   private void input(int cmd) {
+    int i;
     if (!inputInProgress)
       inputBuf.setLength(0);
-    int i;
-    boolean changed = true;
+
+    // Switch base to 10 after exponent marker (E)
+    int base = format.base;
+    if (cmd >= DIGIT_2 && cmd <= DIGIT_F)
+      for (i=0; i<inputBuf.length(); i++)
+        if (inputBuf.charAt(i)=='E') {
+          base = 10;
+          break;
+        }
+
     switch (cmd) {
       case CLEAR:
-        if (inputBuf.length()>0) {
-          inputBuf.setLength(inputBuf.length()-1);
-          changed = true;
+        if (inputBuf.length()==0) {
+          inputInProgress = false;
+          binary(CLEAR);
+          return;
         }
+        inputBuf.setLength(inputBuf.length()-1);
         break;
       case DEC_POINT:
         if (inputBuf.length()>0 &&
             inputBuf.charAt(inputBuf.length()-1)==format.point)
         {
           inputBuf.setLength(inputBuf.length()-1);
-          changed = true;
           break;
         }
         for (i=0; i<inputBuf.length(); i++)
           if (inputBuf.charAt(i)==format.point ||
               inputBuf.charAt(i)=='E')
-            break;
+            return;
         if (inputBuf.length()==0 || inputBuf.charAt(inputBuf.length()-1)=='-')
           inputBuf.append('0');
         inputBuf.append(format.point);
-        changed = true;
         break;
       case SIGN_E:
         if (inputBuf.length()>0 && inputBuf.charAt(inputBuf.length()-1)=='-'){
           inputBuf.setLength(inputBuf.length()-1);
-          changed = true;
           break;
         }
         if (inputBuf.length()==0 || inputBuf.charAt(inputBuf.length()-1)=='E'){
           inputBuf.append('-');
-          changed = true;
           break;
         }
         for (i=0; i<inputBuf.length(); i++)
           if (inputBuf.charAt(i)=='E')
-            break;
+            return;
         inputBuf.append('E');
-        changed = true;
         break;
       case DIGIT_9:
       case DIGIT_8:
-        if (format.base<10)
-          break;
+        if (base<10)
+          return;
       case DIGIT_7:
       case DIGIT_6:
       case DIGIT_5:
       case DIGIT_4:
       case DIGIT_3:
       case DIGIT_2:
-        if (format.base<8)
-          break;
+        if (base<8)
+          return;
       case DIGIT_0:
       case DIGIT_1:
         inputBuf.append((char)('0'+cmd-DIGIT_0));
-        changed = true;
         break;
       case DIGIT_A:
       case DIGIT_B:
@@ -291,20 +253,21 @@ public final class CalcEngine
       case DIGIT_D:
       case DIGIT_E:
       case DIGIT_F:
-        if (format.base!=16)
-          break;
-        inputBuf.setLength(inputBuf.length()-1);
+        if (base!=16)
+          return;
+        if (inputBuf.length()>0) // Just in case... shouldn't happen
+          inputBuf.setLength(inputBuf.length()-1);
         inputBuf.append((char)('a'+cmd-DIGIT_A));
-        changed = true;
         break;
+      default:
+        return;
     }
-    if (changed) {
-      if (!inputInProgress && !clearOnInput)
-        enter();
-      clearOnInput = false;
-      inputInProgress = true;
-      repaint(1);
-    }
+    // If routine has not returned yet, we have new input data
+    if (!inputInProgress && !clearOnInput)
+      enter();
+    clearOnInput = false;
+    inputInProgress = true;
+    repaint(1);
   }
 
   private void parseInput() {
@@ -400,7 +363,7 @@ public final class CalcEngine
       parseInput();
     Real x = stack[0];
     switch (cmd) {
-      case CHS:   x.neg();   break;
+      case NEG:   x.neg();   break;
       case ABS:   x.abs();   break;
       case RECIP: x.recip(); break;
       case SQR:   x.sqr();   break;
@@ -465,7 +428,7 @@ public final class CalcEngine
       case YUPX:  case YDNX:
         binary(cmd);
         break;
-      case CHS:   case ABS:   case RECIP: case SQR:   case SQRT:
+      case NEG:   case ABS:   case RECIP: case SQR:   case SQRT:
       case LN:    case EXP:   case LOG10: case EXP10: case LOG2: case EXP2:
       case FACT:  case GAMMA:
       case SIN:   case COS:   case TAN:
@@ -553,13 +516,13 @@ public final class CalcEngine
           clearStrings();
         }
         break;
-      case REMOVE_POINT:
+      case POINT_REMOVE:
         if (!format.removePoint) {
           format.removePoint = true;
           clearStrings();
         }
         break;
-      case KEEP_POINT:
+      case POINT_KEEP:
         if (format.removePoint) {
           format.removePoint = false;
           clearStrings();
