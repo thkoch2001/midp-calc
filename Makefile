@@ -74,7 +74,7 @@ CalcApplet.jar: CalcApplet.java $(JAVAFILES) $(MIDPFILES)
 	cd midp && jar cf ../CalcApplet.jar ral javax
 
 clean:
-	rm -rf $(TARGETS) midp/ral midp/javax Real.java GFontBase.java pgm2java *~ .\#*
+	rm -rf $(TARGETS) midp/ral midp/javax Real.java GFontBase.java pgm2java *~ .\#* midp/*~ midp/.\#*
 
 publish: Calc.jad Calc.jar Real.java CalcApplet.jar
 	scp Calc.jad Calc.jar Calc.html Calc-log.html Calc-prog.html Real.html Real.java Real.jpp CalcApplet.jar CalcApplet.html gridbug:public_html

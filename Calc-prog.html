@@ -132,7 +132,8 @@ prog/finish              ; program finished
 Preparations: To try the program, store your birthday in memory
 location 0, store 0 in memory location 1, make sure calculator is in
 RAD mode, and push suitable graph limits on the stack, for instance
--14, 14, -1.2, 1.2, before finally executing "prog/draw/BioRt". The
+-14, 14, -1.2, 1.2, before finally executing "prog/draw/BioRt". This
+will draw the biorhythms for 14 days before and after present. The
 pink graph shows your emotional cycle, the yellow graph shows your
 physical cycle, and the white graph shows your intellectual cycle,
 with zero on the x axis representing current time.<br><br>
@@ -181,38 +182,32 @@ our curve using the "solve" operation.<br>
 prog/new "fit"           ; start recording a new program
 mem/STO 0                ; save input value, c
 stat/clear
-0
-ENTER
+0 ENTER
 0
 mem/RCL 0
 +
 stat/SUM+                ; x1+c,y1
-6
-ENTER
+6 ENTER
 5
 mem/RCL 0
 +
 stat/SUM+                ; x2+c,y2
-10
-ENTER
+10 ENTER
 10
 mem/RCL 0
 +
 stat/SUM+                ; x3+c,y3
-17
-ENTER
+17 ENTER
 20
 mem/RCL 0
 +
 stat/SUM+                ; x4+c,y4
-21
-ENTER
+21 ENTER
 30
 mem/RCL 0
 +
 stat/SUM+                ; x5+c,y5
-27
-ENTER
+27 ENTER
 50
 mem/RCL 0
 +

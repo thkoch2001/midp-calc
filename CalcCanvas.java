@@ -44,7 +44,7 @@ public final class CalcCanvas
 //                                 -> xy     -> SUMxy SUMxlny SUMylnx SUMlnxlny
 //            -> finance -> STO RCL solve -> pv fv np pmt ir
 //                       -> clear
-//            -> conv    -> time   -> ->DH.MS ->H DH.MS+ now
+//            -> conv    -> time   -> ->DH.MS  ->H  DH.MS+  now
 //                                 -> more -> unix -> DH.MS->unix unix->DH.MS
 //                                         -> JD   -> DH.MS->JD   JD->DH.MS
 //                                         -> MJD  -> DH.MS->MJD  MJD->DH.MS
@@ -74,6 +74,9 @@ public final class CalcCanvas
 //
 // *  replaces coord if x or y are complex
 // ** replaces math/trig in hex/oct/bin mode
+//
+// Extentions:
+//   special  -> conv    -> time   -> dow
 
 // Complex operations:
 //   + - * / +/- 1/x x² sqrt
