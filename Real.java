@@ -125,8 +125,8 @@
 //   makeZero(int sign)                               0            0.05
 //   makeInfinity(int sign)                           0            0.05
 //   makeNan()                                        0            0.05
-//   makeExp10(int power)                             0              30
-//   int lowPow10()                                   0             4.7
+//   makeExp10(int power)                             5              30
+//   int lowPow10()                                   5              35
 //
 // Comparisons:
 //   boolean equalTo(Real)                                          0.7
@@ -1230,6 +1230,9 @@ public final class Real
   public void cbrt() {
     if (!isFiniteNonZero())
       return;
+
+    // For speed, calculate 1/cbrt(A) using the Newton-Raphson iteration
+    // Xn+1 = (4*Xn - A*Xn^4)/3... (never mind, nobody uses cbrt)
 
     byte s = sign;
     abs();
