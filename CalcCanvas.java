@@ -131,6 +131,11 @@ public class CalcCanvas
         new Menu("STO",CalcEngine.FINANCE_STO,Menu.FINANCE_REQUIRED),
         new Menu("RCL",CalcEngine.FINANCE_RCL,Menu.FINANCE_REQUIRED),
         new Menu("solve",CalcEngine.FINANCE_SOLVE,Menu.FINANCE_REQUIRED),
+        new Menu("more",Menu.TITLE_SKIP,new Menu [] {
+          new Menu("END/BGN",CalcEngine.FINANCE_BGNEND),
+          new Menu("y%*x",CalcEngine.FINANCE_MULINT),
+          new Menu("y%/x",CalcEngine.FINANCE_DIVINT),
+        }),
         new Menu("clear",CalcEngine.FINANCE_CLEAR),
       }),
       new Menu("stat",new Menu[] {
@@ -477,24 +482,38 @@ public class CalcCanvas
     g.fillRect(0,0,getWidth(),smallMenuFont.getHeight()-1);
     g.setColor(0);
     g.setFont(smallMenuFont);
+
+    int w = smallMenuFont.stringWidth("ENG");
+    int x = getWidth()/8-w/2;
+    if (x<0) x=0;
+    
     if (calc.degrees)
-      g.drawString("DEG",10,0,g.TOP|g.LEFT);
+      g.drawString("DEG",x,0,g.TOP|g.LEFT);
     else
-      g.drawString("RAD",10,0,g.TOP|g.LEFT);
+      g.drawString("RAD",x,0,g.TOP|g.LEFT);
+
+    x += Math.max(getWidth()/4,w+2);
       
     if (calc.format.fse == Real.NumberFormat.FSE_FIX)
-      g.drawString("FIX",40,0,g.TOP|g.LEFT);
+      g.drawString("FIX",x,0,g.TOP|g.LEFT);
     else if (calc.format.fse == Real.NumberFormat.FSE_SCI)
-      g.drawString("SCI",40,0,g.TOP|g.LEFT);
+      g.drawString("SCI",x,0,g.TOP|g.LEFT);
     else if (calc.format.fse == Real.NumberFormat.FSE_ENG)
-      g.drawString("ENG",40,0,g.TOP|g.LEFT);
+      g.drawString("ENG",x,0,g.TOP|g.LEFT);
       
+    x += Math.max(getWidth()/4,w+2);
+
     if (calc.format.base == 2)
-      g.drawString("BIN",70,0,g.TOP|g.LEFT);
+      g.drawString("BIN",x,0,g.TOP|g.LEFT);
     else if (calc.format.base == 8)
-      g.drawString("OCT",70,0,g.TOP|g.LEFT);
+      g.drawString("OCT",x,0,g.TOP|g.LEFT);
     else if (calc.format.base == 16)
-      g.drawString("HEX",70,0,g.TOP|g.LEFT);
+      g.drawString("HEX",x,0,g.TOP|g.LEFT);
+
+    x += Math.max(getWidth()/4,w+2);
+
+    if (calc.begin)
+      g.drawString("BGN",x,0,g.TOP|g.LEFT);
 
     g.fillRect(0,smallMenuFont.getHeight()-1,getWidth(),
                getHeight()-smallMenuFont.getHeight()+1);

@@ -151,10 +151,13 @@ public final class CalcEngine
   public static final int FINANCE_RCL    = 143;
   public static final int FINANCE_SOLVE  = 144;
   public static final int FINANCE_CLEAR  = 145;
-  public static final int MONITOR_NONE   = 146;
-  public static final int MONITOR_MEM    = 147;
-  public static final int MONITOR_STAT   = 148;
-  public static final int MONITOR_FINANCE= 149;
+  public static final int FINANCE_BGNEND = 146;
+  public static final int FINANCE_MULINT = 147;
+  public static final int FINANCE_DIVINT = 148;
+  public static final int MONITOR_NONE   = 149;
+  public static final int MONITOR_MEM    = 150;
+  public static final int MONITOR_STAT   = 151;
+  public static final int MONITOR_FINANCE= 152;
   public static final int AVG_DRAW       = 200;
   public static final int LIN_DRAW       = 201;
   public static final int LOG_DRAW       = 202;
@@ -184,6 +187,7 @@ public final class CalcEngine
   public int [] statLog; // Low-precision statistics log
   public Real PV,FV,NP,PMT,IR;
   public Real [] finance;
+  public boolean begin;
   public int statLogStart,statLogEnd;
   public Real lastx;
   public boolean degrees;
@@ -221,6 +225,7 @@ public final class CalcEngine
     rTmp3 = new Real();
     inputBuf = new StringBuffer(40);
     degrees = false;
+    begin = false;
     clearStack();
     clearMem();
     clearStat();
@@ -403,7 +408,7 @@ public final class CalcEngine
         break;
     buf[ 0] = PROPERTY_SETTINGS;
     buf[ 1] = (byte)i; // Height of stack
-    buf[ 2] = (byte)(degrees ? 1 : 0);
+    buf[ 2] = (byte)((degrees ? 1 : 0) + (begin ? 2 : 0));
     buf[ 3] = (byte)format.base;
     buf[ 4] = (byte)format.maxwidth;
     buf[ 5] = (byte)format.precision;
@@ -475,7 +480,8 @@ public final class CalcEngine
     if (length >= 26+12) {
       for (i=0; i<STACK_SIZE; i++)
         strStack[i] = i<buf[1] ? null : empty;
-      degrees            = buf[2] != 0;
+      degrees            = (buf[2]&1) != 0;
+      begin              = (buf[2]&2) != 0;
       format.base        = buf[3];
       format.maxwidth    = buf[4];
       format.precision   = buf[5];
@@ -833,6 +839,22 @@ public final class CalcEngine
         x.mul(rTmp);
         y.fact();
         y.div(x);
+        break;
+      case FINANCE_DIVINT:
+        rTmp.assign(100);
+        y.div(rTmp);
+        y.add(Real.ONE);
+        y.nroot(x);
+        y.sub(Real.ONE);
+        y.mul(rTmp);
+        break;
+      case FINANCE_MULINT:
+        rTmp.assign(100);
+        y.div(rTmp);
+        y.add(Real.ONE);
+        y.pow(x);
+        y.sub(Real.ONE);
+        y.mul(rTmp);        
         break;
       case CLEAR:
         break;
@@ -1249,71 +1271,120 @@ public final class CalcEngine
     allocFinance();
     switch (which) {
       case 0: // PV
-        // pv = -(fv*ir+((1+ir)^np-1)*pmt)/(ir*(1+ir)^np)
-        rTmp.assign(100);
-        rTmp.recip();
-        rTmp.mul(IR);
-        rTmp2.assign(rTmp);
-        rTmp2.add(Real.ONE);
-        rTmp2.pow(NP);
-        PV.assign(rTmp2);
-        PV.sub(Real.ONE);
-        PV.mul(PMT);
-        rTmp2.mul(rTmp);
-        rTmp.mul(FV);
-        PV.add(rTmp);
-        PV.div(rTmp2);
-        PV.neg();
+        if (IR.isZero()) {
+          // pv = -(np*pmt+fv)
+          PV.assign(NP);
+          PV.mul(PMT);
+          PV.add(FV);
+          PV.neg();
+        } else {
+          // pv = -(((1+ir)^np-1)*pmt*(1+ir*bgn)/ir + fv)/((1+ir)^np)
+          rTmp.assign(100);
+          rTmp.recip();
+          rTmp.mul(IR);
+          rTmp2.assign(rTmp);
+          rTmp2.add(Real.ONE);
+          rTmp2.pow(NP);
+          PV.assign(rTmp2);
+          PV.sub(Real.ONE);
+          PV.mul(PMT);
+          PV.div(rTmp);
+          if (begin) {
+            rTmp.add(Real.ONE);
+            PV.mul(rTmp);
+          }
+          PV.add(FV);
+          PV.div(rTmp2);
+          PV.neg();
+        }
         break;
       case 1: // FV
-        // fv = -(-pmt+(1+ir)^np*(pmt+ir*pv))/ir
-        rTmp.assign(100);
-        rTmp.recip();
-        rTmp.mul(IR);
-        FV.assign(rTmp);
-        FV.add(Real.ONE);
-        FV.pow(NP);
-        rTmp2.assign(rTmp);
-        rTmp2.mul(PV);
-        rTmp2.add(PMT);
-        FV.mul(rTmp2);
-        FV.sub(PMT);
-        FV.div(rTmp);
-        FV.neg();
+        if (IR.isZero()) {
+          // fv = -(np*pmt+pv)
+          FV.assign(NP);
+          FV.mul(PMT);
+          FV.add(PV);
+          FV.neg();
+        } else {
+          // fv = -((1+ir)^np*pv + ((1+ir)^np - 1)*pmt*(1+ir*bgn)/ir)
+          rTmp.assign(100);
+          rTmp.recip();
+          rTmp.mul(IR);
+          rTmp2.assign(rTmp);
+          rTmp2.add(Real.ONE);
+          rTmp2.pow(NP);
+          FV.assign(rTmp2);
+          FV.mul(PV);
+          rTmp2.sub(Real.ONE);
+          rTmp2.mul(PMT);
+          rTmp2.div(rTmp);
+          if (begin) {
+            rTmp.add(Real.ONE);
+            rTmp2.mul(rTmp);
+          }
+          FV.add(rTmp2);
+          FV.neg();
+        }
         break;
       case 2: // NP
-        // np = ln((pmt-ir*fv)/(pmt+ir*pv))/ln(1+ir)
-        rTmp.assign(100);
-        rTmp.recip();
-        rTmp.mul(IR);
-        NP.assign(rTmp);
-        NP.mul(FV);
-        NP.neg();
-        NP.add(PMT);
-        rTmp2.assign(rTmp);
-        rTmp2.mul(PV);
-        rTmp2.add(PMT);
-        NP.div(rTmp2);
-        NP.ln();
-        rTmp.add(Real.ONE);
-        rTmp.ln();
-        NP.div(rTmp);
+        if (IR.isZero()) {
+          // np = -(fv+pv)/pmt
+          NP.assign(FV);
+          NP.add(PV);
+          if (!NP.isZero()) {
+            NP.div(PMT);
+            NP.neg();
+          }
+        } else {
+          // np = ln((pmt/ir + pmt*bgn - fv) /
+          //         (pmt/ir + pmt*bgn + pv)) /
+          //      ln(1 + ir)
+          rTmp.assign(100);
+          rTmp.recip();
+          rTmp.mul(IR);
+          NP.assign(PMT);
+          NP.div(rTmp);
+          if (begin)
+            NP.add(PMT);
+          rTmp2.assign(NP);
+          NP.sub(FV);
+          rTmp2.add(PV);
+          NP.div(rTmp2);
+          NP.ln();
+          rTmp.add(Real.ONE);
+          rTmp.ln();
+          NP.div(rTmp);
+        }
         break;
       case 3: // PMT
-        // pmt = -(((1+ir)^np*pv+fv)*ir)/((1+ir)^np-1)
-        rTmp.assign(100);
-        rTmp.recip();
-        rTmp.mul(IR);
-        rTmp2.assign(rTmp);
-        rTmp2.add(Real.ONE);
-        rTmp2.pow(NP);
-        PMT.assign(rTmp2);
-        PMT.mul(PV);
-        PMT.add(FV);
-        PMT.mul(rTmp);
-        rTmp2.sub(Real.ONE);
-        PMT.div(rTmp2);
-        PMT.neg();
+        // pmt = -(fv+pv)/np
+        if (IR.isZero()) {
+          PMT.assign(FV);
+          PMT.add(PV);
+          if (!PMT.isZero()) {
+            PMT.div(NP);
+            PMT.neg();
+          }
+        } else {
+          // pmt = -(((1+ir)^np*pv+fv)*ir)/(((1+ir)^np-1)*(1 + ir*bgn));
+          rTmp.assign(100);
+          rTmp.recip();
+          rTmp.mul(IR);
+          rTmp2.assign(rTmp);
+          rTmp2.add(Real.ONE);
+          rTmp2.pow(NP);
+          PMT.assign(rTmp2);
+          PMT.mul(PV);
+          PMT.add(FV);
+          PMT.mul(rTmp);
+          rTmp2.sub(Real.ONE);
+          if (begin) {
+            rTmp.add(Real.ONE);
+            rTmp2.mul(rTmp);
+          }
+          PMT.div(rTmp2);
+          PMT.neg();
+        }
         break;
       case 4: // IR
         if ((FV.isZero() && PV.isZero()) ||
@@ -1368,18 +1439,29 @@ public final class CalcEngine
             // Use ir and 2*ir as starting values
             IR.scalbn(1);
           }
-          // Calculate f(ir) = (1+ir)^np * (pmt+pv*ir) + fv*ir - pmt
-          rTmp.assign(IR);
-          rTmp.add(Real.ONE);
-          rTmp.pow(NP);
-          rTmp2.assign(IR);
-          rTmp2.mul(PV);
-          rTmp2.add(PMT);
-          rTmp.mul(rTmp2);
-          rTmp2.assign(IR);
-          rTmp2.mul(FV);
-          rTmp.add(rTmp2);
-          rTmp.sub(PMT);
+          if (IR.isZero()) {
+            // f(ir) = fv + np*pmt + pv
+            rTmp.assign(NP);
+            rTmp.mul(PMT);
+            rTmp.add(PV);
+          } else {
+            // f(ir) = fv + (1+ir)^np*pv + ((1+ir)^np - 1)*pmt*(1+ir*bgn)/ir
+            rTmp2.assign(IR);
+            rTmp2.add(Real.ONE);
+            rTmp2.pow(NP);
+            rTmp.assign(rTmp2);
+            rTmp.mul(PV);
+            rTmp2.sub(Real.ONE);
+            rTmp2.mul(PMT);
+            rTmp2.div(IR);
+            if (begin) {
+              rTmp3.assign(IR);
+              rTmp3.add(Real.ONE);
+              rTmp2.mul(rTmp3);
+            }
+            rTmp.add(rTmp2);
+          }
+          rTmp.add(FV);
 
           X2.assign(X1);
           Y2.assign(Y1);
@@ -1426,6 +1508,7 @@ public final class CalcEngine
       case AND:   case OR:    case XOR:   case BIC:
       case YUPX:  case YDNX:
       case DHMS_PLUS:
+      case FINANCE_MULINT: case FINANCE_DIVINT:
         binary(cmd);
         break;
       case NEG:   case RECIP: case SQR:   case SQRT:
@@ -1619,6 +1702,11 @@ public final class CalcEngine
           clearMonitorStrings();
           repaint(-1);
         }
+        break;
+      case FINANCE_BGNEND:
+        if (inputInProgress)
+          parseInput();
+        begin = !begin;
         break;
 
       case MONITOR_NONE:
@@ -1984,8 +2072,8 @@ public final class CalcEngine
     }
     if (cmd != AVG_DRAW && a.isFinite() && b.isFinite()) {
       pyi = -1000;
-      inc = (cmd==LIN_DRAW) ? gw-1 : 10;
-      for (xi=0; xi<gw+10; xi+=inc) {
+      inc = (cmd==LIN_DRAW) ? gw-1 : 5;
+      for (xi=0; xi<gw+5; xi+=inc) {
         x.assign(xi);
         rTmp.assign(gw-1);
         x.div(rTmp);
