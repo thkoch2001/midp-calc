@@ -1620,7 +1620,7 @@ public final class Real
       add(tmp1);
       index++;
     }
-    if (index<length && a.charAt(index)=='.') {
+    if (index<length && (a.charAt(index)=='.' || a.charAt(index)==',')) {
       index++;
       tmp2.assign(ONE);
       while (index<length && (d=digit(a.charAt(index),base))>=0) {
