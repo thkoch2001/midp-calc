@@ -1,5 +1,3 @@
-// Symbols needed:
-//   sqrt -> <-> SUM E pi gamma
 package ral;
 
 import javax.microedition.lcdui.*;
@@ -8,45 +6,42 @@ public class CalcCanvas
     extends Canvas
     implements CommandListener
 {
+// Commands:
+//               ENTER  +  0-9a-f  .  -/E  clear  menu
 // Menu:
-//   binop    ->            -      *      /      +/-
-//   math     -> basic   -> abs    1/x    x^2    x^1/2
-//            -> power   -> y^x    y^1/x  ln     e^x
-//            -> comb    -> Py,x   Cy,x   x!     gamma
+//   basic    ->            -      *      /      +/-
+//   math     -> simple  -> abs    1/x    x^2    x^1/2
+//            -> pow     -> y^x    y^1/x  ln     e^x
+//            -> prob    -> Py,x   Cy,x   x!     random
 //            -> pow10/2 -> log    10^x   log2   2^x
-//            -> polar   -> r->p   p->r   atan2  hypot
+//            -> pol     -> r->p   p->r   atan2  hypot
 //   trig     -> normal  -> sin    cos    tan
 //            -> arc     -> asin   acos   atan
 //            -> hyp     -> sinh   cosh   tanh
 //            -> archyp  -> asinh  acosh  atanh
-//            -> pi
+//            -> more    -> RAD    DEG    ->RAD  ->DEG  pi
 //   bitop*   ->            and    or     xor    bic
-//   bitmath* ->            not    y<<x   y>>x
-//   special  -> stack   -> x<->y  clear  x<->#  RCL#  LASTx  ( -> # )
-//            -> integer -> round  ceil   floor  trunc frac
-//            -> memory  -> STO#   STO+#  RCL#           -> #
+//   bitop2*  ->            not    y<<x   y>>x
+//   special  -> stack   -> x<->y  clear  x<->st# RCL st#  LASTx  ( -> # )
+//            -> int     -> round  ceil   floor   trunc  frac
+//            -> mem     -> STO#   STO+#  RCL#    x<->mem#          -> #
 //            -> stat    -> SUM+   SUM-   clear
-//                          avg    s      L.R.   y,r
-//                          n      SUMx   SUMx²  SUMy  SUMy²  SUMxy
-//            -> exit
-//   mode     -> number  -> normal FIX#   SCI#   ENG#  ( -> # )
-//            -> sep     -> decimal  ->   dot comma remove keep
-//                          thousand ->   dot/comma space none
+//                          regs   -> SUMx SUMx² SUMy SUMy² SUMxy
+//                          result -> avg  s     L.R. y,r   n
+//            -> time    -> ->HMS  ->H    HMS+   time   date
+//   mode     -> number  -> normal FIX#   SCI#   ENG#             ( -> # )
+//            -> sepr    -> decimal  ->   dot comma remove keep
+//                          thousand ->   dot/comma space ' none
 //            -> base    -> dec    hex    oct    bin
-//            -> trig    -> deg    rad
+//            -> font    -> small  medium large
 //
 // * replaces math/trig in hex/oct/bin mode
 //
 // Extensions:
 //   math     -> modulo  -> mod    rem
 //            -> percent -> %      %DIFF
-//            -> time    -> ->HMS  ->H
-//                       -> time   date
-//            -> random
-//   trig     -> ->RAD  ->DEG
 //   special  -> user...
-//   mode     -> font    -> small  medium large
-//            -> prog
+//   mode     -> prog
 
   private static class Menu
   {
