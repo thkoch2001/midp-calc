@@ -1,7 +1,8 @@
 VERSION = 0.99
 TARGETS = Calc.jar Calc.jad
 
-JFLAGS = --bootclasspath=/home/roarl/ant/WTK2.0/lib/midpapi.zip -C -d . -O2
+WTK_HOME = /home/roarl/ant/WTK104
+JFLAGS = --bootclasspath=$(WTK_HOME)/lib/midpapi.zip -Wall -C -d . -O2
 
 JAVAFILES  = Calc.java \
              CalcCanvas.java \
@@ -10,16 +11,6 @@ JAVAFILES  = Calc.java \
              GFontBase.java \
              PropertyStore.java \
              Real.java
-
-CLASSFILES = ral/Calc.class \
-             ral/CalcCanvas.class \
-             ral/CalcEngine.class \
-             ral/GFont.class \
-             ral/GFontBase.class \
-             ral/PropertyStore.class \
-             ral/Real.class
-
-SHELL = /usr/bin/csh
 
 default: $(TARGETS)
 
@@ -34,30 +25,19 @@ GFontBase.java: pgm2java large.pgm medium.pgm small.pgm Makefile
 	pgm2java large.pgm large_                    >> $@
 	echo "}"                                     >> $@
 
-calcManifest: Makefile
-	echo "Manifest-Version: 1.0\r"               >  $@
-	echo "MicroEdition-Configuration: CLDC-1.0\r">> $@
-	echo "MIDlet-Name: Calc\r"                   >> $@
-	echo "MIDlet-Vendor: Roar Lauritzsen\r"      >> $@
-	echo "MIDlet-1: Calc, , ral.Calc\r"          >> $@
-	echo "MIDlet-Version: $(VERSION)\r"          >> $@
-	echo "MicroEdition-Profile: MIDP-1.0\r"      >> $@
-	echo "\r"                                    >> $@
-
-Calc.jar: $(JAVAFILES) calcManifest
-	gcj $(JFLAGS) $(JAVAFILES)
-#	javac -bootclasspath /home/roarl/midpapi.jar -d . $(JAVAFILES)
-	jar cfm $@ calcManifest ral
-
-Calc.jad: Calc.jar Makefile
+Calc.jad: Makefile
 	echo "MIDlet-Name: Calc"                     >  $@
 	echo "MIDlet-Version: $(VERSION)"            >> $@
 	echo "MIDlet-Vendor: Roar Lauritzsen"        >> $@
 	echo "MicroEdition-Profile: MIDP-1.0"        >> $@
 	echo "MicroEdition-Configuration: CLDC-1.0"  >> $@
 	echo "MIDlet-Jar-URL: Calc.jar"              >> $@
-	echo "MIDlet-Jar-Size:" `perl -e 'print -s "Calc.jar"'` >> $@
+	echo "MIDlet-Jar-Size: 0"                    >> $@
 	echo "MIDlet-1: Calc, , ral.Calc"            >> $@
 
+Calc.jar: $(JAVAFILES) Calc.jad
+	gcj $(JFLAGS) $(JAVAFILES)
+	ant -buildfile build.xml -Dwtk.home=${WTK_HOME} make-jar
+
 clean:
-	rm -rf $(TARGETS) ral GFontBase.java pgm2java calcManifest
+	rm -rf $(TARGETS) ral GFontBase.java pgm2java
