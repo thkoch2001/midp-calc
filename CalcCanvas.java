@@ -12,7 +12,7 @@ public class CalcCanvas
 //   basic    ->            -      *      /      +/-
 //   math     -> simple  -> 1/x    x^2    x^1/2  %chg
 //            -> pow     -> y^x    y^1/x  ln     e^x
-//            -> prob    -> Py,x   Cy,x   x!     random
+//            -> prob    -> Py,x   Cy,x   x!     random factorize
 //            -> pow10/2 -> log    10^x   log2   2^x
 //            -> pol     -> r->p   p->r   atan2  hypot
 //   trig     -> normal  -> sin    cos    tan
@@ -27,7 +27,7 @@ public class CalcCanvas
 //            -> mem     -> STO#   STO+#  RCL#    x<->mem#          -> #
 //            -> stat    -> SUM+   SUM-   clear
 //                          regs   -> SUMx SUMx² SUMy SUMy² SUMxy
-//                          result -> avg  s     L.R. y,r   n
+//                          result -> avg  s     L.R. y*,r  n
 //            -> time    -> ->DH.MS ->H   DH.MS+ time   date
 //   mode     -> number  -> normal FIX#   SCI#   ENG#             ( -> # )
 //            -> sepr    -> decimal  ->   dot comma remove keep
@@ -39,8 +39,11 @@ public class CalcCanvas
 //
 // Extensions:
 //   math     -> modulo  -> mod    rem
-//            -> percent -> %      %DIFF
+//            -> simple  -> abs
+//            -> percent -> %
 //   special  -> user...
+//               stat     -> dx,dy x* r avg-xw
+//               stat     -> mode  -> lin exp log pow
 //   mode     -> prog
 
   private static class Menu
@@ -802,6 +805,10 @@ public class CalcCanvas
         if (repeating || menuStackPtr >= 0)
           return;
         calc.command(CalcEngine.DIGIT_A+key-'1',0);
+        break;
+      case '0': case '7': case '8': case '9':
+      case '#': case '*':
+        // Do nothing, but do not fall into the "default" below
         break;
       default:
         switch (getGameAction(key)) {
