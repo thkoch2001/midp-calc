@@ -4,7 +4,7 @@ import javax.microedition.lcdui.*;
 
 public final class CalcCanvas
     extends Canvas
-    implements CommandListener, Runnable
+    implements CommandListener
 {
 // Commands:
 //               ENTER  +  0-9a-f  .  -/E  clear  menu
@@ -617,7 +617,6 @@ public final class CalcCanvas
   private boolean internalRepaint = false;
   private int offX, offY, nDigits, nLines, numberWidth, numberHeight;
   private int offY2, offYMonitor, nLinesMonitor;
-  private boolean graph = false, graphVisible = false;
   private boolean evenFrame = true;
 
   private Menu [] menuStack;
@@ -692,7 +691,7 @@ public final class CalcCanvas
     calc.setMaxWidth(nDigits);
   }
 
-  private void drawModeIndicators(Graphics g) {
+  public void drawModeIndicators(Graphics g) {
     g.setColor(0xffffff);
     g.fillRect(0,0,getWidth(),smallMenuFont.getHeight()-1);
     g.setColor(0);
@@ -738,8 +737,9 @@ public final class CalcCanvas
 
     if (calc.progRecording)
       g.drawString("PRG",x,0,g.TOP|g.LEFT);
-    else if ((calc.progRunning || graph) && evenFrame)
+    else if (calc.progRunning && evenFrame)
       g.drawString("RUN",x,0,g.TOP|g.LEFT);
+    evenFrame = !evenFrame;
   }
 
   private void clearScreen(Graphics g) {
@@ -1068,88 +1068,34 @@ public final class CalcCanvas
     internalRepaint = false;
 
     if (numRepaintLines >= 0) {
-      if (!calc.progRunning)
-        graphVisible = false;
-      if (graph) {
-        if (!graphVisible) {
-          graphVisible = calc.draw(menuCommand,g,
-                                   0,smallMenuFont.getHeight()-1,getWidth(),
-                                   getHeight()-smallMenuFont.getHeight()+1);
-          if (!graphVisible || !calc.progRunning)
-            graph = false;
-          else {
-            removeCommand(enter);
-            removeCommand(add);
-            addCommand(breakCmd);
-            numRepaintLines = 1; // no clearScreen() !
-            midlet.display.callSerially(this);
-            return;
-          }
+      if (menuStackPtr < 0 || cleared) {
+        if (numRepaintLines > 16)
+          numRepaintLines = 16;
+        int monitorSize = calc.getMonitorSize();
+        if (monitorSize > 0) {
+          if (monitorSize > nLinesMonitor-1)
+            monitorSize = nLinesMonitor-1;
+          if (numRepaintLines > nLinesMonitor-monitorSize)
+            numRepaintLines = nLinesMonitor-monitorSize;
+
+          for (i=0; i<numRepaintLines; i++)
+            drawNumber(g,i,cleared,offY2,nLinesMonitor);
+          for (i=0; i<monitorSize; i++)
+            drawMonitor(g,i,cleared);
+          g.setColor(255,255,255);
+          g.drawLine(0,offYMonitor+monitorSize*numberHeight+1,
+                     getWidth(),offYMonitor+monitorSize*numberHeight+1);
         } else {
-          evenFrame = !evenFrame;
-          drawModeIndicators(g);
-          calc.continueGraph(g,0,smallMenuFont.getHeight()-1,getWidth(),
-                             getHeight()-smallMenuFont.getHeight()+1);
-          midlet.display.callSerially(this);
-          return;
+          if (numRepaintLines > nLines)
+            numRepaintLines = nLines;
+          for (i=0; i<numRepaintLines; i++)
+            drawNumber(g,i,cleared,offY,nLines);
         }
       }
-      if (!graphVisible) {
-        if (menuStackPtr < 0 || cleared) {
-          if (numRepaintLines > 16)
-            numRepaintLines = 16;
-          int monitorSize = calc.getMonitorSize();
-          if (monitorSize > 0) {
-            if (monitorSize > nLinesMonitor-1)
-              monitorSize = nLinesMonitor-1;
-            if (numRepaintLines > nLinesMonitor-monitorSize)
-              numRepaintLines = nLinesMonitor-monitorSize;
-
-            for (i=0; i<numRepaintLines; i++)
-              drawNumber(g,i,cleared,offY2,nLinesMonitor);
-            for (i=0; i<monitorSize; i++)
-              drawMonitor(g,i,cleared);
-            g.setColor(255,255,255);
-            g.drawLine(0,offYMonitor+monitorSize*numberHeight+1,
-                       getWidth(),offYMonitor+monitorSize*numberHeight+1);
-          } else {
-            if (numRepaintLines > nLines)
-              numRepaintLines = nLines;
-            for (i=0; i<numRepaintLines; i++)
-              drawNumber(g,i,cleared,offY,nLines);
-          }
-        }
-        if (menuStackPtr >= 0)
-          drawMenu(g);
-      }
+      if (menuStackPtr >= 0)
+        drawMenu(g);
     }
-    if (graphVisible)
-      numRepaintLines = 100; // Clear graph on next paint
-    else
-      numRepaintLines = -1;
-  }
-
-  public void run() {
-    // Called repeatedly when drawing graph
-    if (graphVisible && calc.progRunning) {
-      internalRepaint = true;
-      numRepaintLines = 1; // no clearScreen() !
-      repaint();
-    } else {
-      breakRun();
-      checkRepaint();
-    }
-  }
-
-  public void breakRun() {
-    removeCommand(breakCmd);
-    addCommand(enter);
-    addCommand(add);
-    graph = false;
-    graphVisible = false;
-    calc.progRunning = false;
-    evenFrame = true;
-    numRepaintLines = 100;
+    numRepaintLines = -1;
   }
 
   private void checkRepaint() {
@@ -1165,12 +1111,6 @@ public final class CalcCanvas
   }
 
   private void clearKeyPressed() {
-    if (graphVisible) {
-      graphVisible = false;
-      numRepaintLines = 100;
-      menuStackPtr = -2; // should not continue by clearing the input...
-      return;
-    }
     if (menuStackPtr >= 0) {
       menuStackPtr--;
       if (menuStackPtr >= 0)
@@ -1195,6 +1135,8 @@ public final class CalcCanvas
   }
 
   private void menuAction(int menuIndex) {
+    boolean graph=false;
+    
     if (menuStackPtr < 0) {
       // On entering the menu, switch math/trig menus with bit-op
       // menus if not base-10
@@ -1272,14 +1214,14 @@ public final class CalcCanvas
             int n = command-NUMBER_0;
             String name = calc.progLabels[n]==calc.emptyProg ? "" :
               calc.progLabels[n];
-            midlet.showNewProgram(name,n);
+            midlet.askNewProgram(name,n);
           } else {
             calc.command(menuCommand,command-NUMBER_0);
           }
         } else if (command >= CalcEngine.AVG_DRAW &&
                    command <= CalcEngine.POW_DRAW) {
           menuCommand = command;
-          graph = true;          // graph drawing on next repaint
+          graph = true;
         } else {
           // Normal calculator command
           calc.command(command,0);
@@ -1288,12 +1230,16 @@ public final class CalcCanvas
         numRepaintLines = 100; // Force repaint of all
       }
     }
+
+    if (graph && calc.prepareGraph(menuCommand)) {
+      evenFrame = true;
+      midlet.displayGraph(0,smallMenuFont.getHeight()-1,getWidth(),
+                          getHeight()-smallMenuFont.getHeight()+1);
+      numRepaintLines = 100;
+    }
   }
 
   protected void keyPressed(int key) {
-    if (graphVisible && calc.progRunning)
-      return; // Only BREAK can stop this
-    
     repeating = false;
     int menuIndex = -1;
     switch (key) {
@@ -1384,9 +1330,6 @@ public final class CalcCanvas
   }
 
   protected void keyRepeated(int key) {
-    if (graphVisible && calc.progRunning)
-      return; // Only BREAK can stop this
-    
     switch (key) {
       case '1': case '2': case '3': case '4': case '5': case '6':
         if (repeating || menuStackPtr >= 0)
@@ -1419,9 +1362,7 @@ public final class CalcCanvas
 
   public void commandAction(Command c, Displayable d)
   {
-    if (graphVisible && calc.progRunning) {
-      breakRun(); // Any command breaks because bug in Z1010 may not show BREAK
-    } else if (c == enter) {
+    if (c == enter) {
       if (menuStackPtr >= 0)
         return;
       calc.command(CalcEngine.ENTER,0);

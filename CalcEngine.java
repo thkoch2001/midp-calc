@@ -3310,8 +3310,11 @@ public final class CalcEngine
   }
 
   Real xMin,xMax,yMin,yMax,a,b;
+  int graphCmd;
 
-  public boolean draw(int cmd, Graphics g, int gx, int gy, int gw, int gh) {
+  public boolean prepareGraph(int cmd) {
+    graphCmd = cmd;
+    
     if (cmd >= PROG_DRAW) {
       if (prog == null)
         return false;
@@ -3324,9 +3327,9 @@ public final class CalcEngine
     yMax = new Real();
     a = new Real();
     b = new Real();
-    Real x = new Real();
-    Real y = new Real();
-    int i,xi,yi,pyi,inc,bigTick;
+    Real x = rTmp3;
+    Real y = rTmp4;
+    int i;
 
     // Find boundaries
     if (cmd >= PROG_DRAW) {
@@ -3357,6 +3360,14 @@ public final class CalcEngine
     }
     if (xMin.equals(xMax) || yMin.equals(yMax))
       return false;
+    
+    return true;
+  }
+
+  public void startGraph(Graphics g, int gx, int gy, int gw, int gh) {
+    int i,xi,yi,pyi,inc,bigTick;
+    Real x = rTmp3;
+    Real y = rTmp4;
 
     g.setClip(gx,gy,gw,gh);
     // shrink window by 4 pixels
@@ -3373,11 +3384,11 @@ public final class CalcEngine
     x.assign(a);
     x.neg();
     i = -1;
-    rTmp3.assign(a);
-    rTmp3.scalbn(-1);
-    rTmp3.neg();
-    rTmp3.add(xMin);
-    while (x.greaterThan(rTmp3)) {
+    y.assign(a);
+    y.scalbn(-1);
+    y.neg();
+    y.add(xMin);
+    while (x.greaterThan(y)) {
       xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
       inc = (i%bigTick == 0) ? 2 : 1;
       g.setColor(0,32,16);
@@ -3389,10 +3400,10 @@ public final class CalcEngine
     }
     x.assign(a);
     i = 1;
-    rTmp3.assign(a);
-    rTmp3.scalbn(-1);
-    rTmp3.add(xMax);
-    while (x.lessThan(rTmp3)) {
+    y.assign(a);
+    y.scalbn(-1);
+    y.add(xMax);
+    while (x.lessThan(y)) {
       xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
       inc = (i%bigTick == 0) ? 2 : 1;
       g.setColor(0,32,16);
@@ -3410,11 +3421,11 @@ public final class CalcEngine
     y.assign(a);
     y.neg();
     i = -1;
-    rTmp3.assign(a);
-    rTmp3.scalbn(-1);
-    rTmp3.neg();
-    rTmp3.add(yMin);
-    while (y.greaterThan(rTmp3)) {
+    x.assign(a);
+    x.scalbn(-1);
+    x.neg();
+    x.add(yMin);
+    while (y.greaterThan(x)) {
       yi = gy+rangeScale(y,yMax,yMin,gh,Real.ZERO);
       inc = (i%bigTick == 0) ? 2 : 1;
       g.setColor(0,32,16);
@@ -3426,10 +3437,10 @@ public final class CalcEngine
     }
     y.assign(a);
     i = 1;
-    rTmp3.assign(a);
-    rTmp3.scalbn(-1);
-    rTmp3.add(yMax);
-    while (y.lessThan(rTmp3)) {
+    x.assign(a);
+    x.scalbn(-1);
+    x.add(yMax);
+    while (y.lessThan(x)) {
       yi = gy+rangeScale(y,yMax,yMin,gh,Real.ZERO);
       inc = (i%bigTick == 0) ? 2 : 1;
       g.setColor(0,32,16);
@@ -3440,19 +3451,19 @@ public final class CalcEngine
       i++;
     }
 
-    if (cmd >= PROG_DRAW) {
+    if (graphCmd >= PROG_DRAW) {
       // Return now to continue drawing graph indefinitely
-      currentProg = cmd-PROG_DRAW;
+      currentProg = graphCmd-PROG_DRAW;
       a.assign(0, 0x3fffffff, 0x4f1bbcdcbfa53e0bL); // a = golden ratio, 0.618
       b.makeZero();
       progRunning = true;
-      return true;
+      return;
     }
     
     // Draw statistics graph
     g.setColor(255,0,128);
     
-    switch (cmd) {
+    switch (graphCmd) {
       case LIN_DRAW:
         statAB(a,b,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
         break;
@@ -3466,9 +3477,9 @@ public final class CalcEngine
         statAB(a,b,SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMlnxlny);
         break;
     }
-    if (cmd != AVG_DRAW && a.isFinite() && b.isFinite()) {
+    if (graphCmd != AVG_DRAW && a.isFinite() && b.isFinite()) {
       pyi = -1000;
-      inc = (cmd==LIN_DRAW) ? gw-1 : 5;
+      inc = (graphCmd==LIN_DRAW) ? gw-1 : 5;
       for (xi=0; xi<gw+5; xi+=inc) {
         x.assign(xi);
         rTmp.assign(gw-1);
@@ -3477,12 +3488,12 @@ public final class CalcEngine
         rTmp.sub(xMin);
         x.mul(rTmp);
         x.add(xMin);
-        if (cmd==LOG_DRAW || cmd==POW_DRAW)
+        if (graphCmd==LOG_DRAW || graphCmd==POW_DRAW)
           x.ln();
         y.assign(x);
         y.mul(a);
         y.add(b);
-        if (cmd==EXP_DRAW || cmd==POW_DRAW)
+        if (graphCmd==EXP_DRAW || graphCmd==POW_DRAW)
           y.exp();
         yi = rangeScale(y,yMax,yMin,gh,Real.HALF);
         if (yi > -1000 && yi<1000+gh) {
@@ -3514,7 +3525,7 @@ public final class CalcEngine
     }
 
     // Draw average
-    if (cmd == AVG_DRAW) {
+    if (graphCmd == AVG_DRAW) {
       g.setColor(255,0,128);
       x.assign(SUMx);
       x.div(SUM1);
@@ -3526,8 +3537,6 @@ public final class CalcEngine
         g.fillRect(xi-1,yi-1,3,3);
       }
     }
-
-    return true;
   }
 
   public void continueGraph(Graphics g, int gx, int gy, int gw, int gh) {

@@ -1,4 +1,4 @@
-VERSION = 2.00
+VERSION = 1.99
 TARGETS = Calc.jar Calc.jad
 
 WTK_HOME = /home/roarl/ant/WTK104
@@ -8,6 +8,7 @@ JFLAGS = --bootclasspath=$(WTK_HOME)/lib/midpapi.zip -Wall -C -d . -O2
 JAVAFILES  = Calc.java \
              CalcCanvas.java \
              CalcEngine.java \
+             GraphCanvas.java \
              GFont.java \
              GFontBase.java \
              PropertyStore.java \

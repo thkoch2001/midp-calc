@@ -17,6 +17,8 @@ public final class Calc
   public Command cancelCommand;
   public int whichProgram;
 
+  public GraphCanvas graph;
+
   // Setup items
   public boolean hasClearKey = true;
   public byte commandArrangement = 0;
@@ -62,10 +64,17 @@ public final class Calc
     display.setCurrent(screen);
   }
 
-  public void showNewProgram(String name, int n) {
+  public void askNewProgram(String name, int n) {
     newProgram.setString(name);
     whichProgram = n;
     display.setCurrent(newProgram);
+  }
+
+  public void displayGraph(int gx, int gy, int gw, int gh) {
+    if (graph == null)
+      graph = new GraphCanvas(this,screen);
+    graph.init(gx,gy,gw,gh);
+    display.setCurrent(graph);
   }
   
   public void commandAction(Command c, Displayable d) {
