@@ -3,7 +3,8 @@ TARGETS = Calc.jar Calc.jad CalcApplet.jar
 
 WTK_HOME = ../../WTK104
 JFLAGS = --bootclasspath=$(WTK_HOME)/lib/midpapi.zip --encoding="ISO 8859-1" -Wall -C -d . -O2
-#JFLAGS = -bootclasspath $(WTK_HOME)/lib/midpapi.zip -d . -O
+## For use with javac:
+#JFLAGS = -bootclasspath $(WTK_HOME)/lib/midpapi.zip -encoding="ISO 8859-1" -d . -O
 
 JAVAFILES  = Calc.java \
              CalcCanvas.java \
@@ -66,14 +67,13 @@ Calc.jar: $(JAVAFILES) Calc.jad Calc.png
 	gcj $(JFLAGS) $(JAVAFILES)
 #	javac $(JFLAGS) $(JAVAFILES)
 	cp Calc.png ral/
-#	jar cf Calc.jar ral/*
 	ant -buildfile build.xml -lib $(WTK_HOME)/lib -Dwtk.home=${WTK_HOME} make-jar
 	touch Calc.jar
 
 CalcApplet.jar: CalcApplet.java $(JAVAFILES) $(MIDPFILES)
 	gcj --encoding="ISO 8859-1" -Wall -C -d midp -O2 CalcApplet.java $(JAVAFILES) $(MIDPFILES)
 	cd midp && jar cf ../tmp.jar ral javax
-	java -jar $(WTK_HOME)/lib/proguard-3.0.7.jar -injars tmp.jar -outjars CalcApplet.jar -libraryjars "<java.home>/lib/rt.jar" -keep public class ral.CalcApplet
+	java -jar $(WTK_HOME)/lib/proguard-3.1.jar -injars tmp.jar -outjars CalcApplet.jar -libraryjars "<java.home>/lib/rt.jar" -keep public class ral.CalcApplet
 	rm tmp.jar
 
 clean:
