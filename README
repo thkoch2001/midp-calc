@@ -1,11 +1,11 @@
-This document is by far finished yet
+This document is not finished yet by far
 
 Building
 ========
 
-Let me start by saying that one of the first tasks for those not fancying the
-Makefile approach should be to make a more general building process that
-enables building under IDE's and/or under other operating systems. This
+Let me start by saying that one of the first tasks for those that don't fancy
+the Makefile approach should be to make a more general building process that
+enables building under IDE's and/or under other operating systems. The new
 building process should preferrably encompass all that is achieved in the
 current Makefile.
 
@@ -13,7 +13,32 @@ The Makefile and build.xms Ant script enables compilation under Linux. To make
 this Makefile work without modification you need to set up your system
 accordingly:
 
-1) The project depends on Real.java from
+1) You need a GNU Compiler package containing make (or gmake), gcc, gcj and
+   cpp. You can use javac instead of gcj by modifying the Makefile, but it is
+   much slower.
+
+2) You need J2SE SDK from http://java.sun.com. $JAVA_HOME should should be set
+   to the location of the SDK, and $JAVA_HOME/bin should be added to the path.
+
+3) You need J2ME Wireless Toolkit version 1.04 (not 2.0) from
+   http://java.sun.com, installed in ../../WTK104 relative to this file.
+
+4) You need Apache Ant installed, from http://ant.apache.org.
+   $ANT_HOME should be set to the location of Ant, and $ANT_HOME/bin
+   should be added to the path.
+
+5) You need the ProGuard obfuscator from http://proguard.sourceforge.net.
+   The library file proguardXXX/lib/proguard-X.X.jar must be available to
+   Ant, and could for convenience be placed in ../../WTK104/lib or
+   $ANT_HOME/lib.
+
+6) You need the Antenna Ant task package from
+   http://antenna.sourceforge.net. The library file, antenna-bin-XXX.jar 
+   must be available to Ant, and could for convenience be placed in
+   ../../WTK104/lib or $ANT_HOME/lib.
+
+
+7) The project depends on Real.java from
    http://sourceforge.net/projects/real-java. If you simply want to download
    the file, the file should be placed in a directory named "real-java" on the
    same level as the midp-calc directory, i.e. ../real-java/Real.java relative
@@ -23,11 +48,10 @@ accordingly:
      $ cd ..              # i.e. get to the directory containing midp-calc
      $ cvs -d:pserver:anonymous@cvs.sf.net:/cvsroot/real-java co real-java
 
-2) You need WTK version 1.04 installed in ../../WTK104
+At this point, you should be able to compile the project by executing the
+command:
 
-3) You need Ant installed
-
-4) You need proguard
+     $ make
 
 
 Development Guidelines
@@ -56,8 +80,8 @@ following guidelines first:
 5) Always do "cvs diff <file>" before committing. You need to see what you
    have done to be able to make a good commit comment. If you accidently
    changed indentation, inserted TAB's or switched CR/LF mode on the entire
-   document it will show in the diff and you may be able to save face in
-   time. The goal should be to make as small a diff as possible.
+   file it will show in the diff and you may be able to save face in time.
+   The goal should be to make as small a diff as possible.
 
 
 Regards,
