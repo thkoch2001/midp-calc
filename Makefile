@@ -79,5 +79,8 @@ CalcApplet.jar: CalcApplet.java $(JAVAFILES) $(MIDPFILES)
 clean:
 	rm -rf $(TARGETS) midp/ral midp/javax Real.java GFontBase.java pgm2java *~ .\#* midp/*~ midp/.\#*
 
+derived.tgz: Real.java GFontBase.java Calc.jad
+	tar czf derived.tgz Real.java GFontBase.java Calc.jad
+
 publish: Calc.jad Calc.jar CalcApplet.jar
 	scp Calc.jad Calc.jar Calc.html Calc-log.html Calc-prog.html CalcApplet.jar CalcApplet.html gridbug:public_html
