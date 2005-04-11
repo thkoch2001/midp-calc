@@ -38,10 +38,10 @@ accordingly:
    ../../WTK104/lib or $ANT_HOME/lib.
 
 
-7) The project depends on Real.java from
+7) The project depends on Real.jpp from
    http://sourceforge.net/projects/real-java. If you simply want to download
    the file, the file should be placed in a directory named "real-java" on the
-   same level as the midp-calc directory, i.e. ../real-java/Real.java relative
+   same level as the midp-calc directory, i.e. ../real-java/Real.jpp relative
    to this file.  Alternatively, to check out the real-java project with
    anonymous CVS from sourceforge, do the following:
 
@@ -52,6 +52,16 @@ At this point, you should be able to compile the project by executing the
 command:
 
      $ make
+
+When all else fails -- you're not on Linux and you don't have access to a GNU
+compiler package, and there is no concievable way of generating the files
+Real.java, GFontBase.java and Calc.jad, there is a compressed tar file named
+"derived.tgz" containing these files. The contents of this archive may not be
+up to date, and you should of course not _modify_ these files and commit them
+back into CVS, unless you have changed the files that the archive depends on
+and are updating the archive. The files are included in the archive as a last
+resort or a temporary solution until you have things set up.
+
 
 
 Development Guidelines
@@ -65,6 +75,9 @@ following guidelines first:
 
 2) Make the least impact on the code: Unless there is a very good reason for
    it, do not change or refactor large portions of the code simultaneously.
+   Exempt from this rule are large changes that actually decrease the size of
+   the application, and code changes that do not change the compiled result,
+   such as adding comments and renaming identifiers to increase clarity.
 
 3) Don't break compatibility: If you are making a fix to get the program
    running on a different hardware, make sure that the code still works on
