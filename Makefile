@@ -83,4 +83,4 @@ derived.tgz: Real.java GFontBase.java Calc.jad
 	tar czf derived.tgz Real.java GFontBase.java Calc.jad
 
 publish: Calc.jad Calc.jar CalcApplet.jar
-	scp Calc.jad Calc.jar Calc.html Calc-log.html Calc-prog.html CalcApplet.jar CalcApplet.html gridbug:public_html
+	scp Calc.jad Calc.jar Calc.html Calc-log.html Calc-prog.html CalcApplet.jar CalcApplet.html shell.sf.net:/home/groups/m/mi/midp-calc/htdocs
