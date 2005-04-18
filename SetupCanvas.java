@@ -93,7 +93,7 @@ public class SetupCanvas
         // Just start with the most likely command arrangement for Nokia
         arrangement = 1;
       } else if (name.indexOf("T610")>0 || name.indexOf("Z600")>0 ||
-                 name.indexOf("Z1010")>0) {
+                 name.indexOf("Z1010")>0 || name.indexOf("K700i")>0) {
         midlet.hasClearKey = true;
         midlet.commandArrangement = 0;
         midlet.bgrDisplay = false;
