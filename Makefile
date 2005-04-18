@@ -87,9 +87,9 @@ clean:
 derived.tgz: Real.java GFontBase.java Calc.jad
 	tar czf derived.tgz Real.java GFontBase.java Calc.jad
 
-midp-calc-source-$(VERSION).tgz: $(JAVAFILES) Real.java CalcApplet.java $(MIDPFILES) Calc.png pgm2java.c small.pgm medium.pgm large.pgm xlarge.pgm Makefile build.xml derived.tgz README
+midp-calc-$(VERSION)-src.tgz: $(JAVAFILES) Real.java CalcApplet.java $(MIDPFILES) Calc.png pgm2java.c small.pgm medium.pgm large.pgm xlarge.pgm Makefile build.xml derived.tgz README
 	tar czf $@ $^
 
-publish: $(TARGETS) midp-calc-source-$(VERSION).tgz
+publish: $(TARGETS) midp-calc-$(VERSION)-src.tgz
 	scp $(TARGETS) $(HTMLFILES) shell.sf.net:/home/groups/m/mi/midp-calc/htdocs
 	tar czf midp-calc-$(VERSION).tgz $(TARGETS) $(HTMLFILES)
