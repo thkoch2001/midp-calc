@@ -58,9 +58,9 @@ Calc.jad: Makefile
 	echo "MIDlet-Version: $(VERSION)"            >> $@
 	echo "MIDlet-Description: Scientific RPN Calculator" >> $@
 	echo "MIDlet-Icon: /ral/Calc.png"            >> $@
-	echo "MIDlet-Info-URL: http://gridbug.ods.org/Calc.html" >> $@
+	echo "MIDlet-Info-URL: http://midp-calc.sourceforge.net/Calc.html" >> $@
 	echo "MIDlet-Data-Size: 2048"                >> $@
-	echo "MIDlet-Jar-URL: http://gridbug.ods.org/Calc.jar" >> $@
+	echo "MIDlet-Jar-URL: http://midp-calc.sourceforge.net/Calc.jar" >> $@
 	echo "MIDlet-Jar-Size: 0"                    >> $@
 	echo "MIDletX-LG-Contents: G7100"            >> $@
 	echo "MicroEdition-Profile: MIDP-1.0"        >> $@
@@ -82,7 +82,7 @@ CalcApplet.jar: CalcApplet.java $(JAVAFILES) Real.java $(MIDPFILES)
 	rm tmp.jar
 
 clean:
-	rm -rf $(TARGETS) ral midp/ral midp/javax Real.java GFontBase.java pgm2java *~ .\#* midp/*~ midp/.\#* derived.tgz midp-*.tgz
+	rm -rf $(TARGETS) ral midp/ral midp/javax Real.java GFontBase.java pgm2java *~ .\#* midp/*~ midp/.\#* midp-*.tgz
 
 derived.tgz: Real.java GFontBase.java Calc.jad
 	tar czf derived.tgz Real.java GFontBase.java Calc.jad
