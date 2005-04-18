@@ -23,18 +23,17 @@ accordingly:
 3) You need J2ME Wireless Toolkit version 1.04 (not 2.0) from
    http://java.sun.com, installed in ../../WTK104 relative to this file.
 
-4) You need Apache Ant installed, from http://ant.apache.org.
-   $ANT_HOME should be set to the location of Ant, and $ANT_HOME/bin
-   should be added to the path.
+4) You need Apache Ant installed, from http://ant.apache.org. $ANT_HOME should
+   be set to the location of Ant, and $ANT_HOME/bin should be added to the
+   path.
 
-5) You need the ProGuard obfuscator from http://proguard.sourceforge.net.
-   The library file proguardXXX/lib/proguard-X.X.jar must be available to
-   Ant, and could for convenience be placed in ../../WTK104/lib or
-   $ANT_HOME/lib.
+5) You need the ProGuard obfuscator from http://proguard.sourceforge.net. The
+   library file proguardXXX/lib/proguard-X.X.jar must be available to Ant, and
+   could for convenience be placed in ../../WTK104/lib or $ANT_HOME/lib.
 
 6) You need the Antenna Ant task package from
-   http://antenna.sourceforge.net. The library file, antenna-bin-XXX.jar 
-   must be available to Ant, and could for convenience be placed in
+   http://antenna.sourceforge.net. The library file, antenna-bin-XXX.jar must
+   be available to Ant, and could for convenience be placed in
    ../../WTK104/lib or $ANT_HOME/lib.
 
 
@@ -80,9 +79,8 @@ following guidelines first:
    such as adding comments and renaming identifiers to increase clarity.
 
 3) Don't break compatibility: If you are making a fix to get the program
-   running on a different hardware, make sure that the code still works on
-   all the hardware that it is already working on, and not just the new
-   hardware.
+   running on a different hardware, make sure that the code still works on all
+   the hardware that it is already working on, and not just the new hardware.
 
 4) Don't change indenting: I use a BSD-like brace style with 2 spaces of
    indentation for subblocks. Under no circumstances change the indentation or
@@ -90,7 +88,14 @@ following guidelines first:
    indentation. Under no circumstances insert TAB characters in the code or
    replace all occurrances of X consecutive spaces with one TAB.
 
-5) Always do "cvs diff <file>" before committing. You need to see what you
+5) LEARN CVS. CVS is a useful tool that enables several people to develop on
+   the same project simultaneously. If you are a member of the delveoper team,
+   your contribution will only be accepted in the form of CVS commits, so
+   learn how to use it. The most important rule to avoid confusion: Only
+   modify files in a CVS controlled directory, never take files out of the CVS
+   directory to modify them.
+
+6) Always do "cvs diff <file>" before committing. You need to see what you
    have done to be able to make a good commit comment. If you accidently
    changed indentation, inserted TAB's or switched CR/LF mode on the entire
    file it will show in the diff and you may be able to save face in time.
