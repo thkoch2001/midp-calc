@@ -9,7 +9,9 @@ final class GFont
   static final int MEDIUM = 1;
   static final int LARGE  = 2;
   static final int SYSTEM = 3;
-  static final int BGR_ORDER = 4;
+  static final int XLARGE = 4;
+  static final int BGR_ORDER = 8;
+  static final int SIZE_MASK = 7;
 
   private final String char_bits;
   private final int char_width;
@@ -24,7 +26,7 @@ final class GFont
   public GFont(int style)
   {
     bgr = (style & BGR_ORDER) != 0;
-    style &= 3;
+    style &= SIZE_MASK;
     this.style = style;
     if (style == MEDIUM) {
       systemFont = null;
@@ -44,6 +46,12 @@ final class GFont
       char_height = small_char_height;
       char_bits = small_char_bits;
       char_set = small_char_set;
+    } else if (style == XLARGE) {
+      systemFont = null;
+      char_width = xlarge_char_width;
+      char_height = xlarge_char_height;
+      char_bits = xlarge_char_bits;
+      char_set = xlarge_char_set;
     } else { // SYSTEM font
       systemFont = Font.getFont(Font.FACE_MONOSPACE,
                                 Font.SIZE_MEDIUM,

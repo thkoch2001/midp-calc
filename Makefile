@@ -1,4 +1,4 @@
-VERSION = 2.03
+VERSION = 2.03.1
 TARGETS = Calc.jar Calc.jad CalcApplet.jar
 
 WTK_HOME = ../../WTK104
@@ -39,12 +39,13 @@ pgm2java: pgm2java.c
 Real.java: ../real-java/Real.jpp Makefile
 	cpp -C -P -DDO_INLINE -o $@ $<
 
-GFontBase.java: pgm2java large.pgm medium.pgm small.pgm Makefile
+GFontBase.java: pgm2java xlarge.pgm large.pgm medium.pgm small.pgm Makefile
 	echo "package ral;"                          >  $@
 	echo "abstract class GFontBase {"            >> $@
 	pgm2java small.pgm small_                    >> $@
 	pgm2java medium.pgm medium_                  >> $@
 	pgm2java large.pgm large_                    >> $@
+	pgm2java xlarge.pgm xlarge_                  >> $@
 	echo "}"                                     >> $@
 
 Calc.jad: Makefile

@@ -186,6 +186,7 @@ public final class CalcCanvas
   private static final int FONT_MEDIUM = -50+GFont.MEDIUM;
   private static final int FONT_LARGE  = -50+GFont.LARGE;
   private static final int FONT_SYSTEM = -50+GFont.SYSTEM;
+  private static final int FONT_XLARGE = -50+GFont.XLARGE;
   private static final int NUMBER_0 = -20+0;
   private static final int NUMBER_1 = -20+1;
   private static final int NUMBER_2 = -20+2;
@@ -445,7 +446,8 @@ public final class CalcCanvas
           new Menu("medium",FONT_MEDIUM),
           new Menu("small",FONT_SMALL),
           new Menu("large",FONT_LARGE),
-          new Menu("system",FONT_SYSTEM),
+          new Menu("xlarge",FONT_XLARGE),
+          new Menu("sys",FONT_SYSTEM),
         }),
         new Menu("exit",EXIT),
         new Menu("reset",RESET),
@@ -672,7 +674,9 @@ public final class CalcCanvas
 
     calc = new CalcEngine();
 
-    numberFontStyle = getWidth()>=128 ? GFont.LARGE : GFont.MEDIUM;
+    numberFontStyle = (getWidth()>=160 ? GFont.XLARGE :
+                       getWidth()>=128 ? GFont.LARGE  :
+                       getWidth()>=96  ? GFont.MEDIUM : GFont.SMALL);
     if (in != null)
       restoreState(in);
     if (!midlet.display.isColor()) {
@@ -1279,7 +1283,7 @@ public final class CalcCanvas
           midlet.exitRequested();
         } else if (command == RESET) {
           midlet.resetRequested();
-        } else if (command >= FONT_SMALL && command <= FONT_SYSTEM) {
+        } else if (command >= FONT_SMALL && command <= FONT_XLARGE) {
           // Internal font command
           setNumberFont(command-FONT_SMALL);
         } else if (command >= NUMBER_0 && command <= NUMBER_15) {

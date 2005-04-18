@@ -26,7 +26,7 @@ unsigned char* readImage(char* filename, int* iW, int* iH)
   fread(comment,1,1,f); /* ONE whitespace after maxval */
   
   image = (unsigned char*)calloc(*iW * *iH,1);
-  if (fread(image,1,*iW * *iH*3,f) != (size_t)*iW * *iH) {
+  if (fread(image,1,*iW * *iH,f) != (size_t)*iW * *iH) {
     free(image);
     image = 0;
   }
@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 {
   unsigned char* image;
   int c,i,j,k,x;
-  unsigned char bits[32*3][64];
+  unsigned char bits[32*3][100]; // Works for size up to 20x20
   int char_height, char_width;
   char *prefix;
   char *charSet = " \"$%&'*+,-./0123456789=ABCDEFM_aefimnprtvxy";
