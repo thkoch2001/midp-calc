@@ -74,6 +74,58 @@ prog/finish              ; program finished
 </pre><br>
 
 
+<h2>DDD.MMSS conversions</h2>
+
+The built-in conversions to and from the DH.MS date-time
+representation is quite impractical if you are calculating map or
+stellar coordinates and want to convert between decimal degrees and
+degrees, minutes and seconds. However, a few small programs using the
+already built-in conversions can help you out:<br>
+
+<br><b>Program listing:</b>
+
+<pre>
+prog/new "->DMS"         ; start recording first program
+ENTER                    ; make copy of input argument
+math/simple/int/trunc    ; integer part
+stack/x<>y
+math/simple/int/frac     ; fractional part
+conv/time/->DH.MS
++
+prog/finish              ; first program finished
+
+
+prog/new "->D"           ; start recording second program
+ENTER                    ; make copy of input argument
+math/simple/int/trunc    ; integer part
+stack/x<>y
+math/simple/int/frac     ; fractional part
+conv/time/->H
++
+prog/finish              ; second program finished
+
+
+prog/new "DMS+"          ; start recording third program
+ENTER                    ; make copy of first argument
+math/simple/int/frac     ; fractional part
+stack/x<>y
+math/simple/int/trunc    ; integer part
+stack/x<>st# 2           ; get second argument
+ENTER                    ; make copy of second argument
+math/simple/int/frac     ; fractional part
+stack/x<>y
+math/simple/int/trunc    ; integer part
+stack/x<>st# 2           ; get first fractional part
+conv/time/DH.MS+         ; sum everything...
++
++
+prog/finish              ; second program finished
+</pre>
+
+Note: If you are able to enter the sign "»" in the program name, it
+will magically turn into the sign "&rarr;" in the menu. In that case
+you should call your programs "»D.MS", "»D", and "D.MS+" for clarity.
+
 <h2>Biorhythms</h2>
 
 The theory of <a
