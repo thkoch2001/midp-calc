@@ -3080,6 +3080,8 @@ public final class CalcEngine
         if (imagStack != null && !imagStack[i].isZero()) {
           allocImagMem();
           imagMem[param].assign(imagStack[i]);
+        } else if (imagMem != null) {
+          imagMem[param].makeZero();
         }
         if (monitorMode == MONITOR_MEM) {
           monitorStr[param] = null;
