@@ -159,6 +159,9 @@ public final class CalcCanvas
     public static final byte PROG_REQUIRED = 4;
     public static final byte SUBMENU_REQUIRED = 7;
     public static final byte TITLE_SKIP = 8;
+    public static final byte NO_REPEAT = 16;
+    public static final byte REPEAT_PARENT = 32;
+    public static final byte NO_PROG = 64;
 
     Menu(String l, int c) {
       label = l;
@@ -205,23 +208,23 @@ public final class CalcCanvas
   private static final int NUMBER_15 = -20+15;
 
   private Menu basicMenu = new Menu("basic",new Menu[] {
-    new Menu("-",CalcEngine.SUB),
-    new Menu("*",CalcEngine.MUL),
-    new Menu("/",CalcEngine.DIV),
-    new Menu("+/-",CalcEngine.NEG),
-    new Menu("%",CalcEngine.PERCENT),
+    new Menu("-",CalcEngine.SUB,Menu.NO_REPEAT),
+    new Menu("*",CalcEngine.MUL,Menu.NO_REPEAT),
+    new Menu("/",CalcEngine.DIV,Menu.NO_REPEAT),
+    new Menu("+/-",CalcEngine.NEG,Menu.NO_REPEAT),
+    null,
   });
 
   private Menu systemMenu = new Menu("sys",new Menu[] {
     new Menu("font",new Menu[] {
-      new Menu("medium",FONT_MEDIUM),
-      new Menu("small",FONT_SMALL),
-      new Menu("large",FONT_LARGE),
-      new Menu("xlarge",FONT_XLARGE),
-      new Menu("sys",FONT_SYSTEM),
+      new Menu("medium",FONT_MEDIUM,Menu.REPEAT_PARENT),
+      new Menu("small",FONT_SMALL,Menu.REPEAT_PARENT),
+      new Menu("large",FONT_LARGE,Menu.REPEAT_PARENT),
+      new Menu("xlarge",FONT_XLARGE,Menu.REPEAT_PARENT),
+      new Menu("sys",FONT_SYSTEM,Menu.REPEAT_PARENT),
     }),
-    new Menu("exit",EXIT),
-    new Menu("reset",RESET),
+    new Menu("exit",EXIT,Menu.NO_REPEAT),
+    new Menu("reset",RESET,Menu.NO_REPEAT),
   });
 
   private Menu menu = new Menu("menu",new Menu[] {
@@ -239,14 +242,14 @@ public final class CalcCanvas
           new Menu("rollup",CalcEngine.ROLLUP),
           new Menu("x«st#",CalcEngine.XCHGST,Menu.NUMBER_REQUIRED),
         }),
-        new Menu("clear",CalcEngine.CLS),
+        new Menu("clear",CalcEngine.CLS,Menu.NO_REPEAT),
       }),
       new Menu("mem",new Menu[] {
         new Menu("STO",CalcEngine.STO,Menu.NUMBER_REQUIRED),
         new Menu("RCL",CalcEngine.RCL,Menu.NUMBER_REQUIRED),
         new Menu("STO+",CalcEngine.STP,Menu.NUMBER_REQUIRED),
         new Menu("x«mem",CalcEngine.XCHGMEM,Menu.NUMBER_REQUIRED),
-        new Menu("clear",CalcEngine.CLMEM),
+        new Menu("clear",CalcEngine.CLMEM,Menu.NO_REPEAT),
       }),
       new Menu("stat",new Menu[] {
         new Menu("ß+",CalcEngine.SUMPL),
@@ -309,7 +312,7 @@ public final class CalcCanvas
             new Menu("ßlnxlny",CalcEngine.SUMLNXLNY),
           }),
         }),
-        new Menu("clear",CalcEngine.CLST),
+        new Menu("clear",CalcEngine.CLST,Menu.NO_REPEAT),
       }),
       new Menu("finance",new Menu [] {
         new Menu("STO",CalcEngine.FINANCE_STO,Menu.FINANCE_REQUIRED),
@@ -320,7 +323,7 @@ public final class CalcCanvas
           new Menu("y%*x",CalcEngine.FINANCE_MULINT),
           new Menu("y%/x",CalcEngine.FINANCE_DIVINT),
         }),
-        new Menu("clear",CalcEngine.FINANCE_CLEAR),
+        new Menu("clear",CalcEngine.FINANCE_CLEAR,Menu.NO_REPEAT),
       }),
       new Menu("conv",new Menu [] {
         new Menu("time",new Menu[] {
@@ -426,71 +429,73 @@ public final class CalcCanvas
         new Menu("ENG",CalcEngine.ENG,Menu.NUMBER_REQUIRED),
         new Menu("sepr",new Menu[] {
           new Menu("point",new Menu[] {
-            new Menu(".",CalcEngine.POINT_DOT),
-            new Menu(",",CalcEngine.POINT_COMMA),
-            new Menu("keep",CalcEngine.POINT_KEEP),
-            new Menu("remove",CalcEngine.POINT_REMOVE),
+            new Menu(".",CalcEngine.POINT_DOT,Menu.REPEAT_PARENT),
+            new Menu(",",CalcEngine.POINT_COMMA,Menu.REPEAT_PARENT),
+            new Menu("keep",CalcEngine.POINT_KEEP,Menu.REPEAT_PARENT),
+            new Menu("remove",CalcEngine.POINT_REMOVE,Menu.REPEAT_PARENT),
           }),
           null,
           null,
           new Menu("thousand",new Menu[] {
-            new Menu(". or ,",CalcEngine.THOUSAND_DOT),
-            new Menu("space",CalcEngine.THOUSAND_SPACE),
-            new Menu("'",CalcEngine.THOUSAND_QUOTE),
-            new Menu("none",CalcEngine.THOUSAND_NONE),
+            new Menu(". or ,",CalcEngine.THOUSAND_DOT,Menu.REPEAT_PARENT),
+            new Menu("space",CalcEngine.THOUSAND_SPACE,Menu.REPEAT_PARENT),
+            new Menu("'",CalcEngine.THOUSAND_QUOTE,Menu.REPEAT_PARENT),
+            new Menu("none",CalcEngine.THOUSAND_NONE,Menu.REPEAT_PARENT),
           }),
         }),
       }),
       null, // prog1 or prog2
       new Menu("base",new Menu[] {
-        new Menu("DEC",CalcEngine.BASE_DEC),
-        new Menu("HEX",CalcEngine.BASE_HEX),
-        new Menu("OCT",CalcEngine.BASE_OCT),
-        new Menu("BIN",CalcEngine.BASE_BIN),
+        new Menu("DEC",CalcEngine.BASE_DEC,Menu.REPEAT_PARENT),
+        new Menu("HEX",CalcEngine.BASE_HEX,Menu.REPEAT_PARENT),
+        new Menu("OCT",CalcEngine.BASE_OCT,Menu.REPEAT_PARENT),
+        new Menu("BIN",CalcEngine.BASE_BIN,Menu.REPEAT_PARENT),
       }),
       new Menu("monitor",new Menu[] {
-        new Menu("finance",CalcEngine.MONITOR_FINANCE),
-        new Menu("stat",CalcEngine.MONITOR_STAT,Menu.NUMBER_REQUIRED),
-        new Menu("mem",CalcEngine.MONITOR_MEM,Menu.NUMBER_REQUIRED),
-        new Menu("off",CalcEngine.MONITOR_NONE),
+        new Menu("finance",CalcEngine.MONITOR_FINANCE,Menu.REPEAT_PARENT),
+        new Menu("stat",CalcEngine.MONITOR_STAT,
+                 Menu.NUMBER_REQUIRED|Menu.REPEAT_PARENT),
+        new Menu("mem",CalcEngine.MONITOR_MEM,
+                 Menu.NUMBER_REQUIRED|Menu.REPEAT_PARENT),
+        new Menu("off",CalcEngine.MONITOR_NONE,Menu.REPEAT_PARENT),
       }),
       systemMenu,
     }),
   });
   
   private Menu numberMenu = new Menu(null,new Menu[] {
-    new Menu("<0-3>",Menu.TITLE_SKIP,new Menu[] {
-      new Menu("<0>",NUMBER_0),
-      new Menu("<1>",NUMBER_1),
-      new Menu("<2>",NUMBER_2),
-      new Menu("<3>",NUMBER_3),
+    new Menu("<0-3>",Menu.TITLE_SKIP|Menu.REPEAT_PARENT,new Menu[] {
+      new Menu("<0>",NUMBER_0,Menu.REPEAT_PARENT),
+      new Menu("<1>",NUMBER_1,Menu.REPEAT_PARENT),
+      new Menu("<2>",NUMBER_2,Menu.REPEAT_PARENT),
+      new Menu("<3>",NUMBER_3,Menu.REPEAT_PARENT),
     }),
-    new Menu("<4-7>",Menu.TITLE_SKIP,new Menu[] {
-      new Menu("<4>",NUMBER_4),
-      new Menu("<5>",NUMBER_5),
-      new Menu("<6>",NUMBER_6),
-      new Menu("<7>",NUMBER_7),
+    new Menu("<4-7>",Menu.TITLE_SKIP|Menu.REPEAT_PARENT,new Menu[] {
+      new Menu("<4>",NUMBER_4,Menu.REPEAT_PARENT),
+      new Menu("<5>",NUMBER_5,Menu.REPEAT_PARENT),
+      new Menu("<6>",NUMBER_6,Menu.REPEAT_PARENT),
+      new Menu("<7>",NUMBER_7,Menu.REPEAT_PARENT),
     }),
-    new Menu("<8-11>",Menu.TITLE_SKIP,new Menu[] {
-      new Menu("<8>",NUMBER_8),
-      new Menu("<9>",NUMBER_9),
-      new Menu("<10>",NUMBER_10),
-      new Menu("<11>",NUMBER_11),
+    new Menu("<8-11>",Menu.TITLE_SKIP|Menu.REPEAT_PARENT,new Menu[] {
+      new Menu("<8>",NUMBER_8,Menu.REPEAT_PARENT),
+      new Menu("<9>",NUMBER_9,Menu.REPEAT_PARENT),
+      new Menu("<10>",NUMBER_10,Menu.REPEAT_PARENT),
+      new Menu("<11>",NUMBER_11,Menu.REPEAT_PARENT),
     }),
-    new Menu("<12-15>",Menu.TITLE_SKIP,new Menu[] {
-      new Menu("<12>",NUMBER_12),
-      new Menu("<13>",NUMBER_13),
-      new Menu("<14>",NUMBER_14),
-      new Menu("<15>",NUMBER_15),
+    new Menu("<12-15>",Menu.TITLE_SKIP|Menu.REPEAT_PARENT,new Menu[] {
+      new Menu("<12>",NUMBER_12,Menu.REPEAT_PARENT),
+      new Menu("<13>",NUMBER_13,Menu.REPEAT_PARENT),
+      new Menu("<14>",NUMBER_14,Menu.REPEAT_PARENT),
+      new Menu("<15>",NUMBER_15,Menu.REPEAT_PARENT),
     }),
   });
 
   private Menu financeMenu = new Menu(null,new Menu[] {
-    new Menu("pv" ,NUMBER_0),
-    new Menu("fv" ,NUMBER_1),
-    new Menu("np" ,NUMBER_2),
-    new Menu("pmt",NUMBER_3),
-    new Menu("ir%",NUMBER_4),
+    new Menu("pv" ,NUMBER_0,Menu.REPEAT_PARENT),
+    new Menu("fv" ,NUMBER_1,Menu.REPEAT_PARENT),
+    new Menu("np" ,NUMBER_2,Menu.REPEAT_PARENT),
+    new Menu("pmt",NUMBER_3,Menu.REPEAT_PARENT),
+    new Menu("ir%",NUMBER_4,Menu.REPEAT_PARENT),
   });
 
   private Menu intMenu = new Menu("int",new Menu[] {
@@ -522,7 +527,7 @@ public final class CalcCanvas
       new Menu("x^2",CalcEngine.SQR),
       new Menu("1/x",CalcEngine.RECIP),
       new Menu("%chg",CalcEngine.PERCENT_CHG),
-      intMenu,
+      new Menu("%",CalcEngine.PERCENT),
     }),
     new Menu("pow",new Menu[] {
       new Menu("e^x",CalcEngine.EXP),
@@ -542,6 +547,7 @@ public final class CalcCanvas
       new Menu("mod",CalcEngine.MOD),
       new Menu("div",CalcEngine.DIVF),
       new Menu("factorize",CalcEngine.FACTORIZE),
+      intMenu,
     }),
     new Menu("prob",new Menu[] {
       new Menu("P y,x",CalcEngine.PYX),
@@ -592,19 +598,21 @@ public final class CalcCanvas
     intMenu,
   });
   private Menu prog1 = new Menu("prog",new Menu[] {
-    new Menu("new",CalcEngine.PROG_NEW,Menu.PROG_REQUIRED),
-    new Menu("run",CalcEngine.PROG_RUN,Menu.PROG_REQUIRED),
-    new Menu("draw",CalcEngine.PROG_DRAW,Menu.PROG_REQUIRED),
+    new Menu("new",CalcEngine.PROG_NEW,Menu.PROG_REQUIRED|Menu.NO_REPEAT),
+    new Menu("run",CalcEngine.PROG_RUN,Menu.PROG_REQUIRED|Menu.NO_PROG),
+    new Menu("draw",CalcEngine.PROG_DRAW,Menu.PROG_REQUIRED|Menu.NO_PROG),
     new Menu("more",Menu.TITLE_SKIP,new Menu[] {
-      new Menu("integrate",CalcEngine.PROG_INTEGR,Menu.PROG_REQUIRED),
-      new Menu("diff.",CalcEngine.PROG_DIFF,Menu.PROG_REQUIRED),
-      new Menu("solve",CalcEngine.PROG_SOLVE,Menu.PROG_REQUIRED),
-      new Menu("min/max",CalcEngine.PROG_MINMAX,Menu.PROG_REQUIRED),
+      new Menu("integrate",CalcEngine.PROG_INTEGR,
+               Menu.PROG_REQUIRED|Menu.NO_PROG),
+      new Menu("diff.",CalcEngine.PROG_DIFF,Menu.PROG_REQUIRED|Menu.NO_PROG),
+      new Menu("solve",CalcEngine.PROG_SOLVE,Menu.PROG_REQUIRED|Menu.NO_PROG),
+      new Menu("min/max",CalcEngine.PROG_MINMAX,
+               Menu.PROG_REQUIRED|Menu.NO_PROG),
     }),
-    new Menu("clear",CalcEngine.PROG_CLEAR,Menu.PROG_REQUIRED),
+    new Menu("clear",CalcEngine.PROG_CLEAR,Menu.PROG_REQUIRED|Menu.NO_REPEAT),
   });
   private Menu prog2 = new Menu("prog",new Menu[] {
-    new Menu("finish",CalcEngine.PROG_FINISH),
+    new Menu("finish",CalcEngine.PROG_FINISH,Menu.NO_REPEAT),
     new Menu("cond",new Menu[] {
       new Menu("x=y?",CalcEngine.IF_EQUAL),
       new Menu("x!=y?",CalcEngine.IF_NEQUAL),
@@ -619,7 +627,7 @@ public final class CalcCanvas
       new Menu("select",CalcEngine.SELECT),
       new Menu("sgn",CalcEngine.SGN),
     }),
-    new Menu("purge",CalcEngine.PROG_PURGE),
+    new Menu("purge",CalcEngine.PROG_PURGE,Menu.NO_REPEAT),
     new Menu("mem",new Menu[] {
       new Menu("RCL[x]",CalcEngine.RCL_X),
       new Menu("STO[x]",CalcEngine.STO_X),
@@ -628,16 +636,16 @@ public final class CalcCanvas
     }),
   });
   private Menu progMenu = new Menu(null,new Menu[] {
-    new Menu("",NUMBER_0),
-    new Menu("",NUMBER_1),
-    new Menu("",NUMBER_2),
-    new Menu("",NUMBER_3),
-    new Menu("more",Menu.TITLE_SKIP,new Menu[] {
-      new Menu("",NUMBER_4),
-      new Menu("",NUMBER_5),
-      new Menu("",NUMBER_6),
-      new Menu("",NUMBER_7),
-      new Menu("",NUMBER_8),
+    new Menu("",NUMBER_0,Menu.REPEAT_PARENT),
+    new Menu("",NUMBER_1,Menu.REPEAT_PARENT),
+    new Menu("",NUMBER_2,Menu.REPEAT_PARENT),
+    new Menu("",NUMBER_3,Menu.REPEAT_PARENT),
+    new Menu("more",Menu.TITLE_SKIP|Menu.REPEAT_PARENT,new Menu[] {
+      new Menu("",NUMBER_4,Menu.REPEAT_PARENT),
+      new Menu("",NUMBER_5,Menu.REPEAT_PARENT),
+      new Menu("",NUMBER_6,Menu.REPEAT_PARENT),
+      new Menu("",NUMBER_7,Menu.REPEAT_PARENT),
+      new Menu("",NUMBER_8,Menu.REPEAT_PARENT),
       // Remember to set CalcEngine.NUM_PROGS accordingly
     }),
   });
@@ -672,6 +680,7 @@ public final class CalcCanvas
   private Menu [] menuStack;
   private int menuStackPtr;
   private int menuCommand;
+  private Menu menuItem;
 
   public CalcCanvas(Calc m, DataInputStream in) {
     midlet = m;
@@ -1236,6 +1245,10 @@ public final class CalcCanvas
       // Switch between prog1 and prog2 if recording a program
       if (calc.progRecording) {
         menu.subMenu[4].subMenu[1] = prog2;
+        // Cannot use NO_PROG commands during program recording
+        if (basicMenu.subMenu[4]!=null &&
+            (basicMenu.subMenu[4].flags & Menu.NO_PROG)!=0)
+          basicMenu.subMenu[4] = null;
       } else {
         menu.subMenu[4].subMenu[1] = prog1;        
       }
@@ -1275,7 +1288,9 @@ public final class CalcCanvas
           for (int i=0; i<4; i++)
             progMenu.subMenu[i].label = calc.progLabels[i];
         menuCommand = subItem.command; // Save current command
+        menuItem = subItem;
         sub.label = subItem.label; // Set correct label
+        sub.flags = subItem.flags; // Set correct flags
         menuStackPtr++;
         menuStack[menuStackPtr] = sub;
         numRepaintLines = 0; // Force repaint of menu
@@ -1313,6 +1328,18 @@ public final class CalcCanvas
           // Normal calculator command
           calc.command(command,0);
         }
+
+        if ((subItem.flags & Menu.NO_REPEAT)==0) {
+          // Repeat this command or parent in basicMenu[4]
+          Menu item = subItem;
+          while ((item.flags & Menu.REPEAT_PARENT)!=0)
+            item = menuStack[menuStackPtr--];
+          if ((item.flags & Menu.SUBMENU_REQUIRED)!=0)
+            item = menuItem; // Switch from submenu to actual menu item
+          if ((item.flags & Menu.NO_REPEAT)==0)
+            basicMenu.subMenu[4] = item;
+        }
+
         menuStackPtr = -1;     // Remove menu
         numRepaintLines = 100; // Force repaint of all
       }
@@ -1337,6 +1364,16 @@ public final class CalcCanvas
               (menuStackPtr>=1 && menuStack[menuStackPtr-1] == numberMenu))
           {
             calc.command(menuCommand,key-'0');
+
+            // Repeat menu or parent in basicMenu[4]
+            Menu item = menuStack[menuStackPtr--];
+            while ((item.flags & Menu.REPEAT_PARENT)!=0)
+              item = menuStack[menuStackPtr--];
+            if ((item.flags & Menu.SUBMENU_REQUIRED)!=0)
+              item = menuItem; // Switch from submenu to actual menu item
+            if ((item.flags & Menu.NO_REPEAT)==0)
+              basicMenu.subMenu[4] = item;
+
             menuStackPtr = -1;
             numRepaintLines = 100; // Force repaint of all
             break;

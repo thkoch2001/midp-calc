@@ -1,4 +1,4 @@
-VERSION = 2.04
+VERSION = 2.05
 TARGETS = Calc.jar Calc.jad CalcApplet.jar
 
 WTK_HOME = ../../WTK104
