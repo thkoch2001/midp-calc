@@ -47,6 +47,7 @@ public class SetupCanvas
   private Font menuFont;
   private Font boldMenuFont;
   private GFont fontLeft,fontRight;
+  private boolean unknownKeyPressed = false;
 
   public static final int [] commandArrangement = {
     // Pairs of command types that lead to different command arrangements
@@ -166,10 +167,10 @@ public class SetupCanvas
   }
 
   private void setupKeys() {
-    if (yes!=null) removeCommand(yes);
-    if (no !=null) removeCommand(no);
-    if (left!=null) removeCommand(left);
-    if (right!=null) removeCommand(right);
+    if (yes   != null) removeCommand(yes);
+    if (no    != null) removeCommand(no);
+    if (left  != null) removeCommand(left);
+    if (right != null) removeCommand(right);
     removeCommand(ok);
     if (alertText != null) {
       addCommand(ok);
@@ -178,8 +179,13 @@ public class SetupCanvas
       yes = new Command("yes", commandArrangement[2*arrangement+1], 1);
       addCommand(no);
       addCommand(yes);
+    } else if (query == CLEAR_QUERY) {
+      no  = new Command(" ", commandArrangement[2*arrangement], 1);
+      yes = new Command(" ", commandArrangement[2*arrangement+1], 1);
+      addCommand(no);
+      addCommand(yes);
     } else if (query == BGR_QUERY) {
-      left = new Command("left",  commandArrangement[2*arrangement], 1);
+      left  = new Command("left",  commandArrangement[2*arrangement], 1);
       right = new Command("right", commandArrangement[2*arrangement+1], 1);
       addCommand(left);
       addCommand(right);
@@ -231,30 +237,31 @@ public class SetupCanvas
     if (query == QUERY_FINISHED) {
       finish();
       return;
-    }
-    if (query == COMMAND_QUERY) {
-      if (alertText == null)
-        nextCommandArrangement();
+    } else if (query == COMMAND_QUERY) {
+      // Wait and see, this could be a double keyPressed/commandAction event
+      unknownKeyPressed = true;
       return;
     } else if (query == BGR_QUERY) {
       return;
     }
+    // So, it's a CLEAR_QUERY
     switch (key) {
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
-      case '*':
+      case '*': case '.': case ',': case 65452:
+      case '-': case 'e': case 'E':
+      case '\n': case '\r': case '+':
         clearKeyInUse();
+        break;
+      case '\b': // BackSpace
+        clearKeyPressed(true);
         break;
       case '#':
         clearKeyPressed(false);
         break;
       default:
         switch (getGameAction(key)) {
-          case UP:
-          case DOWN:
-          case LEFT:
-          case RIGHT:
-          case FIRE:
+          case UP: case DOWN: case LEFT: case RIGHT: case FIRE:
             clearKeyInUse();
             break;
           case GAME_A: case GAME_B: case GAME_C: case GAME_D:
@@ -270,8 +277,17 @@ public class SetupCanvas
               case -4: // RIGHT
               case -5: // PUSH
                 clearKeyInUse();
-              default:
+                break;
+              case -8:  // SonyEricsson "c"
+              case -23: // Motorola "menu"
                 clearKeyPressed(true);
+                break;
+              default:
+                if (midlet.doubleKeyEvents)
+                  // We don't yet know if we can treat this as "clear"
+                  unknownKeyPressed = true;
+                else
+                  clearKeyPressed(true);
                 break;
             }
             break;
@@ -280,8 +296,30 @@ public class SetupCanvas
     }
   }
 
+  protected void keyReleased(int key) {
+    if (unknownKeyPressed) {
+      unknownKeyPressed = false;
+      if (query == COMMAND_QUERY) {
+        if (alertText == null)
+          nextCommandArrangement();
+      } else if (query == CLEAR_QUERY) {
+        // Unknown key has been pressed and released, treat it as "clear"
+        clearKeyPressed(true);
+      }
+    }
+  }
+
   public void commandAction(Command c, Displayable d)
   {
+    if (unknownKeyPressed) {
+      // If a key has beed pressed but not released when we get the
+      // commandAction, the phone has the "double key events" bug where a
+      // commandAction is enclosed in an unknown keyPressed/keyReleased
+      // event pair
+      unknownKeyPressed = false;
+      midlet.doubleKeyEvents = true;
+    }
+
     if (query == QUERY_FINISHED) {
       finish();
       return;

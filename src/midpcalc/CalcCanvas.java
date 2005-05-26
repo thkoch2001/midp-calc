@@ -203,16 +203,29 @@ public final class CalcCanvas
   private static final int NUMBER_13 = -20+13;
   private static final int NUMBER_14 = -20+14;
   private static final int NUMBER_15 = -20+15;
-  
-  private Menu menu = new Menu("menu",new Menu[] {
-    new Menu("basic",new Menu[] {
-      new Menu("-",CalcEngine.SUB),
-      new Menu("*",CalcEngine.MUL),
-      new Menu("/",CalcEngine.DIV),
-      new Menu("+/-",CalcEngine.NEG),
-      new Menu("%",CalcEngine.PERCENT),
-      //new Menu("free",CalcEngine.FREE_MEM),
+
+  private Menu basicMenu = new Menu("basic",new Menu[] {
+    new Menu("-",CalcEngine.SUB),
+    new Menu("*",CalcEngine.MUL),
+    new Menu("/",CalcEngine.DIV),
+    new Menu("+/-",CalcEngine.NEG),
+    new Menu("%",CalcEngine.PERCENT),
+  });
+
+  private Menu systemMenu = new Menu("sys",new Menu[] {
+    new Menu("font",new Menu[] {
+      new Menu("medium",FONT_MEDIUM),
+      new Menu("small",FONT_SMALL),
+      new Menu("large",FONT_LARGE),
+      new Menu("xlarge",FONT_XLARGE),
+      new Menu("sys",FONT_SYSTEM),
     }),
+    new Menu("exit",EXIT),
+    new Menu("reset",RESET),
+  });
+
+  private Menu menu = new Menu("menu",new Menu[] {
+    basicMenu,
     null, // math or binop
     null, // trig or binop2
     new Menu("special",new Menu [] {
@@ -441,17 +454,7 @@ public final class CalcCanvas
         new Menu("mem",CalcEngine.MONITOR_MEM,Menu.NUMBER_REQUIRED),
         new Menu("off",CalcEngine.MONITOR_NONE),
       }),
-      new Menu("sys",new Menu[] {
-        new Menu("font",new Menu[] {
-          new Menu("medium",FONT_MEDIUM),
-          new Menu("small",FONT_SMALL),
-          new Menu("large",FONT_LARGE),
-          new Menu("xlarge",FONT_XLARGE),
-          new Menu("sys",FONT_SYSTEM),
-        }),
-        new Menu("exit",EXIT),
-        new Menu("reset",RESET),
-      }),
+      systemMenu,
     }),
   });
   
@@ -659,6 +662,7 @@ public final class CalcCanvas
 
   private int numRepaintLines;
   private boolean repeating = false;
+  private boolean unknownKeyPressed = false;
   private boolean internalRepaint = false;
   private int offX, offY, nDigits, nLines, numberWidth, numberHeight;
   private int offY2, offYMonitor, nLinesMonitor;
@@ -682,8 +686,7 @@ public final class CalcCanvas
     if (!midlet.display.isColor()) {
       numberFontStyle = GFont.SYSTEM;
       // Now, remove the font menu.
-      // !!! NB !!! Beware if you change the menu layout
-      menu.subMenu[4].subMenu[4].subMenu[0] = null;
+      systemMenu.subMenu[0] = null;
     }
 
     enter = new Command(
@@ -1067,7 +1070,7 @@ public final class CalcCanvas
       drawMenuItem(g,subMenu[2],x+w-3,ym,g.TOP|g.RIGHT);
     if (subMenu.length>=4)
       drawMenuItem(g,subMenu[3],x+w/2,y+h-3,g.BOTTOM|g.HCENTER);
-    if (subMenu.length>=5)
+    if (subMenu.length>=5 && subMenu[4]!=null)
       drawMenuItem(g,subMenu[4],x+w/2,ym,
                    g.TOP|g.HCENTER);
     else {
@@ -1362,11 +1365,13 @@ public final class CalcCanvas
       case '\b':
         clearKeyPressed();
         break;
-      case '#': case '-': case 'e': case 'E':
+      case '#':
         if (!midlet.hasClearKey) {
           clearKeyPressed();
           break;
         }
+        // deliberate fall-through
+      case '-': case 'e': case 'E':
         if (menuStackPtr >= 0)
           return;
         calc.command(CalcEngine.SIGN_E,0);
@@ -1411,9 +1416,17 @@ public final class CalcCanvas
               case -3: menuIndex = 1; break; // LEFT
               case -4: menuIndex = 2; break; // RIGHT
               case -5: menuIndex = 4; break; // PUSH
-              case -8:
-              default: // Clear key could be mapped as something else...
+              case -8:  // SonyEricsson "c"
+              case -23: // Motorola "menu"
                 clearKeyPressed();
+                break;
+              default:
+                // Clear key could be mapped as something else...
+                if (midlet.doubleKeyEvents)
+                  // We don't yet know if we can treat this as "clear"
+                  unknownKeyPressed = true;
+                else
+                  clearKeyPressed();
                 break;
             }
             break;
@@ -1427,6 +1440,10 @@ public final class CalcCanvas
   }
 
   protected void keyRepeated(int key) {
+    if (unknownKeyPressed) {
+      // Can't repeat "delayed clear key"
+      return;
+    }
     switch (key) {
       case '1': case '2': case '3': case '4': case '5': case '6':
         if (repeating || menuStackPtr >= 0)
@@ -1457,6 +1474,15 @@ public final class CalcCanvas
     checkRepaint();
   }
 
+  protected void keyReleased(int key) {
+    if (unknownKeyPressed) {
+      // It's a "delayed clear key"
+      unknownKeyPressed = false;
+      clearKeyPressed();
+      checkRepaint();
+    }
+  }
+
   protected void pointerPressed(int x, int y) {
     int menuIndex, q=0;
 
@@ -1476,6 +1502,9 @@ public final class CalcCanvas
 
   public void commandAction(Command c, Displayable d)
   {
+    // If an unknown key has beed pressed but not released, ignore it
+    unknownKeyPressed = false;
+
     if (c == enter) {
       if (menuStackPtr >= 0)
         return;

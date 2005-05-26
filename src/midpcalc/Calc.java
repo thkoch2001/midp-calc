@@ -25,6 +25,7 @@ public final class Calc
   public boolean hasClearKey = true;
   public byte commandArrangement = 0;
   public boolean bgrDisplay = false;
+  public boolean doubleKeyEvents = false;
   
   public Calc() {
     display = Display.getDisplay(this);
@@ -140,10 +141,11 @@ public final class Calc
   }
 
   public void saveSetup(DataOutputStream out) throws IOException {
-    out.writeShort(3);
+    out.writeShort(4);
     out.writeBoolean(hasClearKey);
     out.writeByte(commandArrangement);
     out.writeBoolean(bgrDisplay);
+    out.writeBoolean(doubleKeyEvents);
   }
 
   public void restoreSetup(DataInputStream in) throws IOException {
@@ -153,6 +155,10 @@ public final class Calc
       commandArrangement = in.readByte();
       bgrDisplay = in.readBoolean();
       length -= 3;
+    }
+    if (length >= 1) {
+      doubleKeyEvents = in.readBoolean();
+      length --;
     }
     in.skip(length);
   }
