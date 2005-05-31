@@ -21,6 +21,7 @@
   <li>Programmable
   <li>Graphing
   <li>Complex arithmetic
+  <li>Matrix/vector arithmetic
   <li>RPN
 </ul>
 </font></b>
@@ -144,7 +145,8 @@ usability with Calc:
   input keys
   <li><b>Sagem MyX5-2, MyX7</b>: Tested OK
   <li><b>Audiovox CDM-8900</b>: Tested OK
-  <li><b>Sharp GX15</b>: Tested OK
+  <li><b>Sharp GX15</b>: Tested almost OK. The state of the calculator
+  is not remembered between runs
   <li><b>Motorola V3, V547, V551, E398</b>: Tested OK
   <li><b>Motorola V180, C650</b>: Probably works in the last version. Can
   anyone verify?
@@ -154,6 +156,7 @@ usability with Calc:
   <li><b>Siemens S55</b>: Works after a fashion with newest firmware.
   Older firmware doesn't work, 'Cannot verify class'
   <li><b>Siemens SL45</b>: Doesn't work, 'Out of heap memory'
+  <li><b>Samsung E720</b>: Tested OK.
   <li><b>Samsung Z105 3G</b>: Tested OK. Enter and + keys are
   reversed, but this should work just as well
   <li><b>Samsung C100</b>: Doesn't work, phone hangs during installation
@@ -216,7 +219,8 @@ compatibility issues.<br>
 <dt><a href="Calc.html#Notes">Notes</a></dt>
 <dd><dl>
   <dt><a href="Calc.html#AbnormalNote">Abnormal results</a></dt>
-  <dt><a href="Calc.html#ComplexNote">Complex results</a></dt>
+  <dt><a href="Calc.html#ComplexNote">Complex arithmetic</a></dt>
+  <dt><a href="Calc.html#MatrixNote">Matrix arithmetic</a></dt>
   <dt><a href="Calc.html#FinancialNote">Financial calculation</a></dt>
   <dt><a href="Calc.html#DateNote">Date calculation</a></dt>
   <dt><a href="Calc.html#ConstNote">Constants</a></dt>
@@ -539,6 +543,19 @@ href="Calc.html#Notes">notes</a> section.
     <li><b>arg</b>: Calculate angle (complex argument) of complex
   number in the range -&pi; to &pi; (or -180 to 180 in DEG mode)
     <li><b>conj</b>: Calculate complex conjugate
+  </ul>
+  <li>Matrix (available instead of coordinate menu if x or y
+  is matrix) <a href="Calc.html#MatrixNote"><b>(*)</b></a>
+  <ul>
+    <li><b>transp</b>: Transpose matrix in x
+    <li><b>det</b>: Calculate determinant of matrix in x
+    <li><b>concat</b>: Concatenate matrix in y and matrix in x. Plain
+  numbers can be concatenated with row vectors
+    <li><b>stack</b>: Stack matrix in y on top of matrix in x. Plain
+  numbers can be stacked on column vectors.
+    <li><b>split</b>: Split matrix in y at row or column specified by
+  x. If x is positive, matrix is split horizontally after x rows. If x
+  is negative, matrix is split vertically after -x columns.
   </ul>
   <li>Miscellaneous
   <ul>
@@ -1063,7 +1080,7 @@ Any operation involving <tt>nan</tt> produces <tt>nan</tt>, except
 0:<br>
 <tt>nan^0 = 1</tt><br>
 
-<h3><a id="ComplexNote" name="ComplexNote">Complex results</a></h3>
+<h3><a id="ComplexNote" name="ComplexNote">Complex arithmetic</a></h3>
 
 The calculator creates complex numbers automatically when you try to
 use the "&#8730;<span style="text-decoration: overline;">x</span>"
@@ -1109,6 +1126,34 @@ numbers have large exponents. Instead "<b>*****</b>" will be
 displayed. Don't worry, the number is still there, but you have to
 switch to a smaller font or perform a "cplx&rarr;r" operation on the complex
 number to view it.<br>
+
+<h3><a id="MatrixNote" name="MatrixNote">Matrix arithmetic</a></h3>
+
+The calculator creates matrices using the "matrix/new" operation or
+when you stack or concat two normal numbers.
+
+<br>
+Most operations that logically extends to matrix arguments have been
+implemented for matrices, i.e. all basic operations, "1/x" and "x²".
+For convenience, integer operations (rounding and truncation) work on
+each matrix element separately.<br>
+
+<br>
+All stack and memory operations also handle matrices. Financial and
+statistical modules cannot store matrices, so with these modules a
+matrix is treated as <tt>nan</tt>. Any operations that are undefined
+for matrices or that have not been implemented yet, returns
+<tt>nan</tt> when used with matrix input(s).<br>
+
+<br>
+If either x or y contains a matrix, any operation in the "coord"
+sub-menu is undefined (the sub-menu dealing with rectangular/polar
+coordinates). In this case the "coord" sub-menu is exchanged with a
+sub-menu called "matrix" for dealing with matrices.<br>
+
+<br>
+Matrices are displayed on one line as e.g. M:[3x4]. This indicates a
+matrix of 3 rows and 4 columns.<br>
 
 <h3><a id="FinancialNote" name="FinancialNote">Financial calculation</a></h3>
 

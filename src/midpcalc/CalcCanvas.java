@@ -12,15 +12,16 @@ public final class CalcCanvas
 // Modes:
 //               DEG/RAD   FIX/SCI/ENG   BIN/OCT/HEX   BGN   PRG/RUN
 // Menu:
-//   basic    -> -  *  /  +/-  %
-//   math     -> simple  -> 1/x    x^2    sqrt    %chg
-//                       -> int -> round ceil floor trunc frac
+//   basic    -> -  *  /  +/-  (repeat)
+//   math     -> simple  -> 1/x    x^2    sqrt    %       %chg
 //            -> pow     -> y^x    y^1/x  ln      e^x
 //                       -> pow10/2 -> log10 10^x log2 2^x
 //            -> prob    -> Py,x   Cy,x   x!      erfc
 //            -> misc    -> mod    div    random  factorize
+//                       -> int -> round ceil floor trunc frac
 //            -> coord   -> r->p   p->r   atan2   hypot   ->cplx
 //            -> cplx*   -> split  abs    arg     conj
+//            -> matrix* -> transp concat stack   split det
 //   trig     -> normal  -> sin    cos    tan
 //            -> arc     -> asin   acos   atan
 //            -> hyp     -> sinh   cosh   tanh
@@ -72,21 +73,29 @@ public final class CalcCanvas
 //                       -> exit
 //                       -> reset
 //
-// *  replaces coord if x or y are complex
+// *  replaces coord if x or y are complex/matrix
 // ** replaces math/trig in hex/oct/bin mode
 //
 // Extentions:
 //   special  -> conv    -> time   -> dow
+//                       -> D->D.MS
+//                       -> D.MS->D
 
 // Complex operations:
 //   + - * / +/- 1/x x² sqrt
-//   <pow> <pow10/2> <trig/normal> <trig/hyp>
+//   x==y? x!=y? select
+//   <pow> <pow10/2> <trig>
 //   <cplx> <stack> <mem> <int>
 // Not yet complex:
-//   <trig/arc> <trig/archyp>
-// Not complex:
-//   % %chg and or xor bic not y<<x y>>x RAD/DEG ->RAD ->DEG
-//   <prob> <coord> <misc> <stat> <finance> <time>
+//   prog/integrate prog/diff.
+//   <matrix>
+//
+// Matrix operations:
+//   + - * / +/- 1/x x²
+//   x==y? x!=y?
+//   <matrix> <stack> <mem>
+// Not yet matrix:
+//   <int> <cplx> STO+
 
 // Physical constants:
 // Universal
@@ -521,6 +530,14 @@ public final class CalcCanvas
     new Menu("conj",CalcEngine.CPLX_CONJ),
   });
 
+  private Menu matrixMenu = new Menu("matrix",new Menu[] {
+    new Menu("transp",CalcEngine.TRANSP),
+    new Menu("split",CalcEngine.MATRIX_SPLIT),
+    new Menu("stack",CalcEngine.MATRIX_STACK),
+    new Menu("concat",CalcEngine.MATRIX_CONCAT),
+    new Menu("det",CalcEngine.DETERM),
+  });
+  
   private Menu math = new Menu("math",new Menu[] {
     new Menu("simple",Menu.TITLE_SKIP,new Menu[] {
       new Menu("¿x",CalcEngine.SQRT),
@@ -1236,7 +1253,8 @@ public final class CalcCanvas
              !calc.imagStack[1].isZero())) {
           math.subMenu[2] = cplxMenu;
         } else {
-          math.subMenu[2] = coordMenu;
+          //math.subMenu[2] = coordMenu;
+          math.subMenu[2] = matrixMenu;
         }
       } else {
         menu.subMenu[1] = bitOp;

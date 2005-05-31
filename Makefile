@@ -10,6 +10,7 @@ JAVAFILES =  Calc.java \
              CalcCanvas.java \
              CalcEngine.java \
              GraphCanvas.java \
+             Matrix.java \
              GFont.java \
              GFontBase.java \
              DataStore.java \
