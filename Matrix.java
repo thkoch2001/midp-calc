@@ -4,7 +4,7 @@ public final class Matrix
 {
   public Real[][] D;
   public int rows,cols;
-  public boolean inUse;
+  public boolean inUse; // Used for garbage collection
 
   public static boolean isInvalid(Matrix A) {
     return A == null || A.D == null || A.rows <= 0 || A.cols <= 0;
@@ -195,7 +195,7 @@ public final class Matrix
       // by pseudoinversion:    T    -1   T
       //                      (A * A)  * A
       if (det != null)
-        det.makeZero();
+        det.makeNan();
       Matrix T = transp(A);
       return mul(invert(mul(T,A)),T);
     }
@@ -205,7 +205,7 @@ public final class Matrix
       // by pseudoinversion:   T        T -1
       //                      A * (A * A )
       if (det != null)
-        det.makeZero();
+        det.makeNan();
       Matrix T = transp(A);
       return mul(T,invert(mul(A,T)));
     }
