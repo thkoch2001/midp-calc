@@ -15,9 +15,19 @@ public final class GraphCanvas
   public GraphCanvas(Calc m, CalcCanvas c) {
     midlet = m;
     cc = c;
-    addCommand(new Command(
-      "Break", SetupCanvas.commandArrangement[m.commandArrangement*2], 1));
+    if ((m.commandArrangement & 0x80) != 0) {
+      addCommand(new Command("Break",
+        SetupCanvas.commandArrangement[(m.commandArrangement&0x7f)*2], 1));
+    } else {
+      addCommand(new Command("Break",
+        SetupCanvas.commandArrangement[(m.commandArrangement&0x7f)*2+1], 1));
+    }
     setCommandListener(this);
+    try {
+      //setFullScreenMode(c.fullScreen);
+    } catch (Throwable e) {
+      // In case of MIDP 1.0
+    }
   }
 
   public void init(int gx, int gy, int gw, int gh) {
