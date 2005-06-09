@@ -27,13 +27,13 @@ public abstract class Canvas extends Displayable
   public int getGameAction(int keyCode) {
     switch (keyCode) {
       case -1:
-      case '8': return UP;
+      case '2': return UP;
       case -3:
       case '4': return LEFT;
       case -4:
       case '6': return RIGHT;
       case -2:
-      case '2': return DOWN;
+      case '8': return DOWN;
       case -5:
       case '5': return FIRE;
     }
@@ -51,5 +51,8 @@ public abstract class Canvas extends Displayable
     graphics.g.setClip(0,0,getWidth(),getHeight());
     paint(graphics);
     g.drawImage(image,0,0,ral.CalcApplet.getCurrentApplet());
+  }
+
+  public void setFullScreenMode(boolean mode) {
   }
 }
