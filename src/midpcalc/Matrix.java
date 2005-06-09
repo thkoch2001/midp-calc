@@ -4,7 +4,7 @@ public final class Matrix
 {
   public Real[][] D;
   public int rows,cols;
-  public boolean inUse; // Used for garbage collection
+  public int refCount; // Used for garbage collection
 
   public static boolean isInvalid(Matrix A) {
     return A == null || A.D == null || A.rows <= 0 || A.cols <= 0;
@@ -13,17 +13,17 @@ public final class Matrix
   private void makeInvalid() {
     D = null;
     rows = cols = 0;
-    inUse = false;
+    refCount = 0;
   }
   
   private void alloc(int _rows, int _cols) {
     makeInvalid();
     if (_rows <= 0 || _cols <= 0)
       return;
-    D = new Real[_rows][_cols];
-    for (int i=0; i<_rows; i++)
-      for (int j=0; j<_cols; j++)
-        D[i][j] = new Real();
+    D = new Real[_cols][_rows];
+    for (int c=0; c<_cols; c++)
+      for (int r=0; r<_rows; r++)
+        D[c][r] = new Real();
     rows = _rows;
     cols = _cols;
   }
@@ -46,18 +46,9 @@ public final class Matrix
       return;
     }
     alloc(A.rows,A.cols);
-    for (int i=0; i<rows; i++)
-      for (int j=0; j<cols; j++)
-        D[i][j].assign(A.D[i][j]);
-  }
-
-  public Matrix(int rows, int cols, final Matrix A) {
-    alloc(rows,cols);
-    if (isInvalid(A))
-      return;
-    for (int i=0; i<rows && i<A.rows; i++)
-      for (int j=0; j<cols && j<A.cols; j++)
-        D[i][j].assign(A.D[i][j]);
+    for (int c=0; c<cols; c++)
+      for (int r=0; r<rows; r++)
+        D[c][r].assign(A.D[c][r]);
   }
 
   Matrix subMatrix(int row, int col, int nRows, int nCols) {
@@ -66,9 +57,9 @@ public final class Matrix
       return null;
 
     Matrix M = new Matrix(nRows,nCols);
-    for (int i=0; i<nRows; i++)
-      for (int j=0; j<nCols; j++)
-        M.D[i][j].assign(D[i+row][j+col]);
+    for (int c=0; c<nCols; c++)
+      for (int r=0; r<nRows; r++)
+        M.D[c][r].assign(D[c+col][r+row]);
     return M;
   }
 
@@ -77,9 +68,9 @@ public final class Matrix
       return null;
 
     Matrix M = new Matrix(A);
-    for (int i=0; i<M.rows; i++)
-      for (int j=0; j<M.cols; j++)
-        M.D[i][j].add(B.D[i][j]);
+    for (int c=0; c<M.cols; c++)
+      for (int r=0; r<M.rows; r++)
+        M.D[c][r].add(B.D[c][r]);
     return M;
   }
 
@@ -88,9 +79,9 @@ public final class Matrix
       return null;
 
     Matrix M = new Matrix(A);
-    for (int i=0; i<M.rows; i++)
-      for (int j=0; j<M.cols; j++)
-        M.D[i][j].sub(B.D[i][j]);
+    for (int c=0; c<M.cols; c++)
+      for (int r=0; r<M.rows; r++)
+        M.D[c][r].sub(B.D[c][r]);
     return M;
   }
 
@@ -100,12 +91,12 @@ public final class Matrix
 
     Matrix M = new Matrix(A.rows,B.cols);
     Real tmp = new Real();
-    for (int i=0; i<A.rows; i++)
-      for (int j=0; j<B.cols; j++)
+    for (int c=0; c<B.cols; c++)
+      for (int r=0; r<A.rows; r++)
         for (int k=0; k<A.cols; k++) {
-          tmp.assign(A.D[i][k]);
-          tmp.mul(B.D[k][j]);
-          M.D[i][j].add(tmp);
+          tmp.assign(A.D[k][r]);
+          tmp.mul(B.D[c][k]);
+          M.D[c][r].add(tmp);
         }
     return M;
   }
@@ -115,9 +106,9 @@ public final class Matrix
       return null;
 
     Matrix M = new Matrix(A);
-    for (int i=0; i<M.rows; i++)
-      for (int j=0; j<M.cols; j++)
-        M.D[i][j].mul(b);
+    for (int c=0; c<M.cols; c++)
+      for (int r=0; r<M.rows; r++)
+        M.D[c][r].mul(b);
     return M;
   }
 
@@ -146,9 +137,9 @@ public final class Matrix
       return null;
 
     Matrix M = new Matrix(A);
-    for (int i=0; i<M.rows; i++)
-      for (int j=0; j<M.cols; j++)
-        M.D[i][j].neg();
+    for (int c=0; c<M.cols; c++)
+      for (int r=0; r<M.rows; r++)
+        M.D[c][r].neg();
     return M;
   }
 
@@ -156,9 +147,9 @@ public final class Matrix
     if (isInvalid(A) || isInvalid(B) || A.rows != B.rows || A.cols != B.cols)
       return false;
 
-    for (int i=0; i<A.rows; i++)
-      for (int j=0; j<A.cols; j++)
-        if (A.D[i][j].equalTo(B.D[i][j]))
+    for (int c=0; c<A.cols; c++)
+      for (int r=0; r<A.rows; r++)
+        if (A.D[c][r].equalTo(B.D[c][r]))
           return false;
     return true;
   }
@@ -175,9 +166,9 @@ public final class Matrix
       return null;
 
     Matrix M = new Matrix(A.cols,A.rows);
-    for (int i=0; i<M.rows; i++)
-      for (int j=0; j<M.cols; j++)
-        M.D[i][j].assign(A.D[j][i]);
+    for (int c=0; c<M.cols; c++)
+      for (int r=0; r<M.rows; r++)
+        M.D[c][r].assign(A.D[r][c]);
     return M;
   }
 
@@ -194,8 +185,10 @@ public final class Matrix
       // System is overspecified, calculate the least squares solution
       // by pseudoinversion:    T    -1   T
       //                      (A * A)  * A
-      if (det != null)
+      if (det != null) {
         det.makeNan();
+        return null; // Assuming, if det!=null, you don't want the inverse
+      }
       Matrix T = transp(A);
       return mul(invert(mul(T,A)),T);
     }
@@ -204,8 +197,10 @@ public final class Matrix
       // System is underspecified, calculate the least squares solution
       // by pseudoinversion:   T        T -1
       //                      A * (A * A )
-      if (det != null)
+      if (det != null) {
         det.makeNan();
+        return null; // Assuming, if det!=null, you don't want the inverse
+      }
       Matrix T = transp(A);
       return mul(T,invert(mul(A,T)));
     }
@@ -220,8 +215,8 @@ public final class Matrix
 
     for (i=0; i<M.rows; i++)
       M.D[i][i].assign(Real.ONE);
-    for (i=0; i<A.rows; i++) {
-      for (k=i,j=i+1; j<A.rows; j++)
+    for (i=0; i<M.rows; i++) {
+      for (k=i,j=i+1; j<M.rows; j++)
         if (T.D[k][i].absLessThan(T.D[j][i]))
           k = j;
       if (k!=i) {
@@ -238,11 +233,11 @@ public final class Matrix
           det.makeZero(); // Just in case
         return null;
       }
-      for (j=0; j<A.rows; j++) {
+      for (j=0; j<M.rows; j++) {
         M.D[i][j].mul(T.D[i][i]);
         if (j > i) 
           T.D[i][j].mul(T.D[i][i]);
-        for (k=0; k<A.rows; k++) 
+        for (k=0; k<M.rows; k++) 
           if (k != i) {
             tmp.assign(T.D[k][i]);
             tmp.mul(M.D[i][j]);
@@ -263,13 +258,13 @@ public final class Matrix
       return null;
 
     Matrix M = new Matrix(A.rows,A.cols+B.cols);
-    int i,j;
-    for (i=0; i<M.rows; i++) {
-      for (j=0; j<A.cols; j++)
-        M.D[i][j].assign(A.D[i][j]);
-      for (j=0; j<B.cols; j++)
-        M.D[i][j+A.cols].assign(B.D[i][j]);
-    }
+    int r,c;
+    for (c=0; c<A.cols; c++)
+      for (r=0; r<M.rows; r++)
+        M.D[c][r].assign(A.D[c][r]);
+    for (c=0; c<B.cols; c++)
+      for (r=0; r<M.rows; r++)
+        M.D[c+A.cols][r].assign(B.D[c][r]);
     return M;
   }
 
@@ -278,9 +273,9 @@ public final class Matrix
       return null;
 
     Matrix M = new Matrix(1,A.cols+1);
-    for (int j=0; j<A.cols; j++)
-      M.D[0][j].assign(A.D[0][j]);
-    M.D[0][A.cols].assign(b);
+    for (int c=0; c<A.cols; c++)
+      M.D[c][0].assign(A.D[c][0]);
+    M.D[A.cols][0].assign(b);
     return M;
   }
 
@@ -290,8 +285,8 @@ public final class Matrix
 
     Matrix M = new Matrix(1,B.cols+1);
     M.D[0][0].assign(a);
-    for (int j=0; j<B.cols; j++)
-      M.D[0][j+1].assign(B.D[0][j]);
+    for (int c=0; c<B.cols; c++)
+      M.D[c+1][0].assign(B.D[c][0]);
     return M;
   }
 
@@ -300,13 +295,13 @@ public final class Matrix
       return null;
 
     Matrix M = new Matrix(A.rows+B.rows,A.cols);
-    int i,j;
-    for (i=0; i<A.rows; i++)
-      for (j=0; j<A.cols; j++)
-        M.D[i][j].assign(A.D[i][j]);
-    for (i=0; i<B.rows; i++)
-      for (j=0; j<B.cols; j++)
-        M.D[i+A.rows][j].assign(B.D[i][j]);
+    int r,c;
+    for (c=0; c<A.cols; c++) {
+      for (r=0; r<A.rows; r++)
+        M.D[c][r].assign(A.D[c][r]);
+      for (r=0; r<B.rows; r++)
+        M.D[c][r+A.rows].assign(B.D[c][r]);
+    }
     return M;
   }
 
@@ -315,9 +310,9 @@ public final class Matrix
       return null;
 
     Matrix M = new Matrix(A.rows+1,1);
-    for (int j=0; j<A.rows; j++)
-      M.D[j][0].assign(A.D[j][0]);
-    M.D[A.rows][0].assign(b);
+    for (int r=0; r<A.rows; r++)
+      M.D[0][r].assign(A.D[0][r]);
+    M.D[0][A.rows].assign(b);
     return M;
   }
 
@@ -327,8 +322,8 @@ public final class Matrix
 
     Matrix M = new Matrix(B.rows+1,1);
     M.D[0][0].assign(a);
-    for (int j=0; j<B.rows; j++)
-      M.D[j+1][0].assign(B.D[j][0]);
+    for (int r=0; r<B.rows; r++)
+      M.D[0][r+1].assign(B.D[0][r]);
     return M;
   }
 }
