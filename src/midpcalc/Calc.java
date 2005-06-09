@@ -15,6 +15,7 @@ public final class Calc
 
   public TextBox newProgram;
   public Form resetConfirmation;
+  public Form errorMessage;
   public Command okCommand;
   public Command cancelCommand;
   public int whichProgram;
@@ -99,6 +100,18 @@ public final class Calc
     display.setCurrent(resetConfirmation);
   }
 
+  public void outOfMemory() {
+    errorMessage = new Form("Error");
+    errorMessage.append("Out of memory. You may be able to continue using the application, but to be safe you should exit now.");
+    if (okCommand == null) {
+      okCommand = new Command("Ok", Command.OK, 1);
+      cancelCommand = new Command("Cancel", Command.CANCEL, 1);
+    }
+    errorMessage.addCommand(okCommand);
+    errorMessage.setCommandListener(this);
+    display.setCurrent(errorMessage);
+  }
+
   public void commandAction(Command c, Displayable d) {
     if (d == newProgram) {
       if (c == okCommand) {
@@ -114,6 +127,8 @@ public final class Calc
       } else {
         displayScreen();
       }
+    } else if (d == errorMessage) {
+      displayScreen();
     }
   }
     
