@@ -22,8 +22,8 @@ public class SetupCanvas
   // really small screens such as Nokia 3510i
   private String commandQueryHeading = "Setup: keys";
   private String commandQueryText =
-    "Press \"yes\" if you see \"no\" and \"yes\" mapped to the "+
-    "left and right keys below";
+    "Press \"yes\" if you see \"no\" on the left key and \"yes\" "+
+    "on the right key below";
   
   private String clearQueryHeading = "Setup: clear key";
   private String clearQueryText =
@@ -61,7 +61,7 @@ public class SetupCanvas
     Command.OK,   Command.CANCEL,
     Command.OK,   Command.STOP,
   };
-  private int arrangement = 0;
+  private int arrng = 0;
 
   public SetupCanvas(Calc m) {
     midlet = m;
@@ -92,7 +92,7 @@ public class SetupCanvas
     if (name != null) {
       if (name.startsWith("Nokia")) {
         // Just start with the most likely command arrangement for Nokia
-        arrangement = 1;
+        arrng = 1;
       } else if (name.indexOf("T610")>0 || name.indexOf("Z600")>0 ||
                  name.indexOf("Z1010")>0 || name.indexOf("K700i")>0) {
         midlet.hasClearKey = true;
@@ -175,20 +175,34 @@ public class SetupCanvas
     if (alertText != null) {
       addCommand(ok);
     } else if (query == COMMAND_QUERY) {
-      no  = new Command("no",  commandArrangement[2*arrangement], 1);
-      yes = new Command("yes", commandArrangement[2*arrangement+1], 1);
-      addCommand(no);
-      addCommand(yes);
+      if ((arrng & 0x80) == 0) {
+        no  = new Command("no",  commandArrangement[2*(arrng & 0x7f)], 1);
+        yes = new Command("yes", commandArrangement[2*(arrng & 0x7f)+1], 1);
+        addCommand(no);
+        addCommand(yes);
+      } else {
+        yes = new Command("yes", commandArrangement[2*(arrng & 0x7f)], 1);
+        no  = new Command("no",  commandArrangement[2*(arrng & 0x7f)+1], 1);
+        addCommand(yes);
+        addCommand(no);
+      }
     } else if (query == CLEAR_QUERY) {
-      no  = new Command(" ", commandArrangement[2*arrangement], 1);
-      yes = new Command(" ", commandArrangement[2*arrangement+1], 1);
+      no  = new Command(" ", commandArrangement[2*(arrng & 0x7f)], 1);
+      yes = new Command(" ", commandArrangement[2*(arrng & 0x7f)+1], 1);
       addCommand(no);
       addCommand(yes);
     } else if (query == BGR_QUERY) {
-      left  = new Command("left",  commandArrangement[2*arrangement], 1);
-      right = new Command("right", commandArrangement[2*arrangement+1], 1);
-      addCommand(left);
-      addCommand(right);
+      if ((arrng & 0x80) == 0) {
+        left = new Command("left", commandArrangement[2*(arrng & 0x7f)], 1);
+        right= new Command("right",commandArrangement[2*(arrng & 0x7f)+1], 1);
+        addCommand(left);
+        addCommand(right);
+      } else {
+        right= new Command("right",commandArrangement[2*(arrng & 0x7f)], 1);
+        left = new Command("left", commandArrangement[2*(arrng & 0x7f)+1], 1);
+        addCommand(right);
+        addCommand(left);
+      }
     }
   }
   
@@ -220,11 +234,15 @@ public class SetupCanvas
   }
 
   private void nextCommandArrangement() {
-    arrangement = (arrangement+1)%(commandArrangement.length/2);
-    if (arrangement == 0)
+    if ((arrng & 0x80) == 0)
+      arrng |= 0x80;
+    else
+      arrng = ((arrng & 0x7f)+1)%(commandArrangement.length/2);
+    if (arrng == 0)
       alertText = "All arrangements tried, trying first again";
     else
-      alertText = "Okay, trying next key arrangement ["+arrangement+"]";
+      alertText = "Okay, trying next key arrangement ["+
+        ((arrng & 0x7f)*2+((arrng & 0x80)>>7))+"]";
     alertHeading = setupHeading;
     doRepaint();
   }
@@ -336,7 +354,7 @@ public class SetupCanvas
     if (c == yes) {
       alertText = "Thank you - next setup item";
       alertHeading = "Setup";
-      midlet.commandArrangement = (byte)arrangement;
+      midlet.commandArrangement = (byte)arrng;
       query = CLEAR_QUERY;
       setupHeading = clearQueryHeading;
       setupText = clearQueryText;
