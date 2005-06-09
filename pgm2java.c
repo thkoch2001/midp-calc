@@ -79,7 +79,17 @@ int main(int argc, char *argv[])
   unsigned char bits[32*3][100]; // Works for size up to 20x20
   int char_height, char_width;
   char *prefix;
-  char *charSet = " \"$%&'*+,-./0123456789:=ABCDEFM[]_aefimnprtvxy";
+  char *charSet = " \"$%&'*+,-./0123456789=>ABCDEFMR[]_aefimnoprtvxy";
+  // Strings written with font
+  //
+  // 10000000_
+  // -1'234.5+6.78e9i
+  // /0A,BCDE,F000
+  // nan inf *****
+  // n= $x= $x"= $y= $y"= $xy= $&x= $&"x= $&y= $&"y= $x&y= $y&x= $&x&y=
+  // pv= fv= np= pmt= ir%=
+  // M0= M1=
+  // R0= R1> C1 M[3x4] no matrix
 
   if ((image=readImage(argv[1],&iW,&iH))==0 || iW%32!=0 || iH%3!=0) {
     printf("Usage: %s image.pgm [prefix]\n",argv[0]);
