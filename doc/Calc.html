@@ -72,7 +72,7 @@ intermediate results on the stack is very advantageous.<br>
 Using the <a href="http://real-java.sourceforge.net/">Real</a> Java
 floating point library, Calc has 63 bits internal precision, which
 amounts to approximately 19 decimal digits accuracy, considerably
-<i>more</i> than normal calculators and computers. The exponent is 31
+<em>more</em> than normal calculators and computers. The exponent is 31
 bits, which allows for numbers up to
 4.197·10<sup>323228496</sup>. Handy when you want to calculate the
 factorial of 40000000.<br>
@@ -133,7 +133,7 @@ usability with Calc:
   <li><b>Nokia 6100, 6610, 7210, 7600, 3200, N-Gage</b>: Tested OK
   <li><b>Nokia 3510i</b>: Tested OK. Awkward with the small screen and
   without joystick, but fully functional
-  <li><b>Nokia 6820, 5140, 6600</b>: Tested almost OK. None of the key
+  <li><b>Nokia 6260, 6820, 5140, 6600</b>: Tested almost OK. None of the key
   mappings work perfectly so it is a bit inconvenient to use
   <li><b>Nokia 3100, 3105, 3300, 3520, 3530, 3560, 3586i, 3595,
   3620, 3650, 3660, 5100, 6200, 6220, 6225, 6230, 6560,
@@ -147,8 +147,8 @@ usability with Calc:
   <li><b>Audiovox CDM-8900</b>: Tested OK
   <li><b>Sharp GX15</b>: Tested almost OK. The state of the calculator
   is not remembered between runs
-  <li><b>Motorola V3, V547, V551, E398</b>: Tested OK
-  <li><b>Motorola V180, C650</b>: Probably works in the last version. Can
+  <li><b>Motorola V3, V547, V551, C650, E398</b>: Tested OK
+  <li><b>Motorola V180</b>: Probably works in the last version. Can
   anyone verify?
   <li><b>Siemens M55</b>: Tested OK
   <li><b>Siemens M65</b>: Tested OK. Very inconvenient to use because
@@ -156,9 +156,8 @@ usability with Calc:
   <li><b>Siemens S55</b>: Works after a fashion with newest firmware.
   Older firmware doesn't work, 'Cannot verify class'
   <li><b>Siemens SL45</b>: Doesn't work, 'Out of heap memory'
-  <li><b>Samsung E720</b>: Tested OK.
-  <li><b>Samsung Z105 3G</b>: Tested OK. Enter and + keys are
-  reversed, but this should work just as well
+  <li><b>Samsung E720</b>: Tested OK
+  <li><b>Samsung Z105 3G</b>: Tested OK
   <li><b>Samsung C100</b>: Doesn't work, phone hangs during installation
   <li><b>LG 7100, U8138</b>: Tested OK. <em>Other LG phones may work. If you
   notify me I will attempt to enable support for it</em>
@@ -226,6 +225,7 @@ compatibility issues.<br>
   <dt><a href="Calc.html#ConstNote">Constants</a></dt>
   <dt><a href="Calc.html#ProgNote">Programming</a></dt>
   <dt><a href="Calc.html#BinaryNote">Binary representation</a></dt>
+  <dt><a href="Calc.html#MonitorNote">Monitor editing mode</a></dt>
 </dl></dd>
 </dl>
 
@@ -283,14 +283,14 @@ the "reset" command.<br>
 <br>
 First, to make sure that "ENTER" and "+" is immediately available,
 Calc will rotate through a set of command-key mappings until you
-answer "yes" to the question if you can see both "no" and "yes" mapped
-to the left and right soft-keys simultaneously (These keys are located
-left and right directly below the display). Some Nokias will at first
-map "yes" and "no" to a menu named "Options" on the left side, with
-nothing on the right side. If you select "yes" when such a mapping is
-active, your "ENTER" and "+" key will be accessible in the same
-cumbersome manner. <!--a href="Calc-keymapping.html">Why this
-problem?</a--><br>
+answer "yes" to the question if you see "no" mapped to the left
+soft-key and "yes" mapped to the right soft-key simultaneously (These
+keys are located left and right directly below the display). Some
+phones may for instance map "yes" and "no" to a menu named "Options"
+on the left side, with nothing on the right side. If you select "yes"
+when such a mapping is active, your "ENTER" and "+" key will be
+accessible in the same cumbersome manner. <!--a
+href="Calc-keymapping.html">Why this problem?</a--><br>
 
 <br>
 Second, to make sure that a "clear" or "c" key is available (and
@@ -369,7 +369,7 @@ x:         | 3_     |   3.00 | 2_     |   2.00 | 4_     |   6.00 |  18.00 |
 
 <br>
 Notice that you don't need to press "ENTER" after the "4" (but you
-<i>could</i>), because the following "+" operation makes it clear that
+<em>could</em>), because the following "+" operation makes it clear that
 you are finished keying the number. As you press "+", the 2 and the 4
 are added to produce 6, and the 3 jumps down, ready for the "*"
 operation.<br>
@@ -520,42 +520,19 @@ href="Calc.html#Notes">notes</a> section.
   2/&#8730;<span style="text-decoration:
   overline;">&pi;</span>&nbsp;·e<sup>-t²</sup>&nbsp;dt.
   </ul>
-  <li>Rectangular/polar coordinates
+  <li>Matrix <a href="Calc.html#MatrixNote"><b>(*)</b></a>
   <ul>
-    <li><b>r&rarr;p</b>: Convert rectangular coordinates (x,y) to polar
-    (x=radius,&nbsp;y=angle)
-    <li><b>p&rarr;r</b>: Convert polar coordinates (x=radius, y=angle) to
-    rectangular (x,y)
-    <li><b>atan<sub>2</sub></b>: Calculate the arctangent of y/x, in
-    the range -&pi; to &pi; (or -180 to 180 in DEG mode)
-    <li><b>hypot</b>: Calculate &#8730;<span
-    style="text-decoration: overline;">x²+y²</span>
-    <li><b>r&rarr;cplx</b>: Convert rectangular coordinates
-    (x=re,&nbsp;y=im) to complex number
-  </ul>
-  <li>Complex numbers (available instead of coordinate menu if x or y
-  is complex) <a href="Calc.html#ComplexNote"><b>(*)</b></a>
-  <ul>
-    <li><b>cplx&rarr;r</b>: Convert complex number to rectangular
-  coordinates (x=re,&nbsp;y=im)
-    <li><b>abs</b>: Calculate absolute value (complex modulus) of
-  complex number
-    <li><b>arg</b>: Calculate angle (complex argument) of complex
-  number in the range -&pi; to &pi; (or -180 to 180 in DEG mode)
-    <li><b>conj</b>: Calculate complex conjugate
-  </ul>
-  <li>Matrix (available instead of coordinate menu if x or y
-  is matrix) <a href="Calc.html#MatrixNote"><b>(*)</b></a>
-  <ul>
-    <li><b>transp</b>: Transpose matrix in x
-    <li><b>det</b>: Calculate determinant of matrix in x
+    <li><b>new</b>: Create new matrix with y rows and x columns
     <li><b>concat</b>: Concatenate matrix in y and matrix in x. Plain
-  numbers can be concatenated with row vectors
+  numbers can be concatenated into row vectors
     <li><b>stack</b>: Stack matrix in y on top of matrix in x. Plain
-  numbers can be stacked on column vectors.
+  numbers can be stacked into column vectors
     <li><b>split</b>: Split matrix in y at row or column specified by
   x. If x is positive, matrix is split horizontally after x rows. If x
-  is negative, matrix is split vertically after -x columns.
+  is negative, matrix is split vertically after -x columns
+    <li><b>transp</b>: Transpose matrix in x
+    <li><b>det</b>: Calculate determinant of matrix in x. (This
+  operation is just as slow as calculating the inverse by "1/x")
   </ul>
   <li>Miscellaneous
   <ul>
@@ -574,14 +551,14 @@ href="Calc.html#Notes">notes</a> section.
   be <tt>nan</tt> <a href="Calc.html#AbnormalNote"><b>(*)</b></a>. Factorizing
   large random numbers is fun: Press "31", "2<sup>x</sup>", "random",
   "*", "factorize", "factorize", ...
-  </ul>
-  <li>Integer operations
-  <ul>
-    <li><b>round</b>: Round x to nearest integer
-    <li><b>ceil</b>: Round x towards positive infinity
-    <li><b>floor</b>: Round x towards negative infinity
-    <li><b>trunc</b>: Remove fractional part of x (round towards zero)
-    <li><b>frac</b>: Remove integer part of x, i.e. calculate x-trunc(x)
+    <li>Integer operations
+    <ul>
+      <li><b>round</b>: Round x to nearest integer
+      <li><b>ceil</b>: Round x towards positive infinity
+      <li><b>floor</b>: Round x towards negative infinity
+      <li><b>trunc</b>: Remove fractional part of x (round towards zero)
+      <li><b>frac</b>: Remove integer part of x, i.e. calculate x-trunc(x)
+    </ul>
   </ul>
 </ul>
 
@@ -618,6 +595,30 @@ href="Calc.html#Notes">notes</a> section.
     <li><b>&rarr;RAD</b>: Convert from degrees to radians
     <li><b>&rarr;DEG</b>: Convert from radians to degrees
     <li><b>&pi;</b>: Enter the number &pi;
+    <li>Rectangular/polar coordinates
+    <ul>
+      <li><b>r&rarr;p</b>: Convert rectangular coordinates (x,y) to polar
+      (x=radius,&nbsp;y=angle)
+      <li><b>p&rarr;r</b>: Convert polar coordinates (x=radius, y=angle) to
+      rectangular (x,y)
+      <li><b>atan<sub>2</sub></b>: Calculate the arctangent of y/x, in
+      the range -&pi; to &pi; (or -180 to 180 in DEG mode)
+      <li><b>hypot</b>: Calculate &#8730;<span
+      style="text-decoration: overline;">x²+y²</span>
+      <li><b>r&rarr;cplx</b>: Convert rectangular coordinates
+      (x=re,&nbsp;y=im) to complex number
+    </ul>
+    <li>Complex numbers (available instead of coordinate menu if x or y
+    is complex) <a href="Calc.html#ComplexNote"><b>(*)</b></a>
+    <ul>
+      <li><b>cplx&rarr;r</b>: Convert complex number to rectangular
+      coordinates (x=re,&nbsp;y=im)
+      <li><b>abs</b>: Calculate absolute value (complex modulus) of
+      complex number
+      <li><b>arg</b>: Calculate angle (complex argument) of complex
+      number in the range -&pi; to &pi; (or -180 to 180 in DEG mode)
+      <li><b>conj</b>: Calculate complex conjugate
+    </ul>
   </ul>
 </ul>
 
@@ -737,12 +738,12 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
     <li><b>solve</b>: Solve one financial value with respect to the
     others
     <ul>
-      <li><b>pv</b>: The <i>present value</i> in an account
-      <li><b>fv</b>: The <i>future value</i> after a certain number of
+      <li><b>pv</b>: The <em>present value</em> in an account
+      <li><b>fv</b>: The <em>future value</em> after a certain number of
       payment periods
-      <li><b>np</b>: The <i>number</i> of payment <i>periods</i>
-      <li><b>pmt</b>: The amount of each periodic <i>payment</i>
-      <li><b>ir%</b>: The <i>interest rate</i> on the account per period
+      <li><b>np</b>: The <em>number</em> of payment <em>periods</em>
+      <li><b>pmt</b>: The amount of each periodic <em>payment</em>
+      <li><b>ir%</b>: The <em>interest rate</em> on the account per period
       (in percent)
     </ul>
     <li><b>clear</b>: Clear financial registers
@@ -789,46 +790,46 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
     <ul>
       <li>Length
       <ul>
-        <li><b>cm/in</b>: Enter the length of one inch in centimeters
+        <li><b>in/cm</b>: Enter the length of one inch in centimeters
           &equiv;&nbsp;2.54
-        <li><b>m/ft</b>: Enter the length of one foot in meters
+        <li><b>ft/m</b>: Enter the length of one foot in meters
           &equiv;&nbsp;0.3048
-        <li><b>m/yd</b>: Enter the length of one yard in meters
+        <li><b>yd/m</b>: Enter the length of one yard in meters
           &equiv;&nbsp;0.9144
-        <li><b>km/mi</b>: Enter the length of one mile in kilometers
+        <li><b>mi/km</b>: Enter the length of one mile in kilometers
           &equiv;&nbsp;1.609344
-        <li><b>km/n.m.</b>: Enter the length of one nautical mile in
+        <li><b>n.m./km</b>: Enter the length of one nautical mile in
           kilometers &equiv;&nbsp;1.852
       </ul>
       <li>Weight
       <ul>
-        <li><b>g/oz</b>: Enter the weight of one U.S. ounce in grams
+        <li><b>oz/g</b>: Enter the weight of one U.S. ounce in grams
           &equiv;&nbsp;28.349523125
-        <li><b>kg/lb</b>: Enter the weight of one U.S. pound in kilos
+        <li><b>lb/kg</b>: Enter the weight of one U.S. pound in kilos
           &equiv;&nbsp;0.45359237
-        <li><b>kg/ton</b>: Enter the weight of one U.S. short ton in
+        <li><b>ton/kg</b>: Enter the weight of one U.S. short ton in
           kilos &equiv;&nbsp;907.18474
-        <li><b>mg/gr</b>: Enter the weight of one U.S. grain in
+        <li><b>gr/mg</b>: Enter the weight of one U.S. grain in
           milligrams &equiv;&nbsp;64.79891
       </ul>
       <li>Volume
       <ul>
-        <li><b>l/cup</b>: Enter the volume of one U.S. cup in liters
+        <li><b>cup/l</b>: Enter the volume of one U.S. cup in liters
           &equiv;&nbsp;0.2365882365
-        <li><b>l/gal</b>: Enter the volume of one U.S. gallon in liters
+        <li><b>gal/l</b>: Enter the volume of one U.S. gallon in liters
           &equiv;&nbsp;3.785411784
-        <li><b>l/pt</b>: Enter the volume of one U.S. pint in liters
+        <li><b>pt/l</b>: Enter the volume of one U.S. pint in liters
           &equiv;&nbsp;0.473176473
-        <li><b>ml/fl.oz</b>: Enter the volume of one U.S. fluid ounce in
+        <li><b>fl.oz/ml</b>: Enter the volume of one U.S. fluid ounce in
           milliliters &equiv;&nbsp;29.5735295625
       </ul>
       <li>Energy
       <ul>
-        <li><b>J/cal</b>: Enter the energy of one international calorie in
+        <li><b>cal/J</b>: Enter the energy of one international calorie in
           Joules &asymp;&nbsp;4.1868
-        <li><b>J/Btu</b>: Enter the energy of one British thermal unit in
+        <li><b>Btu/J</b>: Enter the energy of one British thermal unit in
           Joules &asymp;&nbsp;1055.06
-        <li><b>W/hp</b>: Enter the value of one horsepower in Watts
+        <li><b>hp/W</b>: Enter the value of one horsepower in Watts
           &asymp;&nbsp;745.7
       </ul>
       <li>Temperature
@@ -1010,12 +1011,15 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
     <li><b>BIN</b>: Set binary (base-2) number mode
     <li><b>OCT</b>: Set octal (base-8) number mode
   </ul>
-  <li><a id="Monitoring" name="Monitoring">Monitoring</a>
+  <li><a id="Monitoring" name="Monitoring">Monitoring</a> <a
+    href="Calc.html#MonitorNote"><b>(*)</b></a>
   <ul>
     <li><b>mem</b>: Monitor first <i>n</i> memory locations in upper part
     of the display
     <li><b>stat</b>: Monitor first <i>n</i> statistical registers
-    <li><b>financial</b>: Monitor financial registers
+    <li><b>finance</b>: Monitor financial registers
+    <li><b>matrix</b>: Monitor <i>n</i> rows from the lowest matrix on
+    the stack
     <li><b>off</b>: Turn monitoring off
   </ul>
   <li><a id="System" name="System">System menu</a>
@@ -1029,6 +1033,7 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
       <li><b>system</b>: Set system font (should be mono-spaced, but
   this is not the case on T610)
     </ul>
+<!--    <li><b>fullscreen</b>: Toggle full screen operation-->
     <li><b>exit</b>: Exit the application. The the stack, memory,
   statistics, finance and programs will be saved until next time
     <li><b>reset</b>: Reset the application and exit. All setup
@@ -1097,12 +1102,12 @@ truncation) work on the real and imaginary part of the complex number
 separately.<br>
 
 <br>
-All stack and memory operations also handle complex numbers. Financial
-and statistical modules cannot store complex numbers, so with these
-modules only the real part of the numbers are stored/used. Any
-operations that are undefined for complex numbers or that have not
-been implemented yet, returns <tt>nan</tt> when used with complex
-input(s).<br>
+All stack and memory operations handle complex numbers
+transparently. Financial and statistical modules cannot store complex
+numbers, so with these modules only the real part of the numbers are
+stored/used. Any operations that are undefined for complex numbers or
+that have not been implemented yet, returns <tt>nan</tt> when used
+with complex input(s).<br>
 
 <br>
 If either x or y contains a complex number, any operation in the
@@ -1130,30 +1135,25 @@ number to view it.<br>
 <h3><a id="MatrixNote" name="MatrixNote">Matrix arithmetic</a></h3>
 
 The calculator creates matrices using the "matrix/new" operation or
-when you stack or concat two normal numbers.
+when you stack or concat two normal numbers.<br>
 
 <br>
 Most operations that logically extends to matrix arguments have been
-implemented for matrices, i.e. all basic operations, "1/x" and "x²".
-For convenience, integer operations (rounding and truncation) work on
-each matrix element separately.<br>
+implemented for matrices, i.e. all basic operations, "1/x" and
+"x²". However, complex matrices has been left as a future expansion.<br>
 
 <br>
-All stack and memory operations also handle matrices. Financial and
-statistical modules cannot store matrices, so with these modules a
-matrix is treated as <tt>nan</tt>. Any operations that are undefined
-for matrices or that have not been implemented yet, returns
-<tt>nan</tt> when used with matrix input(s).<br>
+All stack and memory operations handle matrices
+transparently. Financial and statistical modules cannot store
+matrices, so with these modules a matrix is treated as
+<tt>nan</tt>. Any operations that are undefined for matrices or that
+have not been implemented yet, returns <tt>nan</tt> when used with
+matrix input(s).<br>
 
 <br>
-If either x or y contains a matrix, any operation in the "coord"
-sub-menu is undefined (the sub-menu dealing with rectangular/polar
-coordinates). In this case the "coord" sub-menu is exchanged with a
-sub-menu called "matrix" for dealing with matrices.<br>
-
-<br>
-Matrices are displayed on one line as e.g. M:[3x4]. This indicates a
-matrix of 3 rows and 4 columns.<br>
+Matrices are displayed on one line as e.g. M[3x4]. This indicates a
+matrix of 3 rows and 4 columns. A 1x1 matrix is automatically
+converted to a normal number.<br>
 
 <h3><a id="FinancialNote" name="FinancialNote">Financial calculation</a></h3>
 
@@ -1225,8 +1225,8 @@ DH.MS+.<br>
 <br>
 [* leap years in this period matches leap years in the period
 1900-1999, so you may get away with it. On the other hand, the year
-100 (in the extrapolated Gregorian calendar) was <i>not</i> a leap
-year while the year 2000 <i>was</i>.]<br>
+100 (in the extrapolated Gregorian calendar) was <em>not</em> a leap
+year while the year 2000 <em>was</em>.]<br>
 
 <br>
 If year is nonzero, and month (mm) is zero, the month will be
@@ -1451,6 +1451,24 @@ interpreting the bits. However, beware that normal rounding that
 occurs when the display cannot display all the significant digits of a
 number may cause inexact values to appear different in the display
 than their internal representation.<br>
+
+<h3><a id="MonitorNote" name="MonitorNote">Monitor editing mode</a></h3>
+
+When monitoring is active, the usual <i><b>repeat</b></i> operation is
+exchanged with the symbol <b>[&rarr;]</b>. Selecting this operation
+lets you enter the monitor area in the upper part of the screen, where
+one monitor element will be highlighted. You can then move about in
+the monitor area using the arrow keys.<br>
+
+<br>
+Pressing "ENTER" in this mode will copy x into the current monitor
+element (like STO). Pressing "+" in this mode extracts the current
+monitor element and pushes it on the stack (like RCL). Pressing the
+middle joystick button pops one element off the stack, stores it in
+the current monitor element, and exits the editing mode so you can
+enter or calculate the next number. All these operations also have the
+side effect of advancing to the next monitor element. Pressing "clear"
+will exit the editing mode.<br>
 
 </body>
 </html>
