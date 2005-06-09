@@ -16,17 +16,18 @@ public final class CalcCanvas
 //   math     -> simple  -> 1/x    x^2    sqrt    %       %chg
 //            -> pow     -> y^x    y^1/x  ln      e^x
 //                       -> pow10/2 -> log10 10^x log2 2^x
-//            -> prob    -> Py,x   Cy,x   x!      erfc
+//            -> prob    -> Py,x   Cy,x   x!      Gam(x)  erfc
 //            -> misc    -> mod    div    random  factorize
 //                       -> int -> round ceil floor trunc frac
-//            -> coord   -> r->p   p->r   atan2   hypot   ->cplx
-//            -> cplx*   -> split  abs    arg     conj
-//            -> matrix* -> transp concat stack   split det
+//            -> matrix  -> new    concat stack   split
+//                       -> more -> det transp
 //   trig     -> normal  -> sin    cos    tan
 //            -> arc     -> asin   acos   atan
 //            -> hyp     -> sinh   cosh   tanh
 //            -> archyp  -> asinh  acosh  atanh
 //            -> more    -> RAD/DEG ->RAD  ->DEG  pi
+//                       -> coord   -> r->p   p->r   atan2   hypot   ->cplx
+//                       -> cplx*   -> split  abs    arg     conj
 //   bitop**  -> and     or     xor     bic
 //   bitop2** -> not     y<<x   y>>x
 //               int     -> round ceil floor trunc frac
@@ -57,7 +58,7 @@ public final class CalcCanvas
 //            -> prog[1] -> run    -> #
 //                       -> new    -> # -> name?
 //                       -> clear  -> #
-//                       -> draw   -> #
+//                       -> draw
 //                       -> more   -> integrate     -> #
 //                                 -> differentiate -> #
 //                                 -> solve         -> #
@@ -73,13 +74,18 @@ public final class CalcCanvas
 //                       -> exit
 //                       -> reset
 //
-// *  replaces coord if x or y are complex/matrix
+// *  replaces coord if x or y are complex
 // ** replaces math/trig in hex/oct/bin mode
 //
-// Extentions:
+// Future extentions:
 //   special  -> conv    -> time   -> dow
 //                       -> D->D.MS
 //                       -> D.MS->D
+//   mode     -> prog[1] -> draw   -> y=f(x)
+//                                 -> r=f(phi)
+//                                 -> z=f(t)
+//                                 -> z=f(z)
+//   math     -> matrix  -> more   -> draw
 
 // Complex operations:
 //   + - * / +/- 1/x x² sqrt
@@ -128,29 +134,29 @@ public final class CalcCanvas
 //
 // Metric conversions:
 // Length
-//   Inch in centimeters               cm/in == 2.54         (def)
-//   Foot in meters                    m/ft == 0.3048        (ft = 12 in)
-//   Yard in meters                    m/yd == 0.9144        (yd = 3 ft)
-//   Mile in kilometers                km/mi == 1.609344     (mi = 5280 ft)
-//   Nautical mile in kilometers       km/n.m. == 1.852      (def)
+//   Inch in centimeters               in/cm == 2.54         (def)
+//   Foot in meters                    ft/m == 0.3048        (ft = 12 in)
+//   Yard in meters                    yd/m == 0.9144        (yd = 3 ft)
+//   Mile in kilometers                mi/km == 1.609344     (mi = 5280 ft)
+//   Nautical mile in kilometers       n.m./mk == 1.852      (def)
 // Weight
-//   U.S. ounce in grams               g/oz == 28.349523125  (oz = 1/16 lb)
-//   U.S. pound in kilos               kg/lb == 0.45359237   (def)
-//   U.S. short ton in kilos           kg/ton == 907.18474   (ton = 2000 lb)
-//   U.S. grain in milligrams          mg/gr == 64.79891     (gr = 1/7000 lb)
+//   U.S. pound in kilos               lb/kg == 0.45359237   (def)
+//   U.S. ounce in grams               oz/g == 28.349523125  (oz = 1/16 lb)
+//   U.S. short ton in kilos           ton/kg == 907.18474   (ton = 2000 lb)
+//   U.S. grain in milligrams          gr/mg == 64.79891     (gr = 1/7000 lb)
 // Volume
-//   U.S. cup in litres                l/cup == 0.2365882365 (cup = 1/2 pt)
-//   U.S. gallon in litres             l/gal == 3.785411784  (gal = 231 in³)
-//   U.S. pint in litres               l/pt == 0.473176473   (pt = 1/8 gal)
-//   U.S. fluid ounce in millilitres   ml/fl.oz==29.5735295625(fl.oz=gal/128)
+//   U.S. gallon in litres             gal/l == 3.785411784  (gal = 231 in³)
+//   U.S. pint in litres               pt/l == 0.473176473   (pt = 1/8 gal)
+//   U.S. cup in litres                cup/l == 0.2365882365 (cup = 1/2 pt)
+//   U.S. fluid ounce in millilitres   fl.oz/ml==29.5735295625(fl.oz=gal/128)
 // Temperature
 //   Celsius to Fahrenheit             °C->°F == x*1.8+32    (def)
 //   Fahrenheit to Celsius             °F->°C == (x-32)/1.8  (def)
 //   Kelvin minus Celsius              °K-°C == 273.15       (def)
 // Energy
-//   International calorie in Joules   J/cal = 4.1868
-//   British thermal unit in Joules    J/Btu = 1055.06
-//   Horsepower in Watts               W/hp  = 745.7
+//   International calorie in Joules   cal/J = 4.1868
+//   British thermal unit in Joules    Btu/J = 1055.06
+//   Horsepower in Watts               hp/W  = 745.7
 //
 // Sources: http://physics.nist.gov/cuu/Constants
 //          http://www.free-definition.com
@@ -194,6 +200,7 @@ public final class CalcCanvas
 
   private static final int EXIT = -999;
   private static final int RESET = -998;
+  private static final int FULLSCREEN = -997;
   private static final int FONT_SMALL  = -50+GFont.SMALL;
   private static final int FONT_MEDIUM = -50+GFont.MEDIUM;
   private static final int FONT_LARGE  = -50+GFont.LARGE;
@@ -224,6 +231,9 @@ public final class CalcCanvas
     null,
   });
 
+  private Menu enterMonitor =
+    new Menu("[»]",CalcEngine.MONITOR_ENTER,Menu.NO_REPEAT);
+
   private Menu systemMenu = new Menu("sys",new Menu[] {
     new Menu("font",new Menu[] {
       new Menu("medium",FONT_MEDIUM,Menu.REPEAT_PARENT),
@@ -234,6 +244,7 @@ public final class CalcCanvas
     }),
     new Menu("exit",EXIT,Menu.NO_REPEAT),
     new Menu("reset",RESET,Menu.NO_REPEAT),
+    //new Menu("fullscreen",FULLSCREEN,Menu.NO_REPEAT),
   });
 
   private Menu menu = new Menu("menu",new Menu[] {
@@ -365,17 +376,17 @@ public final class CalcCanvas
         }),
         new Menu("metric",new Menu [] {
           new Menu("length",new Menu [] {
-            new Menu("km/mi",CalcEngine.CONST_km_mi),
-            new Menu("cm/in",CalcEngine.CONST_cm_in),
-            new Menu("m/yd",CalcEngine.CONST_m_yd),
-            new Menu("km/n.m.",CalcEngine.CONST_km_nm),
-            new Menu("m/ft",CalcEngine.CONST_m_ft),
+            new Menu("mi/km",CalcEngine.CONST_km_mi),
+            new Menu("in/cm",CalcEngine.CONST_cm_in),
+            new Menu("yd/m",CalcEngine.CONST_m_yd),
+            new Menu("n.m./km",CalcEngine.CONST_km_nm),
+            new Menu("ft/m",CalcEngine.CONST_m_ft),
           }),
           new Menu("weight",new Menu [] {
-            new Menu("g/oz",CalcEngine.CONST_g_oz),
-            new Menu("kg/lb",CalcEngine.CONST_kg_lb),
-            new Menu("mg/gr",CalcEngine.CONST_mg_gr),
-            new Menu("kg/ton",CalcEngine.CONST_kg_ton),
+            new Menu("oz/g",CalcEngine.CONST_g_oz),
+            new Menu("lb/kg",CalcEngine.CONST_kg_lb),
+            new Menu("gr/mg",CalcEngine.CONST_mg_gr),
+            new Menu("ton/kg",CalcEngine.CONST_kg_ton),
           }),
           new Menu("temp",new Menu [] {
             new Menu("°C»°F",CalcEngine.CONV_C_F),
@@ -383,15 +394,15 @@ public final class CalcCanvas
             new Menu("°K-°C",CalcEngine.CONST_K_C),
           }),
           new Menu("energy",new Menu [] {
-            new Menu("J/cal",CalcEngine.CONST_J_cal),
-            new Menu("J/Btu",CalcEngine.CONST_J_Btu),
-            new Menu("W/hp",CalcEngine.CONST_W_hp),
+            new Menu("cal/J",CalcEngine.CONST_J_cal),
+            new Menu("Btu/J",CalcEngine.CONST_J_Btu),
+            new Menu("hp/W",CalcEngine.CONST_W_hp),
           }),
           new Menu("vol",new Menu [] {
-            new Menu("l/pt",CalcEngine.CONST_l_pt),
-            new Menu("l/cup",CalcEngine.CONST_l_cup),
-            new Menu("l/gal",CalcEngine.CONST_l_gal),
-            new Menu("ml/fl.oz",CalcEngine.CONST_ml_floz),
+            new Menu("pt/l",CalcEngine.CONST_l_pt),
+            new Menu("cup/l",CalcEngine.CONST_l_cup),
+            new Menu("gal/l",CalcEngine.CONST_l_gal),
+            new Menu("fl.oz/ml",CalcEngine.CONST_ml_floz),
           }),
         }),
         new Menu("const",new Menu [] {
@@ -466,6 +477,8 @@ public final class CalcCanvas
                  Menu.NUMBER_REQUIRED|Menu.REPEAT_PARENT),
         new Menu("mem",CalcEngine.MONITOR_MEM,
                  Menu.NUMBER_REQUIRED|Menu.REPEAT_PARENT),
+        new Menu("matrix",CalcEngine.MONITOR_MATRIX,
+                 Menu.NUMBER_REQUIRED|Menu.REPEAT_PARENT),
         new Menu("off",CalcEngine.MONITOR_NONE,Menu.REPEAT_PARENT),
       }),
       systemMenu,
@@ -515,29 +528,6 @@ public final class CalcCanvas
     new Menu("frac",CalcEngine.FRAC),
   });
 
-  private Menu coordMenu = new Menu("coord",new Menu[] {
-    new Menu("hypot",CalcEngine.HYPOT),
-    new Menu("r»p",CalcEngine.RP),
-    new Menu("p»r",CalcEngine.PR),
-    new Menu("atan_2",CalcEngine.ATAN2),
-    new Menu("r»cplx",CalcEngine.TO_CPLX),
-  });
-
-  private Menu cplxMenu = new Menu("cplx",new Menu[] {
-    new Menu("cplx»r",CalcEngine.CPLX_SPLIT),
-    new Menu("abs",CalcEngine.ABS),
-    new Menu("arg",CalcEngine.CPLX_ARG),
-    new Menu("conj",CalcEngine.CPLX_CONJ),
-  });
-
-  private Menu matrixMenu = new Menu("matrix",new Menu[] {
-    new Menu("transp",CalcEngine.TRANSP),
-    new Menu("split",CalcEngine.MATRIX_SPLIT),
-    new Menu("stack",CalcEngine.MATRIX_STACK),
-    new Menu("concat",CalcEngine.MATRIX_CONCAT),
-    new Menu("det",CalcEngine.DETERM),
-  });
-  
   private Menu math = new Menu("math",new Menu[] {
     new Menu("simple",Menu.TITLE_SKIP,new Menu[] {
       new Menu("¿x",CalcEngine.SQRT),
@@ -551,20 +541,29 @@ public final class CalcCanvas
       new Menu("y^x",CalcEngine.YPOWX),
       new Menu("ln",CalcEngine.LN),
       new Menu("^x^¿y",CalcEngine.XRTY),
-      new Menu("pow_10,2",new Menu[] {
+      new Menu("pow_10,2",Menu.TITLE_SKIP,new Menu[] {
         new Menu("2^x",CalcEngine.EXP2),
         new Menu("10^x",CalcEngine.EXP10),
         new Menu("log_2",CalcEngine.LOG2),
         new Menu("log_10",CalcEngine.LOG10),
       }),
     }),
-    null, // coord or cplx
     new Menu("misc",new Menu[] {
       new Menu("random",CalcEngine.RANDOM),
       new Menu("mod",CalcEngine.MOD),
       new Menu("div",CalcEngine.DIVF),
       new Menu("factorize",CalcEngine.FACTORIZE),
       intMenu,
+    }),
+    new Menu("matrix",new Menu[] {
+      new Menu("new",CalcEngine.MATRIX_NEW),
+      new Menu("stack",CalcEngine.MATRIX_STACK),
+      new Menu("split",CalcEngine.MATRIX_SPLIT),
+      new Menu("concat",CalcEngine.MATRIX_CONCAT),
+      new Menu("more",Menu.TITLE_SKIP,new Menu[] {
+        new Menu("transp",CalcEngine.TRANSP),
+        new Menu("det",CalcEngine.DETERM),
+      }),
     }),
     new Menu("prob",new Menu[] {
       new Menu("P y,x",CalcEngine.PYX),
@@ -574,6 +573,7 @@ public final class CalcCanvas
       new Menu("¡x",CalcEngine.GAMMA),
     }),
   });
+
   private Menu trig = new Menu("trig",new Menu[] {
     new Menu("normal",Menu.TITLE_SKIP,new Menu[] {
       new Menu("sin",CalcEngine.SIN),
@@ -599,9 +599,26 @@ public final class CalcCanvas
       new Menu("RAD/DEG",CalcEngine.TRIG_DEGRAD),
       new Menu("»RAD",CalcEngine.TO_RAD),
       new Menu("»DEG",CalcEngine.TO_DEG),
+      null, // coord or cplx
       new Menu("¶",CalcEngine.PI),
     }),
   });
+
+  private Menu coordMenu = new Menu("coord",new Menu[] {
+    new Menu("hypot",CalcEngine.HYPOT),
+    new Menu("r»p",CalcEngine.RP),
+    new Menu("p»r",CalcEngine.PR),
+    new Menu("atan_2",CalcEngine.ATAN2),
+    new Menu("r»cplx",CalcEngine.TO_CPLX),
+  });
+
+  private Menu cplxMenu = new Menu("cplx",new Menu[] {
+    new Menu("cplx»r",CalcEngine.CPLX_SPLIT),
+    new Menu("abs",CalcEngine.ABS),
+    new Menu("arg",CalcEngine.CPLX_ARG),
+    new Menu("conj",CalcEngine.CPLX_CONJ),
+  });
+
   private Menu bitOp = new Menu("bitop",new Menu[] {
     new Menu("and",CalcEngine.AND),
     new Menu("or",CalcEngine.OR),
@@ -614,6 +631,7 @@ public final class CalcCanvas
     new Menu("y>>x",CalcEngine.YDNX),
     intMenu,
   });
+
   private Menu prog1 = new Menu("prog",new Menu[] {
     new Menu("new",CalcEngine.PROG_NEW,Menu.PROG_REQUIRED|Menu.NO_REPEAT),
     new Menu("run",CalcEngine.PROG_RUN,Menu.PROG_REQUIRED|Menu.NO_PROG),
@@ -628,6 +646,7 @@ public final class CalcCanvas
     }),
     new Menu("clear",CalcEngine.PROG_CLEAR,Menu.PROG_REQUIRED|Menu.NO_REPEAT),
   });
+
   private Menu prog2 = new Menu("prog",new Menu[] {
     new Menu("finish",CalcEngine.PROG_FINISH,Menu.NO_REPEAT),
     new Menu("cond",new Menu[] {
@@ -652,6 +671,7 @@ public final class CalcCanvas
       new Menu("STO+[x]",CalcEngine.STP_X),
     }),
   });
+
   private Menu progMenu = new Menu(null,new Menu[] {
     new Menu("",NUMBER_0,Menu.REPEAT_PARENT),
     new Menu("",NUMBER_1,Menu.REPEAT_PARENT),
@@ -677,11 +697,11 @@ public final class CalcCanvas
   private Font smallBoldMenuFont;
   private GFont numberFont;
   private int numberFontStyle;
+  public boolean fullScreen;
   public CalcEngine calc;
 
   private final Command add;
   private final Command enter;
-  private final Command breakCmd;
 
   private final Calc midlet;
 
@@ -715,14 +735,22 @@ public final class CalcCanvas
       systemMenu.subMenu[0] = null;
     }
 
-    enter = new Command(
-      "ENTER", SetupCanvas.commandArrangement[m.commandArrangement*2], 1);
-    add   = new Command(
-      "+",     SetupCanvas.commandArrangement[m.commandArrangement*2+1], 1);
-    breakCmd = new Command(
-      "BREAK", SetupCanvas.commandArrangement[m.commandArrangement*2+1], 1);
-    addCommand(enter);
-    addCommand(add);
+    if ((m.commandArrangement & 0x80) == 0) {
+      enter = new Command("ENTER",
+        SetupCanvas.commandArrangement[(m.commandArrangement&0x7f)*2], 1);
+      add   = new Command("+",
+        SetupCanvas.commandArrangement[(m.commandArrangement&0x7f)*2+1], 1);
+      addCommand(enter);
+      addCommand(add);
+    } else {
+      // Reverse order
+      add   = new Command("+",
+        SetupCanvas.commandArrangement[(m.commandArrangement&0x7f)*2], 1);
+      enter = new Command("ENTER",
+        SetupCanvas.commandArrangement[(m.commandArrangement&0x7f)*2+1], 1);
+      addCommand(add);
+      addCommand(enter);
+    }
     setCommandListener(this);
 
     menuFont = Font.getFont(
@@ -735,9 +763,16 @@ public final class CalcCanvas
       Font.FACE_PROPORTIONAL,Font.STYLE_BOLD,Font.SIZE_SMALL);
     setNumberFont(numberFontStyle);
 
+    setFullScreen(fullScreen);
+
     menuStack = new Menu[6]; // One too many, I think
     menuStackPtr = -1;
 
+    numRepaintLines = 100;
+    checkRepaint();
+  }
+
+  protected void sizeChanged(int w, int h) {
     // Menu position
     menuW = 21+4*2;
     if (menuW<boldMenuFont.stringWidth("m/ft")+3*2)
@@ -756,19 +791,31 @@ public final class CalcCanvas
     if (menuY+menuH > getHeight())
       menuY = getHeight()-menuH;
 
-    numRepaintLines = 100;
-    checkRepaint();
+    // Number font
+    nDigits = getWidth()/numberWidth;
+    offX = (getWidth()-nDigits*numberWidth)/2;
+    nLines = (getHeight()-smallMenuFont.getHeight())/numberHeight;
+    offY = (getHeight()-smallMenuFont.getHeight()-nLines*numberHeight)/2 +
+      smallMenuFont.getHeight();
+    nLinesMonitor = (getHeight()-smallMenuFont.getHeight()-4)/numberHeight;
+    offYMonitor = (getHeight()-smallMenuFont.getHeight()-
+                   nLinesMonitor*numberHeight)/4+smallMenuFont.getHeight();
+    offY2 = 3*(getHeight()-smallMenuFont.getHeight()-
+               nLinesMonitor*numberHeight)/4+smallMenuFont.getHeight();
+    calc.setMaxWidth(nDigits);
+    calc.setMaxMonitorSize(nLinesMonitor-1);
   }
 
   public void saveState(DataOutputStream out) {
     try {
       numberFontStyle = numberFont.getStyle();
       numberFont = null; // Free some memory before saveState()
-      out.writeShort(1);
+      out.writeShort(2);
       out.writeByte(numberFontStyle);
+      //out.writeBoolean(fullScreen);
       calc.command(CalcEngine.FINALIZE,0);
       calc.saveState(out);
-    } catch (IOException ioe) {
+    } catch (Throwable e) {
     }
   }
   
@@ -779,6 +826,10 @@ public final class CalcCanvas
         numberFontStyle = in.readByte();
         length -= 1;
       }
+      //if (length >= 1) {
+      //  fullScreen = in.readBoolean();
+      //  length -= 1;
+      //}
       in.skip(length);
       calc.restoreState(in);
     } catch (IOException ioe) {
@@ -789,18 +840,8 @@ public final class CalcCanvas
     numberFont = null;
     numberFont = new GFont(size | (midlet.bgrDisplay ? GFont.BGR_ORDER : 0));
     numberWidth = numberFont.charWidth();
-    nDigits = getWidth()/numberWidth;
-    offX = (getWidth()-nDigits*numberWidth)/2;
     numberHeight = numberFont.getHeight();
-    nLines = (getHeight()-smallMenuFont.getHeight())/numberHeight;
-    offY = (getHeight()-smallMenuFont.getHeight()-nLines*numberHeight)/2 +
-      smallMenuFont.getHeight();
-    nLinesMonitor = (getHeight()-smallMenuFont.getHeight()-4)/numberHeight;
-    offYMonitor = (getHeight()-smallMenuFont.getHeight()-
-                   nLinesMonitor*numberHeight)/4+smallMenuFont.getHeight();
-    offY2 = 3*(getHeight()-smallMenuFont.getHeight()-
-               nLinesMonitor*numberHeight)/4+smallMenuFont.getHeight();
-    calc.setMaxWidth(nDigits);
+    sizeChanged(getWidth(),getHeight());
   }
 
   public void drawModeIndicators(Graphics g, boolean toggleRun) {
@@ -1144,20 +1185,23 @@ public final class CalcCanvas
   }
 
   private void drawMonitor(Graphics g, int i, boolean cleared) {
-    String tmp = calc.getMonitorElement(i);
     String label = calc.getMonitorLabel(i);
-    if (tmp.length()+label.length()>nDigits)
-      tmp = "*****";
+    String lead = calc.getMonitorLead(i);
+    String element = calc.getMonitorElement(i);
+    if (element.length()+label.length()+lead.length()>nDigits)
+      element = "*****";
     numberFont.drawString(
-      g,offX+(nDigits-tmp.length())*numberWidth,
-      offYMonitor+i*numberHeight,tmp);
+      g,offX+(nDigits-element.length())*numberWidth,
+      offYMonitor+i*numberHeight,element);
     numberFont.drawString(g,offX,offYMonitor+i*numberHeight,label);
+    numberFont.drawString(g,offX+numberFont.stringWidth(label),
+                          offYMonitor+i*numberHeight,lead);
     if (!cleared) {
       g.setColor(0);
-      g.fillRect(offX+label.length()*numberWidth,
+      g.fillRect(offX+(label.length()+lead.length())*numberWidth,
                  offYMonitor+i*numberHeight,
-                 (nDigits-tmp.length()-label.length())*numberWidth,
-                 numberHeight);
+                 (nDigits-element.length()-label.length()-lead.length())*
+                 numberWidth, numberHeight);
     }
   }
 
@@ -1177,15 +1221,14 @@ public final class CalcCanvas
           numRepaintLines = 16;
         int monitorSize = calc.getMonitorSize();
         if (monitorSize > 0) {
-          if (monitorSize > nLinesMonitor-1)
-            monitorSize = nLinesMonitor-1;
           if (numRepaintLines > nLinesMonitor-monitorSize)
             numRepaintLines = nLinesMonitor-monitorSize;
 
-          for (i=0; i<numRepaintLines; i++)
+          for (i=0; i<numRepaintLines && i<16; i++)
             drawNumber(g,i,cleared,offY2,nLinesMonitor);
-          for (i=0; i<monitorSize; i++)
-            drawMonitor(g,i,cleared);
+          if (cleared)
+            for (i=0; i<monitorSize; i++)
+              drawMonitor(g,i,cleared);
           g.setColor(255,255,255);
           g.drawLine(0,offYMonitor+monitorSize*numberHeight+1,
                      getWidth(),offYMonitor+monitorSize*numberHeight+1);
@@ -1214,8 +1257,11 @@ public final class CalcCanvas
     }
   }
 
-  private void clearKeyPressed() {
-    if (menuStackPtr >= 0) {
+  private void clearKeyPressed() throws OutOfMemoryError {
+    if (calc.isInsideMonitor) {
+      calc.command(CalcEngine.MONITOR_EXIT,0);
+      return;
+    } else if (menuStackPtr >= 0) {
       menuStackPtr--;
       if (menuStackPtr >= 0)
         numRepaintLines = 0; // Force repaint of menu
@@ -1227,8 +1273,10 @@ public final class CalcCanvas
     calc.command(CalcEngine.CLEAR,0);
   }
 
-  private void clearKeyRepeated() {
-    if (menuStackPtr >= 0) {
+  private void clearKeyRepeated() throws OutOfMemoryError {
+    if (calc.isInsideMonitor) {
+      menuStackPtr = -2; // should not continue by clearing the input...
+    } else if (menuStackPtr >= 0) {
       menuStackPtr = -2; // should not continue by clearing the input...
       numRepaintLines = 100; // Force repaint of all
     } else {
@@ -1238,8 +1286,28 @@ public final class CalcCanvas
     }
   }
 
-  private void menuAction(int menuIndex) {
+  private void setFullScreen(boolean fs) {
+    fullScreen = fs;
+    try {
+      //setFullScreenMode(fullScreen);
+    } catch (Throwable e) {
+      // In case of MIDP 1.0
+    }
+  }
+
+  private void menuAction(int menuIndex) throws OutOfMemoryError {
     boolean graph=false;
+
+    if (calc.isInsideMonitor) {
+      switch (menuIndex) {
+        case 0: calc.command(CalcEngine.MONITOR_UP   ,0); break;
+        case 3: calc.command(CalcEngine.MONITOR_DOWN ,0); break;
+        case 1: calc.command(CalcEngine.MONITOR_LEFT ,0); break;
+        case 2: calc.command(CalcEngine.MONITOR_RIGHT,0); break;
+        case 4: calc.command(CalcEngine.MONITOR_PUSH ,0); break;
+      }
+      return;
+    }
     
     if (menuStackPtr < 0) {
       // On entering the menu, switch math/trig menus with bit-op
@@ -1251,10 +1319,9 @@ public final class CalcCanvas
         if (calc.imagStack != null &&
             (!calc.imagStack[0].isZero() ||
              !calc.imagStack[1].isZero())) {
-          math.subMenu[2] = cplxMenu;
+          trig.subMenu[4].subMenu[3] = cplxMenu;
         } else {
-          //math.subMenu[2] = coordMenu;
-          math.subMenu[2] = matrixMenu;
+          trig.subMenu[4].subMenu[3] = coordMenu;
         }
       } else {
         menu.subMenu[1] = bitOp;
@@ -1270,6 +1337,9 @@ public final class CalcCanvas
       } else {
         menu.subMenu[4].subMenu[1] = prog1;        
       }
+      // Change basicMenu[4] to enterMonitor if monitoring
+      if (calc.getMonitorSize() > 0)
+        basicMenu.subMenu[4] = enterMonitor;
     }
     if (menuStackPtr < 0 && menuIndex < 4) {
       // Go directly to submenu
@@ -1319,6 +1389,8 @@ public final class CalcCanvas
           midlet.exitRequested();
         } else if (command == RESET) {
           midlet.resetRequested();
+        } else if (command == FULLSCREEN) {
+          setFullScreen(!fullScreen);
         } else if (command >= FONT_SMALL && command <= FONT_XLARGE) {
           // Internal font command
           setNumberFont(command-FONT_SMALL);
@@ -1372,13 +1444,14 @@ public final class CalcCanvas
   }
 
   protected void keyPressed(int key) {
+    try {
     repeating = false;
     int menuIndex = -1;
     switch (key) {
       case '0': case '1': case '2': case '3': case '4':
       case '5': case '6': case '7': case '8': case '9':
-        if (menuStackPtr >= 0) {
-          if (menuStack[menuStackPtr] == numberMenu ||
+        if (menuStackPtr >= 0 || calc.isInsideMonitor) {
+          if ((menuStackPtr>=0 && menuStack[menuStackPtr  ] == numberMenu) ||
               (menuStackPtr>=1 && menuStack[menuStackPtr-1] == numberMenu))
           {
             calc.command(menuCommand,key-'0');
@@ -1395,25 +1468,24 @@ public final class CalcCanvas
             menuStackPtr = -1;
             numRepaintLines = 100; // Force repaint of all
             break;
-          } else {
-            switch (getGameAction(key)) {
-              case UP:    menuIndex = 0; break;
-              case DOWN:  menuIndex = 3; break;
-              case LEFT:  menuIndex = 1; break;
-              case RIGHT: menuIndex = 2; break;
-              case FIRE:  menuIndex = 4; break;
-              default:
-                switch (key) {
-                  case '2': menuIndex = 0; break; // UP
-                  case '8': menuIndex = 3; break; // DOWN
-                  case '4': menuIndex = 1; break; // LEFT
-                  case '6': menuIndex = 2; break; // RIGHT
-                  case '5': menuIndex = 4; break; // PUSH
-                }
-                break;
-            }
-            break;
           }
+          switch (getGameAction(key)) {
+            case UP:    menuIndex = 0; break;
+            case DOWN:  menuIndex = 3; break;
+            case LEFT:  menuIndex = 1; break;
+            case RIGHT: menuIndex = 2; break;
+            case FIRE:  menuIndex = 4; break;
+            default:
+              switch (key) {
+                case '2': menuIndex = 0; break; // UP
+                case '8': menuIndex = 3; break; // DOWN
+                case '4': menuIndex = 1; break; // LEFT
+                case '6': menuIndex = 2; break; // RIGHT
+                case '5': menuIndex = 4; break; // PUSH
+              }
+              break;
+          }
+          break;
         }
         calc.command(CalcEngine.DIGIT_0+key-'0',0);
         break;
@@ -1421,7 +1493,7 @@ public final class CalcCanvas
         clearKeyPressed();
         break;
       case '#':
-        if (!midlet.hasClearKey) {
+        if (!midlet.hasClearKey || menuStackPtr>=0 || calc.isInsideMonitor) {
           clearKeyPressed();
           break;
         }
@@ -1492,9 +1564,15 @@ public final class CalcCanvas
       menuAction(menuIndex);
 
     checkRepaint();
+    } catch (OutOfMemoryError e) {
+      menuStackPtr = -1;     // Remove menu
+      numRepaintLines = 100; // Force repaint of all
+      midlet.outOfMemory();
+    }
   }
 
   protected void keyRepeated(int key) {
+    try {
     if (unknownKeyPressed) {
       // Can't repeat "delayed clear key"
       return;
@@ -1505,11 +1583,14 @@ public final class CalcCanvas
           return;
         calc.command(CalcEngine.DIGIT_A+key-'1',0);
         break;
-      case '0': case '7': case '8': case '9':
+      case '\b':
+        clearKeyRepeated();
+        break;
       case '#':
         if (!midlet.hasClearKey)
           clearKeyRepeated();
         break;
+      case '0': case '7': case '8': case '9':
       case '*':
         // Do nothing, but do not fall into the "default" below
         break;
@@ -1519,7 +1600,7 @@ public final class CalcCanvas
             clearKeyRepeated();
             break;
           default:
-            if (key == -8)
+            if (key == -8 || key == -23)
               clearKeyRepeated();
             break;
         }
@@ -1527,18 +1608,30 @@ public final class CalcCanvas
     }
     repeating = true;
     checkRepaint();
+    } catch (OutOfMemoryError e) {
+      menuStackPtr = -1;     // Remove menu
+      numRepaintLines = 100; // Force repaint of all
+      midlet.outOfMemory();
+    }
   }
 
   protected void keyReleased(int key) {
+    try {
     if (unknownKeyPressed) {
       // It's a "delayed clear key"
       unknownKeyPressed = false;
       clearKeyPressed();
       checkRepaint();
     }
+    } catch (OutOfMemoryError e) {
+      menuStackPtr = -1;     // Remove menu
+      numRepaintLines = 100; // Force repaint of all
+      midlet.outOfMemory();
+    }
   }
 
   protected void pointerPressed(int x, int y) {
+    try {
     int menuIndex, q=0;
 
     x = x-menuX-menuW/2; if (x<0) { x = -x; q += 1; }
@@ -1553,23 +1646,42 @@ public final class CalcCanvas
     }
     menuAction(menuIndex);
     checkRepaint();
+    } catch (OutOfMemoryError e) {
+      menuStackPtr = -1;     // Remove menu
+      numRepaintLines = 100; // Force repaint of all
+      midlet.outOfMemory();
+    }
   }
 
   public void commandAction(Command c, Displayable d)
   {
+    try {
     // If an unknown key has beed pressed but not released, ignore it
     unknownKeyPressed = false;
 
+    // Nothing happens inside menu
+    if (menuStackPtr >= 0)
+      return;
+
     if (c == enter) {
-      if (menuStackPtr >= 0)
-        return;
-      calc.command(CalcEngine.ENTER,0);
+      if (calc.isInsideMonitor) {
+        calc.command(CalcEngine.MONITOR_PUT,0);
+      } else {
+        calc.command(CalcEngine.ENTER,0);
+      }
     } else if (c == add) {
-      if (menuStackPtr >= 0)
-        return;
-      calc.command(CalcEngine.ADD,0);
+      if (calc.isInsideMonitor) {
+        calc.command(CalcEngine.MONITOR_GET,0);
+      } else {
+        calc.command(CalcEngine.ADD,0);
+      }
     }
     checkRepaint();
+    } catch (OutOfMemoryError e) {
+      menuStackPtr = -1;     // Remove menu
+      numRepaintLines = 100; // Force repaint of all
+      midlet.outOfMemory();
+    }
   }
 
 }

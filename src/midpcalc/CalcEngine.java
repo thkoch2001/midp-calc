@@ -6,6 +6,7 @@ import java.io.*;
 public final class CalcEngine
 {
   // Commands == "keystrokes"
+  // Preserve these constants for programs to work from one version to the next
   public static final int DIGIT_0        =   0;
   public static final int DIGIT_1        =   1;
   public static final int DIGIT_2        =   2;
@@ -156,10 +157,7 @@ public final class CalcEngine
   public static final int FINANCE_BGNEND = 147;
   public static final int FINANCE_MULINT = 148;
   public static final int FINANCE_DIVINT = 149;
-  public static final int MONITOR_NONE   = 150;
-  public static final int MONITOR_MEM    = 151;
-  public static final int MONITOR_STAT   = 152;
-  public static final int MONITOR_FINANCE= 153;
+  // 150-153 previously occupied by MONITOR_*
   public static final int SIGN_POINT_E   = 154;
   public static final int TO_CPLX        = 155;
   public static final int CPLX_SPLIT     = 156;
@@ -244,9 +242,29 @@ public final class CalcEngine
   public static final int PROG_DIFF      = 235;
   public static final int TRANSP         = 236;
   public static final int DETERM         = 237;
-  public static final int MATRIX_CONCAT  = 238;
-  public static final int MATRIX_STACK   = 239;
-  public static final int MATRIX_SPLIT   = 240;
+  public static final int MATRIX_NEW     = 238;
+  public static final int MATRIX_CONCAT  = 239;
+  public static final int MATRIX_STACK   = 240;
+  public static final int MATRIX_SPLIT   = 241;
+  public static final int MONITOR_NONE   = 242;
+  public static final int MONITOR_MEM    = 243;
+  public static final int MONITOR_STAT   = 244;
+  public static final int MONITOR_FINANCE= 245;
+  public static final int MONITOR_MATRIX = 246;
+  public static final int MONITOR_ENTER  = 247;
+  public static final int MONITOR_EXIT   = 248;
+  public static final int MONITOR_UP     = 249;
+  public static final int MONITOR_DOWN   = 250;
+  public static final int MONITOR_LEFT   = 251;
+  public static final int MONITOR_RIGHT  = 252;
+  public static final int MONITOR_PUSH   = 253;
+  public static final int MONITOR_PUT    = 254;
+  public static final int MONITOR_GET    = 255;
+  public static final int STAT_RCL       = 256;
+  public static final int STAT_STO       = 257;
+
+  public static final int MATRIX_STO     = 512; // Special bit pattern
+  public static final int MATRIX_RCL     = 768; // Special bit pattern
 
   // These commands are handled from CalcCanvas
   public static final int AVG_DRAW       = 300;
@@ -292,8 +310,8 @@ public final class CalcEngine
   //public static final int PROG_MINMAX9 = 340;
 
   // Special commands
-  public static final int FINALIZE       = 500;
-  public static final int FREE_MEM       = 501;
+  public static final int FINALIZE       = 400;
+  public static final int FREE_MEM       = 401;
   
   private static final int STACK_SIZE    = 16;
   private static final int MEM_SIZE      = 16;
@@ -334,19 +352,24 @@ public final class CalcEngine
   public Matrix[] matrixCache;
 
   public int monitorMode;
-  public int monitorSize;
+  public int monitorSize,initialMonitorSize;
+  public int maxMonitorSize,maxMonitorDisplaySize;
+  public int monitorX,monitorY;
+  public int monitorYOff;
+  public boolean isInsideMonitor;
   public Real [] monitors;
   public Real [] imagMonitors;
+  public Matrix monitoredMatrix;
+  public String monitorCaption;
   public String [] monitorStr;
   public String [] monitorLabels;  
-  private static final String [] memLabels =
-    { "M0=","M1=","M2=","M3=","M4=","M5=","M6=","M7=",
-      "M8=","M9=","M10=","M11=","M12=","M13=","M14=","M15=" };
   private static final String [] statLabels =
-    { "n=","$x=","$x\"=","$y=","$y\"=","$xy=","$&x=","$&\"x=",
-      "$&y=","$&\"y=","$x&y=","$y&x=","$&x&y=" };
+    { "n","$x","$x\"","$y","$y\"","$xy","$&x","$&\"x",
+      "$&y","$&\"y","$x&y","$y&x","$&x&y" };
   private static final String [] financeLabels =
-    { "pv=","fv=","np=","pmt=","ir%=" };
+    { "pv","fv","np","pmt","ir%" };
+  private String [] memLabels;
+  private String [] matrixLabels;
 
   private static final int UNDO_NONE   = 0;
   private static final int UNDO_UNARY  = 1;
@@ -398,6 +421,7 @@ public final class CalcEngine
     monitorMode = MONITOR_NONE;
     monitorSize = 0;
     clearMonitorStrings();
+    memLabels = new String[MEM_SIZE];
 
     progLabels = new String[NUM_PROGS];
     for (int i=0; i<NUM_PROGS; i++)
@@ -411,13 +435,13 @@ public final class CalcEngine
       if (strStack[i] != empty)
         strStack[i] = null;
     clearMonitorStrings();
-    repaint(-1);
+    repaintAll();
   }
 
   private void clearMonitorStrings() {
-    for (int i=0; i<MEM_SIZE; i++)
+    for (int i=0; i<monitorStr.length; i++)
       monitorStr[i] = null;
-    repaint(-1);
+    repaintAll();
   }
 
   private void clearStack() {
@@ -427,7 +451,7 @@ public final class CalcEngine
       strStack[i] = empty;
     }
     clearImagStack();
-    repaint(-1);
+    repaintAll();
   }
   
   private void clearImagStack() {
@@ -721,13 +745,30 @@ public final class CalcEngine
         out.writeShort(0);
       }
     }
+
+    // Matrices
+    for (i=0; i<matrixCache.length; i++) {
+      if (matrixCache[i] != null) {
+        Matrix M = matrixCache[i];
+        out.writeShort(2+2+M.rows*M.cols*12);
+        out.writeShort((short)M.rows);
+        out.writeShort((short)M.cols);
+        for (int c=0; c<M.cols; c++)
+          for (int r=0; r<M.rows; r++) {
+            M.D[c][r].toBytes(realBuf,0);
+            out.write(realBuf);
+          }
+      } else {
+        out.writeShort(0);
+      }
+    }
   }
   
   public void restoreState(DataInputStream in) throws IOException {
     int length,i,j;
     byte [] realBuf = new byte[12];
 
-    repaint(-1); // Better do it now in case of IOException
+    repaintAll(); // Better do it now in case of IOException
 
     // Stack
     length = in.readShort();
@@ -817,20 +858,20 @@ public final class CalcEngine
       Real.randSeedB     = in.readLong();
       in.read(realBuf);
       lastx.assign(realBuf,0);
+
       monitorMode = MONITOR_NONE+((monitor>>5)&7);
       monitorSize = monitor&0x1f;
-      if (monitorMode == MONITOR_MEM) {
-        monitors = mem;
-        imagMonitors = imagMem;
-        monitorLabels = memLabels;
-      } else if (monitorMode == MONITOR_STAT) {
-        monitors = stat;
-        imagMonitors = null;
-        monitorLabels = statLabels;
-      } else if (monitorMode == MONITOR_FINANCE) {
-        monitors = finance;
-        imagMonitors = null;
-        monitorLabels = financeLabels;
+      if (monitorMode == MONITOR_MEM)
+        setMonitoring(monitorMode,monitorSize,MEM_SIZE,mem,imagMem,memLabels);
+      else if (monitorMode == MONITOR_STAT)
+        setMonitoring(monitorMode,monitorSize,STAT_SIZE,stat,null,statLabels);
+      else if (monitorMode == MONITOR_FINANCE)
+        setMonitoring(monitorMode,FINANCE_SIZE,FINANCE_SIZE,finance,null,
+                      financeLabels);
+      else if (monitorMode == MONITOR_MATRIX) {
+        setMonitoring(monitorMode,monitorSize,0,null,null,null);
+        monitoredMatrix = null;
+        // updateMatrixMonitor() will be run later
       }
       length -= 10+8*2+12;
     }
@@ -843,6 +884,7 @@ public final class CalcEngine
     }
     in.skip(length);
 
+    // Programs
     char [] label = new char[PROGLABEL_SIZE];
     for (i=0; i<NUM_PROGS; i++) {
       length = in.readShort();
@@ -863,6 +905,30 @@ public final class CalcEngine
       }
       in.skip(length);
     }
+
+    // Matrices
+    for (i=0; i<matrixCache.length; i++) {
+      length = in.readShort();
+      if (length >= 2+2) {
+        int rows = in.readShort()&0xffff;
+        int cols = in.readShort()&0xffff;
+        length -= 2*2;
+        if (length >= rows*cols*12) {
+          Matrix M = new Matrix(rows,cols);
+          for (int c=0; c<cols; c++)
+            for (int r=0; r<rows; r++) {
+              in.read(realBuf);
+              M.D[c][r].assign(realBuf,0);
+            }
+          matrixCache[i] = M;
+          length -= rows*cols*12;
+        }
+      }
+      in.skip(length);
+    }
+
+    if (monitorMode == MONITOR_MATRIX)
+      updateMatrixMonitor();
   }
 
   private Matrix getMatrix(Real x) {
@@ -906,29 +972,135 @@ public final class CalcEngine
     Matrix M;
     for (int i=0; i<matrixCache.length; i++)
       if (matrixCache[i] != null)
-        matrixCache[i].inUse = false;
+        matrixCache[i].refCount = 0;
 
     for (int i=0; i<STACK_SIZE; i++)
       if ((M = getMatrix(stack[i])) != null)
-        M.inUse = true;
+        M.refCount++;
     if (mem != null)
       for (int i=0; i<MEM_SIZE; i++)
         if ((M = getMatrix(mem[i])) != null)
-          M.inUse = true;
-    if ((M = getMatrix(lastx)) != null) M.inUse = true;
-    if ((M = getMatrix(lasty)) != null) M.inUse = true;
-    if ((M = getMatrix(lastz)) != null) M.inUse = true;
+          M.refCount++;
+    if ((M = getMatrix(lastx)) != null) M.refCount++;
+    if ((M = getMatrix(lasty)) != null) M.refCount++;
+    if ((M = getMatrix(lastz)) != null) M.refCount++;
 
     for (int i=0; i<matrixCache.length; i++)
-      if (matrixCache[i] != null && !matrixCache[i].inUse)
+      if (matrixCache[i] != null && matrixCache[i].refCount == 0)
         matrixCache[i] = null;
+  }
+
+  private void setMonitorY(int row, boolean wrapX) {
+    if (maxMonitorSize == 0)
+      return;
+    if (row < 0) {
+      row = maxMonitorSize-1;
+      if (wrapX)
+        setMonitorX(monitorX-1,false);
+    }
+    if (row >= maxMonitorSize) {
+      row = 0;
+      if (wrapX)
+        setMonitorX(monitorX+1,false);
+    }
+    monitorY = row;
+    if (monitorY < monitorYOff)
+      monitorYOff = monitorY;
+    if (monitorY+1 >
+        monitorYOff+Math.min(monitorSize,maxMonitorDisplaySize-
+                             (monitorMode==MONITOR_MATRIX?1:0)))
+      monitorYOff = monitorY+1-Math.min(monitorSize,maxMonitorDisplaySize-
+                                        (monitorMode==MONITOR_MATRIX?1:0));
+    repaintAll();
+  }
+
+  private void setMonitorX(int col, boolean wrapY) {
+    if (monitorMode != MONITOR_MATRIX || monitoredMatrix == null)
+      return;
+    // Automatic wrap-around
+    if (col < 0) {
+      col = monitoredMatrix.cols-1;
+      if (wrapY)
+        setMonitorY(monitorY-1,false);
+    }
+    if (col >= monitoredMatrix.cols) {
+      col = 0;
+      if (wrapY)
+        setMonitorY(monitorY+1,false);
+    }
+    monitorX = col;
+    StringBuffer caption = new StringBuffer("C ");
+    caption.append(col+1);
+    int nSpaces = (format.maxwidth-caption.length())/2;
+    for (int i=0; i<nSpaces; i++)
+      caption.append(' ');
+    monitorCaption = caption.toString();
+    monitors = monitoredMatrix.D[col];
+    imagMonitors = null;
+    clearMonitorStrings();
+  }
+
+  private Matrix getCurrentMatrix() {
+    Matrix M = null;
+    for (int i=0; i<STACK_SIZE; i++)
+      if ((M=getMatrix(stack[i])) != null)
+        break;
+    return M;
+  }
+  
+  private void updateMatrixMonitor() {
+    Matrix M = getCurrentMatrix();
+    if (M == null) {
+      monitoredMatrix = null;
+      maxMonitorSize = 0;
+      monitorSize = 0;
+      monitors = imagMonitors = null;
+    } else if (M != monitoredMatrix) {
+      monitoredMatrix = M;
+      maxMonitorSize = M.rows;
+      monitorSize = Math.min(initialMonitorSize,maxMonitorSize);
+      if (matrixLabels == null || matrixLabels.length < maxMonitorSize) {
+        String [] s = new String[maxMonitorSize];
+        if (matrixLabels != null)
+          System.arraycopy(matrixLabels,0,s,0,matrixLabels.length);
+        matrixLabels = s;
+      }
+      monitorLabels = matrixLabels;
+      if (monitorStr.length < maxMonitorSize)
+        monitorStr = new String[maxMonitorSize];
+      else
+        clearMonitorStrings();
+      if (monitorX >= M.cols || monitorY >= M.rows) {
+        monitorX = 0;
+        monitorY = 0;
+      }
+      setMonitorX(monitorX,false);
+      setMonitorY(monitorY,false);
+      repaintAll();
+    }
+  }
+
+  private void setMonitoring(int mode, int size, int maxSize,
+                             Real[] m, Real [] mi, String[] labels) {
+    if (size == 0)
+      mode = MONITOR_NONE;
+    
+    monitorMode = mode;
+    initialMonitorSize = size;
+    maxMonitorSize = maxSize;
+    monitorSize = Math.min(initialMonitorSize,maxMonitorSize);
+    monitors = m;
+    imagMonitors = mi;
+    monitorLabels = labels;
+    setMonitorY(0,false);
+    clearMonitorStrings();
   }
   
   private String makeString(Real x, Real xi) {
     String s;
     Matrix M;
     if ((M = getMatrix(x)) != null) {
-      return "M:["+M.rows+"x"+M.cols+"]";
+      return "M["+M.rows+"x"+M.cols+"]";
     } else if (xi != null && !xi.isZero()) {
       int maxwidth = format.maxwidth;
       int imagSign = xi.isNegative() && format.base==10 ? 0 : 1;
@@ -959,8 +1131,18 @@ public final class CalcEngine
   }
 
   public String getMonitorElement(int n) {
+    if (monitorMode == MONITOR_MATRIX) {
+      if (n==0)
+        if (monitoredMatrix == null)
+          return "no matrix";
+        else
+          return monitorCaption;
+      else
+        n--;
+    }
+    n += monitorYOff;
     if (monitorStr[n] == null) {
-      format.maxwidth -= monitorLabels[n].length();
+      format.maxwidth -= monitorLabels[n].length()+1;
       if (monitors != null && monitors[n] != null) {
         if (imagMonitors != null)
           monitorStr[n] = makeString(monitors[n],imagMonitors[n]);
@@ -969,17 +1151,62 @@ public final class CalcEngine
       } else {
         monitorStr[n] = Real.ZERO.toString(format);
       }
-      format.maxwidth += monitorLabels[n].length();
+      format.maxwidth += monitorLabels[n].length()+1;
     }
     return monitorStr[n];
   }
 
-  public String getMonitorLabel(int elementNo) {
-    return monitorLabels[elementNo];
+  public String getMonitorLabel(int n) {
+    if (monitorMode == MONITOR_MATRIX) {
+      if (n==0)
+        return "";
+      else
+        n--;
+    }
+    n += monitorYOff;
+    if (monitorLabels[n]==null) {
+      if (monitorMode == MONITOR_MEM)
+        monitorLabels[n] = "M"+n;
+      else if (monitorMode == MONITOR_MATRIX)
+        monitorLabels[n] = "R"+(n+1);
+    }
+    return monitorLabels[n];
+  }
+
+  public String getMonitorLead(int n) {
+    if (monitorMode == MONITOR_MATRIX) {
+      if (n==0)
+        return "";
+      else
+        n--;
+    }
+    n += monitorYOff;
+    if (isInsideMonitor && n == monitorY)
+      return ">";
+    else
+      return "=";
   }
 
   public int getMonitorSize() {
-    return monitorSize;
+    return Math.min(monitorSize+(monitorMode == MONITOR_MATRIX ? 1 : 0),
+                    maxMonitorDisplaySize);
+  }
+
+  public void setMaxMonitorSize(int max) {
+    maxMonitorDisplaySize = max;
+    if (monitorMode == MONITOR_MATRIX)
+      maxMonitorDisplaySize--;
+    if (monitorY >= monitorYOff+maxMonitorDisplaySize) {
+      monitorYOff = monitorY-maxMonitorDisplaySize+1;
+      repaintAll();
+    }
+    if (monitorYOff+Math.min(maxMonitorDisplaySize,monitorSize)>maxMonitorSize)
+    {
+      monitorYOff = maxMonitorSize-Math.min(maxMonitorDisplaySize,monitorSize);
+      repaintAll();      
+    }
+    if (monitorMode == MONITOR_MATRIX)
+      maxMonitorDisplaySize++;
   }
 
   public void setMaxWidth(int max) {
@@ -987,6 +1214,7 @@ public final class CalcEngine
     if (inputInProgress)
       parseInput();
     clearStrings();
+    setMonitorX(monitorX,false); // Possibly update monitorCaption
   }
 
   public int numRepaintLines() {
@@ -996,10 +1224,12 @@ public final class CalcEngine
   }
 
   private void repaint(int nElements) {
-    if (nElements < 0)
-      nElements = 100;
     if (repaintLines<nElements)
       repaintLines = nElements;
+  }
+
+  private void repaintAll() {
+    repaint(100);
   }
 
   private void input(int cmd) {
@@ -1139,6 +1369,7 @@ public final class CalcEngine
 
   private void parseInput() {
     lasty.assign(stack[0]);
+    lastz.makeZero();
     if (imagStack != null)
       lastyi.assign(imagStack[0]);
     undoStackEmpty = strStack[0]==empty ? 1 : 0;
@@ -1180,7 +1411,7 @@ public final class CalcEngine
     if (imagStack != null)
       imagStack[0] = imagTmp;
 
-    repaint(-1);
+    repaintAll();
   }
 
   private void rollDown(boolean whole) {
@@ -1208,7 +1439,7 @@ public final class CalcEngine
     if (imagStack != null)
       imagStack[top] = imagTmp;
 
-    repaint(-1);
+    repaintAll();
   }
 
   private void xchgSt(int n) {
@@ -1230,6 +1461,7 @@ public final class CalcEngine
   private void enter() {
     rollUp(true);
     lasty.assign(stack[0]);
+    lastz.makeZero();
     if (imagStack != null)
       lastyi.assign(imagStack[0]);
     undoStackEmpty = strStack[0]==empty ? 1 : 0;
@@ -1293,6 +1525,7 @@ public final class CalcEngine
     Real y = stack[1];
     lastx.assign(x);
     lasty.assign(y);
+    lastx.makeZero();
     undoStackEmpty = strStack[1]==empty ? strStack[0]==empty ? 2 : 1 : 0;
     undoOp = UNDO_BINARY;
 
@@ -1432,6 +1665,7 @@ public final class CalcEngine
 
     lastx.assign(x);
     lasty.assign(y);
+    lastz.makeZero();
     undoStackEmpty = strStack[1]==empty ? strStack[0]==empty ? 2 : 1 : 0;
     undoOp = UNDO_BINARY;
     switch (cmd) {
@@ -1507,6 +1741,7 @@ public final class CalcEngine
     }
     lastx.assign(x);
     lasty.assign(y);
+    lastz.makeZero();
     undoStackEmpty = strStack[1]==empty ? strStack[0]==empty ? 2 : 1 : 0;
     undoOp = UNDO_BINARY;
 
@@ -1579,6 +1814,16 @@ public final class CalcEngine
           y.div(x);
         }
         break;
+      case MATRIX_NEW:
+        if (!matrix && !complex) {
+          int rows = y.toInteger();
+          int cols = x.toInteger();
+          if (rows > 0 && rows < 65536 && cols > 0 && cols < 65536) {
+            matrix = true;
+            Y = new Matrix(rows,cols);
+          }
+        } // else do nothing
+        break;
       case MATRIX_CONCAT:
         if (matrix) {
           if (X!=null && Y!=null) {
@@ -1595,7 +1840,7 @@ public final class CalcEngine
           matrix = true;
           Y = new Matrix(1,2);
           Y.D[0][0].assign(y);
-          Y.D[0][1].assign(x);
+          Y.D[1][0].assign(x);
         }
         break;
       case MATRIX_STACK:
@@ -1614,10 +1859,11 @@ public final class CalcEngine
           matrix = true;
           Y = new Matrix(2,1);
           Y.D[0][0].assign(y);
-          Y.D[1][0].assign(x);
+          Y.D[0][1].assign(x);
         }
         break;
       case CLEAR:
+        matrix = false;
         break;
     }
     if (complex && (y.isNan() || yi.isNan())) {
@@ -1630,10 +1876,10 @@ public final class CalcEngine
     stack[STACK_SIZE-1].makeZero();
     if (imagStack != null)
       imagStack[STACK_SIZE-1].makeZero();
+    strStack[STACK_SIZE-1] = empty;
     if (matrix) {
       linkToMatrix(y,Y);
     }
-    strStack[STACK_SIZE-1] = empty;
     if (cmd != CLEAR)
       strStack[0] = null;    
   }
@@ -1665,6 +1911,8 @@ public final class CalcEngine
     Real tmp;
     Real x = stack[0];
     lastx.assign(x);
+    lasty.makeZero();
+    lastz.makeZero();
     undoStackEmpty = strStack[0]==empty ? 1 : 0;
     undoOp = UNDO_UNARY;
 
@@ -1691,7 +1939,7 @@ public final class CalcEngine
         mem[param] = tmp;
         if (monitorMode == MONITOR_MEM) {
           monitorStr[param] = null;
-          repaint(-1);
+          repaintAll();
         }
         break;
       case TO_DEG:  x.div(Real.PI); x.mul(Real180); break;
@@ -1955,6 +2203,8 @@ public final class CalcEngine
       lastxi = null;
     }
     lastx.assign(x);
+    lasty.makeZero();
+    lastz.makeZero();
     undoStackEmpty = strStack[0]==empty ? 1 : 0;
     undoOp = UNDO_UNARY;
     switch (cmd) {
@@ -2245,6 +2495,8 @@ public final class CalcEngine
       lastxi = null;
     }
     lastx.assign(x);
+    lasty.makeZero();
+    lastz.makeZero();
     undoStackEmpty = strStack[0]==empty ? 1 : 0;
     undoOp = UNDO_UNARY;
     switch (cmd) {
@@ -2312,6 +2564,7 @@ public final class CalcEngine
     Real y = stack[1];
     lastx.assign(x);
     lasty.assign(y);
+    lastz.makeZero();
     if (imagStack != null) {
       lastxi.assign(imagStack[0]);
       lastyi.assign(imagStack[1]);
@@ -2380,6 +2633,7 @@ public final class CalcEngine
   private void push(Real x, Real xi) {
     rollUp(true);
     lasty.assign(stack[0]);
+    lastz.makeZero();
     if (imagStack != null)
       lastyi.assign(imagStack[0]);
     undoStackEmpty = strStack[0]==empty ? 1 : 0;
@@ -2632,7 +2886,7 @@ public final class CalcEngine
     }
     if (monitorMode == MONITOR_STAT) {
       clearMonitorStrings();
-      repaint(-1);
+      repaintAll();
     }
     push(SUM1,null);
   }
@@ -2733,6 +2987,7 @@ public final class CalcEngine
     allocStat();
     rollUp(true);
     lasty.assign(stack[0]);
+    lastz.makeZero();
     if (imagStack != null) {
       lastyi.assign(imagStack[0]);
       imagStack[0].makeZero();
@@ -3077,7 +3332,17 @@ public final class CalcEngine
       System.arraycopy(prog[currentProg],0,prog2,0,progCounter);
       prog[currentProg] = prog2;
     }
-    prog[currentProg][progCounter++] = (short)(cmd+(param<<10));
+    if (cmd == MATRIX_STO || cmd == MATRIX_RCL) {
+      // Special case, utilizing 9 bits to store row/col
+      int col = param&0xffff;
+      int row = (param>>16)&0xffff;
+      if (col>=64 || row>=128)
+        return; // Cannot program so large index (should we warn?)
+      cmd += col+((row&0x3)<<6)+((row&0x7c)<<8);
+      prog[currentProg][progCounter++] = (short)cmd;
+    } else {
+      prog[currentProg][progCounter++] = (short)(cmd+(param<<10));
+    }
   }
 
   private void recordPush(Real x) {
@@ -3104,9 +3369,16 @@ public final class CalcEngine
   private void executeProgram() {
     for (int i=0; i<prog[currentProg].length; i++) {
       short cmd = prog[currentProg][i];
-      if ((cmd & 0x8000) == 0)
-        command(cmd&0x3ff, cmd>>>10);
-      else {
+      if ((cmd & 0x8000) == 0) {
+        if ((cmd & (MATRIX_STO|MATRIX_RCL)) != 0) {
+          int col = cmd & 0x3f;
+          int row = ((cmd>>6)&0x3) + ((cmd>>8)&0x7c);
+          cmd &= MATRIX_STO|MATRIX_RCL;
+          command(cmd,(row<<16)+col);
+        } else {
+          command(cmd&0x3ff, cmd>>>10);
+        }
+      } else {
         if (i+5 < prog[currentProg].length) { // Just a precaution
           rTmp.mantissa = (((long)(prog[currentProg][i  ]&0xffff)<<47)+
                            ((long)(prog[currentProg][i+1]&0xffff)<<31)+
@@ -3197,9 +3469,11 @@ public final class CalcEngine
     Real.magicRounding = true;
   }
 
-  public void command(int cmd, int param) {
+  public void command(int cmd, int param) throws OutOfMemoryError {
     int i;
 
+    // The following commands are NOT recorded in a program,
+    // but they may call other "command"s which are programmed
     switch (cmd) {
       case DIGIT_0: case DIGIT_1: case DIGIT_2: case DIGIT_3:
       case DIGIT_4: case DIGIT_5: case DIGIT_6: case DIGIT_7:
@@ -3215,13 +3489,69 @@ public final class CalcEngine
           parseInput();
           return;
         }
-        break;
+        break; // Fall-through to ENTER command below
       case CLEAR:
         if (inputInProgress) {
           input(cmd);
           return;
         }
-        break;
+        break; // Fall-through to CLEAR command below
+
+      case MONITOR_ENTER:
+        if (inputInProgress) // Do implicit enter
+          parseInput();
+        isInsideMonitor = true;
+        repaintAll();
+        return;
+      case MONITOR_EXIT:
+        isInsideMonitor = false;
+        repaintAll();
+        return;
+      case MONITOR_UP:
+        setMonitorY(monitorY-1,true);
+        return;
+      case MONITOR_DOWN:
+        setMonitorY(monitorY+1,true);
+        return;
+      case MONITOR_LEFT:
+        setMonitorX(monitorX-1,true);
+        return;
+      case MONITOR_RIGHT:
+        setMonitorX(monitorX+1,true);
+        return;
+      case MONITOR_PUSH:
+      case MONITOR_PUT:
+        switch (monitorMode) {
+          case MONITOR_MEM:     command(STO,monitorY);         break;
+          case MONITOR_STAT:    command(STAT_STO,monitorY);    break;
+          case MONITOR_FINANCE: command(FINANCE_STO,monitorY); break;
+          case MONITOR_MATRIX:
+            if (getMatrix(stack[0]) != null) { // Cannot store Matrix in matrix
+              if (cmd == MONITOR_PUSH)
+                command(MONITOR_EXIT,0);
+              return;
+            }
+            command(MATRIX_STO,(monitorY<<16)+monitorX);
+            break;
+        }
+        setMonitorY(monitorY+1,true); // Proceed to next element
+        if (cmd == MONITOR_PUSH) {
+          // Put, pop and return
+          command(CLEAR,0);
+          command(MONITOR_EXIT,0);
+        }
+        return;
+      case MONITOR_GET:
+        switch (monitorMode) {
+          case MONITOR_MEM:     command(RCL,monitorY);         break;
+          case MONITOR_STAT:    command(STAT_RCL,monitorY);    break;
+          case MONITOR_FINANCE: command(FINANCE_RCL,monitorY); break;
+          case MONITOR_MATRIX:
+            command(MATRIX_RCL,(monitorY<<16)+monitorX);
+            break;
+        }
+        setMonitorY(monitorY+1,true); // Proceed to next element
+        return;
     }
 
     // For all the commands below, do implicit enter
@@ -3237,7 +3567,7 @@ public final class CalcEngine
         break;
       case CLEAR:
       case ADD:   case SUB:   case MUL:   case DIV:
-      case MATRIX_CONCAT: case MATRIX_STACK:
+      case MATRIX_CONCAT: case MATRIX_STACK: case MATRIX_NEW:
         binaryComplexMatrix(cmd);
         break;
       case YPOWX: case XRTY:
@@ -3362,6 +3692,8 @@ public final class CalcEngine
         break;
       case CLS:
         lastx.assign(stack[0]);
+        lasty.makeZero();
+        lastz.makeZero();
         if (imagStack != null)
           lastxi.assign(imagStack[0]);
         clearStack();
@@ -3419,7 +3751,7 @@ public final class CalcEngine
         }
         if (monitorMode == MONITOR_MEM) {
           monitorStr[param] = null;
-          repaint(-1);
+          repaintAll();
         }
         break;
       case STP_X:
@@ -3437,7 +3769,7 @@ public final class CalcEngine
         }
         if (monitorMode == MONITOR_MEM) {
           monitorStr[param] = null;
-          repaint(-1);
+          repaintAll();
         }
         break;
       case RCL_X:
@@ -3460,7 +3792,7 @@ public final class CalcEngine
         clearMem();
         if (monitorMode == MONITOR_MEM) {
           clearMonitorStrings();
-          repaint(-1);
+          repaintAll();
         }
         break;
 
@@ -3472,7 +3804,7 @@ public final class CalcEngine
         clearStat();
         if (monitorMode == MONITOR_STAT) {
           clearMonitorStrings();
-          repaint(-1);
+          repaintAll();
         }
         break;
       case AVG:
@@ -3491,6 +3823,23 @@ public final class CalcEngine
       case POW_R:
         stat1(cmd);
         break;
+      case STAT_STO:
+        allocStat();
+        if (getMatrix(stack[0]) == null) // Cannot store Matrix in stat
+          stat[param].assign(stack[0]);
+        else
+          stat[param].assign(Real.NAN);
+        if (monitorMode == MONITOR_STAT) {
+          monitorStr[param] = null;
+          repaintAll();
+        }
+        break;
+      case STAT_RCL:
+        if (stat != null)
+          push(stat[param],null);
+        else
+          push(Real.ZERO,null);
+        break;
       case N:         push(SUM1,     null); break;
       case SUMX:      push(SUMx,     null); break;
       case SUMXX:     push(SUMx2,    null); break;
@@ -3507,6 +3856,8 @@ public final class CalcEngine
 
       case FACTORIZE:
         lastx.assign(stack[0]);
+        lasty.makeZero();
+        lastz.makeZero();
         if (imagStack != null)
           lastxi.assign(imagStack[0]);
         else
@@ -3554,6 +3905,7 @@ public final class CalcEngine
           stack[0].assign(stack[1]);
           stack[1].makeZero();
         }
+        lastz.makeZero();
         undoStackEmpty = strStack[0]==empty ? strStack[1]==empty ? 2 : 1 : 0;
         strStack[0] = null;
         strStack[1] = null;
@@ -3568,7 +3920,7 @@ public final class CalcEngine
           finance[param].assign(Real.NAN);
         if (monitorMode == MONITOR_FINANCE) {
           monitorStr[param] = null;
-          repaint(-1);
+          repaintAll();
         }
         break;
       case FINANCE_RCL:
@@ -3581,14 +3933,14 @@ public final class CalcEngine
         financeSolve(param);
         if (monitorMode == MONITOR_FINANCE) {
           monitorStr[param] = null;
-          repaint(-1);
+          repaintAll();
         }
         break;
       case FINANCE_CLEAR:
         clearFinance();
         if (monitorMode == MONITOR_FINANCE) {
           clearMonitorStrings();
-          repaint(-1);
+          repaintAll();
         }
         break;
       case FINANCE_BGNEND:
@@ -3596,37 +3948,61 @@ public final class CalcEngine
         break;
 
       case MONITOR_NONE:
-        monitorMode = cmd;
-        monitorSize = 0;
-        clearMonitorStrings();
-        repaint(-1);
+        setMonitoring(cmd,0,0,null,null,null);
         break;
       case MONITOR_MEM:
-        monitorMode = cmd;
-        monitorSize = param > MEM_SIZE ? MEM_SIZE : param;
-        monitors = mem;
-        imagMonitors = imagMem;
-        monitorLabels = memLabels;
-        clearMonitorStrings();
-        repaint(-1);
+        setMonitoring(cmd,param,MEM_SIZE,mem,imagMem,memLabels);
         break;
       case MONITOR_STAT:
-        monitorMode = cmd;
-        monitorSize = param > STAT_SIZE ? STAT_SIZE : param;
-        monitors = stat;
-        imagMonitors = null;
-        monitorLabels = statLabels;
-        clearMonitorStrings();
-        repaint(-1);
+        setMonitoring(cmd,param,STAT_SIZE,stat,null,statLabels);
         break;
       case MONITOR_FINANCE:
-        monitorMode = cmd;
-        monitorSize = FINANCE_SIZE;
-        monitors = finance;
-        imagMonitors = null;
-        monitorLabels = financeLabels;
-        clearMonitorStrings();
-        repaint(-1);
+        setMonitoring(cmd,FINANCE_SIZE,FINANCE_SIZE,finance,null,
+                      financeLabels);
+        break;
+      case MONITOR_MATRIX:
+        setMonitoring(cmd,param,0,null,null,null);
+        monitoredMatrix = null;
+        // updateMatrixMonitor() will be run later
+        break;
+
+      case MATRIX_STO:
+        Matrix M = getCurrentMatrix();
+        if (M == null)
+          break;
+        int col = param&0xffff;
+        int row = (param>>16)&0xffff;
+        if (col>=M.cols || row>=M.rows)
+          break;
+        matrixGC();
+        if (M.refCount > 1) { // "Copy on write"
+          M = new Matrix(M);
+          // Find original matrix position, and automagically replace it
+          for (i=0; i<STACK_SIZE; i++)
+            if (getMatrix(stack[i]) != null) {
+              linkToMatrix(stack[i],M);
+              break;
+            }
+        }
+        if (getMatrix(stack[0]) == null) // Cannot store Matrix in matrix
+          M.D[col][row].assign(stack[0]);
+        else
+          M.D[col][row].assign(Real.NAN);
+        if (monitorMode == MONITOR_MATRIX && row<maxMonitorSize) {
+          monitorStr[row] = null;
+          repaintAll();
+        }
+        break;
+      case MATRIX_RCL:
+        M = getCurrentMatrix();
+        if (M == null)
+          break;
+        col = param&0xffff;
+        row = (param>>16)&0xffff;
+        if (col<M.cols && row<M.rows)
+          push(M.D[col][row],null);
+        else
+          push(Real.NAN,null);
         break;
 
       case NORM:
@@ -3807,6 +4183,10 @@ public final class CalcEngine
         }
         break;
     }
+
+    // Do this here, because almost *anything* can change current matrix
+    if (monitorMode == MONITOR_MATRIX)
+      updateMatrixMonitor();
   }
 
   private int rangeScale(Real x, Real min, Real max, int size, Real offset) {
