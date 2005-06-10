@@ -810,7 +810,7 @@ public final class CalcCanvas
     try {
       numberFontStyle = numberFont.getStyle();
       numberFont = null; // Free some memory before saveState()
-      out.writeShort(2);
+      out.writeShort(1/*+1*/);
       out.writeByte(numberFontStyle);
       //out.writeBoolean(fullScreen);
       calc.command(CalcEngine.FINALIZE,0);
