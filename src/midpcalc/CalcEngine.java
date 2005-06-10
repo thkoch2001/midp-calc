@@ -253,7 +253,7 @@ public final class CalcEngine
   public static final int MONITOR_FINANCE= 246;
   public static final int MONITOR_MATRIX = 247;
   public static final int MONITOR_ENTER  = 248;
-  public static final int MONITOR_EXIT   = 240;
+  public static final int MONITOR_EXIT   = 249;
   public static final int MONITOR_UP     = 250;
   public static final int MONITOR_DOWN   = 251;
   public static final int MONITOR_LEFT   = 252;
@@ -349,6 +349,7 @@ public final class CalcEngine
   public boolean inputInProgress;
   private Real rTmp,rTmp2,rTmp3,rTmp4;
   private int repaintLines;
+  public boolean initialized = false;
 
   public Matrix[] matrixCache;
 
@@ -404,6 +405,7 @@ public final class CalcEngine
     strStack = new String[STACK_SIZE];
     monitorStr = new String[MEM_SIZE];
     matrixCache = new Matrix[STACK_SIZE+MEM_SIZE+3];
+    maxMonitorDisplaySize = 100; // For now, before an actual max is set
 
     lastx = new Real();
     lasty = new Real();
@@ -973,6 +975,9 @@ public final class CalcEngine
   }
 
   private void matrixGC() {
+    if (!initialized)
+      return; // Avoid premature GC before state has been fully restored
+
     Matrix M;
     for (int i=0; i<matrixCache.length; i++)
       if (matrixCache[i] != null)

@@ -732,6 +732,7 @@ public final class CalcCanvas
                        getWidth()>=96  ? GFont.MEDIUM : GFont.SMALL);
     if (in != null)
       restoreState(in);
+
     if (!midlet.display.isColor()) {
       numberFontStyle = GFont.SYSTEM;
       // Now, remove the font menu.
@@ -837,6 +838,8 @@ public final class CalcCanvas
       calc.restoreState(in);
     } catch (IOException ioe) {
     }
+
+    calc.initialized = true;
   }
 
   private void setNumberFont(int size) {
