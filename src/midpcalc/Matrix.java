@@ -253,6 +253,28 @@ public final class Matrix
     return M;
   }
 
+  public void det(Real det) {
+    invert(this,det);
+  }
+
+  public void trace(Real Tr) {
+    Tr.makeZero();
+    for (int i=0; i<cols && i<rows; i++)
+      Tr.add(D[i][i]);
+  }
+
+  public void norm_F(Real norm2) {
+    Real tmp = new Real();
+    norm2.makeZero();
+    for (int c=0; c<cols; c++)
+      for (int r=0; r<rows; r++) {
+        tmp.assign(D[c][r]);
+        tmp.sqr();
+        norm2.add(tmp);
+      }
+    norm2.sqrt();
+  }
+
   public static Matrix concat(final Matrix A, final Matrix B) {
     if (isInvalid(A) || isInvalid(B) || A.rows != B.rows)
       return null;

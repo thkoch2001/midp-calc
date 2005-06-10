@@ -561,8 +561,10 @@ public final class CalcCanvas
       new Menu("split",CalcEngine.MATRIX_SPLIT),
       new Menu("concat",CalcEngine.MATRIX_CONCAT),
       new Menu("more",Menu.TITLE_SKIP,new Menu[] {
-        new Menu("transp",CalcEngine.TRANSP),
         new Menu("det",CalcEngine.DETERM),
+        new Menu("A^T",CalcEngine.TRANSP),
+        new Menu("|A|_F",CalcEngine.ABS),
+        new Menu("Tr",CalcEngine.TRACE),
       }),
     }),
     new Menu("prob",new Menu[] {
@@ -718,6 +720,7 @@ public final class CalcCanvas
   private int menuStackPtr;
   private int menuCommand;
   private Menu menuItem;
+  private Menu repeatedMenuItem;
 
   public CalcCanvas(Calc m, DataInputStream in) {
     midlet = m;
@@ -1331,16 +1334,19 @@ public final class CalcCanvas
       if (calc.progRecording) {
         menu.subMenu[4].subMenu[1] = prog2;
         // Cannot use NO_PROG commands during program recording
-        if (basicMenu.subMenu[4]!=null &&
-            (basicMenu.subMenu[4].flags & Menu.NO_PROG)!=0)
-          basicMenu.subMenu[4] = null;
+        if (repeatedMenuItem!=null &&
+            (repeatedMenuItem.flags & Menu.NO_PROG)!=0)
+          repeatedMenuItem = null;
       } else {
         menu.subMenu[4].subMenu[1] = prog1;        
       }
-      // Change basicMenu[4] to enterMonitor if monitoring
-      if (calc.getMonitorSize() > 0)
+      // Change basicMenu[4] to enterMonitor if monitoring or repeated item
+      if (calc.getActualMonitorSize() > 0)
         basicMenu.subMenu[4] = enterMonitor;
+      else
+        basicMenu.subMenu[4] = repeatedMenuItem;
     }
+
     if (menuStackPtr < 0 && menuIndex < 4) {
       // Go directly to submenu
       menuStack[0] = menu;
@@ -1427,7 +1433,7 @@ public final class CalcCanvas
           if ((item.flags & Menu.SUBMENU_REQUIRED)!=0)
             item = menuItem; // Switch from submenu to actual menu item
           if ((item.flags & Menu.NO_REPEAT)==0)
-            basicMenu.subMenu[4] = item;
+            repeatedMenuItem = item;
         }
 
         menuStackPtr = -1;     // Remove menu
@@ -1463,7 +1469,7 @@ public final class CalcCanvas
             if ((item.flags & Menu.SUBMENU_REQUIRED)!=0)
               item = menuItem; // Switch from submenu to actual menu item
             if ((item.flags & Menu.NO_REPEAT)==0)
-              basicMenu.subMenu[4] = item;
+              repeatedMenuItem = item;
 
             menuStackPtr = -1;
             numRepaintLines = 100; // Force repaint of all

@@ -242,26 +242,27 @@ public final class CalcEngine
   public static final int PROG_DIFF      = 235;
   public static final int TRANSP         = 236;
   public static final int DETERM         = 237;
-  public static final int MATRIX_NEW     = 238;
-  public static final int MATRIX_CONCAT  = 239;
-  public static final int MATRIX_STACK   = 240;
-  public static final int MATRIX_SPLIT   = 241;
-  public static final int MONITOR_NONE   = 242;
-  public static final int MONITOR_MEM    = 243;
-  public static final int MONITOR_STAT   = 244;
-  public static final int MONITOR_FINANCE= 245;
-  public static final int MONITOR_MATRIX = 246;
-  public static final int MONITOR_ENTER  = 247;
-  public static final int MONITOR_EXIT   = 248;
-  public static final int MONITOR_UP     = 249;
-  public static final int MONITOR_DOWN   = 250;
-  public static final int MONITOR_LEFT   = 251;
-  public static final int MONITOR_RIGHT  = 252;
-  public static final int MONITOR_PUSH   = 253;
-  public static final int MONITOR_PUT    = 254;
-  public static final int MONITOR_GET    = 255;
-  public static final int STAT_RCL       = 256;
-  public static final int STAT_STO       = 257;
+  public static final int TRACE          = 238;
+  public static final int MATRIX_NEW     = 239;
+  public static final int MATRIX_CONCAT  = 240;
+  public static final int MATRIX_STACK   = 241;
+  public static final int MATRIX_SPLIT   = 242;
+  public static final int MONITOR_NONE   = 243;
+  public static final int MONITOR_MEM    = 244;
+  public static final int MONITOR_STAT   = 245;
+  public static final int MONITOR_FINANCE= 246;
+  public static final int MONITOR_MATRIX = 247;
+  public static final int MONITOR_ENTER  = 248;
+  public static final int MONITOR_EXIT   = 240;
+  public static final int MONITOR_UP     = 250;
+  public static final int MONITOR_DOWN   = 251;
+  public static final int MONITOR_LEFT   = 252;
+  public static final int MONITOR_RIGHT  = 253;
+  public static final int MONITOR_PUSH   = 254;
+  public static final int MONITOR_PUT    = 255;
+  public static final int MONITOR_GET    = 256;
+  public static final int STAT_RCL       = 257;
+  public static final int STAT_STO       = 258;
 
   public static final int MATRIX_STO     = 512; // Special bit pattern
   public static final int MATRIX_RCL     = 768; // Special bit pattern
@@ -1193,6 +1194,10 @@ public final class CalcEngine
   public int getMonitorSize() {
     return Math.min(monitorSize+(monitorMode == MONITOR_MATRIX ? 1 : 0),
                     maxMonitorDisplaySize);
+  }
+
+  public int getActualMonitorSize() {
+    return monitorSize;
   }
 
   public void setMaxMonitorSize(int max) {
@@ -2237,14 +2242,6 @@ public final class CalcEngine
           x.sqrt();
         }
         break;
-      case ABS:
-        if (complex) {
-          x.hypot(xi);
-          xi.makeZero();
-        } else {
-          x.abs();
-        }
-        break;
       case CPLX_ARG:
         if (complex) {
           degrees = false;          
@@ -2537,6 +2534,17 @@ public final class CalcEngine
           x.recip();
         }
         break;
+      case ABS:
+        if (matrix) {
+          X.norm_F(x);
+          matrix = false;
+        } else if (complex) {
+          x.hypot(xi);
+          xi.makeZero();
+        } else {
+          x.abs();
+        }
+        break;
       case TRANSP:
         if (matrix) {
           X = Matrix.transp(X);
@@ -2544,7 +2552,13 @@ public final class CalcEngine
         break;
       case DETERM:
         if (matrix) {
-          Matrix.invert(X,x);
+          X.det(x);
+          matrix = false;
+        } // else do nothing
+        break;
+      case TRACE:
+        if (matrix) {
+          X.trace(x);
           matrix = false;
         } // else do nothing
         break;
@@ -3588,12 +3602,12 @@ public final class CalcEngine
       case MAX:   case MIN:
         binary(cmd);
         break;
-      case NEG: case RECIP: case SQR:
-      case TRANSP: case DETERM:
+      case NEG:   case RECIP: case SQR: case ABS:
+      case TRANSP: case DETERM: case TRACE:
         unaryComplexMatrix(cmd);
         break;
       case SQRT:  case PERCENT:
-      case ABS:   case CPLX_ARG: case CPLX_CONJ:
+      case CPLX_ARG: case CPLX_CONJ:
       case LN:    case EXP:
       case LOG10: case EXP10: case LOG2: case EXP2:
       case SIN:   case COS:   case TAN:
