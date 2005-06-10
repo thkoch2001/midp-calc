@@ -117,6 +117,13 @@ kilobytes of memory for no good reason) unless you
 version.<br>
 
 <br>
+I have noticed one thing when upgrading with my SonyEricsson K700i,
+which might apply to other phones as well. After downloading, the
+phone says "The new version may be from another source". Unless I
+answer "yes" when asked "Trust source?", the program does not retain
+its previous state.<br>
+
+<br>
 &rarr;&nbsp;&rarr;&nbsp;<a href="Calc-log.html">Older versions</a>
 
 <h2>Hardware compatibility</h2>
@@ -1151,9 +1158,38 @@ have not been implemented yet, returns <tt>nan</tt> when used with
 matrix input(s).<br>
 
 <br>
-Matrices are displayed on one line as e.g. M[3x4]. This indicates a
+Matrices are displayed on one line as e.g. M:[3x4]. This indicates a
 matrix of 3 rows and 4 columns. A 1x1 matrix is automatically
 converted to a normal number.<br>
+
+<br>
+<em>Matrix limitations:</em> There are a few limits to the size of the
+matrices that can be used in the calculator. You cannot create
+matrices with "new" with more than 65536 rows or columns. Even if you
+manage to create an even larger matrix than this by concatenating or
+stacking such matrices, the matrix would not be saved when the
+calculator exited. Due to a limitation when storing programs, matrix
+element editing (through the matrix monitor) of elements beyond column
+64 or row 128 will not be stored in a program.<br>
+
+<br>
+Apart from these limitations in the program itself, it is the
+limitations of the host (i.e. you phone) that may be the most
+severe. When creating especially large matrices you may experience
+"Out of memory error". If you get this, is adviced to exit the program
+to be on the safe side if you want to save the state of the
+calculator. There may also be a limit to how much matrix data the
+calculator can save when you exit. If the calculator was unable to
+save all the matrices, some of your matrices will be replaced by
+<tt>nan</tt> when you start up again.<br>
+
+<br>
+Matrices are stored by reference, so copying a matrix many times on
+the stack or in memory does not consume memory, it only copies the
+reference. However, changing a matrix will create a new matrix, even
+for such a simple operation as "+/-". Since the old matrix is still
+backed up in "LAST x" you are temporarily using twice as much memory
+as with just the one matrix.<br>
 
 <h3><a id="FinancialNote" name="FinancialNote">Financial calculation</a></h3>
 
@@ -1313,7 +1349,7 @@ calculator looks and behaves exactly as before except a "PRG"
 indicator to the upper right. There is no limit to the size of a
 program, but beware, do not leave Calc in programming mode (look for
 the "PRG" indicator), because Calc will <em>eventually</em> run out of
-memory and exit, losing any changes since the program was started.<br>
+memory, giving the "Out of memory error".<br>
 
 <br>
 Programs cannot be viewed or edited, only recorded, so if you perform
