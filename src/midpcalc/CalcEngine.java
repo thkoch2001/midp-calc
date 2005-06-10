@@ -750,14 +750,17 @@ public final class CalcEngine
     for (i=0; i<matrixCache.length; i++) {
       if (matrixCache[i] != null) {
         Matrix M = matrixCache[i];
-        out.writeShort(2+2+M.rows*M.cols*12);
-        out.writeShort((short)M.rows);
-        out.writeShort((short)M.cols);
-        for (int c=0; c<M.cols; c++)
-          for (int r=0; r<M.rows; r++) {
-            M.D[c][r].toBytes(realBuf,0);
-            out.write(realBuf);
-          }
+        if (M.rows<0xffff && M.cols<0xffff) {
+          out.writeShort(2+2+M.rows*M.cols*12);
+          out.writeShort((short)M.rows);
+          out.writeShort((short)M.cols);
+          for (int c=0; c<M.cols; c++)
+            for (int r=0; r<M.rows; r++) {
+              M.D[c][r].toBytes(realBuf,0);
+              out.write(realBuf);
+            }
+        }
+        matrixCache[i] = null; // Free memory as we go
       } else {
         out.writeShort(0);
       }
@@ -1029,7 +1032,7 @@ public final class CalcEngine
         setMonitorY(monitorY+1,false);
     }
     monitorX = col;
-    StringBuffer caption = new StringBuffer("C ");
+    StringBuffer caption = new StringBuffer("Col:");
     caption.append(col+1);
     int nSpaces = (format.maxwidth-caption.length())/2;
     for (int i=0; i<nSpaces; i++)
@@ -1100,7 +1103,7 @@ public final class CalcEngine
     String s;
     Matrix M;
     if ((M = getMatrix(x)) != null) {
-      return "M["+M.rows+"x"+M.cols+"]";
+      return "M:["+M.rows+"x"+M.cols+"]";
     } else if (xi != null && !xi.isZero()) {
       int maxwidth = format.maxwidth;
       int imagSign = xi.isNegative() && format.base==10 ? 0 : 1;
