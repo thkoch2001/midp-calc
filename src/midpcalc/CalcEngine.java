@@ -1538,7 +1538,7 @@ public final class CalcEngine
     Real y = stack[1];
     lastx.assign(x);
     lasty.assign(y);
-    lastx.makeZero();
+    lastz.makeZero();
     undoStackEmpty = strStack[1]==empty ? strStack[0]==empty ? 2 : 1 : 0;
     undoOp = UNDO_BINARY;
 
