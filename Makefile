@@ -1,10 +1,10 @@
-VERSION = 2.05
+VERSION = 2.06
 TARGETS = Calc.jar Calc.jad CalcApplet.jar
 
 WTK_HOME = ../../WTK104
 JFLAGS = --bootclasspath=$(WTK_HOME)/lib/midpapi.zip --encoding="ISO 8859-1" -Wall -C -d . -O2
 ## For use with javac:
-#JFLAGS = -bootclasspath $(WTK_HOME)/lib/midpapi.zip -encoding "ISO8859-1" -d . -O
+JFLAGS = -bootclasspath $(WTK_HOME)/lib/midpapi.zip -encoding "ISO8859-1" -d . -O
 
 JAVAFILES =  Calc.java \
              CalcCanvas.java \
@@ -70,8 +70,8 @@ Calc.jad: Makefile
 
 Calc.jar: $(JAVAFILES) Real.java Calc.jad Calc.png
 	rm -rf ral
-	gcj $(JFLAGS) $(JAVAFILES) Real.java
-#	javac $(JFLAGS) $(JAVAFILES) Real.java
+#	gcj $(JFLAGS) $(JAVAFILES) Real.java
+	javac $(JFLAGS) $(JAVAFILES) Real.java
 	cp Calc.png ral/
 	ant -buildfile build.xml -lib $(WTK_HOME)/lib -Dwtk.home=${WTK_HOME} make-jar
 	touch Calc.jar
@@ -92,5 +92,27 @@ midp-calc-$(VERSION)-src.tgz: $(JAVAFILES) Real.java CalcApplet.java $(MIDPFILES
 	tar czf $@ $^
 
 publish: $(TARGETS) midp-calc-$(VERSION)-src.tgz
-	scp $(TARGETS) $(HTMLFILES) shell.sf.net:/home/groups/m/mi/midp-calc/htdocs
+	cp Calc.jar Calc$(subst .,,$(VERSION)).jar
+	scp $(TARGETS) Calc$(subst .,,$(VERSION)).jar $(HTMLFILES) shell.sf.net:/home/groups/m/mi/midp-calc/htdocs
 	tar czf midp-calc-$(VERSION).tgz $(TARGETS) $(HTMLFILES)
+	@echo ""
+	@echo "***************************************************************"
+	@echo "To make the release available on SourceForge, do the following:"
+	@echo ""
+	@echo "% ftp anonymous@upload.sourceforge.net"
+	@echo "cd /incoming"
+	@echo "bin"
+	@echo "mput midp-calc-$(VERSION)*.tgz"
+	@echo "bye"
+	@echo ""
+	@echo "% cvs commit"
+	@echo "% cvs tag -R RELEASE_$(subst .,_,$(VERSION))"
+	@echo ""
+	@echo "Open http://sourceforge.net/projects/midp-calc/"
+	@echo "Select Admin, File Releases"
+	@echo "Select [Add Release] for the \"midp-calc\" package"
+	@echo "New release name: $(VERSION)"
+	@echo "Add notes, change log"
+	@echo "Add the files midp-calc-$(VERSION)*.tgz"
+	@echo "Set Processor: Platform-Independent, File Type Source .gz, .gz"
+	@echo ""

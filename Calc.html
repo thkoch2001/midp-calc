@@ -26,7 +26,7 @@
 </ul>
 </font></b>
 
-<p><b>Current version: 2.05</b>, <a
+<p><b>Current version: 2.06</b>, <a
 href="Calc-log.html">change-log</a><br>
 
 <b>Copyright: 2003-2005 Roar Lauritzsen</b>, email: <a
@@ -55,10 +55,11 @@ to future work by submitting e.g. $10 here:<br>
 
 <h2>Introduction</h2>
 
-Calc is a Java calculator for MIDP or J2ME devices, such as a Java-enabled
-mobile phone or PDA. It was developed on a Sony Ericsson T610, which is
-my current phone but which has such a pitiful built-in calculator that
-I was compelled to develop this application.<br>
+Calc is a Java calculator for MIDP or J2ME devices, such as a
+Java-enabled mobile phone or PDA. It was developed on a Sony Ericsson
+T610, which was my first Java-enabled phone but which has such a
+pitiful built-in calculator that I was compelled to develop this
+application.<br>
 
 <br>
 Calc works much like a good old HP calculator with RPN logic, but the
@@ -258,12 +259,12 @@ keys 1-6 until the digit changes.
   number". Pressing the # key again exchanges the "/" with a normal
   minus sign, indicating the input of a normal negative number
   which will be converted to two's complement on ENTER.)
-  <li><b>ENTER</b>: This key finishes the currently entered number and puts
-  it on the stack. If no number is being entered, the lowest element
-  on the stack is duplicated.
   <li><b>clear, 'c'</b>: This key deletes the last digit in an entered
   number, clears the lowest element on the stack, and backtracks
   through menus. 
+  <li><b>ENTER</b>: This key finishes the currently entered number and puts
+  it on the stack. If no number is being entered, the lowest element
+  on the stack is duplicated.
   <li><b>+</b> : This key adds the two lowest elements on the stack.
   <li><b>Joystick/arrow keys</b>: Pressing the middle of the joystick
   activates the menu. Pressing up/down/right/left on the joystick
@@ -464,9 +465,10 @@ this number menu is active, you can access the numbers 0-9 directly
 using the number keys.<br>
 
 <br>Since the middle joystick button can be a bit difficult to press,
-care has been taken not to place the most used operations and sub-menus
-on the middle button. Pressing "clear" while navigating the menus
-backtracks up one level of menus.
+care has been taken not to place the most used operations and
+sub-menus on the middle button. Pressing "clear" (the button, not one
+of the menu entries) while navigating the menus backtracks up one
+level of menus.
 
 <h2><a id="Operations" name="Operations">Operations</a></h2>
 
