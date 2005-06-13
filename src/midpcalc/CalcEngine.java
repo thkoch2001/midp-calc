@@ -3336,6 +3336,8 @@ public final class CalcEngine
         xchgSt(undoStackEmpty);
         break;
     }
+    lasty.makeZero();
+    lastz.makeZero();
     undoOp = UNDO_NONE; // Cannot undo this
   }
 
@@ -3784,10 +3786,21 @@ public final class CalcEngine
       case STP:
         i = cmd==STP ? 0 : 1;
         allocMem();
-        mem[param].add(stack[i]);
-        if (imagStack != null && !imagStack[i].isZero()) {
-          allocImagMem();
-          imagMem[param].add(imagStack[i]);
+        Matrix X = getMatrix(stack[i]);
+        Matrix Y = getMatrix(mem[param]);
+        if (X != null || Y != null) {
+          if (X != null && Y != null) {
+            Y = Matrix.add(Y,X);
+            linkToMatrix(mem[param],Y);
+          } else {
+            mem[param].makeNan();
+          }
+        } else {
+          mem[param].add(stack[i]);
+          if (imagStack != null && !imagStack[i].isZero()) {
+            allocImagMem();
+            imagMem[param].add(imagStack[i]);
+          }
         }
         if (monitorMode == MONITOR_MEM) {
           monitorStr[param] = null;
