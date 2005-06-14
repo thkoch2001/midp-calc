@@ -1171,6 +1171,27 @@ matrix of 3 rows and 4 columns. A 1x1 matrix is automatically
 converted to a normal number.<br>
 
 <br>
+There are two methods of filling a matrix with numbers. In the first
+method, you enter the two first numbers of the matrix and then either
+"matrix/concat" or "matrix/stack" the two numbers into a row or column
+vector. Continue concating or stacking more numbers until your first
+vector is complete. Then do the next vectors. Finally, you either
+stack together your row vectors or you concat together your column
+vectors until the matrix is complete. If you use the "repeat"
+operation on the basic menu this method requires the fewest button
+clicks.<br>
+
+<br>
+Alternatively, you can create an empty matrix by "matrix/new", and
+then press "mode/monitor/matrix/<#rows>", see <a
+href="Calc.html#MonitorNote"><b>(*)</b></a>. In this mode you can
+enter a number on the stack, and then from the basic menu you can go
+into the matrix and "push" one element using the middle button. This
+brings you out of the matrix again and you can enter a new
+number. Repeat this until the matrix is complete. This method requires
+a few more button clicks, but it is more visual.<br>
+
+<br>
 <em>Matrix limitations:</em> There are a few limits to the size of the
 matrices that can be used in the calculator. You cannot create
 matrices with "new" with more than 65536 rows or columns. Even if you
