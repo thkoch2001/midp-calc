@@ -20,7 +20,8 @@ public final class CalcCanvas
 //            -> misc    -> mod    div    random  factorize
 //                       -> int -> round ceil floor trunc frac
 //            -> matrix  -> new    concat stack   split
-//                       -> more -> det transp
+//                       -> more -> det A^T |A|_F Tr
+//                               -> more -> size a_yx
 //   trig     -> normal  -> sin    cos    tan
 //            -> arc     -> asin   acos   atan
 //            -> hyp     -> sinh   cosh   tanh
@@ -82,7 +83,7 @@ public final class CalcCanvas
 //                       -> D->D.MS
 //                       -> D.MS->D
 //   mode     -> prog[1] -> draw   -> y=f(x)
-//                                 -> r=f(phi)
+//                                 -> r=f(theta)
 //                                 -> z=f(t)
 //                                 -> z=f(z)
 //   math     -> matrix  -> more   -> draw
@@ -563,8 +564,12 @@ public final class CalcCanvas
       new Menu("more",Menu.TITLE_SKIP,new Menu[] {
         new Menu("det",CalcEngine.DETERM),
         new Menu("A^T",CalcEngine.TRANSP),
-        new Menu("|A|_F",CalcEngine.ABS),
         new Menu("Tr",CalcEngine.TRACE),
+        new Menu("|A|_F",CalcEngine.ABS),
+        new Menu("more",Menu.TITLE_SKIP,new Menu[] {
+          new Menu("size",CalcEngine.MATRIX_SIZE),
+          new Menu("a_ij",CalcEngine.MATRIX_AIJ),
+        }),
       }),
     }),
     new Menu("prob",new Menu[] {
@@ -637,7 +642,14 @@ public final class CalcCanvas
   private Menu prog1 = new Menu("prog",new Menu[] {
     new Menu("new",CalcEngine.PROG_NEW,Menu.PROG_REQUIRED|Menu.NO_REPEAT),
     new Menu("run",CalcEngine.PROG_RUN,Menu.PROG_REQUIRED|Menu.NO_PROG),
-    new Menu("draw",CalcEngine.PROG_DRAW,Menu.PROG_REQUIRED|Menu.NO_PROG),
+    new Menu("draw",Menu.NO_PROG,new Menu[] {
+      new Menu("y=f(x)",CalcEngine.PROG_DRAW,
+               Menu.PROG_REQUIRED|Menu.REPEAT_PARENT),
+      new Menu("r=f(Ð)",CalcEngine.PROG_DRAWPOL,
+               Menu.PROG_REQUIRED|Menu.REPEAT_PARENT),
+      new Menu("z=f(t)",CalcEngine.PROG_DRAWPARM,
+               Menu.PROG_REQUIRED|Menu.REPEAT_PARENT),
+    }),
     new Menu("more",Menu.TITLE_SKIP,new Menu[] {
       new Menu("integrate",CalcEngine.PROG_INTEGR,
                Menu.PROG_REQUIRED|Menu.NO_PROG),
@@ -912,7 +924,7 @@ public final class CalcCanvas
 
   private boolean plainLabel(String label) {
     for (int i=0; i<label.length(); i++)
-      if ("^~_»«¿ß¡¶Þãë".indexOf(label.charAt(i))>=0)
+      if ("^~_»«¿ß¡¶ÞãëÐ".indexOf(label.charAt(i))>=0)
         return false;
     return true;
   }
@@ -930,7 +942,7 @@ public final class CalcCanvas
         font = font==normalFont ? smallFont : normalFont;
       else if (c=='~')
         ; // overline... no font change
-      else if ("»«¿ß¡¶".indexOf(c)>=0)
+      else if ("»«¿ß¡¶Ð".indexOf(c)>=0)
         width += font.charWidth('O');
       else if (c=='Þ')
         width += font.charWidth('o')*(6+4)/6;
@@ -967,11 +979,11 @@ public final class CalcCanvas
         }
       } else if (c=='~') {
         overline = !overline;
-      } else if ("»«¿ß¡¶Þãë".indexOf(c)>=0) {
+      } else if ("»«¿ß¡¶ÞãëÐ".indexOf(c)>=0) {
         int w = font.charWidth('O');
         int h = font.getBaselinePosition();
         switch (c) {
-          case '»':
+          case '»': // Arrow ->
             g.drawLine(x,y+h/2+1,x+w-2,y+h/2+1);
             g.drawLine(x,y+h/2+2,x+w-2,y+h/2+2);
             g.drawLine(x+w-2,y+h/2+1,x+w-2-2,y+h/2+1-2);
@@ -979,7 +991,7 @@ public final class CalcCanvas
             g.drawLine(x+w-2,y+h/2+2,x+w-2-2,y+h/2+2+2);
             g.drawLine(x+w-3,y+h/2+2,x+w-3-1,y+h/2+2+1);
             break;
-          case '«':
+          case '«': // Arrows <->
             g.drawLine(x,y+h/2,x+w-2,y+h/2);
             g.drawLine(x+w-2,y+h/2,x+w-2-2,y+h/2-2);
             g.drawLine(x,y+h/2+3,x+w-2,y+h/2+3);
@@ -991,7 +1003,7 @@ public final class CalcCanvas
               g.drawLine(x,y+h/2+2,x+2,y+h/2+2+2);
             }
             break;
-          case '¿':
+          case '¿': // Sqrt
             g.drawLine(x,y+h-3,x+3,y+h);
             g.drawLine(x+1,y+h-3,x+4,y+h);
             g.drawLine(x+3,y,x+3,y+h);
@@ -1000,7 +1012,7 @@ public final class CalcCanvas
             g.drawLine(x+3,y+1,x+w,y+1);
             overline = true;
             break;
-          case 'ß':
+          case 'ß': // Sum
             int b = (h&1)^1;
             int s = (h-b-4)/2;
             g.drawLine(x,y+b,x+w-2,y+b);
@@ -1012,7 +1024,7 @@ public final class CalcCanvas
             g.drawLine(x,y+h-1,x+w-2,y+h-1);
             g.drawLine(x,y+h-2,x+w-2,y+h-2);
             break;
-          case '¡':
+          case '¡': // Gamma
             g.drawLine(x+1,y,x+1,y+h-1);
             g.drawLine(x+2,y,x+2,y+h-1);
             g.drawLine(x,y+h-1,x+3,y+h-1);
@@ -1020,7 +1032,7 @@ public final class CalcCanvas
             g.drawLine(x,y+1,x+w-2,y+1);
             g.drawLine(x+w-2,y,x+w-2,y+3);
             break;
-          case '¶':
+          case '¶': // pi
             g.drawLine(x,y+h/3,x+7,y+h/3);
             g.drawLine(x+2,y+h/3,x+2,y+h-1);
             g.drawLine(x+3,y+h/3,x+3,y+h-1);
@@ -1028,7 +1040,7 @@ public final class CalcCanvas
             g.drawLine(x+5,y+h/3,x+5,y+h-1);
             g.drawLine(x+6,y+h/3,x+6,y+h-1);
             break;
-          case 'Þ':
+          case 'Þ': // _infinity
             g.drawChar('o',x,y+normalFont.getHeight()-
                        smallFont.getBaselinePosition(),g.TOP|g.LEFT);
             g.drawChar('o',x+font.charWidth('o')*4/6,
@@ -1036,7 +1048,7 @@ public final class CalcCanvas
                        smallFont.getBaselinePosition(),g.TOP|g.LEFT);
             w = font.charWidth('o')*(6+4)/6;
             break;
-          case 'ã':
+          case 'ã': // alpha
             int h2 = (h*2/3+1)&~1;
             w = h2/2+5+(h2<10?0:1);
             int x2 = x+w-h2/2;
@@ -1061,13 +1073,19 @@ public final class CalcCanvas
             g.drawLine(x+w-2,y+h-1,x+w-2,y+h-2);
             g.drawLine(x+w-1,y+h-2,x+w-1,y+h-3);
             break;
-          case 'ë':
+          case 'ë': // epsilon
             g.drawChar('e',x,y,g.TOP|g.LEFT);
             x += font.charWidth('e')*67/112;
             g.setColor(menuColor[menuStackPtr]);
             g.fillRect(x,y,w,h);
             g.setColor(0);
             w = 1;
+            break;
+          case 'Ð': // theta
+            g.drawChar('O',x,y,g.TOP|g.LEFT);
+            g.drawChar('-',x,y-1,g.TOP|g.LEFT);
+            g.drawChar('-',x+font.charWidth('O')-font.charWidth('-'),y-1,
+                       g.TOP|g.LEFT);
             break;
         }
         x += w;
@@ -1303,6 +1321,7 @@ public final class CalcCanvas
 
   private void menuAction(int menuIndex) throws OutOfMemoryError {
     boolean graph=false;
+    int graphParam=0;
 
     if (calc.isInsideMonitor) {
       switch (menuIndex) {
@@ -1405,12 +1424,10 @@ public final class CalcCanvas
           setNumberFont(command-FONT_SMALL);
         } else if (command >= NUMBER_0 && command <= NUMBER_15) {
           // Number has been entered for previous command
-          if (menuCommand == CalcEngine.PROG_DRAW ||
-              menuCommand == CalcEngine.PROG_SOLVE ||
-              menuCommand == CalcEngine.PROG_INTEGR ||
-              menuCommand == CalcEngine.PROG_MINMAX) {
-            menuCommand += command-NUMBER_0;
+          if (menuCommand >= CalcEngine.PROG_DRAW &&
+              menuCommand <= CalcEngine.PROG_MINMAX) {
             graph = true;
+            graphParam = command-NUMBER_0;
           } if (menuCommand == CalcEngine.PROG_NEW) {
             int n = command-NUMBER_0;
             String name = calc.progLabels[n]==calc.emptyProg ? "" :
@@ -1444,7 +1461,7 @@ public final class CalcCanvas
       }
     }
 
-    if (graph && calc.prepareGraph(menuCommand)) {
+    if (graph && calc.prepareGraph(menuCommand,graphParam)) {
       evenFrame = true;
       midlet.displayGraph(0,smallMenuFont.getHeight()-1,getWidth(),
                           getHeight()-smallMenuFont.getHeight()+1);

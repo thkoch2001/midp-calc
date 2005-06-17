@@ -263,6 +263,8 @@ public final class CalcEngine
   public static final int MONITOR_GET    = 256;
   public static final int STAT_RCL       = 257;
   public static final int STAT_STO       = 258;
+  public static final int MATRIX_SIZE    = 259;
+  public static final int MATRIX_AIJ     = 260;
 
   public static final int MATRIX_STO     = 512; // Special bit pattern
   public static final int MATRIX_RCL     = 768; // Special bit pattern
@@ -273,42 +275,12 @@ public final class CalcEngine
   public static final int LOG_DRAW       = 302;
   public static final int EXP_DRAW       = 303;
   public static final int POW_DRAW       = 304;
-  public static final int PROG_DRAW      = 305; // Uses 9 consecutive slots
-  //public static final int PROG_DRAW2   = 306;
-  //public static final int PROG_DRAW3   = 307;
-  //public static final int PROG_DRAW4   = 308;
-  //public static final int PROG_DRAW5   = 309;
-  //public static final int PROG_DRAW6   = 310;
-  //public static final int PROG_DRAW7   = 311;
-  //public static final int PROG_DRAW8   = 312;
-  //public static final int PROG_DRAW9   = 313;
-  public static final int PROG_SOLVE     = 314; // Uses 9 consecutive slots
-  //public static final int PROG_SOLVE2  = 315;
-  //public static final int PROG_SOLVE3  = 316;
-  //public static final int PROG_SOLVE4  = 317;
-  //public static final int PROG_SOLVE5  = 318;
-  //public static final int PROG_SOLVE6  = 319;
-  //public static final int PROG_SOLVE7  = 320;
-  //public static final int PROG_SOLVE8  = 321;
-  //public static final int PROG_SOLVE9  = 322;
-  public static final int PROG_INTEGR    = 323; // Uses 9 consecutive slots
-  //public static final int PROG_INTEGR2 = 324;
-  //public static final int PROG_INTEGR3 = 325;
-  //public static final int PROG_INTEGR4 = 326;
-  //public static final int PROG_INTEGR5 = 327;
-  //public static final int PROG_INTEGR6 = 328;
-  //public static final int PROG_INTEGR7 = 329;
-  //public static final int PROG_INTEGR8 = 330;
-  //public static final int PROG_INTEGR9 = 331;
-  public static final int PROG_MINMAX    = 332; // Uses 9 consecutive slots
-  //public static final int PROG_MINMAX2 = 333;
-  //public static final int PROG_MINMAX3 = 334;
-  //public static final int PROG_MINMAX4 = 335;
-  //public static final int PROG_MINMAX5 = 336;
-  //public static final int PROG_MINMAX6 = 337;
-  //public static final int PROG_MINMAX7 = 338;
-  //public static final int PROG_MINMAX8 = 339;
-  //public static final int PROG_MINMAX9 = 340;
+  public static final int PROG_DRAW      = 305;
+  public static final int PROG_DRAWPOL   = 306;
+  public static final int PROG_DRAWPARM  = 307;
+  public static final int PROG_SOLVE     = 308;
+  public static final int PROG_INTEGR    = 309;
+  public static final int PROG_MINMAX    = 310;
 
   // Special commands
   public static final int FINALIZE       = 400;
@@ -321,7 +293,6 @@ public final class CalcEngine
   private static final int FINANCE_SIZE  = 5;
   private static final int NUM_PROGS     = 9;
 
-  private static final Real Real180 = new Real(180);
   private static final String empty = "";
 
   public Real [] stack;
@@ -738,7 +709,7 @@ public final class CalcEngine
 
     // Programs
     for (i=0; i<NUM_PROGS; i++) {
-      if (prog!=null && prog[i]!=null && prog[i].length!=0) {
+      if (prog!=null && prog[i]!=null) {
         out.writeShort(PROGLABEL_SIZE*2+prog[i].length*2);
         for (j=0; j<PROGLABEL_SIZE; j++)
           out.writeChar(j<progLabels[i].length() ? progLabels[i].charAt(j):0);
@@ -1488,14 +1459,14 @@ public final class CalcEngine
   private void toRAD(Real x) {
     if (degrees) {
       x.mul(Real.PI);
-      x.div(Real180);
+      x.div(180);
     }
   }
 
   private void fromRAD(Real x) {
     if (degrees) {
       x.div(Real.PI);
-      x.mul(Real180);
+      x.mul(180);
     }
   }
 
@@ -1621,6 +1592,15 @@ public final class CalcEngine
           y.makeNan();
         else if (x.lessThan(y))
           y.assign(x);
+        break;
+      case MATRIX_AIJ:
+        Matrix M = getCurrentMatrix();
+        int col = x.toInteger()-1;
+        int row = y.toInteger()-1;
+        if (M == null || col<0 || row<0 || col>=M.cols || row>=M.rows)
+          y.makeNan();
+        else
+          y.assign(M.D[col][row]);
         break;
     }
     if (y.isNan())
@@ -1955,8 +1935,8 @@ public final class CalcEngine
           repaintAll();
         }
         break;
-      case TO_DEG:  x.div(Real.PI); x.mul(Real180); break;
-      case TO_RAD:  x.mul(Real.PI); x.div(Real180); break;
+      case TO_DEG:  x.div(Real.PI); x.mul(180); break;
+      case TO_RAD:  x.mul(Real.PI); x.div(180); break;
       case TO_DHMS: x.toDHMS(); break;
       case TO_H:    x.fromDHMS(); break;
       case SGN:
@@ -2628,9 +2608,9 @@ public final class CalcEngine
         Matrix Y = getMatrix(y);
         int n = x.toInteger();
         matrix = true;
-        if (Y != null && ((n>0 && n<Y.rows) || (n<0 && -n<Y.cols))) {
+        if (Y != null && ((n>=0 && n<=Y.rows) || (n<0 && -n<=Y.cols))) {
           Matrix A,B;
-          if (n>0) {
+          if (n>=0) {
             A = Y.subMatrix(0,0,n,Y.cols);
             B = Y.subMatrix(n,0,Y.rows-n,Y.cols);
           } else {
@@ -2914,7 +2894,6 @@ public final class CalcEngine
   }
 
   private void stat2(int cmd) {
-    allocStat();
     rollUp(true);
     rollUp(true);
     lasty.assign(stack[0]);
@@ -2931,6 +2910,7 @@ public final class CalcEngine
     Real y = stack[1];
     switch (cmd) {
       case AVG:
+        allocStat();
         // x_avg = SUMx/n
         x.assign(SUMx);
         x.div(SUM1);
@@ -2940,6 +2920,7 @@ public final class CalcEngine
         break;
       case STDEV:
       case PSTDEV:
+        allocStat();
         // s_x = sqrt((SUMx2-sqr(SUMx)/n)/(n-1))
         // S_x = sqrt((SUMx2-sqr(SUMx)/n)/n)
         x.assign(SUMx);
@@ -2963,18 +2944,32 @@ public final class CalcEngine
         y.sqrt();
         break;
       case LIN_AB:
+        allocStat();
         statAB(x,y,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
         break;
       case LOG_AB:
+        allocStat();
         statAB(x,y,SUMlnx,SUMln2x,SUMy,SUMy2,SUMylnx);
         break;
       case EXP_AB:
+        allocStat();
         statAB(x,y,SUMx,SUMx2,SUMlny,SUMln2y,SUMxlny);
         y.exp();
         break;
       case POW_AB:
+        allocStat();
         statAB(x,y,SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMlnxlny);
         y.exp();
+        break;
+      case MATRIX_SIZE:
+        Matrix M = getCurrentMatrix();
+        if (M == null) {
+          x.makeNan();
+          y.makeNan();
+        } else {
+          x.assign(M.cols);
+          y.assign(M.rows);
+        }
         break;
     }
     strStack[0] = null;
@@ -3345,10 +3340,7 @@ public final class CalcEngine
     if (prog == null || prog[currentProg] == null ||
         (cmd >= PROG_NEW    && cmd <= PROG_DIFF) ||
         (cmd >= AVG_DRAW    && cmd <= POW_DRAW) ||
-        (cmd >= PROG_DRAW   && cmd < PROG_DRAW+NUM_PROGS)||
-        (cmd >= PROG_SOLVE  && cmd < PROG_SOLVE+NUM_PROGS) ||
-        (cmd >= PROG_INTEGR && cmd < PROG_INTEGR+NUM_PROGS) ||
-        (cmd >= PROG_MINMAX && cmd < PROG_MINMAX+NUM_PROGS))
+        (cmd >= PROG_DRAW   && cmd <= PROG_MINMAX))
       return; // Such commands cannot be recorded
     if (progCounter == prog[currentProg].length) {
       matrixGC();
@@ -3394,7 +3386,7 @@ public final class CalcEngine
     for (int i=0; i<prog[currentProg].length; i++) {
       short cmd = prog[currentProg][i];
       if ((cmd & 0x8000) == 0) {
-        if ((cmd & (MATRIX_STO|MATRIX_RCL)) != 0) {
+        if ((cmd & MATRIX_STO) != 0) {
           int col = cmd & 0x3f;
           int row = ((cmd>>6)&0x3) + ((cmd>>8)&0x7c);
           cmd &= MATRIX_STO|MATRIX_RCL;
@@ -3607,6 +3599,7 @@ public final class CalcEngine
       case FINANCE_MULINT: case FINANCE_DIVINT:
       case MOD:   case DIVF:
       case MAX:   case MIN:
+      case MATRIX_AIJ:
         binary(cmd);
         break;
       case NEG:   case RECIP: case SQR: case ABS:
@@ -3849,6 +3842,7 @@ public final class CalcEngine
       case LOG_AB:
       case EXP_AB:
       case POW_AB:
+      case MATRIX_SIZE:
         stat2(cmd);
         break;
       case AVGXW:
@@ -4179,14 +4173,10 @@ public final class CalcEngine
       case PROG_FINISH:
         if (progRecording && prog!=null && prog[currentProg]!=null) {
           progRecording = false;
-          if (progCounter > 0) {
-            matrixGC();
-            short [] prog2 = new short[progCounter];
-            System.arraycopy(prog[currentProg],0,prog2,0,progCounter);
-            prog[currentProg] = prog2;
-          } else {
-            prog[currentProg] = null;
-          }
+          matrixGC();
+          short [] prog2 = new short[progCounter];
+          System.arraycopy(prog[currentProg],0,prog2,0,progCounter);
+          prog[currentProg] = prog2;
         }
         break;
       case PROG_RUN:
@@ -4224,41 +4214,6 @@ public final class CalcEngine
       updateMatrixMonitor();
   }
 
-  private int rangeScale(Real x, Real min, Real max, int size, Real offset) {
-    if (!x.isFinite())
-      return (x.sign*2-1)*0x4000;
-    rTmp.assign(x);
-    rTmp.sub(min);
-    max.sub(min); // May be inexact, yes, but avoids using temporary
-    rTmp.div(max);
-    max.add(min);
-    rTmp.mul(size-1);
-    rTmp.add(offset);
-    rTmp.round();
-    int i = rTmp.toInteger();
-    return (i < -0x4000) ? -0x4000 : ((i > 0x4000) ? 0x4000 : i);
-  }
-
-  private int findTickStep(Real step, Real min, Real max, int size) {
-    rTmp.assign(max);
-    rTmp.sub(min);
-    rTmp.mul(10); // minimum tick distance
-    rTmp.div(size);
-    step.assign(rTmp);
-    step.lowPow10(); // convert to lower power of 10
-    rTmp.div(step);
-    if (rTmp.lessThan(2)) {
-      step.mul(2);
-      return 5;
-    }
-    if (rTmp.lessThan(5)) {
-      step.mul(5);
-      return 2;
-    }
-    step.mul(10);
-    return 10;
-  }
-
   int graphCmd;
   Real xMin,xMax,yMin,yMax,a,b,c,y0,y1,y2,total;
   long integralN,totalExtra;
@@ -4266,24 +4221,14 @@ public final class CalcEngine
   boolean integralFailed;
   boolean maximizing;
 
-  public boolean prepareGraph(int cmd) {
+  public boolean prepareGraph(int cmd, int param) {
     graphCmd = cmd;
     progRunning = false;
     
     if (cmd >= PROG_DRAW) {
-      currentProg = -1;
-      if (cmd >= PROG_DRAW && cmd < PROG_DRAW+NUM_PROGS)
-        currentProg = graphCmd-PROG_DRAW;
-      else if (cmd >= PROG_SOLVE && cmd < PROG_SOLVE+NUM_PROGS)
-        currentProg = graphCmd-PROG_SOLVE;
-      else if (cmd >= PROG_INTEGR && cmd < PROG_INTEGR+NUM_PROGS)
-        currentProg = graphCmd-PROG_INTEGR;
-      else if (cmd >= PROG_MINMAX && cmd < PROG_MINMAX+NUM_PROGS)
-        currentProg = graphCmd-PROG_MINMAX;
-
-      if (prog == null || currentProg<0 || currentProg>=NUM_PROGS ||
-          prog[currentProg] == null)
+      if (prog == null || param<0 || param>=NUM_PROGS || prog[param] == null)
         return false;
+      currentProg = param;
     } else if (SUM1 == null || statLogSize == 0)
       return false;
 
@@ -4298,7 +4243,7 @@ public final class CalcEngine
     int i;
 
     // Find boundaries
-    if (cmd >= PROG_DRAW && cmd < PROG_DRAW+NUM_PROGS) {
+    if (cmd >= PROG_DRAW && cmd <= PROG_DRAWPARM) {
       if (inputInProgress)
         parseInput();
       xMin.assign(stack[3]);
@@ -4306,7 +4251,7 @@ public final class CalcEngine
       yMin.assign(stack[1]);
       yMax.assign(stack[0]);
     }
-    else if (cmd >= PROG_SOLVE && cmd < PROG_SOLVE+NUM_PROGS)
+    else if (cmd == PROG_SOLVE)
     {
       y1 = new Real();
       y2 = new Real();
@@ -4391,7 +4336,7 @@ public final class CalcEngine
       stack[0].assign(y1.absLessThan(y2) ? a : b);
       Real.magicRounding = true;
     }
-    else if (cmd >= PROG_INTEGR && cmd < PROG_INTEGR+NUM_PROGS)
+    else if (cmd == PROG_INTEGR)
     {
       total = new Real();
       y0 = new Real();
@@ -4414,7 +4359,7 @@ public final class CalcEngine
 
       push(Real.ZERO,null);
     }
-    else if (cmd >= PROG_MINMAX && cmd < PROG_MINMAX+NUM_PROGS)
+    else if (cmd == PROG_MINMAX)
     {
       c = new Real();
       y0 = new Real();
@@ -4526,11 +4471,92 @@ public final class CalcEngine
     return true;
   }
 
-  public void startGraph(Graphics g, int gx, int gy, int gw, int gh) {
-    int i,xi,yi,pyi,inc,bigTick;
+  private int rangeScale(Real x, Real min, Real max, int size, Real offset) {
+    if (!x.isFinite())
+      return (x.sign*2-1)*0x4000;
+    rTmp.assign(x);
+    rTmp.sub(min);
+    max.sub(min); // May be inexact, yes, but avoids using temporary
+    rTmp.div(max);
+    max.add(min);
+    rTmp.mul(size-1);
+    rTmp.add(offset);
+    rTmp.round();
+    int i = rTmp.toInteger();
+    return (i < -0x4000) ? -0x4000 : ((i > 0x4000) ? 0x4000 : i);
+  }
+
+  private int findTickStep(Real step, Real fac, Real min, Real max, int size) {
+    int pow,bigTickInterval;
+    rTmp.assign(max);
+    rTmp.sub(min);
+    rTmp.mul(11); // minimum tick distance, 11 pixels
+    rTmp.div(size); // range of 11 pixels on screen
+    step.assign(rTmp);
+    pow = step.lowPow10(); // convert to lower power of 10
+    rTmp.div(step);
+
+    if (rTmp.lessThan(2)) {
+      // Minor 2, major 10
+      step.mul(2);
+      bigTickInterval = 5;
+      if (pow > 0)
+        pow--; // preserve tick labels 1000,2000,...
+    } else if (rTmp.lessThan(5)) {
+      // Minor 5, major 10
+      step.mul(5);
+      bigTickInterval = 2;
+    } else {
+      // Minor 1, major 5
+      step.mul(10);
+      bigTickInterval = 5;
+      if (pow < 0)
+        pow++; // preserve tick labels 0.05,0.1,...
+    }
+
+    if (pow > 0)
+      pow = ((pow+1)/3)*3;
+    else
+      pow = (pow/3)*3;
+    fac.assign(Real.TEN);
+    fac.pow(pow);
+
+    return bigTickInterval;
+
+    // Sample ticks              step pow  fac
+    //
+    //  -10-20-30-40             5e-3  -3 1e-3
+    //  ----0.05----0.1----0.15  0.01  -3    1
+    //  ----0.1----0.2----0.3    0.02  -2    1
+    //  -0.1-0.2-0.3-0.4         0.05  -2    1
+    //  ----0.5----1----1.5       0.1  -2    1
+    //  ----1----2----3----4      0.2  -1    1
+    //  -1-2-3-4                  0.5  -1    1
+    //  ----5----10----15           1  -1    1
+    //  ----10----20----30          2   0    1
+    //  -10-20-30-40                5   0    1
+    //  ----50----100----150       10   0    1
+    //  ----100----200----300      20   1    1
+    //  -100-200-300-400           50   1    1
+    //  ----500----1000----1500   100   1    1
+    //  ----1000----2000----3000  200   2    1
+    //  -1-2-3-4                  500   2  1e3
+  }
+
+  public void startGraph(Graphics g, int gx, int gy, int gw, int gh,
+                         boolean bgrDisplay)
+  {
+    int i,xi,yi,pyi,inc,bigTick,lx,ly;
     Real h = rTmp2;
     Real x = rTmp3;
     Real y = rTmp4;
+    Real fac = new Real();
+    Real tmp = new Real();
+    GFont font = new GFont(GFont.SMALL | (bgrDisplay ? GFont.BGR_ORDER : 0));
+    int fh = font.getHeight()-1;
+    int fw = font.charWidth();
+    Real.NumberFormat fmt = new Real.NumberFormat();
+    fmt.point = format.point;
 
     g.setClip(gx,gy,gw,gh);
     // shrink window by 4 pixels
@@ -4543,50 +4569,51 @@ public final class CalcEngine
     g.setColor(0,255,128);
     yi = gy+rangeScale(Real.ZERO,yMax,yMin,gh,Real.ZERO);
     g.drawLine(gx-2,yi,gx+gw+1,yi);
-    bigTick = findTickStep(h,xMin,xMax,gw);
-    x.assign(h);
-    x.neg();
-    i = -1;
-    if (x.greaterThan(xMax)) {
-      x.assign(xMax);
-      x.div(h);
-      x.floor();
-      i = x.toInteger();
-      x.mul(h);
-    }
+    bigTick = findTickStep(h,fac,xMin,xMax,gw);
+    x.assign(xMin);
+    x.div(h);
+    x.ceil();
+    i = x.toInteger();
+    x.mul(h);
+    h.scalbn(-1);
     y.assign(h);
-    y.scalbn(-1);
-    y.neg();
-    y.add(xMin);
-    while (x.greaterThan(y)) {
-      xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
-      inc = (i%bigTick == 0) ? 2 : 1;
-      g.setColor(0,32,16);
-      g.drawLine(xi,gy-1,xi,gy+gh);
-      g.setColor(0,255,128);
-      g.drawLine(xi,yi-inc,xi,yi+inc);
-      x.sub(h);
-      i--;
-    }
-    x.assign(h);
-    i = 1;
-    if (x.lessThan(xMin)) {
-      x.assign(xMin);
-      x.div(h);
-      x.ceil();
-      i = x.toInteger();
-      x.mul(h);
-    }
-    y.assign(h);
-    y.scalbn(-1);
     y.add(xMax);
     while (x.lessThan(y)) {
-      xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
-      inc = (i%bigTick == 0) ? 2 : 1;
-      g.setColor(0,32,16);
-      g.drawLine(xi,gy-1,xi,gy+gh);
-      g.setColor(0,255,128);
-      g.drawLine(xi,yi-inc,xi,yi+inc);
+      if (!x.absLessThan(h)) {
+        xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
+        g.setColor(0,32,16);
+        g.drawLine(xi,gy-2,xi,gy+gh+1);
+        
+        if (i%bigTick == 0)
+        {
+          tmp.assign(x);
+          tmp.div(fac);
+          String label = tmp.toString(fmt);
+          lx = xi-fw*label.length()/2;
+          if (lx < gx-2)
+            lx = gx-2;
+          if (lx > gx+gw+2-fw*label.length())
+            lx = gx+gw+2-fw*label.length();
+
+          if ((yi>=gy+gh/2 && yi+4+fh <= gy+gh+1) || yi-3-fh<gy-1)
+            ly = yi+4;
+          else
+            ly = yi-3-fh;
+
+          if (ly<gy-1)
+            ly = gy-1;
+          if (ly > gy+gh+1-fh)
+            ly = gy+gh+1-fh;
+          font.drawString(g,lx,ly,label);
+
+          inc = 2;
+        } else {
+          inc = 1;
+        }
+        g.setColor(0,255,128);
+        g.drawLine(xi,yi-inc,xi,yi+inc);
+      }
+      x.add(h);
       x.add(h);
       i++;
     }
@@ -4595,62 +4622,68 @@ public final class CalcEngine
     xi = gx+rangeScale(Real.ZERO,xMin,xMax,gw,Real.ZERO);
     g.drawLine(xi,gy-2,xi,gy+gh+1);
 
-    if ((graphCmd >= PROG_SOLVE && graphCmd < PROG_SOLVE+NUM_PROGS) ||
-        (graphCmd >= PROG_INTEGR && graphCmd < PROG_INTEGR+NUM_PROGS) ||
-        (graphCmd >= PROG_MINMAX && graphCmd < PROG_MINMAX+NUM_PROGS)) {
-      // Return now to continue later
-      return;
-    }
+    if (graphCmd==PROG_SOLVE || graphCmd==PROG_INTEGR || graphCmd==PROG_MINMAX)
+      return; // Return now to continue later
 
-    bigTick = findTickStep(h,yMin,yMax,gh);
-    y.assign(h);
-    y.neg();
-    i = -1;
-    if (y.greaterThan(yMax)) {
-      y.assign(yMax);
-      y.div(h);
-      y.floor();
-      i = y.toInteger();
-      y.mul(h);
-    }
+    bigTick = findTickStep(h,fac,yMin,yMax,gh);
+    y.assign(yMin);
+    y.div(h);
+    y.ceil();
+    i = y.toInteger();
+    y.mul(h);
+    h.scalbn(-1);
     x.assign(h);
-    x.scalbn(-1);
-    x.neg();
-    x.add(yMin);
-    while (y.greaterThan(x)) {
-      yi = gy+rangeScale(y,yMax,yMin,gh,Real.ZERO);
-      inc = (i%bigTick == 0) ? 2 : 1;
-      g.setColor(0,32,16);
-      g.drawLine(gx-1,yi,gx+gw,yi);
-      g.setColor(0,255,128);
-      g.drawLine(xi-inc,yi,xi+inc,yi);
-      y.sub(h);
-      i--;
-    }
-    y.assign(h);
-    i = 1;
-    if (y.lessThan(yMin)) {
-      y.assign(yMin);
-      y.div(h);
-      y.ceil();
-      i = y.toInteger();
-      y.mul(h);
-    }
-    x.assign(h);
-    x.scalbn(-1);
     x.add(yMax);
+    boolean sideSelected = false;
+    boolean rightSide = false;
     while (y.lessThan(x)) {
-      yi = gy+rangeScale(y,yMax,yMin,gh,Real.ZERO);
-      inc = (i%bigTick == 0) ? 2 : 1;
-      g.setColor(0,32,16);
-      g.drawLine(gx-1,yi,gx+gw,yi);
-      g.setColor(0,255,128);
-      g.drawLine(xi-inc,yi,xi+inc,yi);
+      if (!y.absLessThan(h)) {
+        yi = gy+rangeScale(y,yMax,yMin,gh,Real.ZERO);
+        g.setColor(0,32,16);
+        g.drawLine(gx-2,yi,gx+gw+1,yi);
+        
+        if (i%bigTick == 0)
+        {
+          tmp.assign(y);
+          tmp.div(fac);
+          String label = tmp.toString(fmt);
+          ly = yi-fh/2;
+          if (ly < gy-1)
+            ly = gy-1;
+          if (ly > gy+gh+1-fh)
+            ly = gy+gh+1-fh;
+
+          if ((sideSelected && rightSide) ||
+              (!sideSelected &&
+               ((xi>gx+gw/2 && xi+4+fw*label.length() <= gx+gw+2) ||
+                xi-3-fw*label.length()<gx-2)))
+          {
+            rightSide = true;
+            lx = xi+4;
+          } else {
+            lx = xi-3-fw*label.length();
+          }
+          sideSelected = true;
+
+          if (lx < gx-2)
+            lx = gx-2;
+          if (lx > gx+gw+2-fw*label.length())
+            lx = gx+gw+2-fw*label.length();
+          font.drawString(g,lx,ly,label);
+
+          inc = 2;
+        } else {
+          inc = 1;
+        }
+        g.setColor(0,255,128);
+        g.drawLine(xi-inc,yi,xi+inc,yi);
+      }
+      y.add(h);
       y.add(h);
       i++;
     }
 
-    if (graphCmd >= PROG_DRAW && graphCmd < PROG_DRAW+NUM_PROGS) {
+    if (graphCmd >= PROG_DRAW && graphCmd <= PROG_DRAWPARM) {
       // Return now to continue drawing graph indefinitely
       a.assign(0, 0x3fffffff, 0x4f1bbcdcbfa53e0bL); // a = golden ratio, 0.618
       b.makeZero();
@@ -4837,7 +4870,7 @@ public final class CalcEngine
   public void continueGraph(Graphics g, int gx, int gy, int gw, int gh) {
     long start = System.currentTimeMillis();
     Real x = rTmp3;
-    int i,xi,yi;
+    int i,xi=0,yi;
 
     g.setClip(gx,gy,gw,gh);
     // shrink window by 4 pixels
@@ -4848,16 +4881,27 @@ public final class CalcEngine
 
     do
     {
-      if (graphCmd >= PROG_DRAW && graphCmd < PROG_DRAW+NUM_PROGS) {
+      if (graphCmd >= PROG_DRAW && graphCmd <= PROG_DRAWPARM) {
         Real.magicRounding = false;
         b.add(a);
         if (b.greaterThan(Real.ONE))
           b.sub(Real.ONE);
-        x.assign(xMax);
-        x.sub(xMin);
-        x.mul(b);
-        x.add(xMin);
-        xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
+        if (graphCmd == PROG_DRAW) {
+          x.assign(xMax);
+          x.sub(xMin);
+          x.mul(b);
+          x.add(xMin);
+          xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
+        } else {
+          x.assign(b);
+          if (graphCmd == PROG_DRAWPOL) {
+            if (degrees)
+              x.mul(360);
+            else
+              x.mul(Real.PI2);
+            x.mul(Real.TEN); // 10 "rounds"
+          }
+        }
       
         push(x,null);
         executeProgram();
@@ -4866,21 +4910,47 @@ public final class CalcEngine
         Real yimag = null;
         if (imagStack!=null && !imagStack[0].isZero())
           yimag = imagStack[0];
-        yi = -100;
-        if (y.isFinite() && (!y.isZero() || yimag==null)) {
-          yi = gy+rangeScale(y,yMax,yMin,gh,Real.HALF);
-          g.setColor(255,0,128);
-          g.drawLine(xi,yi-1,xi,yi);
-        }
-        if (yimag!=null && yimag.isFinite()) {
-          int yi2 = gy+rangeScale(yimag,yMax,yMin,gh,Real.HALF);
-          g.setColor(255,255,yi2==yi ? 255 : 0);
-          g.drawLine(xi,yi2-1,xi,yi2);
+
+        if (graphCmd == PROG_DRAW) {
+          yi = -100;
+          if (y.isFinite() && (!y.isZero() || yimag==null)) {
+            yi = gy+rangeScale(y,yMax,yMin,gh,Real.HALF);
+            g.setColor(255,0,128);
+            g.drawLine(xi,yi-1,xi,yi);
+          }
+          if (yimag!=null && yimag.isFinite()) {
+            int yi2 = gy+rangeScale(yimag,yMax,yMin,gh,Real.HALF);
+            g.setColor(255,255,yi2==yi ? 255 : 0);
+            g.drawLine(xi,yi2-1,xi,yi2);
+          }
+        } else { // PROG_DRAWPOL or PROG_DRAWPARM
+          if (graphCmd == PROG_DRAWPOL) {
+            x.assign(b);
+            x.mul(Real.PI2);
+            x.mul(10); // 10 rounds
+            rTmp4.assign(x);
+            rTmp4.sin();
+            x.cos();
+            x.mul(y);
+            y.mul(rTmp4);
+          } else { // PROG_DRAWPARM
+            x.assign(y);
+            if (yimag == null)
+              y.makeZero();
+            else
+              y.assign(yimag);
+          }
+          if (x.isFinite() && y.isFinite()) {
+            yi = gy+rangeScale(y,yMax,yMin,gh,Real.ZERO);
+            xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
+            g.setColor(255,0,128);
+            g.drawLine(xi,yi,xi,yi);
+          }
         }
         command(CLEAR,0); // Remove result from stack to avoid clutter
         Real.magicRounding = true;
       }
-      else if (graphCmd >= PROG_SOLVE && graphCmd < PROG_SOLVE+NUM_PROGS)
+      else if (graphCmd == PROG_SOLVE)
       {
         Real.magicRounding = false;
         if (bisect(a,y1,b,y2)) {
@@ -4897,7 +4967,7 @@ public final class CalcEngine
           imagStack[0].makeZero();
         Real.magicRounding = true;
       }
-      else if (graphCmd >= PROG_INTEGR && graphCmd < PROG_INTEGR+NUM_PROGS)
+      else if (graphCmd == PROG_INTEGR)
       {
         Real.magicRounding = false;
         if (gh/3+3+integralDepth<gh) {
@@ -5045,8 +5115,7 @@ public final class CalcEngine
     }
     while (System.currentTimeMillis()-start < 500);
 
-    if ((graphCmd >= PROG_SOLVE && graphCmd < PROG_SOLVE+NUM_PROGS) ||
-        (graphCmd >= PROG_MINMAX && graphCmd < PROG_MINMAX+NUM_PROGS)) {
+    if (graphCmd == PROG_SOLVE || graphCmd == PROG_MINMAX) {
       // Draw progress
       rTmp.assign(a);
       rTmp.sub(b);
@@ -5057,7 +5126,7 @@ public final class CalcEngine
       g.setColor(255,255,255);
       g.fillRect(gx+progress*(gw-1)/63,gy+gh/2-10,1,7);
     }
-    else if (graphCmd >= PROG_INTEGR && graphCmd < PROG_INTEGR+NUM_PROGS) {
+    else if (graphCmd == PROG_INTEGR) {
       if (integralN>0) {
         // Draw progress
         x.assign(b);
