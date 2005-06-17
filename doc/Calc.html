@@ -26,7 +26,7 @@
 </ul>
 </font></b>
 
-<p><b>Current version: 2.06</b>, <a
+<p><b>Current version: 2.07</b>, <a
 href="Calc-log.html">change-log</a><br>
 
 <b>Copyright: 2003-2005 Roar Lauritzsen</b>, email: <a
@@ -548,6 +548,11 @@ href="Calc.html#Notes">notes</a> section.
   in x, i.e. the square root of the sum of the squares of all the
   matrix elements. For row and column vectors this calculates the
   length of the vector
+    <li><b>size</b>: Pushes the number of rows and columns of the
+  <em>lowest</em> matrix on the stack
+    <li><b>a<sub>ij</sub></b>: Pops the column (x) and the row (y) off
+  the stack, then pushes the element identified by this row and
+  column, taken from the <em>lowest</em> matrix on the stack
   </ul>
   <li>Miscellaneous
   <ul>
@@ -965,9 +970,15 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
   entry in the menu that program will be overwritten
     <li><b>run</b>: Run a program
     <li><b>clear</b>: Clear a program
-    <li><b>draw</b>: Draw program function f(x). Prior to using this
-  operation, you should enter min-x, max-x, min-y and max-y on the
-  stack, in that order
+    <li><b>draw y=f(x)</b>: Draw program function y=f(x). Prior to
+  using this operation, you should enter min-x, max-x, min-y and max-y
+  on the stack, in that order
+    <li><b>draw r=f(&theta;)</b>: As above, but this time the program
+  represents a polar graph r=f(&theta;), where the input is the angle
+  and the output is the radius. Input will be in range [0,20·&pi;]
+    <li><b>draw z=f(t)</b>: As above, but this time the program
+  represents a parametric curve z=f(t), where the input t is in the
+  range [0,1] and the output is a point in the (complex) plane
     <li><b>integrate</b>: Integrate program function f(x). Prior
   to using this operation, you should enter x-limit-1,
   x-limit-2, and the desired accuracy on the stack, in that order
@@ -1033,8 +1044,8 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
     of the display
     <li><b>stat</b>: Monitor first <i>n</i> statistical registers
     <li><b>finance</b>: Monitor financial registers
-    <li><b>matrix</b>: Monitor <i>n</i> rows from the lowest matrix on
-    the stack
+    <li><b>matrix</b>: Monitor <i>n</i> rows from the <em>lowest</em>
+    matrix on the stack
     <li><b>off</b>: Turn monitoring off
   </ul>
   <li><a id="System" name="System">System menu</a>
@@ -1171,7 +1182,7 @@ matrix of 3 rows and 4 columns. A 1x1 matrix is automatically
 converted to a normal number.<br>
 
 <br>
-There are two methods of filling a matrix with numbers. In the first
+There are two methods for filling a matrix with numbers. In the first
 method, you enter the two first numbers of the matrix and then either
 "matrix/concat" or "matrix/stack" the two numbers into a row or column
 vector. Continue concating or stacking more numbers until your first
@@ -1183,13 +1194,15 @@ clicks.<br>
 
 <br>
 Alternatively, you can create an empty matrix by "matrix/new", and
-then press "mode/monitor/matrix/<#rows>", see <a
-href="Calc.html#MonitorNote"><b>(*)</b></a>. In this mode you can
-enter a number on the stack, and then from the basic menu you can go
-into the matrix and "push" one element using the middle button. This
-brings you out of the matrix again and you can enter a new
-number. Repeat this until the matrix is complete. This method requires
-a few more button clicks, but it is more visual.<br>
+then press "mode/monitor/matrix" to edit the matrix (see <a
+href="Calc.html#MonitorNote"><b>(*)</b></a>). When monitoring is
+active you can go into the monitor area by pressing the middle button
+from the "basic" menu. If you enter a number on the stack before you
+go into the matrix, you can press the middle button again to move this
+number from the stack into the highlighted matrix element. This brings
+you out of matrix editing again and you can enter a new number. Repeat
+this (number, up-middle-middle) until the matrix is complete. This
+method requires a few more button clicks, but it is more visual.<br>
 
 <br>
 <em>Matrix limitations:</em> There are a few limits to the size of the
@@ -1415,14 +1428,14 @@ stack when the operation is finished.<br>
 
 <br>
 When <b>drawing</b> graphs, you must first enter the ranges along the
-x axis and y axis that you want to see during drawing.  If a program
-returns a complex value, the graph will split into two lines of
-different color. This is a neat way to display two (non-complex)
-graphs at once, placing both graph values in x and y and using
-"r&rarr;cplx". While drawing the graph, Calc will continue calculating
-new graph points and improving the graph indefinitely, until "Break"
-is pressed. Do not leave the program in this state, it will eat your
-battery.<br>
+x axis and y axis that you want to see during drawing. When drawing
+functions as y=f(x), if a program returns a complex value, the graph
+will split into two lines of different color. This is a neat way to
+display two (non-complex) graphs at once, placing both graph values in
+x and y and using "r&rarr;cplx". While drawing the graph, Calc will
+continue calculating new graph points and improving the graph
+indefinitely, until "Break" is pressed. Do not leave the program in
+this state, it will eat your battery.<br>
 
 <br>
 When <b>integrating</b>, you must enter the range over which you want
@@ -1519,11 +1532,11 @@ than their internal representation.<br>
 
 <h3><a id="MonitorNote" name="MonitorNote">Monitor editing mode</a></h3>
 
-When monitoring is active, the usual <i><b>repeat</b></i> operation is
-exchanged with the symbol <b>[&rarr;]</b>. Selecting this operation
-lets you enter the monitor area in the upper part of the screen, where
-one monitor element will be highlighted. You can then move about in
-the monitor area using the arrow keys.<br>
+When monitoring is active, the usual <i><b>repeat</b></i> operation in
+the "basic" menu is exchanged with the symbol <b>[&rarr;]</b>. Selecting
+this operation lets you enter the monitor area in the upper part of
+the screen, where one monitor element will be highlighted. You can
+then move about in the monitor area using the arrow keys.<br>
 
 <br>
 Pressing "ENTER" in this mode will copy x into the current monitor
@@ -1532,8 +1545,38 @@ monitor element and pushes it on the stack (like RCL). Pressing the
 middle joystick button pops one element off the stack, stores it in
 the current monitor element, and exits the editing mode so you can
 enter or calculate the next number. All these operations also have the
-side effect of advancing to the next monitor element. Pressing "clear"
-will exit the editing mode.<br>
+side effect of advancing to the next monitor element below (or in the
+next column if you are at the bottom). Pressing "clear" will exit the
+editing mode.<br>
 
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
 </body>
 </html>
