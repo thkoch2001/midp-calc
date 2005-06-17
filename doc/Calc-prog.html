@@ -87,9 +87,9 @@ already built-in conversions can help you out:<br>
 <pre>
 prog/new "->DMS"         ; start recording first program
 ENTER                    ; make copy of input argument
-math/simple/int/trunc    ; integer part
+math/misc/int/trunc      ; integer part
 stack/x<>y
-math/simple/int/frac     ; fractional part
+math/misc/int/frac       ; fractional part
 conv/time/->DH.MS
 +
 prog/finish              ; first program finished
@@ -97,9 +97,9 @@ prog/finish              ; first program finished
 
 prog/new "->D"           ; start recording second program
 ENTER                    ; make copy of input argument
-math/simple/int/trunc    ; integer part
+math/misc/int/trunc      ; integer part
 stack/x<>y
-math/simple/int/frac     ; fractional part
+math/misc/int/frac       ; fractional part
 conv/time/->H
 +
 prog/finish              ; second program finished
@@ -107,14 +107,14 @@ prog/finish              ; second program finished
 
 prog/new "DMS+"          ; start recording third program
 ENTER                    ; make copy of first argument
-math/simple/int/frac     ; fractional part
+math/misc/int/frac       ; fractional part
 stack/x<>y
-math/simple/int/trunc    ; integer part
+math/misc/int/trunc      ; integer part
 stack/x<>st# 2           ; get second argument
 ENTER                    ; make copy of second argument
-math/simple/int/frac     ; fractional part
+math/misc/int/frac       ; fractional part
 stack/x<>y
-math/simple/int/trunc    ; integer part
+math/misc/int/trunc      ; integer part
 stack/x<>st# 2           ; get first fractional part
 conv/time/DH.MS+         ; sum everything...
 +
@@ -125,6 +125,7 @@ prog/finish              ; second program finished
 Note: If you are able to enter the sign "»" in the program name, it
 will magically turn into the sign "&rarr;" in the menu. In that case
 you should call your programs "»D.MS", "»D", and "D.MS+" for clarity.
+<br><br>
 
 <h2>Biorhythms</h2>
 
@@ -164,13 +165,13 @@ stack/x<->y
 28
 /
 trig/sin                 ; emotional cycle is 28 days
-math/coord/r->cplx       ; make complex number, re=emotional, im=physical
+trig/coord/r->cplx       ; make complex number, re=emotional, im=physical
 stack/x<->y
 33
 /
 trig/sin                 ; intellectual cycle is 33 days
 ENTER
-math/coord/r->cplx       ; make complex number with re=im
+trig/coord/r->cplx       ; make complex number with re=im
 mem/RCL 1                ; memory location 1 alternates between 0 and 1
 +/-
 1
@@ -184,11 +185,12 @@ prog/finish              ; program finished
 Preparations: To try the program, store your birthday in memory
 location 0, store 0 in memory location 1, make sure calculator is in
 RAD mode, and push suitable graph limits on the stack, for instance
--14, 14, -1.2, 1.2, before finally executing "prog/draw/BioRt". This
-will draw the biorhythms for 14 days before and after present. The
-pink graph shows your emotional cycle, the yellow graph shows your
-physical cycle, and the white graph shows your intellectual cycle,
-with zero on the x axis representing current time.<br><br>
+-14, 14, -1.2, 1.2, before finally executing
+"prog/draw/y=f(x)/BioRt". This will draw the biorhythms for 14 days
+before and after present. The pink graph shows your emotional cycle,
+the yellow graph shows your physical cycle, and the white graph shows
+your intellectual cycle, with zero on the x axis representing current
+time.<br><br>
 
 
 <h2>Advanced curve fitting example</h2>
@@ -292,6 +294,103 @@ ordinary. The resulting function is as follows:<br>
 <br>
 &nbsp;&nbsp;&nbsp;&nbsp;y&nbsp;=&nbsp;15.724&nbsp;<i>ln</i>(0.092911x&nbsp;+&nbsp;1)<br>
 <br>
+
+
+<h2>Spline drawing</h2>
+
+Given a number of 2D control points, a smooth curve can be drawn
+controlled by the control points.<br>
+
+<br><b>Program listing:</b>
+
+<pre>
+prog/new "Splin"         ; start recording a new program
+mem/RCL 0                ; matrix of control points
+stack/x<->y              ; t
+math/matrix/size
+clear                    ; rows = number of control points
+3
+-                        ; rows-3 = number of curve segments
+*                        ; t*(rows-3) = current curve segment
+enter
+math/misc/int/frac       ; t within this curve segment
+mem/STO 2
+clear
+math/matrix/split        ; extracting control points for this curve segment...
+stack/x<->y
+clear
+4
+math/matrix/split
+clear                    ; G = [ G0  G1  G2  G3 ]^T  (control points)
+mem/RCL 2
+3
+math/pow/y^x
+mem/RCL 2
+math/simple/x²
+mem/RCL 2
+1
+math/matrix/concat
+math/matrix/concat
+math/matrix/concat       ; T = [ t^3  t²  t  1 ]
+mem/RCL 1                ; M (spline basis matrix)
+*
+stack/x<->y
+*                        ; [ x  y ] = T*M*G
+-1
+math/matrix/split        ; x, y
+stack/x<->y
+trig/coord/r->cplx       ; z = x+yi
+prog/finish              ; program finished
+</pre>
+
+<br>
+Preparations: Create an <i>N</i>x2 matrix containing the control
+points and store them in memory location 0. Create a 4x4 spline basis
+matrix and store it in memory location 1. Push suitable graph limits
+on the stack before executing "prog/draw/z=f(t)/Splin".<br>
+
+<br>
+Example set of 2D control points:<br>
+
+<pre>
+     /  2 22 \       ...
+     |  7 19 |     | 21  6 |
+     | 14 18 |     | 23  0 |
+     | 13 22 |     | 26  7 |
+     |  2 11 |     | 30 18 |
+     |  4  2 |     | 29 22 |
+     | 11  2 |     | 25  9 |
+     | 18  9 |     | 27  0 |
+     | 21  9 |     | 31  5 |
+     | 22  9 |     | 34  9 |
+     | 19  9 |     | 37  9 |
+     | 16  6 |     | 38  9 |
+     | 16  2 |     | 35  9 |
+     | 20  2 |     | 32  6 |
+     | 22  5 |     | 32  2 |
+     | 22  7 |     | 36  2 |
+     | 23 10 |     | 38  3 |
+       ...         \ 39  4 /
+</pre>
+
+<br>
+Examples of spline basis matrices:
+
+<pre>
+ Catmull-Rom spline:     B-spline:
+
+     / -1  3 -3  1 \         / -1  3 -3  1 \
+ 1/2*|  2 -5  4 -1 |     1/6*|  3 -6  3  0 |
+     | -1  0  1  0 |         | -3  0  3  0 |
+     \  0  2  0  0 /         \  1  4  1  0 /
+</pre>
+
+<br>
+A Catmull-Rom spline interpolates the control points but is only first
+order continuous. A B-spline does not interpolate the control points
+(it most often winds between the points), but it is second order
+continuous, and therefore often smoother.
+<br><br>
 
 
 <h2>More</h2>
