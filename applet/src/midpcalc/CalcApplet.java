@@ -16,18 +16,18 @@ public class CalcApplet
     Display.getDisplay(calc).getCurrent().processRepaint(g);
   }
 
-  private boolean repeating = false;
+  private int repeating = -1;
 
   public void keyReleased(KeyEvent e) {
-    repeating = false;
+    repeating = -1;
   }
   public void keyTyped(KeyEvent e) {
     int key = e.getKeyChar();
-    if (repeating)
+    if (key == repeating)
       Display.getDisplay(calc).getCurrent().processKeyRepeat(key);
-    else
+    else      
       Display.getDisplay(calc).getCurrent().processKeyPress(key);
-    repeating = true;
+    repeating = key;
   }
   public void keyPressed(KeyEvent e) {
     int key = 0;
