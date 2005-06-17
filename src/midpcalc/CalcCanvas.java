@@ -744,6 +744,7 @@ public final class CalcCanvas
                        getWidth()>=96  ? GFont.MEDIUM : GFont.SMALL);
     if (in != null)
       restoreState(in);
+    calc.initialized = true;
 
     if (!midlet.display.isColor()) {
       numberFontStyle = GFont.SYSTEM;
@@ -850,8 +851,6 @@ public final class CalcCanvas
       calc.restoreState(in);
     } catch (IOException ioe) {
     }
-
-    calc.initialized = true;
   }
 
   private void setNumberFont(int size) {
