@@ -1,4 +1,5 @@
 package javax.microedition.midlet;
+import javax.microedition.lcdui.*;
 
 public abstract class MIDlet 
 {

@@ -1,4 +1,5 @@
 package javax.microedition.lcdui;
+import javax.microedition.midlet.*;
 
 public class Display 
 {

@@ -3,6 +3,7 @@ package ral;
 import java.awt.*;
 import java.awt.event.*;
 import javax.microedition.midlet.*;
+import javax.microedition.lcdui.*;
 
 public class CalcApplet
   extends java.applet.Applet
@@ -11,7 +12,7 @@ public class CalcApplet
   private MIDlet calc;
   private static CalcApplet currentApplet;
   
-  public void paint(Graphics g) {
+  public void paint(java.awt.Graphics g) {
     Display.getDisplay(calc).getCurrent().processRepaint(g);
   }
 
