@@ -4585,7 +4585,7 @@ public final class CalcEngine
         g.setColor(0,32,16);
         g.drawLine(xi,gy-2,xi,gy+gh+1);
         
-        if (i%bigTick == 0)
+        if (i%bigTick == 0 && graphCmd!=PROG_SOLVE && graphCmd!=PROG_MINMAX)
         {
           tmp.assign(x);
           tmp.div(fac);
@@ -4606,11 +4606,8 @@ public final class CalcEngine
           if (ly > gy+gh+1-fh)
             ly = gy+gh+1-fh;
           font.drawString(g,lx,ly,label);
-
-          inc = 2;
-        } else {
-          inc = 1;
         }
+	inc = (i%bigTick == 0) ? 2 : 1;
         g.setColor(0,255,128);
         g.drawLine(xi,yi-inc,xi,yi+inc);
       }
@@ -4643,7 +4640,7 @@ public final class CalcEngine
         g.setColor(0,32,16);
         g.drawLine(gx-2,yi,gx+gw+1,yi);
         
-        if (i%bigTick == 0)
+        if (i%bigTick == 0 && graphCmd!=PROG_SOLVE && graphCmd!=PROG_MINMAX)
         {
           tmp.assign(y);
           tmp.div(fac);
@@ -4664,18 +4661,15 @@ public final class CalcEngine
           } else {
             lx = xi-3-fw*label.length();
           }
-          sideSelected = true;
+          sideSelected = true; // Keep to one side of axis once it is selected
 
           if (lx < gx-2)
             lx = gx-2;
           if (lx > gx+gw+2-fw*label.length())
             lx = gx+gw+2-fw*label.length();
           font.drawString(g,lx,ly,label);
-
-          inc = 2;
-        } else {
-          inc = 1;
         }
+	inc = (i%bigTick == 0) ? 2 : 1;
         g.setColor(0,255,128);
         g.drawLine(xi-inc,yi,xi+inc,yi);
       }
