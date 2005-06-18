@@ -1741,7 +1741,7 @@ public final class CalcEngine
     Matrix X = getMatrix(x);
     Matrix Y = getMatrix(y);
     if (X != null || Y != null) {
-      if (complex) {
+      if (complex && cmd!=CLEAR) {
         // Can't handle complex matrix yet
         y.makeNan();
         cmd = -1;
@@ -1857,6 +1857,7 @@ public final class CalcEngine
         break;
       case CLEAR:
         matrix = false;
+	complex = false;
         break;
     }
     if (complex && (y.isNan() || yi.isNan())) {
