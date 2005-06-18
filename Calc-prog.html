@@ -281,7 +281,7 @@ before executing "prog/solve/fit", yields the result
 c=10.76295. Looking at the curve with "stat/result/alnx+b/draw" shows
 a pretty good fit (although translated 10.76 along the x axis), and
 the correlation coefficient "stat/result/alnx+b/r" returns 0.9996,
-which indicates that the data is modelled well by the curve. The
+which indicates that the data is modeled well by the curve. The
 coefficient "b" of the <em>original</em> function can be calculated
 from the coefficients of our current function as e<sup>b/a</sup>, and
 the coefficient "a" is the same.<br>
@@ -296,10 +296,13 @@ ordinary. The resulting function is as follows:<br>
 <br>
 
 
-<h2>Spline drawing</h2>
+<h2><a id="Spline" name="Spline">Spline drawing</a></h2>
 
-Given a number of 2D control points, a smooth curve can be drawn
-controlled by the control points.<br>
+Given a number of 2D control points, a smooth parametric curve consisting of
+segments of third degree polynomials x=f(t) and y=g(t) can be fitted to the
+control points. This is called a <a
+href="http://en.wikipedia.org/wiki/Spline_(mathematics)">spline</a>. The
+calculations are simplified by the use of matrices.<br>
 
 <br><b>Program listing:</b>
 

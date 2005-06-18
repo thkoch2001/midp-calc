@@ -12,12 +12,13 @@ MIDP devices</h1>
 
 <h2>Changelog:</h2>
 
-<h3>Version 2.07, 2005-06-17, (64kB)</h3>
+<h3>Version 2.07, 2005-06-18, (64kB)</h3>
 
 <ul>
   <li>Numbered axes in graphs
   <li>Added parametric and polar graphs
   <li>Added matrix size query and a<sub>ij</sub> element access
+  <li>Several minor bugs removed
 <!--  <li>Double-buffering of graph drawing (if enough memory)-->
 </ul>
 
@@ -188,37 +189,21 @@ MIDP devices</h1>
 <br>
 <br>
 
-<h2>Bugs:</h2>
-
-<ul>
-  <li>None of the key mappings work on Nokia 6820 and 5140
-</ul>
-<br>
-<br>
-
 <h2>Todo-list:</h2>
 
 <ul>
-  <li>Fix the bugs
+  <li>Fix bugs
   <li>Error message popup where a "nan" result is inappropriate
   <li>Help text popup for commands aborted due to bad parameters
-  (draw, solve, integrate)
+  (e.g. draw, solve, integrate)
   <li>Different font for monitor items
   <li>More than one column visible in matrix monitor
   <li>Complex integration and differentiation
   <li>Complex matrices
   <li>The "guess" function from http://sourceforge.net/projects/easycalc
-</ul>
-
-Things that <i>cannot</i> be implemented because the increased complexity
-will make the application too large:
-
-<ul>
-  <li>Full programming mode with program listing, editing, and
-  flow control operations such as IF, GOTO etc.
-  <li>Expression evaluation, e.g. "2+3-5*sin(34.5)^2"
-  <li>Symbolic differentiation and integration
-  <li>Spreadsheet, thesaurus and encyclopedia
+  <li>Flow control in programming with LBL, GTO, GSB, RTN
+  <li>Calling other programs and doing solve, integration and min/max in
+  program
 </ul>
 
 </body>
