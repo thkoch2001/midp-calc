@@ -1,4 +1,4 @@
-VERSION = 2.07
+VERSION = 2.08
 TARGETS = Calc.jar Calc.jad CalcApplet.jar
 
 WTK_HOME = ../../WTK104
@@ -77,10 +77,9 @@ Calc.jar: $(JAVAFILES) Real.java Calc.jad Calc.png
 	touch Calc.jar
 
 CalcApplet.jar: CalcApplet.java $(JAVAFILES) Real.java $(MIDPFILES)
-	gcj --encoding="ISO 8859-1" -Wall -C -d midp -O2 CalcApplet.java $(JAVAFILES) Real.java $(MIDPFILES)
-	cd midp && jar cf ../tmp.jar ral javax
-	java -jar $(WTK_HOME)/lib/proguard-3.1.jar -injars tmp.jar -outjars CalcApplet.jar -libraryjars "<java.home>/lib/rt.jar" -keep public class ral.CalcApplet
-	rm tmp.jar
+	gcj --encoding="ISO 8859-1" -Wall -C -d midp -O2 --classpath=$(JAVA_HOME)/jre/lib/javaplugin.jar CalcApplet.java $(JAVAFILES) Real.java $(MIDPFILES)
+#	javac -encoding "ISO8859-1" -d midp -O -classpath $(JAVA_HOME)/jre/lib/javaplugin.jar CalcApplet.java $(JAVAFILES) Real.java $(MIDPFILES)
+	cd midp && jar cf ../CalcApplet.jar ral javax
 
 clean:
 	rm -rf $(TARGETS) ral midp/ral midp/javax Real.java GFontBase.java pgm2java *~ .\#* midp/*~ midp/.\#* midp-*.tgz

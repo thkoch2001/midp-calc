@@ -6,7 +6,7 @@
 
 <center>
 <applet archive="CalcApplet.jar" code="ral/CalcApplet.class"
- width=130 height=220>
+ width=130 height=220 mayscript=true>
 </applet>
 </center>
 
@@ -30,6 +30,11 @@ joystick directions and "home" serves as the middle of the joystick. For ease
 of use, the "." key works the same as the "*" key, and "-" and "e" works the
 same as "#". "+", "ENTER" and the number keys correspond to the same keys on
 the phone.
+
+<p>
+If you exit the demo by selecting mode/sys/exit, the demo applet will
+attempt to save the state of the calculator in a cookie. I expect there
+can be trouble if you have allocated a gigantic matrix.
 
 </body>
 </html>
