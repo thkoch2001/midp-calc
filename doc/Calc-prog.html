@@ -74,6 +74,144 @@ prog/finish              ; program finished
 </pre><br>
 
 
+<h2>Solving an equation for different variables</h2>
+
+Assume you have an equation having different variables, for example
+the equation describing an accelerated motion from a starting height
+h<sub>0</sub>, with accelleration a, and initial velocity
+v<sub>0</sub>. You want to know the height h at time t. Then the
+equation looks like<br>
+
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;h&nbsp;=&nbsp;h<sub>0</sub>&nbsp;+&nbsp;v<sub>0</sub>t
+&nbsp;+&nbsp;½at²<br>
+
+<br>
+To solve this equation for different variables, we make use of some
+registers, one for each variable, the memory monitor mode and the
+equation solver, and even function plotting.<br>
+
+<br>
+Since the built in solve command solves equations for 0, we transform
+the above equation into<br>
+
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;0&nbsp;=&nbsp;h<sub>0</sub>&nbsp;+&nbsp;v<sub>0</sub>t&nbsp;+&nbsp;½at²&nbsp;-&nbsp;h<br>
+
+<br>
+We use the following memory registers for the different variables, just
+in order of their appearance in the equation:<br>
+
+<br>
+M1=h<sub>0</sub>, M2=v<sub>0</sub>, M3=t, M4=a, M5=h<br>
+
+<br>
+The register M0 will have a special role here: It will the determine the
+variable we want to solve the equation for, e.g. set M0=3 for solving for
+M3=t.<br>
+
+<br>
+For following this example, switch on the memory monitor mode
+("mode/monitor/mem/<4-7>/<6>") and enter some values:<br>
+
+<br>
+M0=3, M1=100, M2=10, M4=-9.80665, M5=0<br>
+
+<br>
+(The 9.80665 can be entered using
+"special/conv/const/astro/g<sub>n</sub>".)<br>
+
+<br><b>Now we enter the equation as a program:</b>
+
+<pre>
+prog/new "Speed"         ; start a new program
+mem/RCL 0                ; find out for which variable to solve
+prog/mem/STO[x]          ; store value on stack in this variable
+clear                    ; remove var number+value
+clear
+mem/RCL 1                ; start equation: recall h_0
+mem/RCL 2                ; recall v_0
+mem/RCL 3                ; recall t
+*                        ; v_0 * t
++                        ; h_0 + v_0 * t
+mem/RCL 4                ; recall a
+mem/RCL 3                ; recall t
+math/simple/x²           ; t2
+*                        ; a * t2
+2
+/                        ; a * t2 / 2
++                        ; h_0 + v_0 * t + a * t2 / 2
+mem/RCL 5                ; h
+-                        ; h_0 + v_0 * t + a * t2 / 2 - h
+prog/finish
+</pre>
+
+<br>
+Now we can use the solver to find out which value for t matches the
+given values for the other variables. To start the solver, we need to
+specify a lower bound and an upper bound where to search for the zero of
+the equation, eg:<br>
+
+<pre>
+0                        ; lower bound
+100                      ; upper bound
+prog/more/solve/Speed    ; call solver for our equation
+</pre>
+
+<br>
+The result shows that after about 5.65 seconds we will experience a
+pretty hard landing on the ground.  :)<br>
+
+<br>
+If we wanted to know what initial speed is needed so that a ball
+starting at a height of 100m is at 50m after 1 second, we would enter:<br>
+
+<br>
+M0=2 (solve for M2=v<sub>0</sub>), M1=100; M3=1, M4=-9.80665, M5=50<br>
+
+<pre>
+0                        ; lower bound
+100                      ; upper bound
+prog/more/solve/Speed    ; call solver
+</pre>
+
+<br>
+This gives us "nan" as result, since our guess of the bounds was
+inappropiate. To find out which guess we could use, plot the error of
+the equation:<br>
+
+<pre>
+0
+100
+0
+100
+prog/draw/y=f(x)
+</pre>
+
+<br>
+The output looks like there is a zero for negative values of
+v<sub>0</sub>. Hence try<br>
+
+<pre>
+-100
+0
+prog/more/solve/Speed
+</pre>
+
+<br>
+This gives the result: approx -45.1
+So we have to hit the ball quite hard ...  :)<br>
+
+<br>
+One suggestion: The hardest part is to remember which variable is
+in which register. The memory mode displaying the entered/solved values
+can be quite helpful for guessing which is which, but probabely you will
+need a pice of paper here.<br>
+
+<br>
+<i>Submitted by Goetz Schwandtner</i><br><br>
+
+
 <h2>DDD.MMSS conversions</h2>
 
 The built-in conversions to and from the DH.MS date-time
@@ -122,6 +260,7 @@ conv/time/DH.MS+         ; sum everything...
 prog/finish              ; second program finished
 </pre>
 
+<br>
 Note: If you are able to enter the sign "»" in the program name, it
 will magically turn into the sign "&rarr;" in the menu. In that case
 you should call your programs "»D.MS", "»D", and "D.MS+" for clarity.
