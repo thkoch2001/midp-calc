@@ -1470,7 +1470,7 @@ public final class CalcEngine
     }
   }
 
-  private int greatestFactor(int a) {
+  private static int greatestFactor(int a) {
     if (a==-1)
       return a;
     if (a<0) a = -a;
@@ -1613,33 +1613,6 @@ public final class CalcEngine
     strStack[0] = null;
   }
 
-  private void complexMul(Real y, Real yi, Real x, Real xi) {
-    rTmp.assign(yi);
-    rTmp.mul(xi);
-    rTmp2.assign(y);
-    rTmp2.mul(xi);
-    y.mul(x);
-    y.sub(rTmp);
-    yi.mul(x);
-    yi.add(rTmp2);
-  }
-
-  private void complexDiv(Real y, Real yi, Real x, Real xi) {
-    rTmp.assign(yi);
-    rTmp.mul(xi);
-    rTmp2.assign(y);
-    rTmp2.mul(xi);
-    y.mul(x);
-    y.add(rTmp);
-    yi.mul(x);
-    yi.sub(rTmp2);
-    x.sqr();
-    xi.sqr();
-    x.add(xi);
-    y.div(x);
-    yi.div(x);
-  }
-
   private void binaryComplex(int cmd) {
     Real x = stack[0];
     Real y = stack[1];
@@ -1652,6 +1625,7 @@ public final class CalcEngine
       complex = !xi.isZero() || !yi.isZero();
       lastxi.assign(xi);
       lastyi.assign(yi);
+      Complex.degrees = degrees;
     } else {
       lastxi = null;
     }
@@ -1670,9 +1644,9 @@ public final class CalcEngine
           yi = imagStack[1];
         }
         if (complex) {
-          complexLn(y,yi);
-          complexMul(y,yi,x,xi);
-          complexExp(y,yi);
+          Complex.ln(y,yi);
+          Complex.mul(y,yi,x,xi);
+          Complex.exp(y,yi);
         } else {
           y.pow(x);
         }
@@ -1685,9 +1659,9 @@ public final class CalcEngine
           yi = imagStack[1];
         }
         if (complex) {
-          complexLn(y,yi);
-          complexDiv(y,yi,x,xi);
-          complexExp(y,yi);
+          Complex.ln(y,yi);
+          Complex.div(y,yi,x,xi);
+          Complex.exp(y,yi);
         } else {
           y.nroot(x);
         }
@@ -1706,8 +1680,11 @@ public final class CalcEngine
       y.makeNan();
       yi.makeZero();
     }
-    if (complex && y.isZero())
-      y.abs(); // Remove annoying "-"
+    if (complex) {
+      if (y.isZero())
+        y.abs(); // Remove annoying "-"
+      degrees = Complex.degrees;
+    }
     rollDown(true);
     stack[STACK_SIZE-1].makeZero();
     if (imagStack != null)
@@ -1787,7 +1764,7 @@ public final class CalcEngine
             Y = Matrix.mul(Y,x);
           }
         } else if (complex) {
-          complexMul(y,yi,x,xi);
+          Complex.mul(y,yi,x,xi);
         } else {
           y.mul(x);
         }
@@ -1802,7 +1779,7 @@ public final class CalcEngine
             Y = Matrix.div(Y,x);
           }
         } else if (complex) {
-          complexDiv(y,yi,x,xi);
+          Complex.div(y,yi,x,xi);
         } else {
           y.div(x);
         }
@@ -1814,8 +1791,12 @@ public final class CalcEngine
           if (rows > 0 && rows < 65536 && cols > 0 && cols < 65536) {
             matrix = true;
             Y = new Matrix(rows,cols);
+          } else {
+            y.makeNan();
           }
-        } // else do nothing
+        } else {
+          y.makeNan();
+        }
         break;
       case MATRIX_CONCAT:
         if (matrix) {
@@ -1857,7 +1838,7 @@ public final class CalcEngine
         break;
       case CLEAR:
         matrix = false;
-	complex = false;
+        complex = false;
         break;
     }
     if (complex && (y.isNan() || yi.isNan())) {
@@ -2057,133 +2038,6 @@ public final class CalcEngine
     repaint(1);
   }
 
-  private void complexSqr(Real x, Real xi) {
-    rTmp.assign(xi);
-    rTmp.sqr();
-    xi.mul(x);
-    xi.scalbn(1);
-    x.sqr();
-    x.sub(rTmp);
-  }
-
-  private void complexSqrt(Real x, Real xi) {
-    rTmp.assign(x);
-    rTmp.hypot(xi);
-    rTmp2.assign(x);
-    rTmp2.abs();
-    rTmp.add(rTmp2);
-    rTmp.scalbn(1);
-    rTmp.sqrt();
-    if (!x.isNegative()) {
-      x.assign(rTmp);
-      x.scalbn(-1);
-      xi.div(rTmp);
-    } else {
-      x.assign(xi);
-      x.abs();
-      x.div(rTmp);
-      rTmp.copysign(xi);
-      xi.assign(rTmp);
-      xi.scalbn(-1);
-    }
-  }
-
-  private void complexSinh(Real x, Real xi) {
-    degrees = false; // "Alert" the user to the fact that we use strictly RAD
-    rTmp.assign(x);
-    rTmp2.assign(xi);
-    x.sinh();
-    rTmp2.cos();
-    x.mul(rTmp2);
-    xi.sin();
-    rTmp.cosh();
-    xi.mul(rTmp);
-  }
-
-  private void complexCosh(Real x, Real xi) {
-    degrees = false; // "Alert" the user to the fact that we use strictly RAD
-    rTmp.assign(x);
-    rTmp2.assign(xi);
-    x.cosh();
-    rTmp2.cos();
-    x.mul(rTmp2);
-    xi.sin();
-    rTmp.sinh();
-    xi.mul(rTmp);
-  }
-
-  private void complexTanh(Real x, Real xi) {
-    rTmp3.assign(x);
-    rTmp4.assign(xi);
-    complexSinh(x,xi);
-    complexCosh(rTmp3,rTmp4);
-    complexDiv(x,xi,rTmp3,rTmp4);
-  }
-  
-  private void complexAsinh(Real x, Real xi) {
-    rTmp3.assign(x);
-    rTmp4.assign(xi);
-    complexSqr(x,xi);
-    x.add(Real.ONE);
-    complexSqrt(x,xi);
-    x.add(rTmp3);
-    xi.add(rTmp4);
-    complexLn(x,xi);
-  }
-
-  private void complexAcosh(Real x, Real xi) {
-    Real rTmp5 = new Real();
-    Real rTmp6 = new Real();
-    rTmp3.assign(x);
-    rTmp4.assign(xi);
-    rTmp3.add(Real.ONE);
-    complexSqrt(rTmp3,rTmp4);
-    rTmp5.assign(x);
-    rTmp6.assign(xi);
-    rTmp5.sub(Real.ONE);
-    complexSqrt(rTmp5,rTmp6);
-    complexMul(rTmp3,rTmp4,rTmp5,rTmp6);
-    x.add(rTmp3);
-    xi.add(rTmp4);
-    complexLn(x,xi);
-  }
-
-  private void complexAtanh(Real x, Real xi) {
-    rTmp3.assign(x);
-    rTmp4.assign(xi);
-    x.add(Real.ONE);
-    complexLn(x,xi);
-    rTmp3.neg();
-    rTmp4.neg();
-    rTmp3.add(Real.ONE);
-    complexLn(rTmp3,rTmp4);
-    x.sub(rTmp3);
-    xi.sub(rTmp4);
-    x.scalbn(-1);
-    xi.scalbn(-1);
-  }
-
-  private void complexExp(Real x, Real xi) {
-    degrees = false; // "Alert" the user to the fact that we use strictly RAD
-    x.exp();
-    rTmp.assign(xi);
-    xi.sin();
-    xi.mul(x);
-    rTmp.cos();
-    x.mul(rTmp);
-  }
-  
-  private void complexLn(Real x, Real xi) {
-    degrees = false; // "Alert" the user to the fact that we use strictly RAD
-    rTmp.assign(x);
-    if (!xi.isZero())
-      x.hypot(xi);
-    else
-      x.abs();
-    x.ln();
-    xi.atan2(rTmp);
-  }
-
   private void unaryComplex(int cmd) {
     Real tmp;
     Real x = stack[0];
@@ -2193,6 +2047,7 @@ public final class CalcEngine
       xi = imagStack[0];
       complex = !xi.isZero();
       lastxi.assign(xi);
+      Complex.degrees = degrees;
     } else {
       lastxi = null;
     }
@@ -2208,14 +2063,14 @@ public final class CalcEngine
         x.mul(Real.PERCENT);
         if (complex) {
           xi.mul(Real.PERCENT);
-          complexMul(x,xi,stack[1]/*y*/,imagStack[1]/*yi*/);
+          Complex.mul(x,xi,stack[1]/*y*/,imagStack[1]/*yi*/);
         } else {
           x.mul(stack[1]/*y*/);
         }
         break;
       case SQRT:
         if (complex) {
-          complexSqrt(x,xi);
+          Complex.sqrt(x,xi);
         } else if (x.isNegative() && !x.isZero()) {
           allocImagStack();
           complex = true;
@@ -2230,7 +2085,7 @@ public final class CalcEngine
         break;
       case CPLX_ARG:
         if (complex) {
-          degrees = false;          
+          Complex.degrees = false;          
           xi.atan2(x);
           x.assign(xi);
           xi.makeZero();
@@ -2245,7 +2100,7 @@ public final class CalcEngine
       case COS:
         if (complex) {
           x.swap(xi);
-          complexCosh(x,xi);
+          Complex.cosh(x,xi);
           xi.neg();
         } else {
           toRAD(x);
@@ -2254,14 +2109,14 @@ public final class CalcEngine
         break;
       case COSH:
         if (complex) {
-          complexCosh(x,xi);
+          Complex.cosh(x,xi);
         } else {
           x.cosh();
         }
         break;
       case SIN:
         if (complex) {
-          complexSinh(xi,x);
+          Complex.sinh(xi,x);
         } else {
           toRAD(x);
           x.sin();
@@ -2269,7 +2124,7 @@ public final class CalcEngine
         break;
       case SINH:
         if (complex) {
-          complexSinh(x,xi);
+          Complex.sinh(x,xi);
         } else {
           x.sinh();
         }
@@ -2277,7 +2132,7 @@ public final class CalcEngine
       case TAN:
         if (complex) {
           xi.neg();
-          complexTanh(xi,x);
+          Complex.tanh(xi,x);
           xi.neg();
         } else {
           toRAD(x);
@@ -2286,7 +2141,7 @@ public final class CalcEngine
         break;
       case TANH:
         if (complex) {
-          complexTanh(x,xi);
+          Complex.tanh(x,xi);
         } else {
           x.tanh();
         }
@@ -2298,7 +2153,7 @@ public final class CalcEngine
           xi = imagStack[0];
         }
         if (complex) {
-          complexAsinh(xi,x);
+          Complex.asinh(xi,x);
         } else {
           x.asin();
           fromRAD(x);
@@ -2306,7 +2161,7 @@ public final class CalcEngine
         break;
       case ASINH:
         if (complex) {
-          complexAsinh(x,xi);
+          Complex.asinh(x,xi);
         } else {
           x.asinh();
         }
@@ -2318,7 +2173,7 @@ public final class CalcEngine
           xi = imagStack[0];
         }
         if (complex) {
-          complexAsinh(xi,x);
+          Complex.asinh(xi,x);
           x.neg();
           xi.neg();
           x.add(Real.PI_2);
@@ -2334,7 +2189,7 @@ public final class CalcEngine
           xi = imagStack[0];
         }
         if (complex) {
-          complexAcosh(x,xi);
+          Complex.acosh(x,xi);
         } else {
           x.acosh();
         }
@@ -2342,7 +2197,7 @@ public final class CalcEngine
       case ATAN:
         if (complex) {
           xi.neg();
-          complexAtanh(xi,x);
+          Complex.atanh(xi,x);
           xi.neg();
         } else {
           x.atan();
@@ -2356,14 +2211,14 @@ public final class CalcEngine
           xi = imagStack[0];
         }
         if (complex) {
-          complexAtanh(x,xi);
+          Complex.atanh(x,xi);
         } else {
           x.atanh();
         }
         break;
       case EXP:
         if (complex) {
-          complexExp(x,xi);
+          Complex.exp(x,xi);
         } else {
           x.exp();
         }
@@ -2372,7 +2227,7 @@ public final class CalcEngine
         if (complex) {
           x.mul(Real.LN2);
           xi.mul(Real.LN2);
-          complexExp(x,xi);
+          Complex.exp(x,xi);
         } else {
           x.exp2();
         }
@@ -2381,7 +2236,7 @@ public final class CalcEngine
         if (complex) {
           x.mul(Real.LN10);
           xi.mul(Real.LN10);
-          complexExp(x,xi);
+          Complex.exp(x,xi);
         } else {
           x.exp10();
         }
@@ -2393,7 +2248,7 @@ public final class CalcEngine
           xi = imagStack[0];
         }
         if (complex) {
-          complexLn(x,xi);
+          Complex.ln(x,xi);
         } else {
           x.ln();
         }
@@ -2405,7 +2260,7 @@ public final class CalcEngine
           xi = imagStack[0];
         }
         if (complex) {
-          complexLn(x,xi);
+          Complex.ln(x,xi);
           x.mul(Real.LOG2E);
           xi.mul(Real.LOG2E);
         } else {
@@ -2419,7 +2274,7 @@ public final class CalcEngine
           xi = imagStack[0];
         }
         if (complex) {
-          complexLn(x,xi);
+          Complex.ln(x,xi);
           x.mul(Real.LOG10E);
           xi.mul(Real.LOG10E);
         } else {
@@ -2454,12 +2309,15 @@ public final class CalcEngine
     }
     if (x.isNan())
       x.makeNan(); // In case x refers to a matrix, make it normal nan
-    if (complex && (x.isNan() || xi.isNan())) {
-      x.makeNan();
-      xi.makeZero();
+    if (complex) {
+      if (x.isNan() || xi.isNan()) {
+        x.makeNan();
+        xi.makeZero();
+      }
+      if (x.isZero())
+        x.abs(); // Remove annoying "-"
+      degrees = Complex.degrees;
     }
-    if (complex && x.isZero())
-      x.abs(); // Remove annoying "-"
     strStack[0] = null;
     repaint(1);
   }
@@ -2499,7 +2357,7 @@ public final class CalcEngine
         if (matrix) {
           X = Matrix.mul(X,X);
         } else if (complex) {
-          complexSqr(x,xi);
+          Complex.sqr(x,xi);
         } else {
           x.sqr();
         }
@@ -2508,14 +2366,7 @@ public final class CalcEngine
         if (matrix) {
           X = Matrix.invert(X);
         } else if (complex) {
-          rTmp.assign(x);
-          rTmp.sqr();
-          rTmp2.assign(xi);
-          rTmp2.sqr();
-          rTmp.add(rTmp2);
-          x.div(rTmp);
-          xi.div(rTmp);
-          xi.neg();
+          Complex.recip(x,xi);
         } else {
           x.recip();
         }
@@ -2753,8 +2604,8 @@ public final class CalcEngine
           if (complex) {
             rTmp4.assign(xi);
             rTmp4.neg();
-            complexMul(z,zi,rTmp3,rTmp4);
-            complexMul(y,yi,x,xi);
+            Complex.mul(z,zi,rTmp3,rTmp4);
+            Complex.mul(y,yi,x,xi);
             z.add(y);
             zi.add(yi);
           } else {
@@ -4607,7 +4458,7 @@ public final class CalcEngine
             ly = gy+gh+1-fh;
           font.drawString(g,lx,ly,label);
         }
-	inc = (i%bigTick == 0) ? 2 : 1;
+        inc = (i%bigTick == 0) ? 2 : 1;
         g.setColor(0,255,128);
         g.drawLine(xi,yi-inc,xi,yi+inc);
       }
@@ -4669,7 +4520,7 @@ public final class CalcEngine
             lx = gx+gw+2-fw*label.length();
           font.drawString(g,lx,ly,label);
         }
-	inc = (i%bigTick == 0) ? 2 : 1;
+        inc = (i%bigTick == 0) ? 2 : 1;
         g.setColor(0,255,128);
         g.drawLine(xi-inc,yi,xi+inc,yi);
       }

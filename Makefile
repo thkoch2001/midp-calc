@@ -10,6 +10,7 @@ JAVAFILES =  Calc.java \
              CalcCanvas.java \
              CalcEngine.java \
              GraphCanvas.java \
+             Complex.java \
              Matrix.java \
              GFont.java \
              GFontBase.java \
@@ -77,7 +78,7 @@ Calc.jar: $(JAVAFILES) Real.java Calc.jad Calc.png
 	touch Calc.jar
 
 CalcApplet.jar: CalcApplet.java $(JAVAFILES) Real.java $(MIDPFILES)
-	gcj --encoding="ISO 8859-1" -Wall -C -d midp -O2 --classpath=$(JAVA_HOME)/jre/lib/javaplugin.jar CalcApplet.java $(JAVAFILES) Real.java $(MIDPFILES)
+	gcj --encoding="ISO 8859-1" -Wall -C -d midp -O2 --classpath=$(JAVA_HOME)/jre/lib/plugin.jar CalcApplet.java $(JAVAFILES) Real.java $(MIDPFILES)
 #	javac -encoding "ISO8859-1" -d midp -O -classpath $(JAVA_HOME)/jre/lib/javaplugin.jar CalcApplet.java $(JAVAFILES) Real.java $(MIDPFILES)
 	cd midp && jar cf ../CalcApplet.jar ral javax
 
