@@ -1340,9 +1340,7 @@ public final class CalcCanvas
         menu.subMenu[1] = math;
         menu.subMenu[2] = trig;
         // Also switch coord menu with cplx menu if x or y are complex
-        if (calc.imagStack != null &&
-            (!calc.imagStack[0].isZero() ||
-             !calc.imagStack[1].isZero())) {
+        if (!calc.stackI[0].isZero() || !calc.stackI[1].isZero()) {
           trig.subMenu[4].subMenu[3] = cplxMenu;
         } else {
           trig.subMenu[4].subMenu[3] = coordMenu;
