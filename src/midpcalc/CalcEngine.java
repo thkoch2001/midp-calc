@@ -855,8 +855,9 @@ public final class CalcEngine
     return matrixCache[ref];
   }
 
-  private void linkToMatrix(Real x, Matrix M) {
+  private void linkToMatrix(Real x, Real xi, Matrix M) {
     x.makeNan();
+    xi.makeZero();
     if (M == null || Matrix.isInvalid(M)) {
       // Invalid matrix == nan
       matrixGC();
@@ -1455,8 +1456,9 @@ public final class CalcEngine
     switch (cmd)
     {
       case CLEAR:
-        matrix = false;
-        complex = false;
+        matrix = (Y != null);
+        matrixOk = true;
+        complexOk = true;
         break;
       case ADD:
         if (matrix) {
@@ -1684,20 +1686,22 @@ public final class CalcEngine
         break;
     }
 
-    if ((complex && !complexOk) || (matrix && !matrixOk))
-      y.makeNan();
-    
-    if (complex) {
-      degrees = Complex.degrees;
+    if (matrix) {
+      if (!matrixOk)
+        y.makeNan();
+      else
+        linkToMatrix(y,yi,Y);
+    } else {
+      if (complex && !complexOk)
+        y.makeNan();
       if (y.isNan() || yi.isNan()) {
         y.makeNan();
         yi.makeZero();
       }
-      if (y.isZero())
+      if (y.isZero() && !yi.isZero())
         y.abs(); // Remove annoying "-"
     }
-    if (matrix)
-      linkToMatrix(y,Y);
+    degrees = Complex.degrees;
 
     rollDown(true);
     stack[STACK_SIZE-1].makeZero();
@@ -1870,6 +1874,7 @@ public final class CalcEngine
     }
     if (x.isNan())
       x.makeNan(); // In case x refers to a matrix, make it normal nan
+
     stackStr[0] = null;
     repaint(1);
   }
@@ -2191,19 +2196,22 @@ public final class CalcEngine
         }
         break;
     }
-    if (matrix && !matrixOk)
-      x.makeNan();
-    if (complex) {
+    
+    if (matrix) {
+      if (!matrixOk)
+        x.makeNan();
+      else
+        linkToMatrix(x,xi,X);
+    } else {
       if (x.isNan() || xi.isNan()) {
         x.makeNan();
         xi.makeZero();
       }
-      if (x.isZero())
+      if (x.isZero() && !xi.isZero())
         x.abs(); // Remove annoying "-"
-      degrees = Complex.degrees;
     }
-    if (matrix)
-      linkToMatrix(x,X);
+    degrees = Complex.degrees;
+
     stackStr[0] = null;
     repaint(1);
   }
@@ -2255,14 +2263,14 @@ public final class CalcEngine
             A = Y.subMatrix(0,0,Y.rows,n);
             B = Y.subMatrix(0,n,Y.rows,Y.cols-n);
           }
-          linkToMatrix(y,A);
-          linkToMatrix(x,B);
+          linkToMatrix(y,yi,A);
+          linkToMatrix(x,xi,B);
         } // else do nothing
         break;
     }
     if (!matrix) {
       if (x.isNan()) x.makeNan();// In case x refers to matrix, make normal nan
-      if (y.isNan()) y.makeNan();// In case y refers to matrix, make normal nan
+      if (y.isNan()) y.makeNan();// ...ditto
     }
     stackStr[0] = null;
     stackStr[1] = null;
@@ -2342,7 +2350,7 @@ public final class CalcEngine
     }
   }
 
-  private void trinaryComplex(int cmd) {
+  private void trinary(int cmd) {
     Real x = stack[0];
     Real y = stack[1];
     Real z = stack[2];
@@ -2350,6 +2358,7 @@ public final class CalcEngine
     Real yi = stackI[1];
     Real zi = stackI[2];
     boolean complex = false;
+    boolean matrix  = false;
 
     complex = !xi.isZero() || !yi.isZero() || !zi.isZero();
 
@@ -2363,41 +2372,94 @@ public final class CalcEngine
       stackStr[0]==empty ? 3 : 2 : 1 : 0;
     undoOp = UNDO_TRINARY;
 
+    Matrix X = getMatrix(x);
+    Matrix Y = getMatrix(y);
+    Matrix Z = getMatrix(z);
+    if (X != null || Y != null || Z != null) {
+      if (complex) {
+        // Can't handle complex matrix yet
+        z.makeNan();
+        cmd = -1;
+      } else {
+        matrix = true;
+      }
+    }
+
     switch (cmd) {
       case SELECT:
-        if (x.isZero() && (!complex || xi.isZero())) {
+        // Calculate x*y + (1-x)*z
+        if (x.isZero() && xi.isZero()) {
           // We're done
-        } else if (x.equalTo(Real.ONE) && (!complex || xi.isZero())) {
+        } else if (x.equalTo(Real.ONE) && xi.isZero()) {
           z.assign(y);
-          if (complex)
-            zi.assign(yi);
+          zi.assign(yi);
         } else {
-          rTmp3.assign(Real.ONE);
-          rTmp3.sub(x);
-          if (complex) {
-            rTmp4.assign(xi);
-            rTmp4.neg();
-            Complex.mul(z,zi,rTmp3,rTmp4);
-            Complex.mul(y,yi,x,xi);
-            z.add(y);
-            zi.add(yi);
+          if (matrix) {
+            if (X != null) {
+              if (X.cols != X.rows || ((Y == null) != (Z == null))) {
+                matrix = false;
+                z.makeNan();
+              } else {
+                // Weird, but perhaps sometime it will be useful
+                Matrix Tmp = new Matrix(X.cols);
+                for (int i=0; i<X.cols; i++)
+                  Tmp.D[i][i].assign(Real.ONE);
+                Tmp = Matrix.sub(Tmp,X);
+                if (Y == null /*&& Z == null*/) {
+                  // X*y + (I-X)*z
+                  Z = Matrix.mul(Tmp,z);
+                  Y = Matrix.mul(X,y);
+                } else {
+                  // X*Y + (I-X)*Z
+                  Z = Matrix.mul(Tmp,Z);
+                  Y = Matrix.mul(X,Y);
+                }
+                Z = Matrix.add(Z,Y);
+              }
+            } else {
+              if (Y == null || Z == null) {
+                matrix = false;
+                z.makeNan();
+              } else {
+                // x*Y + (1-x)*Z
+                rTmp3.assign(Real.ONE);
+                rTmp3.sub(x);
+                Z = Matrix.mul(Z,rTmp3);
+                Y = Matrix.mul(Y,x);
+                Z = Matrix.add(Z,Y);
+              }
+            }
           } else {
-            z.mul(rTmp3);
-            y.mul(x);
-            z.add(y);
+            rTmp3.assign(Real.ONE);
+            rTmp3.sub(x);
+            if (complex) {
+              rTmp4.assign(xi);
+              rTmp4.neg();
+              Complex.mul(z,zi,rTmp3,rTmp4);
+              Complex.mul(y,yi,x,xi);
+              z.add(y);
+              zi.add(yi);
+            } else {
+              z.mul(rTmp3);
+              y.mul(x);
+              z.add(y);
+            }
           }
         }
         break;
     }
     // Result is in z...
-    if (z.isNan())
-      z.makeNan(); // In case z refers to a matrix, make it normal nan
-    if (complex && (z.isNan() || zi.isNan())) {
-      z.makeNan();
-      zi.makeZero();
+    if (matrix) {
+      linkToMatrix(z,zi,Z);
+    } else {
+      if (z.isNan() || zi.isNan()) {
+        z.makeNan();
+        zi.makeZero();
+      }
+      if (z.isZero() && !zi.isZero())
+        z.abs(); // Remove annoying "-"
     }
-    if (complex && z.isZero())
-      z.abs(); // Remove annoying "-"
+
     rollDown(true);
     rollDown(true);
     stack[STACK_SIZE-1].makeZero();
@@ -3303,7 +3365,7 @@ public final class CalcEngine
         cond(cmd);
         break;
       case SELECT:
-        trinaryComplex(cmd);
+        trinary(cmd);
         break;
       case RP:
       case PR:
@@ -3374,9 +3436,10 @@ public final class CalcEngine
         if (X != null || Y != null) {
           if (X != null && Y != null) {
             Y = Matrix.add(Y,X);
-            linkToMatrix(mem[param],Y);
+            linkToMatrix(mem[param],memI[param],Y);
           } else {
             mem[param].makeNan();
+            memI[param].makeZero();
           }
         } else {
           mem[param].add(stack[i]);
@@ -3576,7 +3639,7 @@ public final class CalcEngine
           // Find original matrix position, and automagically replace it
           for (i=0; i<STACK_SIZE; i++)
             if (getMatrix(stack[i]) != null) {
-              linkToMatrix(stack[i],M);
+              linkToMatrix(stack[i],stackI[i],M);
               break;
             }
         }

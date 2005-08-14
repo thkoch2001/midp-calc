@@ -1017,7 +1017,8 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
   x·y+(1-x)·z. With this you can e.g. simulate "max" by pressing
   "x&gt;y?", "select". When selection criterion x exactly equals 1 or
   0, y or z is copied directly instead of calculating it. This enables
-  selecting away <tt>inf</tt>'s and <tt>nan</tt>'s.
+  selecting away <tt>inf</tt>'s and <tt>nan</tt>'s. If x contains a
+  square matrix, X·Y+(I-X)·Z is calculated.
       <li><b>sgn</b>: Keep only the sign of x as ±1. With this you can
   e.g. simulate "abs" by pressing "ENTER", "sgn", "*". Also ±0 becomes ±1
     </ul>
