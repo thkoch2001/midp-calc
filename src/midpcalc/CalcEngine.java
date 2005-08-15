@@ -409,6 +409,7 @@ public final class CalcEngine
     clearMonitorStrings();
     memLabels = new String[MEM_SIZE];
 
+    prog = new short[NUM_PROGS][];
     progLabels = new String[NUM_PROGS];
     for (int i=0; i<NUM_PROGS; i++)
       progLabels[i] = emptyProg;
@@ -644,7 +645,7 @@ public final class CalcEngine
 
     // Programs
     for (i=0; i<NUM_PROGS; i++) {
-      if (prog!=null && prog[i]!=null) {
+      if (prog[i]!=null) {
         out.writeShort(PROGLABEL_SIZE*2+prog[i].length*2);
         for (j=0; j<PROGLABEL_SIZE; j++)
           out.writeChar(j<progLabels[i].length() ? progLabels[i].charAt(j):0);
@@ -796,7 +797,7 @@ public final class CalcEngine
     char [] label = new char[PROGLABEL_SIZE];
     for (i=0; i<NUM_PROGS; i++) {
       length = in.readShort();
-      if (length >= PROGLABEL_SIZE*2+2) {
+      if (length >= PROGLABEL_SIZE*2) {
         int labelLen=0;
         for (j=0; j<PROGLABEL_SIZE; j++) {
           label[j] = in.readChar();
@@ -804,8 +805,6 @@ public final class CalcEngine
             labelLen = j+1;
         }
         progLabels[i] = new String(label,0,labelLen);
-        if (prog == null)
-          prog = new short[NUM_PROGS][];
         prog[i] = new short[(length-PROGLABEL_SIZE*2)/2];
         for (j=0; j<prog[i].length; j++)
           prog[i][j] = in.readShort();
@@ -3129,7 +3128,7 @@ public final class CalcEngine
   }
 
   private void record(int cmd, int param) {
-    if (prog == null || prog[currentProg] == null ||
+    if (prog[currentProg] == null ||
         (cmd >= PROG_NEW    && cmd <= PROG_DIFF) ||
         (cmd >= AVG_DRAW    && cmd <= POW_DRAW) ||
         (cmd >= PROG_DRAW   && cmd <= PROG_MINMAX))
@@ -3978,15 +3977,13 @@ public final class CalcEngine
         progRecording = true;
         currentProg = param;
         matrixGC();
-        if (prog == null)
-          prog = new short[NUM_PROGS][];
         prog[currentProg] = new short[10];
         progCounter = 0;
         break;
 
       case FINALIZE:
       case PROG_FINISH:
-        if (progRecording && prog!=null && prog[currentProg]!=null) {
+        if (progRecording && prog[currentProg]!=null) {
           progRecording = false;
           matrixGC();
           short [] prog2 = new short[progCounter];
@@ -3997,7 +3994,7 @@ public final class CalcEngine
 
       case PROG_RUN:
         currentProg = param;
-        if (prog != null && prog[currentProg] != null) {
+        if (prog[currentProg] != null) {
           progRunning = true;
           progCounter = 0;
           executeProgram();
@@ -4011,8 +4008,7 @@ public final class CalcEngine
 
       case PROG_CLEAR:
         currentProg = param;
-        if (prog != null)
-          prog[currentProg] = null;
+        prog[currentProg] = null;
         progLabels[currentProg] = emptyProg;
         progRecording = false;
         progRunning = false;
@@ -4020,7 +4016,7 @@ public final class CalcEngine
 
       case PROG_DIFF:
         currentProg = param;
-        if (prog != null && prog[currentProg] != null) {
+        if (prog[currentProg] != null) {
           progRunning = true;
           differentiateProgram();
           progRunning = false;
@@ -4045,7 +4041,7 @@ public final class CalcEngine
     progRunning = false;
     
     if (cmd >= PROG_DRAW) {
-      if (prog == null || param<0 || param>=NUM_PROGS || prog[param] == null)
+      if (param<0 || param>=NUM_PROGS || prog[param] == null)
         return false;
       currentProg = param;
     } else if (SUM1 == null || statLogSize == 0)
