@@ -40,7 +40,7 @@ public final class Matrix
     alloc(size,size);
   }
 
-  public Matrix(final Matrix A) {
+  public Matrix(Matrix A) {
     if (isInvalid(A)) {
       makeInvalid();
       return;
@@ -63,7 +63,7 @@ public final class Matrix
     return M;
   }
 
-  public static Matrix add(final Matrix A, final Matrix B) {
+  public static Matrix add(Matrix A, Matrix B) {
     if (isInvalid(A) || isInvalid(B) || A.rows != B.rows || A.cols != B.cols)
       return null;
 
@@ -74,7 +74,7 @@ public final class Matrix
     return M;
   }
 
-  public static Matrix sub(final Matrix A, final Matrix B) {
+  public static Matrix sub(Matrix A, Matrix B) {
     if (isInvalid(A) || isInvalid(B) || A.rows != B.rows || A.cols != B.cols)
       return null;
 
@@ -85,7 +85,7 @@ public final class Matrix
     return M;
   }
 
-  public static Matrix mul(final Matrix A, final Matrix B) {
+  public static Matrix mul(Matrix A, Matrix B) {
     if (isInvalid(A) || isInvalid(B) || A.cols != B.rows)
       return null;
 
@@ -101,7 +101,7 @@ public final class Matrix
     return M;
   }
 
-  public static Matrix mul(final Matrix A, final Real b) {
+  public static Matrix mul(Matrix A, Real b) {
     if (isInvalid(A) || b == null || !b.isFinite())
       return null;
 
@@ -112,13 +112,13 @@ public final class Matrix
     return M;
   }
 
-  public static Matrix div(final Matrix A, final Matrix B) {
+  public static Matrix div(Matrix A, Matrix B) {
     if (isInvalid(A) || isInvalid(B) || A.cols != B.cols)
       return null;
     return mul(A,invert(B));
   }
 
-  public static Matrix div(final Matrix A, final Real b) {
+  public static Matrix div(Matrix A, Real b) {
     if (isInvalid(A) || b == null || b.isNan() || b.isZero())
       return null;
     Real tmp = new Real(b);
@@ -126,13 +126,39 @@ public final class Matrix
     return mul(A,tmp);
   }
 
-  public static Matrix div(final Real a, final Matrix B) {
+  public static Matrix div(Real a, Matrix B) {
     if (a == null || !a.isFinite() || isInvalid(B))
       return null;
     return mul(invert(B),a);
   }
 
-  public static Matrix neg(final Matrix A) {
+  public static Matrix pow(Matrix A, int power) {
+    // Calculate power of integer by successive squaring
+    if (isInvalid(A) || A.cols != A.rows)
+      return null;
+
+    boolean inv=false;
+    if (power < 0) {
+      power = -power; // Also works for 0x80000000
+      inv = true;
+    }
+
+    Matrix P = new Matrix(A.cols);
+    for (int i=0; i<A.cols; i++)
+      P.D[i][i].assign(Real.ONE);
+
+    for (; power!=0; power>>>=1) {
+      if ((power & 1) != 0)
+        P = mul(P,A);
+      A = mul(A,A);
+    }
+
+    if (inv)
+      P = invert(P);
+    return P;
+  }
+
+  public static Matrix neg(Matrix A) {
     if (isInvalid(A))
       return null;
 
@@ -143,7 +169,7 @@ public final class Matrix
     return M;
   }
 
-  public static boolean equals(final Matrix A, final Matrix B) {
+  public static boolean equals(Matrix A, Matrix B) {
     if (isInvalid(A) || isInvalid(B) || A.rows != B.rows || A.cols != B.cols)
       return false;
 
@@ -154,14 +180,14 @@ public final class Matrix
     return true;
   }
 
-  public static boolean notEquals(final Matrix A, final Matrix B) {
+  public static boolean notEquals(Matrix A, Matrix B) {
     if (isInvalid(A) || isInvalid(B) || A.rows != B.rows || A.cols != B.cols)
       return false;
 
     return !equals(A,B);
   }
   
-  public static Matrix transp(final Matrix A) {
+  public static Matrix transp(Matrix A) {
     if (isInvalid(A))
       return null;
 
@@ -172,11 +198,11 @@ public final class Matrix
     return M;
   }
 
-  public static Matrix invert(final Matrix A) {
+  public static Matrix invert(Matrix A) {
     return invert(A,null);
   }
   
-  public static Matrix invert(final Matrix A, Real det) {
+  public static Matrix invert(Matrix A, Real det) {
     if (isInvalid(A))
       return null;
 
@@ -275,7 +301,7 @@ public final class Matrix
     norm2.sqrt();
   }
 
-  public static Matrix concat(final Matrix A, final Matrix B) {
+  public static Matrix concat(Matrix A, Matrix B) {
     if (isInvalid(A) || isInvalid(B) || A.rows != B.rows)
       return null;
 
@@ -290,7 +316,7 @@ public final class Matrix
     return M;
   }
 
-  public static Matrix concat(final Matrix A, final Real b) {
+  public static Matrix concat(Matrix A, Real b) {
     if (isInvalid(A) || b==null || A.rows != 1)
       return null;
 
@@ -301,7 +327,7 @@ public final class Matrix
     return M;
   }
 
-  public static Matrix concat(final Real a, final Matrix B) {
+  public static Matrix concat(Real a, Matrix B) {
     if (a==null || isInvalid(B) || B.rows != 1)
       return null;
 
@@ -312,7 +338,7 @@ public final class Matrix
     return M;
   }
 
-  public static Matrix stack(final Matrix A, final Matrix B) {
+  public static Matrix stack(Matrix A, Matrix B) {
     if (isInvalid(A) || isInvalid(B) || A.cols != B.cols)
       return null;
 
@@ -327,7 +353,7 @@ public final class Matrix
     return M;
   }
 
-  public static Matrix stack(final Matrix A, final Real b) {
+  public static Matrix stack(Matrix A, Real b) {
     if (isInvalid(A) || b==null || A.cols != 1)
       return null;
 
@@ -338,7 +364,7 @@ public final class Matrix
     return M;
   }
 
-  public static Matrix stack(final Real a, final Matrix B) {
+  public static Matrix stack(Real a, Matrix B) {
     if (a==null || isInvalid(B) || B.cols != 1)
       return null;
 
