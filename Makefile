@@ -2,8 +2,11 @@ VERSION = 2.08
 TARGETS = Calc.jar Calc.jad CalcApplet.jar
 
 WTK_HOME = ../../WTK104
+
+## For use with gcj:
 #JFLAGS = --bootclasspath=$(WTK_HOME)/lib/midpapi.zip --encoding="ISO 8859-1" -Wall -C -d . -O2
-## For use with javac:
+
+# For use with javac:
 JFLAGS = -bootclasspath $(WTK_HOME)/lib/midpapi.zip -encoding "ISO8859-1" -d . -O
 
 JAVAFILES =  Calc.java \
