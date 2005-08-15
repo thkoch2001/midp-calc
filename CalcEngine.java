@@ -559,6 +559,8 @@ public final class CalcEngine
   public void saveState(DataOutputStream out) throws IOException
   {
     tryClearModules(true,true);
+    lasty.makeZero(); // Clear this in case it is a Matrix reference
+    lastz.makeZero(); // ...and this
     matrixGC();
 
     int i,j;
@@ -622,7 +624,7 @@ public final class CalcEngine
     }
 
     // Settings
-    out.writeShort(10+8*2+12+((lastxi!=null)?12:0));
+    out.writeShort(10+8*2+12*2);
     out.writeByte(stackHeight);
     out.writeByte((degrees ? 1 : 0) + (begin ? 2 : 0));
     out.writeByte(format.base);
@@ -637,10 +639,8 @@ public final class CalcEngine
     out.writeLong(Real.randSeedB);
     lastx.toBytes(realBuf,0);
     out.write(realBuf);
-    if (lastxi != null) {
-      lastxi.toBytes(realBuf,0);
-      out.write(realBuf);
-    }
+    lastxi.toBytes(realBuf,0);
+    out.write(realBuf);
 
     // Programs
     for (i=0; i<NUM_PROGS; i++) {
@@ -786,8 +786,6 @@ public final class CalcEngine
       length -= 10+8*2+12;
     }
     if (length >= 12) {
-      if (lastxi == null)
-        lastxi = new Real();
       in.read(realBuf);
       lastxi.assign(realBuf,0);
       length -= 12;
@@ -1161,7 +1159,8 @@ public final class CalcEngine
           break;
         }
 
-    switch (cmd) {
+    switch (cmd)
+    {
       case CLEAR:
         if (inputBuf.length()==0) {
           inputInProgress = false;
@@ -1170,6 +1169,7 @@ public final class CalcEngine
         }
         inputBuf.setLength(inputBuf.length()-1);
         break;
+
       case DEC_POINT:
         if (inputBuf.length()>0 &&
             inputBuf.charAt(inputBuf.length()-1)==format.point)
@@ -1187,6 +1187,7 @@ public final class CalcEngine
           inputBuf.append(Real.hexChar.charAt(base-1));
         inputBuf.append(format.point);
         break;
+
       case SIGN_E:
         if (inputBuf.length()>0 && inputBuf.charAt(inputBuf.length()-1)=='-'){
           inputBuf.setLength(inputBuf.length()-1);
@@ -1208,6 +1209,7 @@ public final class CalcEngine
             return;
         inputBuf.append(exp);
         break;
+
       case SIGN_POINT_E:
         if (inputBuf.length()>0 && inputBuf.charAt(inputBuf.length()-1)=='-'){
           inputBuf.setLength(inputBuf.length()-1);
@@ -1241,6 +1243,7 @@ public final class CalcEngine
         if (!hasE)
           inputBuf.append(exp);
         break;
+
       case DIGIT_9:
       case DIGIT_8:
         if (base<10)
@@ -1269,6 +1272,7 @@ public final class CalcEngine
           inputBuf.setLength(inputBuf.length()-1);
         inputBuf.append((char)('A'+cmd-DIGIT_A));
         break;
+
       default:
         return;
     }
@@ -1460,6 +1464,7 @@ public final class CalcEngine
         matrixOk = true;
         complexOk = true;
         break;
+
       case ADD:
         if (matrix) {
           matrixOk = true;
@@ -1475,6 +1480,7 @@ public final class CalcEngine
           if (complex) yi.add(xi);
         }
         break;
+
       case SUB:
         if (matrix) {
           matrixOk = true;
@@ -1490,6 +1496,7 @@ public final class CalcEngine
           if (complex) yi.sub(xi);
         }
         break;
+
       case MUL:
         if (matrix) {
           matrixOk = true;
@@ -1507,6 +1514,7 @@ public final class CalcEngine
           y.mul(x);
         }
         break;
+
       case DIV:
         if (matrix) {
           matrixOk = true;
@@ -1524,24 +1532,37 @@ public final class CalcEngine
           y.div(x);
         }
         break;
+
       case PERCENT_CHG:
         x.sub(y);
         x.div(y);
         x.mul(Real.HUNDRED);
         y.assign(x);
         break;
+
       case YPOWX:
-        if (!y.isZero() && y.isNegative() && !x.isIntegral())
-          complex = true;
-        if (complex) {
-          complexOk = true;
-          Complex.ln(y,yi);
-          Complex.mul(y,yi,x,xi);
-          Complex.exp(y,yi);
-        } else {
-          y.pow(x);
-        }
+//         if (matrix) {
+//           matrixOk = true;
+//           if (X!=null || !x.isIntegral()) {
+//             y.makeNan();
+//             matrix = false;
+//           } else {
+//             Y = Matrix.pow(Y,x.toInteger());
+//           }
+//         } else {
+          if (!y.isZero() && y.isNegative() && !x.isIntegral())
+            complex = true;
+          if (complex) {
+            complexOk = true;
+            Complex.ln(y,yi);
+            Complex.mul(y,yi,x,xi);
+            Complex.exp(y,yi);
+          } else {
+            y.pow(x);
+          }
+//        }
         break;
+
       case XRTY:
         if (!y.isZero() && y.isNegative() && !(x.isIntegral() && x.isOdd()))
           complex = true;
@@ -1554,6 +1575,7 @@ public final class CalcEngine
           y.nroot(x);
         }
         break;
+
       case PYX:
         // fact(y)/fact(y-x)
         x.neg();
@@ -1562,6 +1584,7 @@ public final class CalcEngine
         y.fact();
         y.div(x);
         break;
+
       case CYX:
         // fact(y)/(fact(y-x)*fact(x))
         rTmp.assign(x);
@@ -1573,6 +1596,7 @@ public final class CalcEngine
         y.fact();
         y.div(x);
         break;
+
       case ATAN2: y.atan2(x); fromRAD(y);  break;
       case HYPOT: y.hypot(x);              break;
       case AND:   y.and(x);                break;
@@ -1581,6 +1605,9 @@ public final class CalcEngine
       case BIC:   y.bic(x);                break;
       case YUPX:  x.round(); y.scalbn(x.toInteger()); break;
       case YDNX:  x.round(); y.scalbn(-x.toInteger());break;
+      case MOD:   y.mod(x);                break;
+      case DIVF:  y.divf(x);               break;
+
       case FINANCE_MULINT:
         y.mul(Real.PERCENT);
         y.add(Real.ONE);
@@ -1588,6 +1615,7 @@ public final class CalcEngine
         y.sub(Real.ONE);
         y.mul(Real.HUNDRED);
         break;
+
       case FINANCE_DIVINT:
         y.mul(Real.PERCENT);
         y.add(Real.ONE);
@@ -1595,32 +1623,35 @@ public final class CalcEngine
         y.sub(Real.ONE);
         y.mul(Real.HUNDRED);
         break;
+
       case DHMS_PLUS:
         x.fromDHMS();
         y.fromDHMS();
         y.add(x);
         y.toDHMS();
         break;
+
       case TO_CPLX:
         complexOk = true;
         complex = true;
         yi.assign(y);
         y.assign(x);
         break;
-      case MOD:   y.mod(x);                break;
-      case DIVF:  y.divf(x);               break;
+
       case MIN:
         if (x.isNan() || y.isNan())
           y.makeNan();
         else if (x.lessThan(y))
           y.assign(x);
         break;
+
       case MAX:
         if (x.isNan() || y.isNan())
           y.makeNan();
         else if (x.greaterThan(y))
           y.assign(x);
         break;
+
       case MATRIX_NEW:
         if (!matrix && !complex) {
           int rows = y.toInteger();
@@ -1632,6 +1663,7 @@ public final class CalcEngine
           }
         }
         break;
+
       case MATRIX_CONCAT:
         if (matrix) {
           matrixOk = true;
@@ -1653,6 +1685,7 @@ public final class CalcEngine
           Y.D[1][0].assign(x);
         }
         break;
+
       case MATRIX_STACK:
         if (matrix) {
           matrixOk = true;
@@ -1674,6 +1707,7 @@ public final class CalcEngine
           Y.D[0][1].assign(x);
         }
         break;
+
       case MATRIX_AIJ:
         // Not matrixOk, arguments must be normal numbers
         Matrix M = getCurrentMatrix();
@@ -1687,10 +1721,12 @@ public final class CalcEngine
     }
 
     if (matrix) {
-      if (!matrixOk)
+      if (!matrixOk) {
         y.makeNan();
-      else
+        yi.makeZero();
+      } else {
         linkToMatrix(y,yi,Y);
+      }
     } else {
       if (complex && !complexOk)
         y.makeNan();
@@ -1747,25 +1783,28 @@ public final class CalcEngine
 
     if (!xi.isZero()) {
       // Complex undefined for these operations
-      xi.makeZero();
       x.makeNan();
+      xi.makeZero();
       cmd = -1;
     }
 
-    switch (cmd) {
-      case FACT:  x.fact();  break;
-      case GAMMA: x.gamma(); break;
-      case ERFC:  x.erfc();  break;
-      case NOT:   x.xor(Real.ONE_N); break;
+    switch (cmd)
+    {
+      case FACT:    x.fact();  break;
+      case GAMMA:   x.gamma(); break;
+      case ERFC:    x.erfc();  break;
+      case NOT:     x.xor(Real.ONE_N); break;
       case TO_DEG:  x.div(Real.PI); x.mul(180); break;
       case TO_RAD:  x.mul(Real.PI); x.div(180); break;
       case TO_DHMS: x.toDHMS(); break;
       case TO_H:    x.fromDHMS(); break;
+
       case SGN:
         rTmp.assign(Real.ONE);
         rTmp.copysign(x);
         x.assign(rTmp);
         break;
+
       case DHMS_TO_UNIX:
       case UNIX_TO_DHMS:
         if (cmd == DHMS_TO_UNIX) {
@@ -1778,6 +1817,7 @@ public final class CalcEngine
           x.toDHMS();
         }
         break;
+
       case DHMS_TO_JD:
       case JD_TO_DHMS:
         rTmp.assign(3442119);
@@ -1792,6 +1832,7 @@ public final class CalcEngine
           x.toDHMS();
         }
         break;
+
       case DHMS_TO_MJD:
       case MJD_TO_DHMS:
         if (cmd == DHMS_TO_MJD) {
@@ -1804,6 +1845,7 @@ public final class CalcEngine
           x.toDHMS();
         }
         break;
+
       case CONV_C_F:
       case CONV_F_C:
         rTmp.assign(0, 0x40000000, 0x7333333333333333L); // 1.8
@@ -1815,18 +1857,21 @@ public final class CalcEngine
           x.div(rTmp);
         }
         break;
+
       case LIN_YEST:
         allocStat();
         statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
         x.mul(rTmp2);
         x.add(rTmp3);
         break;
+
       case LIN_XEST:
         allocStat();
         statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
         x.sub(rTmp3);
         x.div(rTmp2);
         break;
+
       case LOG_YEST:
         allocStat();
         statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMy,SUMy2,SUMylnx);
@@ -1834,6 +1879,7 @@ public final class CalcEngine
         x.mul(rTmp2);
         x.add(rTmp3);
         break;
+
       case LOG_XEST:
         allocStat();
         statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMy,SUMy2,SUMylnx);
@@ -1841,6 +1887,7 @@ public final class CalcEngine
         x.div(rTmp2);
         x.exp();
         break;
+
       case EXP_YEST:
         allocStat();
         statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMlny,SUMln2y,SUMxlny);
@@ -1848,6 +1895,7 @@ public final class CalcEngine
         x.add(rTmp3);
         x.exp();
         break;
+
       case EXP_XEST:
         allocStat();
         statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMlny,SUMln2y,SUMxlny);
@@ -1855,6 +1903,7 @@ public final class CalcEngine
         x.sub(rTmp3);
         x.div(rTmp2);
         break;
+
       case POW_YEST:
         allocStat();
         statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMlnxlny);
@@ -1863,6 +1912,7 @@ public final class CalcEngine
         x.add(rTmp3);
         x.exp();
         break;
+
       case POW_XEST:
         allocStat();
         statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMlnxlny);
@@ -1912,6 +1962,7 @@ public final class CalcEngine
           if (complex) xi.neg();
         }
         break;
+
       case SQR:
         if (matrix) {
           matrixOk = true;
@@ -1922,6 +1973,7 @@ public final class CalcEngine
           x.sqr();
         }
         break;
+
       case RECIP:
         if (matrix) {
           matrixOk = true;
@@ -1932,6 +1984,7 @@ public final class CalcEngine
           x.recip();
         }
         break;
+
       case ABS:
         if (matrix) {
           X.norm_F(x);
@@ -1943,24 +1996,28 @@ public final class CalcEngine
           x.abs();
         }
         break;
+
       case TRANSP:
         if (matrix) {
           matrixOk = true;
           X = Matrix.transp(X);
         } // else do nothing
         break;
+
       case DETERM:
         if (matrix) {
           X.det(x);
           matrix = false;
         } // else do nothing
         break;
+
       case TRACE:
         if (matrix) {
           X.trace(x);
           matrix = false;
         } // else do nothing
         break;
+
       case PERCENT:
         complex |= !stackI[1].isZero();
         x.mul(Real.PERCENT);
@@ -1971,6 +2028,7 @@ public final class CalcEngine
           x.mul(stack[1]/*y*/);
         }
         break;
+
       case SQRT:
         if (complex) {
           Complex.sqrt(x,xi);
@@ -1984,6 +2042,7 @@ public final class CalcEngine
           x.sqrt();
         }
         break;
+
       case CPLX_ARG:
         if (complex) {
           Complex.degrees = false;          
@@ -1994,10 +2053,12 @@ public final class CalcEngine
           x.makeZero();
         }
         break;
+
       case CPLX_CONJ:
         if (complex)
           xi.neg();
         break;
+
       case COS:
         if (complex) {
           x.swap(xi);
@@ -2008,6 +2069,7 @@ public final class CalcEngine
           x.cos();
         }
         break;
+
       case COSH:
         if (complex) {
           Complex.cosh(x,xi);
@@ -2015,6 +2077,7 @@ public final class CalcEngine
           x.cosh();
         }
         break;
+
       case SIN:
         if (complex) {
           Complex.sinh(xi,x);
@@ -2023,6 +2086,7 @@ public final class CalcEngine
           x.sin();
         }
         break;
+
       case SINH:
         if (complex) {
           Complex.sinh(x,xi);
@@ -2030,6 +2094,7 @@ public final class CalcEngine
           x.sinh();
         }
         break;
+
       case TAN:
         if (complex) {
           xi.neg();
@@ -2040,6 +2105,7 @@ public final class CalcEngine
           x.tan();
         }
         break;
+
       case TANH:
         if (complex) {
           Complex.tanh(x,xi);
@@ -2047,6 +2113,7 @@ public final class CalcEngine
           x.tanh();
         }
         break;
+
       case ASIN:
         if (x.greaterThan(Real.ONE) || x.lessThan(Real.ONE_N))
           complex = true;
@@ -2057,6 +2124,7 @@ public final class CalcEngine
           fromRAD(x);
         }
         break;
+
       case ASINH:
         if (complex) {
           Complex.asinh(x,xi);
@@ -2064,6 +2132,7 @@ public final class CalcEngine
           x.asinh();
         }
         break;
+
       case ACOS:
         if (x.greaterThan(Real.ONE) || x.lessThan(Real.ONE_N))
           complex = true;
@@ -2077,6 +2146,7 @@ public final class CalcEngine
           fromRAD(x);
         }
         break;
+
       case ACOSH:
         if (x.lessThan(Real.ONE))
           complex = true;
@@ -2086,6 +2156,7 @@ public final class CalcEngine
           x.acosh();
         }
         break;
+
       case ATAN:
         if (complex) {
           xi.neg();
@@ -2096,6 +2167,7 @@ public final class CalcEngine
           fromRAD(x);
         }
         break;
+
       case ATANH:
         if (x.greaterThan(Real.ONE) || x.lessThan(Real.ONE_N))
           complex = true;
@@ -2105,6 +2177,7 @@ public final class CalcEngine
           x.atanh();
         }
         break;
+
       case EXP:
         if (complex) {
           Complex.exp(x,xi);
@@ -2112,6 +2185,7 @@ public final class CalcEngine
           x.exp();
         }
         break;
+
       case EXP2:
         if (complex) {
           x.mul(Real.LN2);
@@ -2121,6 +2195,7 @@ public final class CalcEngine
           x.exp2();
         }
         break;
+
       case EXP10:
         if (complex) {
           x.mul(Real.LN10);
@@ -2130,6 +2205,7 @@ public final class CalcEngine
           x.exp10();
         }
         break;
+
       case LN:
         if (x.isNegative() && !x.isZero())
           complex = true;
@@ -2139,6 +2215,7 @@ public final class CalcEngine
           x.ln();
         }
         break;
+
       case LOG2:
         if (x.isNegative() && !x.isZero())
           complex = true;
@@ -2150,6 +2227,7 @@ public final class CalcEngine
           x.log2();
         }
         break;
+
       case LOG10:
         if (x.isNegative() && !x.isZero())
           complex = true;
@@ -2161,26 +2239,32 @@ public final class CalcEngine
           x.log10();
         }
         break;
+
       case ROUND:
         x.round();
         if (complex) xi.round();
         break;
+
       case CEIL:
         x.ceil();
         if (complex) xi.ceil();
         break;
+
       case FLOOR:
         x.floor();
         if (complex) xi.floor();
         break;
+
       case TRUNC:
         x.trunc();
         if (complex) xi.trunc();
         break;
+
       case FRAC:
         x.frac();
         if (complex) xi.frac();
         break;
+
       case XCHGMEM:
         matrixOk = true;
         allocMem();
@@ -2198,10 +2282,12 @@ public final class CalcEngine
     }
     
     if (matrix) {
-      if (!matrixOk)
+      if (!matrixOk) {
         x.makeNan();
-      else
+        xi.makeZero();
+      } else {
         linkToMatrix(x,xi,X);
+      }
     } else {
       if (x.isNan() || xi.isNan()) {
         x.makeNan();
@@ -2229,7 +2315,9 @@ public final class CalcEngine
     boolean matrix = false;
     undoStackEmpty = stackStr[1]==empty ? stackStr[0]==empty ? 2 : 1 : 0;
     undoOp = UNDO_XY;
-    switch (cmd) {
+
+    switch (cmd)
+    {
       case RP:
         rTmp.assign(y);
         rTmp.atan2(x);
@@ -2239,6 +2327,7 @@ public final class CalcEngine
         xi.makeZero();
         yi.makeZero();
         break;
+
       case PR:
         toRAD(y);
         rTmp.assign(y);
@@ -2249,6 +2338,7 @@ public final class CalcEngine
         xi.makeZero();
         yi.makeZero();
         break;
+
       case MATRIX_SPLIT:
         Matrix Y = getMatrix(y);
         int n = x.toInteger();
@@ -2358,7 +2448,7 @@ public final class CalcEngine
     Real yi = stackI[1];
     Real zi = stackI[2];
     boolean complex = false;
-    boolean matrix  = false;
+//    boolean matrix  = false;
 
     complex = !xi.isZero() || !yi.isZero() || !zi.isZero();
 
@@ -2372,20 +2462,21 @@ public final class CalcEngine
       stackStr[0]==empty ? 3 : 2 : 1 : 0;
     undoOp = UNDO_TRINARY;
 
-    Matrix X = getMatrix(x);
-    Matrix Y = getMatrix(y);
-    Matrix Z = getMatrix(z);
-    if (X != null || Y != null || Z != null) {
-      if (complex) {
-        // Can't handle complex matrix yet
-        z.makeNan();
-        cmd = -1;
-      } else {
-        matrix = true;
-      }
-    }
+//     Matrix X = getMatrix(x);
+//     Matrix Y = getMatrix(y);
+//     Matrix Z = getMatrix(z);
+//     if (X != null || Y != null || Z != null) {
+//       if (complex) {
+//         // Can't handle complex matrix yet
+//         z.makeNan();
+//         cmd = -1;
+//       } else {
+//         matrix = true;
+//       }
+//     }
 
-    switch (cmd) {
+    switch (cmd)
+    {
       case SELECT:
         // Calculate x*y + (1-x)*z
         if (x.isZero() && xi.isZero()) {
@@ -2394,42 +2485,42 @@ public final class CalcEngine
           z.assign(y);
           zi.assign(yi);
         } else {
-          if (matrix) {
-            if (X != null) {
-              if (X.cols != X.rows || ((Y == null) != (Z == null))) {
-                matrix = false;
-                z.makeNan();
-              } else {
-                // Weird, but perhaps sometime it will be useful
-                Matrix Tmp = new Matrix(X.cols);
-                for (int i=0; i<X.cols; i++)
-                  Tmp.D[i][i].assign(Real.ONE);
-                Tmp = Matrix.sub(Tmp,X);
-                if (Y == null /*&& Z == null*/) {
-                  // X*y + (I-X)*z
-                  Z = Matrix.mul(Tmp,z);
-                  Y = Matrix.mul(X,y);
-                } else {
-                  // X*Y + (I-X)*Z
-                  Z = Matrix.mul(Tmp,Z);
-                  Y = Matrix.mul(X,Y);
-                }
-                Z = Matrix.add(Z,Y);
-              }
-            } else {
-              if (Y == null || Z == null) {
-                matrix = false;
-                z.makeNan();
-              } else {
-                // x*Y + (1-x)*Z
-                rTmp3.assign(Real.ONE);
-                rTmp3.sub(x);
-                Z = Matrix.mul(Z,rTmp3);
-                Y = Matrix.mul(Y,x);
-                Z = Matrix.add(Z,Y);
-              }
-            }
-          } else {
+//           if (matrix) {
+//             if (X != null) {
+//               if (X.cols != X.rows || ((Y == null) != (Z == null))) {
+//                 matrix = false;
+//                 z.makeNan();
+//               } else {
+//                 // Weird, but perhaps sometime it will be useful
+//                 Matrix Tmp = new Matrix(X.cols);
+//                 for (int i=0; i<X.cols; i++)
+//                   Tmp.D[i][i].assign(Real.ONE);
+//                 Tmp = Matrix.sub(Tmp,X);
+//                 if (Y == null /*&& Z == null*/) {
+//                   // X*y + (I-X)*z
+//                   Z = Matrix.mul(Tmp,z);
+//                   Y = Matrix.mul(X,y);
+//                 } else {
+//                   // X*Y + (I-X)*Z
+//                   Z = Matrix.mul(Tmp,Z);
+//                   Y = Matrix.mul(X,Y);
+//                 }
+//                 Z = Matrix.add(Z,Y);
+//               }
+//             } else {
+//               if (Y == null || Z == null) {
+//                 matrix = false;
+//                 z.makeNan();
+//               } else {
+//                 // x*Y + (1-x)*Z
+//                 rTmp3.assign(Real.ONE);
+//                 rTmp3.sub(x);
+//                 Z = Matrix.mul(Z,rTmp3);
+//                 Y = Matrix.mul(Y,x);
+//                 Z = Matrix.add(Z,Y);
+//               }
+//             }
+//           } else {
             rTmp3.assign(Real.ONE);
             rTmp3.sub(x);
             if (complex) {
@@ -2444,21 +2535,21 @@ public final class CalcEngine
               y.mul(x);
               z.add(y);
             }
-          }
+//          }
         }
         break;
     }
     // Result is in z...
-    if (matrix) {
-      linkToMatrix(z,zi,Z);
-    } else {
+//    if (matrix) {
+//      linkToMatrix(z,zi,Z);
+//    } else {
       if (z.isNan() || zi.isNan()) {
         z.makeNan();
         zi.makeZero();
       }
       if (z.isZero() && !zi.isZero())
         z.abs(); // Remove annoying "-"
-    }
+//    }
 
     rollDown(true);
     rollDown(true);
@@ -2476,7 +2567,9 @@ public final class CalcEngine
     Real x = stack[0];
     Real y = stack[1];
     int index;
-    switch (cmd) {
+    
+    switch (cmd)
+    {
       case SUMPL:
         index = (statLogStart+statLogSize)%STATLOG_SIZE;
         statLog[index*2] = x.toFloatBits();
@@ -2519,6 +2612,7 @@ public final class CalcEngine
         rTmp2.mul(rTmp3);
         SUMlnxlny.add(rTmp2);
         break;
+
       case SUMMI:
         // Statistics log: search for point and remove if found
         int xf = x.toFloatBits();
@@ -2592,7 +2686,9 @@ public final class CalcEngine
     undoOp = UNDO_PUSH2;
     Real x = stack[0];
     Real y = stack[1];
-    switch (cmd) {
+    
+    switch (cmd)
+    {
       case AVG:
         allocStat();
         // x_avg = SUMx/n
@@ -2602,6 +2698,7 @@ public final class CalcEngine
         y.assign(SUMy);
         y.div(SUM1);
         break;
+
       case STDEV:
       case PSTDEV:
         allocStat();
@@ -2627,24 +2724,29 @@ public final class CalcEngine
         y.div(rTmp);
         y.sqrt();
         break;
+
       case LIN_AB:
         allocStat();
         statAB(x,y,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
         break;
+
       case LOG_AB:
         allocStat();
         statAB(x,y,SUMlnx,SUMln2x,SUMy,SUMy2,SUMylnx);
         break;
+
       case EXP_AB:
         allocStat();
         statAB(x,y,SUMx,SUMx2,SUMlny,SUMln2y,SUMxlny);
         y.exp();
         break;
+
       case POW_AB:
         allocStat();
         statAB(x,y,SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMlnxlny);
         y.exp();
         break;
+
       case MATRIX_SIZE:
         Matrix M = getCurrentMatrix();
         if (M == null) {
@@ -2695,7 +2797,9 @@ public final class CalcEngine
     undoStackEmpty = stackStr[0]==empty ? 1 : 0;
     undoOp = UNDO_PUSH;
     Real x = stack[0];
-    switch (cmd) {
+    
+    switch (cmd)
+    {
       case AVGXW:
         x.assign(SUMxy);
         x.div(SUMy);
@@ -2718,7 +2822,9 @@ public final class CalcEngine
 
   private void financeSolve(int which) {
     allocFinance();
-    switch (which) {
+    
+    switch (which)
+    {
       case 0: // PV
         if (IR.isZero()) {
           // pv = -(np*pmt+fv)
@@ -2746,6 +2852,7 @@ public final class CalcEngine
           PV.neg();
         }
         break;
+
       case 1: // FV
         if (IR.isZero()) {
           // fv = -(np*pmt+pv)
@@ -2773,6 +2880,7 @@ public final class CalcEngine
           FV.neg();
         }
         break;
+
       case 2: // NP
         if (IR.isZero()) {
           // np = -(fv+pv)/pmt
@@ -2802,6 +2910,7 @@ public final class CalcEngine
           NP.div(rTmp);
         }
         break;
+
       case 3: // PMT
         // pmt = -(fv+pv)/np
         if (IR.isZero()) {
@@ -2831,6 +2940,7 @@ public final class CalcEngine
           PMT.neg();
         }
         break;
+
       case 4: // IR
         if ((FV.isZero() && PV.isZero()) ||
             !PV.isFinite() ||
@@ -2926,15 +3036,18 @@ public final class CalcEngine
   }
 
   private void undo() {
-    switch (undoOp) {
+    switch (undoOp)
+    {
       case UNDO_NONE:
         break;
+
       case UNDO_UNARY:
         stack[0].assign(lastx);
         stackI[0].assign(lastxi);
         stackStr[0] = undoStackEmpty >= 1 ? empty : null;
         repaint(1);
         break;
+
       case UNDO_BINARY:
         rollUp(true);
         stack[0].assign(lastx);
@@ -2944,6 +3057,7 @@ public final class CalcEngine
         stackStr[0] = undoStackEmpty >= 2 ? empty : null;
         stackStr[1] = undoStackEmpty >= 1 ? empty : null;
         break;
+
       case UNDO_TRINARY:
         rollUp(true);
         rollUp(true);
@@ -2957,12 +3071,14 @@ public final class CalcEngine
         stackStr[1] = undoStackEmpty >= 2 ? empty : null;
         stackStr[2] = undoStackEmpty >= 1 ? empty : null;        
         break;
+
       case UNDO_PUSH:
         stack[0].assign(lasty);
         stackI[0].assign(lastyi);
         stackStr[0] = undoStackEmpty >= 1 ? empty : null;
         rollDown(true);
         break;
+
       case UNDO_PUSH2:
         stack[0].assign(lasty);
         stack[1].assign(lastz);
@@ -2973,6 +3089,7 @@ public final class CalcEngine
         rollDown(true);
         rollDown(true);
         break;
+
       case UNDO_XY:
         stack[0].assign(lastx);
         stack[1].assign(lasty);
@@ -2982,6 +3099,7 @@ public final class CalcEngine
         stackStr[1] = undoStackEmpty >= 1 ? empty : null;
         repaint(2);
         break;
+
       case UNDO_PUSHXY:
         stack[0].assign(lasty);
         stack[1].assign(lastx);
@@ -2992,12 +3110,15 @@ public final class CalcEngine
         // Different this time         ^^^
         rollDown(true);
         break;
+
       case UNDO_ROLLDN:
         rollUp(false);
         break;
+
       case UNDO_ROLLUP:
         rollDown(false);
         break;
+
       case UNDO_XCHGST:
         xchgSt(undoStackEmpty);
         break;
@@ -3161,7 +3282,8 @@ public final class CalcEngine
 
     // The following commands are NOT recorded in a program,
     // but they may call other "command"s which are programmed
-    switch (cmd) {
+    switch (cmd)
+    {
       case DIGIT_0: case DIGIT_1: case DIGIT_2: case DIGIT_3:
       case DIGIT_4: case DIGIT_5: case DIGIT_6: case DIGIT_7:
       case DIGIT_8: case DIGIT_9: case DIGIT_A: case DIGIT_B:
@@ -3171,12 +3293,14 @@ public final class CalcEngine
       case SIGN_POINT_E:
         input(cmd);
         return;
+
       case ENTER:
         if (inputInProgress) {
           parseInput();
           return;
         }
         break; // Fall-through to ENTER command below
+
       case CLEAR:
         if (inputInProgress) {
           input(cmd);
@@ -3190,22 +3314,28 @@ public final class CalcEngine
         isInsideMonitor = true;
         repaintAll();
         return;
+
       case MONITOR_EXIT:
         isInsideMonitor = false;
         repaintAll();
         return;
+
       case MONITOR_UP:
         setMonitorY(monitorY-1,true);
         return;
+
       case MONITOR_DOWN:
         setMonitorY(monitorY+1,true);
         return;
+
       case MONITOR_LEFT:
         setMonitorX(monitorX-1,true);
         return;
+
       case MONITOR_RIGHT:
         setMonitorX(monitorX+1,true);
         return;
+
       case MONITOR_PUSH:
       case MONITOR_PUT:
         switch (monitorMode) {
@@ -3228,6 +3358,7 @@ public final class CalcEngine
           command(MONITOR_EXIT,0);
         }
         return;
+
       case MONITOR_GET:
         switch (monitorMode) {
           case MONITOR_MEM:     command(RCL,monitorY);         break;
@@ -3248,10 +3379,12 @@ public final class CalcEngine
     if (progRecording)
       record(cmd, param);
 
-    switch (cmd) {
+    switch (cmd)
+    {
       case ENTER:
         enter();
         break;
+
       case CLEAR:
       case ADD:   case SUB:   case MUL:   case DIV:
       case PERCENT_CHG:
@@ -3269,6 +3402,7 @@ public final class CalcEngine
       case MATRIX_AIJ:
         binary(cmd);
         break;
+
       case NEG:   case RECIP: case SQR:   case ABS:
       case TRANSP:case DETERM:case TRACE:
       case SQRT:  case PERCENT:
@@ -3283,6 +3417,7 @@ public final class CalcEngine
       case XCHGMEM:
         unaryComplexMatrix(cmd,param);
         break;
+
       case FACT:  case GAMMA: case ERFC:
       case NOT:
       case TO_DEG:case TO_RAD:case TO_DHMS:case TO_H:
@@ -3295,6 +3430,7 @@ public final class CalcEngine
       case CONV_C_F: case CONV_F_C:
         unary(cmd);
         break;
+
       case PI:          push(Real.PI,    null);                break;
       case CONST_c:     push(0x4000001c, 0x4779e12800000000L); break;
       case CONST_h:     push(0x3fffff91, 0x6e182e8b16bd5f42L); break;
@@ -3339,24 +3475,29 @@ public final class CalcEngine
       case PUSH_ZERO_N: push(Real.ZERO_N,null);                break;
       case PUSH_INF:    push(Real.INF,   null);                break;
       case PUSH_INF_N:  push(Real.INF_N, null);                break;
+
       case RANDOM:
         rTmp.random();
         push(rTmp,null);
         break;
+
       case TIME:
         rTmp.time();
         push(rTmp,null);
         break;
+
       case DATE:
         rTmp.date();
         push(rTmp,null);
         break;
+
       case TIME_NOW:
         rTmp.time();
         rTmp2.date();
         rTmp.add(rTmp2);
         push(rTmp,null);
         break;
+
       case IF_EQUAL:
       case IF_NEQUAL:
       case IF_LESS:
@@ -3364,14 +3505,17 @@ public final class CalcEngine
       case IF_GREATER:
         cond(cmd);
         break;
+
       case SELECT:
         trinary(cmd);
         break;
+
       case RP:
       case PR:
       case MATRIX_SPLIT:
         xyOp(cmd);
         break;
+
       case CLS:
         lastx.assign(stack[0]);
         lasty.makeZero(); // Clear this in case it is a Matrix reference
@@ -3380,17 +3524,21 @@ public final class CalcEngine
         clearStack();
         undoOp = UNDO_NONE; // Cannot undo this
         break;
+
       case RCLST:
         push(stack[param],stackI[param]);
         break;
+
       case ROLLDN:
         rollDown(false);
         undoOp = UNDO_ROLLDN;
         break;
+
       case ROLLUP:
         rollUp(false);
         undoOp = UNDO_ROLLUP;
         break;
+
       case XCHG:
         param = 1;
         // fall-through to next case...
@@ -3401,9 +3549,11 @@ public final class CalcEngine
           xchgSt(param);
         }
         break;
+
       case LASTX:
         push(lastx,lastxi);
         break;
+
       case UNDO:
         undo();
         break;
@@ -3423,6 +3573,7 @@ public final class CalcEngine
           repaintAll();
         }
         break;
+
       case STP_X:
         param = stack[0].toInteger();
         if (param<0 || param>15)
@@ -3450,6 +3601,7 @@ public final class CalcEngine
           repaintAll();
         }
         break;
+
       case RCL_X:
         param = stack[0].toInteger();
         if (param<0 || param>15)
@@ -3461,6 +3613,7 @@ public final class CalcEngine
         else
           push(Real.ZERO,null);
         break;
+
       case CLMEM:
         clearMem();
         if (monitorMode == MONITOR_MEM) {
@@ -3473,6 +3626,7 @@ public final class CalcEngine
       case SUMMI:
         sum(cmd);
         break;
+
       case CLST:
         clearStat();
         if (monitorMode == MONITOR_STAT) {
@@ -3480,6 +3634,7 @@ public final class CalcEngine
           repaintAll();
         }
         break;
+
       case AVG:
       case STDEV:
       case PSTDEV:
@@ -3490,6 +3645,7 @@ public final class CalcEngine
       case MATRIX_SIZE:
         stat2(cmd);
         break;
+
       case AVGXW:
       case LIN_R:
       case LOG_R:
@@ -3497,6 +3653,7 @@ public final class CalcEngine
       case POW_R:
         stat1(cmd);
         break;
+
       case STAT_STO:
         allocStat();
         if (getMatrix(stack[0]) == null) // Cannot store Matrix in stat
@@ -3508,12 +3665,14 @@ public final class CalcEngine
           repaintAll();
         }
         break;
+
       case STAT_RCL:
         if (stat != null)
           push(stat[param],null);
         else
           push(Real.ZERO,null);
         break;
+
       case N:         push(SUM1,     null); break;
       case SUMX:      push(SUMx,     null); break;
       case SUMXX:     push(SUMx2,    null); break;
@@ -3554,6 +3713,7 @@ public final class CalcEngine
         }
         undoOp = UNDO_PUSHXY;
         break;
+
       case CPLX_SPLIT:
         lastx.assign(stack[0]);
         lastxi.assign(stackI[0]);
@@ -3582,12 +3742,14 @@ public final class CalcEngine
           repaintAll();
         }
         break;
+
       case FINANCE_RCL:
         if (finance != null)
           push(finance[param],null);
         else
           push(Real.ZERO,null);
         break;
+
       case FINANCE_SOLVE:
         financeSolve(param);
         if (monitorMode == MONITOR_FINANCE) {
@@ -3595,6 +3757,7 @@ public final class CalcEngine
           repaintAll();
         }
         break;
+
       case FINANCE_CLEAR:
         clearFinance();
         if (monitorMode == MONITOR_FINANCE) {
@@ -3602,6 +3765,7 @@ public final class CalcEngine
           repaintAll();
         }
         break;
+
       case FINANCE_BGNEND:
         begin = !begin;
         break;
@@ -3609,16 +3773,20 @@ public final class CalcEngine
       case MONITOR_NONE:
         setMonitoring(cmd,0,0,null,null,null);
         break;
+
       case MONITOR_MEM:
         setMonitoring(cmd,param,MEM_SIZE,mem,memI,memLabels);
         break;
+
       case MONITOR_STAT:
         setMonitoring(cmd,param,STAT_SIZE,stat,null,statLabels);
         break;
+
       case MONITOR_FINANCE:
         setMonitoring(cmd,FINANCE_SIZE,FINANCE_SIZE,finance,null,
                       financeLabels);
         break;
+
       case MONITOR_MATRIX:
         setMonitoring(cmd,param,0,null,null,null);
         monitoredMatrix = null;
@@ -3652,6 +3820,7 @@ public final class CalcEngine
           repaintAll();
         }
         break;
+
       case MATRIX_RCL:
         M = getCurrentMatrix();
         if (M == null)
@@ -3670,6 +3839,7 @@ public final class CalcEngine
           clearStrings();
         }
         break;
+
       case FIX:
         if (format.fse != Real.NumberFormat.FSE_FIX ||
             format.precision != param)
@@ -3679,6 +3849,7 @@ public final class CalcEngine
           clearStrings();
         }
         break;
+
       case SCI:
         if (format.fse != Real.NumberFormat.FSE_SCI ||
             format.precision != param)
@@ -3688,6 +3859,7 @@ public final class CalcEngine
           clearStrings();
         }
         break;
+
       case ENG:
         if (format.fse != Real.NumberFormat.FSE_ENG ||
             format.precision != param)
@@ -3697,6 +3869,7 @@ public final class CalcEngine
           clearStrings();
         }
         break;
+
       case POINT_DOT:
         if (format.point != '.') {
           format.point = '.';
@@ -3705,6 +3878,7 @@ public final class CalcEngine
           clearStrings();
         }
         break;
+
       case POINT_COMMA:
         if (format.point != ',') {
           format.point = ',';
@@ -3713,69 +3887,81 @@ public final class CalcEngine
           clearStrings();
         }
         break;
+
       case POINT_REMOVE:
         if (!format.removePoint) {
           format.removePoint = true;
           clearStrings();
         }
         break;
+
       case POINT_KEEP:
         if (format.removePoint) {
           format.removePoint = false;
           clearStrings();
         }
         break;
+
       case THOUSAND_DOT:
         if (format.thousand != '.' && format.thousand != ',') {
           format.thousand = (format.point=='.') ? ',' : '.';
           clearStrings();
         }
         break;
+
       case THOUSAND_SPACE:
         if (format.thousand != ' ') {
           format.thousand = ' ';
           clearStrings();
         }
         break;
+
       case THOUSAND_QUOTE:
         if (format.thousand != '\'') {
           format.thousand = '\'';
           clearStrings();
         }
         break;
+
       case THOUSAND_NONE:
         if (format.thousand != 0) {
           format.thousand = 0;
           clearStrings();
         }
         break;
+
       case BASE_BIN:
         if (format.base != 2) {
           format.base = 2;
           clearStrings();
         }
         break;
+
       case BASE_OCT:
         if (format.base != 8) {
           format.base = 8;
           clearStrings();
         }
         break;
+
       case BASE_DEC:
         if (format.base != 10) {
           format.base = 10;
           clearStrings();
         }
         break;
+
       case BASE_HEX:
         if (format.base != 16) {
           format.base = 16;
           clearStrings();
         }
         break;
+
       case TRIG_DEGRAD:
         degrees = !degrees;
         break;
+
       case FREE_MEM:
         rollUp(true);
         rollUp(true);
@@ -3797,6 +3983,7 @@ public final class CalcEngine
         prog[currentProg] = new short[10];
         progCounter = 0;
         break;
+
       case FINALIZE:
       case PROG_FINISH:
         if (progRecording && prog!=null && prog[currentProg]!=null) {
@@ -3807,6 +3994,7 @@ public final class CalcEngine
           prog[currentProg] = prog2;
         }
         break;
+
       case PROG_RUN:
         currentProg = param;
         if (prog != null && prog[currentProg] != null) {
@@ -3816,9 +4004,11 @@ public final class CalcEngine
           progRunning = false;
         }
         break;
+
       case PROG_PURGE:
         progCounter = 0;
         break;
+
       case PROG_CLEAR:
         currentProg = param;
         if (prog != null)
@@ -3827,6 +4017,7 @@ public final class CalcEngine
         progRecording = false;
         progRunning = false;
         break;
+
       case PROG_DIFF:
         currentProg = param;
         if (prog != null && prog[currentProg] != null) {
@@ -4054,6 +4245,7 @@ public final class CalcEngine
       } else {
         // undecidable max/min condition
         stack[0].makeNan();
+        stackI[0].makeZero();
         Real.magicRounding = true;
         return false;
       }
@@ -4660,6 +4852,7 @@ public final class CalcEngine
         if (!rTmp.isFinite() || !stackI[0].isZero()) {
           // Discontinuous or complex function
           stack[0].makeNan();
+          stackI[0].makeZero();
           progRunning = false;
           Real.magicRounding = true;
           return;
@@ -4685,6 +4878,7 @@ public final class CalcEngine
           if (!rTmp.isFinite() || !stackI[0].isZero()) {
             // Discontinuous or complex function
             stack[0].makeNan();
+            stackI[0].makeZero();
             progRunning = false;
             Real.magicRounding = true;
             return;
