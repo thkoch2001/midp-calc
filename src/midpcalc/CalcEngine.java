@@ -1541,15 +1541,15 @@ public final class CalcEngine
         break;
 
       case YPOWX:
-//         if (matrix) {
-//           matrixOk = true;
-//           if (X!=null || !x.isIntegral()) {
-//             y.makeNan();
-//             matrix = false;
-//           } else {
-//             Y = Matrix.pow(Y,x.toInteger());
-//           }
-//         } else {
+        if (matrix) {
+          matrixOk = true;
+          if (X!=null || !x.isIntegral()) {
+            y.makeNan();
+            matrix = false;
+          } else {
+            Y = Matrix.pow(Y,x.toInteger());
+          }
+        } else {
           if (!y.isZero() && y.isNegative() && !x.isIntegral())
             complex = true;
           if (complex) {
@@ -1560,7 +1560,7 @@ public final class CalcEngine
           } else {
             y.pow(x);
           }
-//        }
+        }
         break;
 
       case XRTY:
