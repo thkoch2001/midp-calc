@@ -54,7 +54,7 @@ public final class Matrix
   void setElement(int row, int col, Real a) {
     if (row<0 || row>=rows || col<0 || col>=cols || a==null)
       return;
-    D[row][col].assign(a);
+    D[col][row].assign(a);
   }
 
   void getElement(int row, int col, Real a) {
@@ -64,7 +64,7 @@ public final class Matrix
       a.makeNan();
       return;
     }
-    a.assign(D[row][col]);
+    a.assign(D[col][row]);
   }
 
   void setSubMatrix(int row, int col, Matrix A) {
