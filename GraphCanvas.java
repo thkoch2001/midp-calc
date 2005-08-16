@@ -91,7 +91,7 @@ public final class GraphCanvas
   }
 
   public void run() {
-    if (isShown()) {
+    if (isShown() && !internalRepaint) {
       internalRepaint = true;
       repaint();
     }
