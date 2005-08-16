@@ -508,7 +508,7 @@ public final class CalcEngine
   }
   
   private void allocStat() {
-    if (SUM1 != null)
+    if (stat != null)
       return;
     matrixGC();
     stat = allocRealArray(STAT_SIZE);
@@ -599,7 +599,7 @@ public final class CalcEngine
     }
 
     // Statistics
-    if (SUM1 != null) {
+    if (stat != null) {
       out.writeShort(STAT_SIZE*12+STATLOG_SIZE*2*4+2);
       for (i=0; i<STAT_SIZE; i++) {
         stat[i].toBytes(realBuf,0);
@@ -666,7 +666,8 @@ public final class CalcEngine
           out.writeShort((short)M.cols);
           for (int c=0; c<M.cols; c++)
             for (int r=0; r<M.rows; r++) {
-              M.D[c][r].toBytes(realBuf,0);
+              M.getElement(r,c,rTmp);
+              rTmp.toBytes(realBuf,0);
               out.write(realBuf);
             }
         }
@@ -825,7 +826,8 @@ public final class CalcEngine
           for (int c=0; c<cols; c++)
             for (int r=0; r<rows; r++) {
               in.read(realBuf);
-              M.D[c][r].assign(realBuf,0);
+              rTmp.assign(realBuf,0);
+              M.setElement(r,c,rTmp);
             }
           matrixCache[i] = M;
           length -= rows*cols*12;
@@ -862,7 +864,7 @@ public final class CalcEngine
     }
     if (M.rows == 1 && M.cols == 1) {
       // 1x1 matrix == Real
-      x.assign(M.D[0][0]);
+      M.getElement(0,0,x);
       matrixGC();
       return;
     }
@@ -1679,9 +1681,7 @@ public final class CalcEngine
         } else {
           matrix = true;
           matrixOk = true;
-          Y = new Matrix(1,2);
-          Y.D[0][0].assign(y);
-          Y.D[1][0].assign(x);
+          Y = Matrix.concat(y,x);
         }
         break;
 
@@ -1701,9 +1701,7 @@ public final class CalcEngine
         } else {
           matrix = true;
           matrixOk = true;
-          Y = new Matrix(2,1);
-          Y.D[0][0].assign(y);
-          Y.D[0][1].assign(x);
+          Y = Matrix.stack(y,x);
         }
         break;
 
@@ -1712,10 +1710,10 @@ public final class CalcEngine
         Matrix M = getCurrentMatrix();
         int col = x.toInteger()-1;
         int row = y.toInteger()-1;
-        if (M == null || col<0 || row<0 || col>=M.cols || row>=M.rows)
+        if (M == null)
           y.makeNan();
         else
-          y.assign(M.D[col][row]);
+          M.getElement(row,col,y);
         break;
     }
 
@@ -2493,7 +2491,7 @@ public final class CalcEngine
 //                 // Weird, but perhaps sometime it will be useful
 //                 Matrix Tmp = new Matrix(X.cols);
 //                 for (int i=0; i<X.cols; i++)
-//                   Tmp.D[i][i].assign(Real.ONE);
+//                   Tmp.setElement(i,i,Real.ONE);
 //                 Tmp = Matrix.sub(Tmp,X);
 //                 if (Y == null /*&& Z == null*/) {
 //                   // X*y + (I-X)*z
@@ -3811,9 +3809,9 @@ public final class CalcEngine
             }
         }
         if (getMatrix(stack[0]) == null) // Cannot store Matrix in matrix
-          M.D[col][row].assign(stack[0]);
+          M.setElement(row,col,stack[0]);
         else
-          M.D[col][row].makeNan();
+          M.setElement(row,col,Real.NAN);
         if (monitorMode == MONITOR_MATRIX && row<maxMonitorSize) {
           monitorStr[row] = null;
           repaintAll();
@@ -3822,14 +3820,14 @@ public final class CalcEngine
 
       case MATRIX_RCL:
         M = getCurrentMatrix();
-        if (M == null)
-          break;
-        col = param&0xffff;
-        row = (param>>16)&0xffff;
-        if (col<M.cols && row<M.rows)
-          push(M.D[col][row],null);
-        else
+        if (M == null) {
           push(Real.NAN,null);
+        } else {
+          col = param&0xffff;
+          row = (param>>16)&0xffff;
+          M.getElement(row,col,rTmp);
+          push(rTmp,null);
+        }
         break;
 
       case NORM:
@@ -4044,7 +4042,7 @@ public final class CalcEngine
       if (param<0 || param>=NUM_PROGS || prog[param] == null)
         return false;
       currentProg = param;
-    } else if (SUM1 == null || statLogSize == 0)
+    } else if (stat == null || statLogSize == 0)
       return false;
 
     xMin = new Real();

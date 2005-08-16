@@ -51,6 +51,32 @@ public final class Matrix
         D[c][r].assign(A.D[c][r]);
   }
 
+  void setElement(int row, int col, Real a) {
+    if (row<0 || row>=rows || col<0 || col>=cols || a==null)
+      return;
+    D[row][col].assign(a);
+  }
+
+  void getElement(int row, int col, Real a) {
+    if (a==null)
+      return;
+    if (row<0 || row>=rows || col<0 || col>=cols) {
+      a.makeNan();
+      return;
+    }
+    a.assign(D[row][col]);
+  }
+
+  void setSubMatrix(int row, int col, Matrix A) {
+    if (isInvalid(A) || row<0 || col<0 ||
+        rows < row+A.rows || cols < col+A.cols)
+      return;
+
+    for (int c=0; c<A.cols; c++)
+      for (int r=0; r<A.rows; r++)
+        D[c+col][r+row].assign(A.D[c][r]);
+  }
+
   Matrix subMatrix(int row, int col, int nRows, int nCols) {
     if (row<0 || col<0 || nRows<=0 || nCols<=0 ||
         rows < row+nRows || cols < col+nCols)
@@ -175,7 +201,7 @@ public final class Matrix
 
     for (int c=0; c<A.cols; c++)
       for (int r=0; r<A.rows; r++)
-        if (A.D[c][r].equalTo(B.D[c][r]))
+        if (!A.D[c][r].equalTo(B.D[c][r]))
           return false;
     return true;
   }
@@ -304,74 +330,72 @@ public final class Matrix
   public static Matrix concat(Matrix A, Matrix B) {
     if (isInvalid(A) || isInvalid(B) || A.rows != B.rows)
       return null;
-
     Matrix M = new Matrix(A.rows,A.cols+B.cols);
-    int r,c;
-    for (c=0; c<A.cols; c++)
-      for (r=0; r<M.rows; r++)
-        M.D[c][r].assign(A.D[c][r]);
-    for (c=0; c<B.cols; c++)
-      for (r=0; r<M.rows; r++)
-        M.D[c+A.cols][r].assign(B.D[c][r]);
+    M.setSubMatrix(0,0,A);
+    M.setSubMatrix(0,A.cols,B);
     return M;
   }
 
   public static Matrix concat(Matrix A, Real b) {
     if (isInvalid(A) || b==null || A.rows != 1)
       return null;
-
     Matrix M = new Matrix(1,A.cols+1);
-    for (int c=0; c<A.cols; c++)
-      M.D[c][0].assign(A.D[c][0]);
-    M.D[A.cols][0].assign(b);
+    M.setSubMatrix(0,0,A);
+    M.setElement(0,A.cols,b);
     return M;
   }
 
   public static Matrix concat(Real a, Matrix B) {
     if (a==null || isInvalid(B) || B.rows != 1)
       return null;
-
     Matrix M = new Matrix(1,B.cols+1);
-    M.D[0][0].assign(a);
-    for (int c=0; c<B.cols; c++)
-      M.D[c+1][0].assign(B.D[c][0]);
+    M.setElement(0,0,a);
+    M.setSubMatrix(0,1,B);
+    return M;
+  }
+
+  public static Matrix concat(Real a, Real b) {
+    if (a==null || b==null)
+      return null;
+    Matrix M = new Matrix(1,2);
+    M.setElement(0,0,a);
+    M.setElement(0,1,b);
     return M;
   }
 
   public static Matrix stack(Matrix A, Matrix B) {
     if (isInvalid(A) || isInvalid(B) || A.cols != B.cols)
       return null;
-
     Matrix M = new Matrix(A.rows+B.rows,A.cols);
-    int r,c;
-    for (c=0; c<A.cols; c++) {
-      for (r=0; r<A.rows; r++)
-        M.D[c][r].assign(A.D[c][r]);
-      for (r=0; r<B.rows; r++)
-        M.D[c][r+A.rows].assign(B.D[c][r]);
-    }
+    M.setSubMatrix(0,0,A);
+    M.setSubMatrix(A.rows,0,B);
     return M;
   }
 
   public static Matrix stack(Matrix A, Real b) {
     if (isInvalid(A) || b==null || A.cols != 1)
       return null;
-
     Matrix M = new Matrix(A.rows+1,1);
-    for (int r=0; r<A.rows; r++)
-      M.D[0][r].assign(A.D[0][r]);
-    M.D[0][A.rows].assign(b);
+    M.setSubMatrix(0,0,A);
+    M.setElement(A.rows,0,b);
     return M;
   }
 
   public static Matrix stack(Real a, Matrix B) {
     if (a==null || isInvalid(B) || B.cols != 1)
       return null;
-
     Matrix M = new Matrix(B.rows+1,1);
-    M.D[0][0].assign(a);
-    for (int r=0; r<B.rows; r++)
-      M.D[0][r+1].assign(B.D[0][r]);
+    M.setElement(0,0,a);
+    M.setSubMatrix(1,0,B);
+    return M;
+  }
+
+  public static Matrix stack(Real a, Real b) {
+    if (a==null || b==null)
+      return null;
+    Matrix M = new Matrix(2,1);
+    M.setElement(0,0,a);
+    M.setElement(1,0,b);
     return M;
   }
 }
