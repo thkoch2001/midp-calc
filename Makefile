@@ -83,13 +83,14 @@ Calc.jar: $(JAVAFILES) Real.java Calc.jad Calc.png
 CalcApplet.jar: CalcApplet.java $(JAVAFILES) Real.java $(MIDPFILES)
 	gcj --encoding="ISO 8859-1" -Wall -C -d midp -O2 --classpath=$(JAVA_HOME)/jre/lib/plugin.jar CalcApplet.java $(JAVAFILES) Real.java $(MIDPFILES)
 #	javac -encoding "ISO8859-1" -d midp -O -classpath $(JAVA_HOME)/jre/lib/javaplugin.jar CalcApplet.java $(JAVAFILES) Real.java $(MIDPFILES)
-	cd midp && jar cf ../CalcApplet.jar ral javax
+	cp [a-d].dat midp
+	cd midp && jar cf ../CalcApplet.jar ral javax [a-d].dat
 
 clean:
 	rm -rf $(TARGETS) ral midp/ral midp/javax Real.java GFontBase.java pgm2java *.dat *~ .\#* midp/*~ midp/.\#* midp-*.tgz
 
 derived.tgz: Real.java GFontBase.java Calc.jad
-	tar czf derived.tgz Real.java GFontBase.java Calc.jad
+	tar czf derived.tgz Real.java GFontBase.java Calc.jad [a-d].dat
 
 midp-calc-$(VERSION)-src.tgz: $(JAVAFILES) Real.java CalcApplet.java $(MIDPFILES) Calc.png pgm2java.c small.pgm medium.pgm large.pgm xlarge.pgm Makefile build.xml derived.tgz README
 	tar czf $@ $^
