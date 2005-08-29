@@ -26,24 +26,35 @@
 </ul>
 </font></b>
 
-<p><b>Current version: 2.07</b>, <a
+<p><b>Current version: 2.08</b>, <a
 href="Calc-log.html">change-log</a><br>
 
-<b>Copyright: 2003-2005 Roar Lauritzsen</b>, email: <a
-href="&#109;&#097;&#105;&#108;&#116;&#111;&#058;&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;">&#114;&#111;&#097;&#114;&#108;&#064;&#112;&#118;&#118;&#046;&#111;&#114;&#103;</a><br>
+<script language="JavaScript">
+<!-- Just because I am paranoid doesn't mean they aren't after my email address
+function cryptLink(a) {
+  a=unescape(a); b="";
+  for (i=0; i<a.length; i++) b+=String.fromCharCode(a.charCodeAt(i)^69);
+  window.location=b;
+}
+//-->
+</script>
 
-<SCRIPT LANGUAGE="JavaScript">
-<!-- Begin
+<b>Copyright: 2003-2005 Roar Lauritzsen</b>, <a href="javascript:void(0)"
+onclick="cryptLink('%28%24%2C%291*%7F7*%247%29%0506%2076k6*07%26%20%23*7%22%20k+%201z60%27/%20%261x%28%2C%215h%26%24%29%26k6*07%26%20%23*7%22%20k+%201')"
+>&#114;&#111;&#097;&#114;&#108;&nbsp;&#097;&#116;&nbsp;&#117;&#115;&#101;&#114;&#115;&#046;&#115;&#111;&#117;&#114;&#099;&#101;&#102;&#111;&#114;&#103;&#101;&#046;&#110;&#101;&#116;</a><br>
+
+<script language="JavaScript">
+<!--
 function popUpDemo() {
   window.open("CalcApplet.html","calcdemo","toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,width=170,height=240");
 }
-// End -->
+//-->
 </script>
 
 <b>Demo:</b> Click <a href="javascript:popUpDemo()">here</a>
 to open a demo applet for reference while reading the documentation<br>
 
-<b>Develop:</b> Join the development effort at <a
+<b>Development and patches:</b> Join the development effort at <a
 href="http://sourceforge.net/projects/midp-calc">http://sourceforge.net/projects/midp-calc</a>,
 where the source is available under the <a
 href="http://www.gnu.org/licenses/gpl.txt">GPL</a> license<br>
@@ -133,15 +144,16 @@ The following MIDP phones/devices have been tested or surveyed for
 usability with Calc:
 
 <ul>
-  <li><b>Sony Ericsson T610, T630, Z600, Z1010, K700i, S710a</b>: Tested OK
+  <li><b>Sony Ericsson T610, T630, Z600, Z1010, K500i, K508i, K700i,
+  S710a</b>: Tested OK
   <li><b>Sony Ericsson P900, P910</b>: Tested OK. Very
   inconvenient to use because of the mapping of ENTER and +
   <li><b>Sony Ericsson Z500, T616, P800</b>: Not
   tested. Probably works OK
-  <li><b>Nokia 6100, 6610, 7210, 7600, 3200, N-Gage</b>: Tested OK
+  <li><b>Nokia 6100*), 6610, 7210, 7600, 3200*), N-Gage</b>: Tested OK
   <li><b>Nokia 3510i</b>: Tested OK. Awkward with the small screen and
   without joystick, but fully functional
-  <li><b>Nokia 6260, 6820, 5140, 6600</b>: Tested almost OK. None of the key
+  <li><b>Nokia 6260, 6820*), 5140, 6600</b>: Tested almost OK. None of the key
   mappings work perfectly so it is a bit inconvenient to use
   <li><b>Nokia 3100, 3105, 3300, 3520, 3530, 3560, 3586i, 3595,
   3620, 3650, 3660, 5100, 6200, 6220, 6225, 6230, 6560,
@@ -161,7 +173,7 @@ usability with Calc:
   <li><b>Siemens M55</b>: Tested OK
   <li><b>Siemens M65</b>: Tested OK. Very inconvenient to use because
   of the mapping of ENTER and +
-  <li><b>Siemens S55</b>: Works after a fashion with newest firmware.
+  <li><b>Siemens S55*)</b>: Works after a fashion with newest firmware.
   Older firmware doesn't work, 'Cannot verify class'
   <li><b>Siemens SL45</b>: Doesn't work, 'Out of heap memory'
   <li><b>Samsung E720</b>: Tested OK
@@ -173,6 +185,15 @@ usability with Calc:
   the middle joystick button is inaccessible
 </ul>
 
+*) I have had reports that Calc does not work on these phones after
+version 2.03 or 2.05. Other phones may be affected as well, but as far
+as I can tell, there is nothing wrong with Calc as such. As the size
+of the application approaches 64kB, we reach limitations in some
+devices. In that case there is nothing to do except buying a new phone
+or downloading one of the <a href="Calc-log.html">older
+versions</a>.<br>
+
+<br>
 Please drop me a note about your experiences if you have tested Calc
 on a device that is not on the list, or if your experiences were
 different than what is listed. Remember that nearly all devices can
@@ -1017,8 +1038,8 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
   x·y+(1-x)·z. With this you can e.g. simulate "max" by pressing
   "x&gt;y?", "select". When selection criterion x exactly equals 1 or
   0, y or z is copied directly instead of calculating it. This enables
-  selecting away <tt>inf</tt>'s and <tt>nan</tt>'s. If x contains a
-  square matrix, X·Y+(I-X)·Z is calculated.
+  selecting away <tt>inf</tt>'s and <tt>nan</tt>'s.
+<!--  If x contains a square matrix, X·Y+(I-X)·Z is calculated.-->
       <li><b>sgn</b>: Keep only the sign of x as ±1. With this you can
   e.g. simulate "abs" by pressing "ENTER", "sgn", "*". Also ±0 becomes ±1
     </ul>
@@ -1168,7 +1189,8 @@ when you stack or concat two normal numbers.<br>
 <br>
 Most operations that logically extends to matrix arguments have been
 implemented for matrices, i.e. all basic operations, "1/x" and
-"x²". However, complex matrices has been left as a future expansion.<br>
+"x²", and y<sup>x</sup> for integer x. However, complex
+matrices has been left as a future expansion.<br>
 
 <br>
 All stack and memory operations handle matrices
