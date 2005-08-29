@@ -51,10 +51,10 @@ Real.java: ../real-java/Real.jpp Makefile
 GFontBase.java: pgm2java small.pgm medium.pgm large.pgm xlarge.pgm Makefile
 	echo "package ral;"                          >  $@
 	echo "abstract class GFontBase {"            >> $@
-	pgm2java small.pgm small_                    >> $@
-	pgm2java medium.pgm medium_                  >> $@
-	pgm2java large.pgm large_                    >> $@
-	pgm2java xlarge.pgm xlarge_                  >> $@
+	pgm2java small.pgm small_ a.dat              >> $@
+	pgm2java medium.pgm medium_ b.dat            >> $@
+	pgm2java large.pgm large_ c.dat              >> $@
+	pgm2java xlarge.pgm xlarge_ d.dat            >> $@
 	echo "}"                                     >> $@
 
 Calc.jad: Makefile
@@ -86,7 +86,7 @@ CalcApplet.jar: CalcApplet.java $(JAVAFILES) Real.java $(MIDPFILES)
 	cd midp && jar cf ../CalcApplet.jar ral javax
 
 clean:
-	rm -rf $(TARGETS) ral midp/ral midp/javax Real.java GFontBase.java pgm2java *~ .\#* midp/*~ midp/.\#* midp-*.tgz
+	rm -rf $(TARGETS) ral midp/ral midp/javax Real.java GFontBase.java pgm2java *.dat *~ .\#* midp/*~ midp/.\#* midp-*.tgz
 
 derived.tgz: Real.java GFontBase.java Calc.jad
 	tar czf derived.tgz Real.java GFontBase.java Calc.jad

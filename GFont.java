@@ -1,5 +1,6 @@
 package ral;
 
+import java.io.*;
 import javax.microedition.lcdui.*;
 
 final class GFont
@@ -13,18 +14,23 @@ final class GFont
   static final int BGR_ORDER = 8;
   static final int SIZE_MASK = 7;
 
-  private final String char_bits;
-  private final int char_width;
-  private final int char_height;
-  private final String char_set;
+  private byte [] char_bits;
+  private int char_width;
+  private int char_height;
+  private String char_set;
   private Image [] char_cache;
-  private final int style;
-  private final Font systemFont;
-  private final byte [] char_index;
-  private final boolean bgr;
+  private int style;
+  private Font systemFont;
+  private byte [] char_index;
+  private boolean bgr;
 
   public GFont(int style)
   {
+    String char_bits_resource = null;
+    char_bits = null;
+    char_width = 0;
+    char_height = 0;
+
     bgr = (style & BGR_ORDER) != 0;
     style &= SIZE_MASK;
     this.style = style;
@@ -32,27 +38,43 @@ final class GFont
       systemFont = null;
       char_width = medium_char_width;
       char_height = medium_char_height;
-      char_bits = medium_char_bits;
+      char_bits_resource = medium_char_bits_resource;
       char_set = medium_char_set;
     } else if (style == LARGE) {
       systemFont = null;
       char_width = large_char_width;
       char_height = large_char_height;
-      char_bits = large_char_bits;
+      char_bits_resource = large_char_bits_resource;
       char_set = large_char_set;
     } else if (style == SMALL) {
       systemFont = null;
       char_width = small_char_width;
       char_height = small_char_height;
-      char_bits = small_char_bits;
+      char_bits_resource = small_char_bits_resource;
       char_set = small_char_set;
     } else if (style == XLARGE) {
       systemFont = null;
       char_width = xlarge_char_width;
       char_height = xlarge_char_height;
-      char_bits = xlarge_char_bits;
+      char_bits_resource = xlarge_char_bits_resource;
       char_set = xlarge_char_set;
-    } else { // SYSTEM font
+    }
+    if (char_bits_resource != null) {
+      try {
+        char_cache = new Image[32*3];
+        char_index = new byte[96];
+        for (char c=32; c<128; c++)
+          char_index[c-32] = (byte)char_set.indexOf(c);
+        InputStream in = getClass().getResourceAsStream(char_bits_resource);
+        byte bits[] = new
+          byte[char_set.length()*((char_height*char_width*2*2+7)/8)];
+        in.read(bits);
+        in.close();
+        char_bits = bits;
+      } catch (Throwable e) {
+      }
+    }
+    if (char_bits == null) {
       systemFont = Font.getFont(Font.FACE_MONOSPACE,
                                 Font.SIZE_MEDIUM,
                                 Font.STYLE_PLAIN);
@@ -61,11 +83,6 @@ final class GFont
       char_bits = null;
       char_set = null;
     }
-    char_cache = new Image[32*3];
-    char_index = new byte[96];
-    if (char_set != null)
-      for (char c=32; c<128; c++)
-        char_index[c-32] = (byte)char_set.indexOf(c);
   }
 
   public int getStyle() {
@@ -90,13 +107,13 @@ final class GFont
           int red,green,blue;
           int bitPos = (index*char_width*char_height+y2*char_width+x2)*4-2;
           if (x2>0)
-            red = ((char_bits.charAt(bitPos/8)>>(bitPos&7))&3)*85;
+            red = ((char_bits[bitPos/8]>>(bitPos&7))&3)*85;
           else
             red = 0;
           bitPos += 2;
-          green = ((char_bits.charAt(bitPos/8)>>(bitPos&7))&3)*70;
+          green = ((char_bits[bitPos/8]>>(bitPos&7))&3)*70;
           bitPos += 2;
-          blue = ((char_bits.charAt(bitPos/8)>>(bitPos&7))&3)*85;
+          blue = ((char_bits[bitPos/8]>>(bitPos&7))&3)*85;
           if (red != 0 || green != 0 || blue != 0) {
             if (bgr)
               g2.setColor(blue,green,red);

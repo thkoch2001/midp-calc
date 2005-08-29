@@ -6,7 +6,7 @@
                 obfuscate="true"
                 preverify="true"
                 autoversion="false">
-      <fileset dir="." includes="ral/*" />
+      <fileset dir="." includes="ral/*,*.dat" />
     </wtkpackage> 
   </target>
 </project>

@@ -75,11 +75,12 @@ int printStringChar(unsigned char b)
 int main(int argc, char *argv[])
 {
   unsigned char* image;
-  int c,i,j,k,x;
+  int c,i,j,k;
   unsigned char bits[32*3][100]; // Works for size up to 20x20
   int char_height, char_width;
   char *prefix;
   char *charSet = " \"$%&'*+,-./0123456789:=>ABCDEFMR[]_aefilmnoprtvxy";
+  FILE *f;
   // Strings written with font
   //
   // 10000000_
@@ -91,11 +92,11 @@ int main(int argc, char *argv[])
   // M0= M1=
   // R0= R1> Col:1 M:[3x4] no matrix
 
-  if ((image=readImage(argv[1],&iW,&iH))==0 || iW%32!=0 || iH%3!=0) {
-    printf("Usage: %s image.pgm [prefix]\n",argv[0]);
+  if (argc<4 || (image=readImage(argv[1],&iW,&iH))==0 || iW%32!=0 || iH%3!=0) {
+    printf("Usage: %s image.pgm prefix out.dat > out.java\n",argv[0]);
     exit(1);
   }
-  prefix = argc>=3 ? argv[2] : "";
+  prefix = argv[2];
   
   char_width = iW/32;
   char_height = iH/3;
@@ -104,22 +105,20 @@ int main(int argc, char *argv[])
       scan(image,j*char_width,i*char_height,char_height,char_width,
            bits[i*32+j]);
 
-  printf("  protected String %schar_bits =\n    \"",prefix);
-  x = 5;
+  f = fopen(argv[3],"w");
   for (c=0; c<(int)strlen(charSet); c++) {
     i = charSet[c]/32-1;
     j = charSet[c]%32;
     int nBytes = (char_height*char_width*2+7)/8;
     for (k=0; k<nBytes; k++) {
       unsigned char b = bits[i*32+j][k];
-      if (x>72) {
-        printf("\"+\n    \"");
-        x = 5;
-      }
-      x += printStringChar(b);
+      fputc(b,f);
     }
   }
-  printf("\";\n");
+  fclose(f);
+
+  printf("  protected final String %schar_bits_resource = \"/%s\";\n",prefix,
+         argv[3]);
   printf("  protected final int %schar_width = %d;\n",prefix,char_width/2);
   printf("  protected final int %schar_height = %d;\n",prefix,char_height);
   printf("  protected final String %schar_set =\n    \"",prefix);
