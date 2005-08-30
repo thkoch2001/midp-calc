@@ -688,13 +688,13 @@ public final class CalcEngine
     length = in.readShort();
     if (length >= STACK_SIZE*12) {
       for (i=0; i<STACK_SIZE; i++) {
-        in.read(realBuf);
+        in.readFully(realBuf);
         stack[i].assign(realBuf,0);
       }
       length -= STACK_SIZE*12;
       if (length >= STACK_SIZE*12) {
         for (i=0; i<STACK_SIZE; i++) {
-          in.read(realBuf);
+          in.readFully(realBuf);
           stackI[i].assign(realBuf,0);
         }
         length -= STACK_SIZE*12;
@@ -707,13 +707,13 @@ public final class CalcEngine
     if (length >= MEM_SIZE*12) {
       allocMem();
       for (i=0; i<MEM_SIZE; i++) {
-        in.read(realBuf);
+        in.readFully(realBuf);
         mem[i].assign(realBuf,0);
       }
       length -= MEM_SIZE*12;
       if (length >= MEM_SIZE*12) {
         for (i=0; i<MEM_SIZE; i++) {
-          in.read(realBuf);
+          in.readFully(realBuf);
           memI[i].assign(realBuf,0);
         }
         length -= MEM_SIZE*12;
@@ -726,7 +726,7 @@ public final class CalcEngine
     if (length >= STAT_SIZE*12+STATLOG_SIZE*2*4+2) {
       allocStat();
       for (i=0; i<STAT_SIZE; i++) {
-        in.read(realBuf);
+        in.readFully(realBuf);
         stat[i].assign(realBuf,0);
       }
       for (i=0; i<STATLOG_SIZE*2; i++)
@@ -742,7 +742,7 @@ public final class CalcEngine
     if (length >= FINANCE_SIZE*12) {
       allocFinance();
       for (i=0; i<FINANCE_SIZE; i++) {
-        in.read(realBuf);
+        in.readFully(realBuf);
         finance[i].assign(realBuf,0);
       }
       length -= FINANCE_SIZE*12;
@@ -768,7 +768,7 @@ public final class CalcEngine
       int monitor        = in.readByte();
       Real.randSeedA     = in.readLong();
       Real.randSeedB     = in.readLong();
-      in.read(realBuf);
+      in.readFully(realBuf);
       lastx.assign(realBuf,0);
 
       monitorMode = MONITOR_NONE+((monitor>>5)&7);
@@ -788,7 +788,7 @@ public final class CalcEngine
       length -= 10+8*2+12;
     }
     if (length >= 12) {
-      in.read(realBuf);
+      in.readFully(realBuf);
       lastxi.assign(realBuf,0);
       length -= 12;
     }
@@ -825,7 +825,7 @@ public final class CalcEngine
           Matrix M = new Matrix(rows,cols);
           for (int c=0; c<cols; c++)
             for (int r=0; r<rows; r++) {
-              in.read(realBuf);
+              in.readFully(realBuf);
               rTmp.assign(realBuf,0);
               M.setElement(r,c,rTmp);
             }
