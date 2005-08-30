@@ -68,7 +68,8 @@ final class GFont
         InputStream in = getClass().getResourceAsStream(char_bits_resource);
         byte bits[] = new
           byte[char_set.length()*((char_height*char_width*2*2+7)/8)];
-        in.read(bits);
+        for (int pos=0; pos<bits.length;)
+          pos += in.read(bits, pos, bits.length-pos);
         in.close();
         char_bits = bits;
       } catch (Throwable e) {
