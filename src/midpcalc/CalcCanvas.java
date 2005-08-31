@@ -20,7 +20,7 @@ public final class CalcCanvas
 //            -> misc    -> mod    div    random  factorize
 //                       -> int -> round ceil floor trunc frac
 //            -> matrix  -> new    concat stack   split
-//                       -> more -> det A^T |A|_F Tr
+//                       -> more -> det A^T A*^T |A|_F Tr
 //                               -> more -> size a_yx
 //   trig     -> normal  -> sin    cos    tan
 //            -> arc     -> asin   acos   atan
@@ -59,11 +59,13 @@ public final class CalcCanvas
 //            -> prog[1] -> run    -> #
 //                       -> new    -> # -> name?
 //                       -> clear  -> #
-//                       -> draw
-//                       -> more   -> integrate     -> #
-//                                 -> differentiate -> #
-//                                 -> solve         -> #
-//                                 -> min/max       -> #
+//                       -> draw   -> y=f(x)      -> #
+//                                 -> r=f(theta)  -> #
+//                                 -> z=f(t)      -> #
+//                       -> more   -> integrate   -> #
+//                                 -> diff        -> #
+//                                 -> solve       -> #
+//                                 -> min/max     -> #
 //            -> prog[2] -> finish
 //                       -> cond   -> x=y? x!=y? x<y? x<=y? x>y?
 //                       -> util   -> abs max min sgn select
@@ -82,27 +84,26 @@ public final class CalcCanvas
 //   special  -> conv    -> time   -> dow
 //                       -> D->D.MS
 //                       -> D.MS->D
-//   mode     -> prog[1] -> draw   -> y=f(x)
-//                                 -> r=f(theta)
-//                                 -> z=f(t)
-//                                 -> z=f(z)
-//   math     -> matrix  -> more   -> draw
+//   math     -> misc    -> gcd
+//                       -> guess
+//            -> matrix  -> more   -> draw
+//   mode     -> prog[1] -> draw   -> z=f(z)
+//            -> sys     -> screen -> fullscreen
+//                                 -> double-buffering
 
 // Complex operations:
 //   + - * / +/- 1/x x² sqrt
 //   x==y? x!=y? select
-//   <pow> <pow10/2> <trig>
-//   <cplx> <stack> <mem> <int>
-// Not yet complex:
-//   prog/integrate prog/diff.
-//   <matrix>
+//   <pow> <trig> <cplx> <stack> <mem> <int> <matrix>
+//   prog/integrate prog/diff
 //
 // Matrix operations:
 //   + - * / +/- 1/x x²
+//   y^x cplx/conj
 //   x==y? x!=y?
 //   <matrix> <stack> <mem>
 // Not yet matrix:
-//   <int> <cplx> STO+
+//   <int> select ->cplx cplx/split cplx/abs cplx/arg
 
 // Physical constants:
 // Universal
@@ -565,8 +566,9 @@ public final class CalcCanvas
         new Menu("det",CalcEngine.DETERM),
         new Menu("A^T",CalcEngine.TRANSP),
         new Menu("Tr",CalcEngine.TRACE),
-        new Menu("|A|_F",CalcEngine.ABS),
+        new Menu("~A~^T",CalcEngine.TRANSP_CONJ),
         new Menu("more",Menu.TITLE_SKIP,new Menu[] {
+          new Menu("|A|_F",CalcEngine.ABS),
           new Menu("size",CalcEngine.MATRIX_SIZE),
           new Menu("a_ij",CalcEngine.MATRIX_AIJ),
         }),
@@ -1340,7 +1342,7 @@ public final class CalcCanvas
         menu.subMenu[1] = math;
         menu.subMenu[2] = trig;
         // Also switch coord menu with cplx menu if x or y are complex
-        if (!calc.stackI[0].isZero() || !calc.stackI[1].isZero()) {
+        if (calc.hasComplexArgs()) {
           trig.subMenu[4].subMenu[3] = cplxMenu;
         } else {
           trig.subMenu[4].subMenu[3] = coordMenu;

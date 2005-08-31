@@ -265,6 +265,7 @@ public final class CalcEngine
   public static final int STAT_STO       = 258;
   public static final int MATRIX_SIZE    = 259;
   public static final int MATRIX_AIJ     = 260;
+  public static final int TRANSP_CONJ    = 261;
 
   public static final int MATRIX_STO     = 512; // Special bit pattern
   public static final int MATRIX_RCL     = 768; // Special bit pattern
@@ -285,7 +286,7 @@ public final class CalcEngine
   // Special commands
   public static final int FINALIZE       = 400;
   public static final int FREE_MEM       = 401;
-  
+
   private static final int STACK_SIZE    = 16;
   private static final int MEM_SIZE      = 16;
   private static final int STAT_SIZE     = 13;
@@ -335,7 +336,7 @@ public final class CalcEngine
   public Matrix monitoredMatrix;
   public String monitorCaption;
   public String [] monitorStr;
-  public String [] monitorLabels;  
+  public String [] monitorLabels;
   private static final String [] statLabels =
     { "n","$x","$x\"","$y","$y\"","$xy","$&x","$&\"x",
       "$&y","$&\"y","$x&y","$y&x","$&x&y" };
@@ -373,7 +374,7 @@ public final class CalcEngine
       a[i] = new Real();
     return a;
   }
-  
+
   private static void clearRealArray(Real [] a) {
     if (a != null)
       for (int i=0; i<a.length; i++)
@@ -440,14 +441,14 @@ public final class CalcEngine
     }
     repaintAll();
   }
-  
+
   private void clearMem() {
     clearRealArray(mem);
     clearRealArray(memI);
     mem = null;
     memI = null;
   }
-  
+
   private void clearStat() {
     SUM1      = null;
     SUMx      = null;
@@ -494,7 +495,7 @@ public final class CalcEngine
         clearFinance();
     }
   }
-  
+
   private void allocMem() {
     if (mem != null)
       return;
@@ -506,7 +507,7 @@ public final class CalcEngine
       imagMonitors = memI;
     }
   }
-  
+
   private void allocStat() {
     if (stat != null)
       return;
@@ -632,7 +633,7 @@ public final class CalcEngine
     out.writeByte(format.maxwidth);
     out.writeByte(format.precision);
     out.writeByte(format.fse);
-    out.writeByte(format.point);                          
+    out.writeByte(format.point);
     out.writeBoolean(format.removePoint);
     out.writeByte(format.thousand);
     out.writeByte(((monitorMode-MONITOR_NONE)<<5) + monitorSize);
@@ -661,15 +662,22 @@ public final class CalcEngine
       if (matrixCache[i] != null) {
         Matrix M = matrixCache[i];
         if (M.rows<0xffff && M.cols<0xffff) {
-          out.writeShort(2+2+M.rows*M.cols*12);
+          out.writeShort(2+2+M.rows*M.cols*(12+(M.DI!=null?12:0)));
           out.writeShort((short)M.rows);
           out.writeShort((short)M.cols);
           for (int c=0; c<M.cols; c++)
             for (int r=0; r<M.rows; r++) {
-              M.getElement(r,c,rTmp);
+              M.getElement(r,c,rTmp,null);
               rTmp.toBytes(realBuf,0);
               out.write(realBuf);
             }
+          if (M.DI != null)
+            for (int c=0; c<M.cols; c++)
+              for (int r=0; r<M.rows; r++) {
+                M.getElement(r,c,null,rTmp);
+                rTmp.toBytes(realBuf,0);
+                out.write(realBuf);
+              }
         }
         matrixCache[i] = null; // Free memory as we go
       } else {
@@ -677,7 +685,7 @@ public final class CalcEngine
       }
     }
   }
-  
+
   public void restoreState(DataInputStream in) throws IOException {
     int length,i,j;
     byte [] realBuf = new byte[12];
@@ -827,10 +835,19 @@ public final class CalcEngine
             for (int r=0; r<rows; r++) {
               in.readFully(realBuf);
               rTmp.assign(realBuf,0);
-              M.setElement(r,c,rTmp);
+              M.setElement(r,c,rTmp,null);
             }
-          matrixCache[i] = M;
           length -= rows*cols*12;
+          if (length >= rows*cols*12) {
+            for (int c=0; c<cols; c++)
+              for (int r=0; r<rows; r++) {
+                in.read(realBuf);
+                rTmp.assign(realBuf,0);
+                M.setElement(r,c,null,rTmp);
+              }
+            length -= rows*cols*12;
+          }
+          matrixCache[i] = M;
         }
       }
       in.skip(length);
@@ -864,7 +881,7 @@ public final class CalcEngine
     }
     if (M.rows == 1 && M.cols == 1) {
       // 1x1 matrix == Real
-      M.getElement(0,0,x);
+      M.getElement(0,0,x,xi);
       matrixGC();
       return;
     }
@@ -949,7 +966,7 @@ public final class CalcEngine
       caption.append(' ');
     monitorCaption = caption.toString();
     monitors = monitoredMatrix.D[col];
-    imagMonitors = null;
+    imagMonitors = monitoredMatrix.DI != null ? monitoredMatrix.DI[col] : null;
     clearMonitorStrings();
   }
 
@@ -960,7 +977,7 @@ public final class CalcEngine
         break;
     return M;
   }
-  
+
   private void updateMatrixMonitor() {
     Matrix M = getCurrentMatrix();
     if (M == null) {
@@ -997,7 +1014,7 @@ public final class CalcEngine
                              Real[] m, Real [] mi, String[] labels) {
     if (size == 0)
       mode = MONITOR_NONE;
-    
+
     monitorMode = mode;
     initialMonitorSize = size;
     maxMonitorSize = maxSize;
@@ -1008,7 +1025,7 @@ public final class CalcEngine
     setMonitorY(0,false);
     clearMonitorStrings();
   }
-  
+
   private String makeString(Real x, Real xi) {
     String s;
     Matrix M;
@@ -1022,7 +1039,7 @@ public final class CalcEngine
       format.maxwidth = maxwidth-1-imagSign-imag.length();
       String real = x.toString(format);
       if (real.length() < format.maxwidth) {
-        format.maxwidth = maxwidth-1-imagSign-real.length();          
+        format.maxwidth = maxwidth-1-imagSign-real.length();
         imag = xi.toString(format);
       }
       s = real+(imagSign!=0?"+":"")+imag+'i';
@@ -1037,6 +1054,13 @@ public final class CalcEngine
     if (stackStr[n] == null)
       stackStr[n] = makeString(stack[n],stackI[n]);
     return stackStr[n];
+  }
+
+  public boolean hasComplexArgs() {
+    Matrix M;
+    return !stackI[0].isZero() || !stackI[1].isZero() ||
+      ((M = getMatrix(stack[0])) != null && M.DI != null) ||
+      ((M = getMatrix(stack[1])) != null && M.DI != null);
   }
 
   public String getMonitorElement(int n) {
@@ -1116,7 +1140,7 @@ public final class CalcEngine
     if (monitorYOff+Math.min(maxMonitorDisplaySize,monitorSize)>maxMonitorSize)
     {
       monitorYOff = maxMonitorSize-Math.min(maxMonitorDisplaySize,monitorSize);
-      repaintAll();      
+      repaintAll();
     }
     if (monitorMode == MONITOR_MATRIX)
       maxMonitorDisplaySize++;
@@ -1430,12 +1454,13 @@ public final class CalcEngine
     Real y = stack[1];
     Real xi = stackI[0];
     Real yi = stackI[1];
-    boolean complex   = false;
+    Matrix X = getMatrix(x);
+    Matrix Y = getMatrix(y);
+    boolean complex   = !xi.isZero() || !yi.isZero();
     boolean complexOk = false;
-    boolean matrix    = false;
+    boolean matrix    = X != null || Y != null;
     boolean matrixOk  = false;
 
-    complex = !xi.isZero() || !yi.isZero();
     Complex.degrees = degrees;
 
     lastx.assign(x);
@@ -1445,18 +1470,6 @@ public final class CalcEngine
     lastyi.assign(yi);
     undoStackEmpty = stackStr[1]==empty ? stackStr[0]==empty ? 2 : 1 : 0;
     undoOp = UNDO_BINARY;
-
-    Matrix X = getMatrix(x);
-    Matrix Y = getMatrix(y);
-    if (X != null || Y != null) {
-      if (complex && cmd!=CLEAR) {
-        // Can't handle complex matrix yet
-        y.makeNan();
-        cmd = -1;
-      } else {
-        matrix = true;
-      }
-    }
 
     switch (cmd)
     {
@@ -1504,9 +1517,9 @@ public final class CalcEngine
           if (X!=null && Y!=null) {
             Y = Matrix.mul(Y,X);
           } else if (X!=null) {
-            Y = Matrix.mul(X,y); 
+            Y = Matrix.mul(X,y,yi);
           } else {
-            Y = Matrix.mul(Y,x);
+            Y = Matrix.mul(Y,x,xi);
           }
         } else if (complex) {
           complexOk = true;
@@ -1522,9 +1535,9 @@ public final class CalcEngine
           if (X!=null && Y!=null) {
             Y = Matrix.div(Y,X);
           } else if (X!=null) {
-            Y = Matrix.div(y,X); 
+            Y = Matrix.div(y,yi,X);
           } else {
-            Y = Matrix.div(Y,x);
+            Y = Matrix.div(Y,x,xi);
           }
         } else if (complex) {
           complexOk = true;
@@ -1544,7 +1557,7 @@ public final class CalcEngine
       case YPOWX:
         if (matrix) {
           matrixOk = true;
-          if (X!=null || !x.isIntegral()) {
+          if (X!=null || !x.isIntegral() || complex) {
             y.makeNan();
             matrix = false;
           } else {
@@ -1671,17 +1684,14 @@ public final class CalcEngine
           if (X!=null && Y!=null) {
             Y = Matrix.concat(Y,X);
           } else if (X!=null) {
-            Y = Matrix.concat(y,X); 
+            Y = Matrix.concat(y,yi,X);
           } else {
-            Y = Matrix.concat(Y,x);
+            Y = Matrix.concat(Y,x,xi);
           }
-        } else if (complex) {
-          matrix = true;
-          // .. but not matrixOk, can't handle complex matrix yet
         } else {
           matrix = true;
           matrixOk = true;
-          Y = Matrix.concat(y,x);
+          Y = Matrix.concat(y,yi,x,xi);
         }
         break;
 
@@ -1691,17 +1701,14 @@ public final class CalcEngine
           if (X!=null && Y!=null) {
             Y = Matrix.stack(Y,X);
           } else if (X!=null) {
-            Y = Matrix.stack(y,X); 
+            Y = Matrix.stack(y,yi,X);
           } else {
-            Y = Matrix.stack(Y,x);
+            Y = Matrix.stack(Y,x,xi);
           }
-        } else if (complex) {
-          matrix = true;
-          // .. but not matrixOk, can't handle complex matrix yet
         } else {
           matrix = true;
           matrixOk = true;
-          Y = Matrix.stack(y,x);
+          Y = Matrix.stack(y,yi,x,xi);
         }
         break;
 
@@ -1713,7 +1720,7 @@ public final class CalcEngine
         if (M == null)
           y.makeNan();
         else
-          M.getElement(row,col,y);
+          M.getElement(row,col,y,yi);
         break;
     }
 
@@ -1741,7 +1748,7 @@ public final class CalcEngine
     stackI[STACK_SIZE-1].makeZero();
     stackStr[STACK_SIZE-1] = empty;
     if (cmd != CLEAR)
-      stackStr[0] = null;    
+      stackStr[0] = null;
   }
 
   private void statAB(Real a, Real b, Real SUMx, Real SUMx2,
@@ -1930,24 +1937,20 @@ public final class CalcEngine
     Real tmp;
     Real x = stack[0];
     Real xi = stackI[0];
-    Matrix X = null;
-    boolean complex  = false;
-    boolean matrix   = false;
+    Matrix X = getMatrix(x);
+    boolean complex  = complex = !xi.isZero();
+    boolean matrix   = X != null;
     boolean matrixOk = false;
 
-    if ((X = getMatrix(x)) != null) {
-      matrix = true;
-    } else {
-      complex = !xi.isZero();
-      Complex.degrees = degrees;
-    }
+    Complex.degrees = degrees;
+
     lastx.assign(x);
     lasty.makeZero(); // Clear this in case it is a Matrix reference
     lastz.makeZero(); // ...and this
     lastxi.assign(xi);
     undoStackEmpty = stackStr[0]==empty ? 1 : 0;
     undoOp = UNDO_UNARY;
-    
+
     switch (cmd)
     {
       case NEG:
@@ -1984,8 +1987,9 @@ public final class CalcEngine
 
       case ABS:
         if (matrix) {
-          X.norm_F(x);
+          X.norm_F(x,xi);
           matrix = false;
+          complex = !xi.isZero();
         } else if (complex) {
           x.hypot(xi);
           xi.makeZero();
@@ -1995,23 +1999,26 @@ public final class CalcEngine
         break;
 
       case TRANSP:
+      case TRANSP_CONJ:
         if (matrix) {
           matrixOk = true;
-          X = Matrix.transp(X);
+          X = Matrix.transp(X,cmd==TRANSP_CONJ);
         } // else do nothing
         break;
 
       case DETERM:
         if (matrix) {
-          X.det(x);
+          X.det(x,xi);
           matrix = false;
+          complex = !xi.isZero();
         } // else do nothing
         break;
 
       case TRACE:
         if (matrix) {
-          X.trace(x);
+          X.trace(x,xi);
           matrix = false;
+          complex = !xi.isZero();
         } // else do nothing
         break;
 
@@ -2042,7 +2049,7 @@ public final class CalcEngine
 
       case CPLX_ARG:
         if (complex) {
-          Complex.degrees = false;          
+          Complex.degrees = false;
           xi.atan2(x);
           x.assign(xi);
           xi.makeZero();
@@ -2052,8 +2059,12 @@ public final class CalcEngine
         break;
 
       case CPLX_CONJ:
-        if (complex)
+        if (matrix) {
+          matrixOk = true;
+          X = Matrix.conj(X);
+        } else if (complex) {
           xi.neg();
+        }
         break;
 
       case COS:
@@ -2277,7 +2288,7 @@ public final class CalcEngine
         }
         break;
     }
-    
+
     if (matrix) {
       if (!matrixOk) {
         x.makeNan();
@@ -2491,7 +2502,7 @@ public final class CalcEngine
 //                 // Weird, but perhaps sometime it will be useful
 //                 Matrix Tmp = new Matrix(X.cols);
 //                 for (int i=0; i<X.cols; i++)
-//                   Tmp.setElement(i,i,Real.ONE);
+//                   Tmp.setElement(i,i,Real.ONE,null);
 //                 Tmp = Matrix.sub(Tmp,X);
 //                 if (Y == null /*&& Z == null*/) {
 //                   // X*y + (I-X)*z
@@ -2564,7 +2575,7 @@ public final class CalcEngine
     Real x = stack[0];
     Real y = stack[1];
     int index;
-    
+
     switch (cmd)
     {
       case SUMPL:
@@ -2683,7 +2694,7 @@ public final class CalcEngine
     undoOp = UNDO_PUSH2;
     Real x = stack[0];
     Real y = stack[1];
-    
+
     switch (cmd)
     {
       case AVG:
@@ -2794,7 +2805,7 @@ public final class CalcEngine
     undoStackEmpty = stackStr[0]==empty ? 1 : 0;
     undoOp = UNDO_PUSH;
     Real x = stack[0];
-    
+
     switch (cmd)
     {
       case AVGXW:
@@ -2819,7 +2830,7 @@ public final class CalcEngine
 
   private void financeSolve(int which) {
     allocFinance();
-    
+
     switch (which)
     {
       case 0: // PV
@@ -3066,7 +3077,7 @@ public final class CalcEngine
         stackI[2].assign(lastzi);
         stackStr[0] = undoStackEmpty >= 3 ? empty : null;
         stackStr[1] = undoStackEmpty >= 2 ? empty : null;
-        stackStr[2] = undoStackEmpty >= 1 ? empty : null;        
+        stackStr[2] = undoStackEmpty >= 1 ? empty : null;
         break;
 
       case UNDO_PUSH:
@@ -3200,16 +3211,19 @@ public final class CalcEngine
     if (inputInProgress) // From the program...
       parseInput();
   }
-  
+
   private void differentiateProgram() {
-    Real x = new Real(stack[0]);
-    Real h = new Real();
-    Real y1 = new Real();
-    Real y2 = new Real();
+    Real x   = new Real(stack[0]);
+    Real xi  = new Real(stackI[0]);
+    Real h   = new Real();
+    Real y1  = new Real();
+    Real y1i = new Real();
+    Real y2  = new Real();
+    Real y2i = new Real();
 
     push(Real.NAN,null);
 
-    if (!x.isFinite() || !stackI[1].isZero()) {
+    if (!x.isFinite() || !xi.isFinite()) {
       // Abnormal x. (nan is already pushed)
       return;
     }
@@ -3224,37 +3238,42 @@ public final class CalcEngine
     {
       // y1 = f(x-h);
       stack[0].assign(x);
+      stackI[0].assign(xi);
       stack[0].sub(h);
       executeProgram();
       y1.assign(stack[0]);
-      if (!stackI[0].isZero()) {
-        y1.makeNan();
-        stackI[0].makeZero();
-      }
+      y1i.assign(stackI[0]);
 
       // y2 = f(x+h);
       stack[0].assign(x);
+      stackI[0].assign(xi);
       stack[0].add(h);
       executeProgram();
       y2.assign(stack[0]);
-      if (!stackI[0].isZero()) {
-        y2.makeNan();
-        stackI[0].makeZero();
-      }
+      y2i.assign(stackI[0]);
 
-      if (!y1.isFinite() || !y2.isFinite()) {
+      if (!y1.isFinite() || !y1i.isFinite() ||
+          !y2.isFinite() || !y2i.isFinite())
+      {
         stack[0].makeNan();
+        stackI[0].makeZero();
         Real.magicRounding = true;
         return;
       }
 
       int exp = Math.max(y1.exponent, y2.exponent);
+      exp = Math.max(exp, y1i.exponent);
+      exp = Math.max(exp, y2i.exponent);
 
       rTmp.assign(y1);
       rTmp.add(y2);
-      y2.sub(y1);
-      int exp2 = y2.exponent;
       int exp3 = rTmp.exponent;
+      rTmp.assign(y1i);
+      rTmp.add(y2i);
+      exp3 = Math.max(exp3, rTmp.exponent);
+      y2.sub(y1);
+      y2i.sub(y1i);
+      int exp2 = Math.max(y2.exponent, y2i.exponent);
 
       if (exp3 < exp-5)       // i.e. y1 == -y2  => pathological case
         finished = true;
@@ -3269,8 +3288,11 @@ public final class CalcEngine
         finished = true;
     }
     y2.div(h);
+    y2i.div(h);
     y2.scalbn(-1);
+    y2i.scalbn(-1);
     stack[0].assign(y2);
+    stackI[0].assign(y2i);
     Real.magicRounding = true;
   }
 
@@ -3372,7 +3394,7 @@ public final class CalcEngine
     // For all the commands below, do implicit enter
     if (inputInProgress)
       parseInput();
-    
+
     if (progRecording)
       record(cmd, param);
 
@@ -3809,11 +3831,14 @@ public final class CalcEngine
             }
         }
         if (getMatrix(stack[0]) == null) // Cannot store Matrix in matrix
-          M.setElement(row,col,stack[0]);
+          M.setElement(row,col,stack[0],stackI[0]);
         else
-          M.setElement(row,col,Real.NAN);
-        if (monitorMode == MONITOR_MATRIX && row<maxMonitorSize) {
-          monitorStr[row] = null;
+          M.setElement(row,col,Real.NAN,null);
+        if (monitorMode == MONITOR_MATRIX) {
+          if (row<maxMonitorSize)
+            monitorStr[row] = null;
+          if (imagMonitors == null && M.DI != null)
+            imagMonitors = M.DI[col];
           repaintAll();
         }
         break;
@@ -3825,8 +3850,8 @@ public final class CalcEngine
         } else {
           col = param&0xffff;
           row = (param>>16)&0xffff;
-          M.getElement(row,col,rTmp);
-          push(rTmp,null);
+          M.getElement(row,col,rTmp,rTmp2);
+          push(rTmp,rTmp2);
         }
         break;
 
@@ -4028,8 +4053,8 @@ public final class CalcEngine
   }
 
   int graphCmd;
-  Real xMin,xMax,yMin,yMax,a,b,c,y0,y1,y2,total;
-  long integralN,totalExtra;
+  Real xMin,xMax,yMin,yMax,a,b,c,bi,x0,x0i,y0,y1,y2,y0i,y1i,y2i,total,totalI;
+  long integralN,totalExtra,totalExtraI;
   int integralDepth;
   boolean integralFailed;
   boolean maximizing;
@@ -4037,7 +4062,7 @@ public final class CalcEngine
   public boolean prepareGraph(int cmd, int param) {
     graphCmd = cmd;
     progRunning = false;
-    
+
     if (cmd >= PROG_DRAW) {
       if (param<0 || param>=NUM_PROGS || prog[param] == null)
         return false;
@@ -4121,7 +4146,7 @@ public final class CalcEngine
         Real.magicRounding = true;
         return false;
       }
-      
+
       stack[0].assign(b);
       executeProgram();
       y2.assign(stack[0]);
@@ -4145,22 +4170,35 @@ public final class CalcEngine
     }
     else if (cmd == PROG_INTEGR)
     {
-      total = new Real();
-      y0 = new Real();
-      y1 = new Real();
-      y2 = new Real();
+      total  = new Real();
+      totalI = new Real();
+      y0  = new Real();
+      y0i = new Real();
+      y1  = new Real();
+      y1i = new Real();
+      y2  = new Real();
+      y2i = new Real();
+      x0  = new Real();
+      x0i = new Real();
+      bi  = new Real();
 
       totalExtra = 0;
+      totalExtraI = 0;
       integralN = 0;
       integralDepth = 0;
       integralFailed = false;
       y0.makeNan();
 
-      xMin.assign(stack[2]);
-      xMax.assign(stack[1]);
+      x0.assign(stack[2]);
+      x0i.assign(stackI[2]);
+      b.assign(stack[1]);
+      bi.assign(stackI[1]);
+      b.sub(x0);
+      bi.sub(x0i);
       a.assign(stack[0]); // Error term
-      b.assign(xMax);
-      b.sub(xMin);
+
+      xMin.assign(1);
+      xMax.assign(2);
       yMin.assign(-2);
       yMax.assign(1);
 
@@ -4207,7 +4245,7 @@ public final class CalcEngine
         Real.magicRounding = true;
         return false;
       }
-      
+
       stack[0].assign(b);
       executeProgram();
       y1.assign(stack[0]);
@@ -4387,8 +4425,8 @@ public final class CalcEngine
         xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
         g.setColor(0,32,16);
         g.drawLine(xi,gy-2,xi,gy+gh+1);
-        
-        if (i%bigTick == 0 && graphCmd!=PROG_SOLVE && graphCmd!=PROG_MINMAX)
+
+        if (i%bigTick == 0 && graphCmd<PROG_SOLVE)
         {
           tmp.assign(x);
           tmp.div(fac);
@@ -4442,8 +4480,8 @@ public final class CalcEngine
         yi = gy+rangeScale(y,yMax,yMin,gh,Real.ZERO);
         g.setColor(0,32,16);
         g.drawLine(gx-2,yi,gx+gw+1,yi);
-        
-        if (i%bigTick == 0 && graphCmd!=PROG_SOLVE && graphCmd!=PROG_MINMAX)
+
+        if (i%bigTick == 0)
         {
           tmp.assign(y);
           tmp.div(fac);
@@ -4487,10 +4525,10 @@ public final class CalcEngine
       b.makeZero();
       return;
     }
-    
+
     // Draw statistics graph
     g.setColor(255,0,128);
-    
+
     switch (graphCmd) {
       case LIN_DRAW:
         statAB(a,b,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
@@ -4627,9 +4665,12 @@ public final class CalcEngine
   }
 
   // Gauss-Legendre Quadrature of order 4
-  private void GL4_stripe(Real sum, Real x0, Real H, int depth, long n) {
+  private void GL4_stripe(Real sum, Real sumI, Real x0, Real x0i,
+                          Real H, Real HI, int depth, long n) {
     H.scalbn(-depth);
+    HI.scalbn(-depth);
     sum.makeZero();
+    sumI.makeZero();
     for (int i=0; i<4; i++) {
       if (i<2)
         stack[0].assign(0, 0x3ffffffe, 0x6e39b6f3d8e61419L);
@@ -4638,18 +4679,26 @@ public final class CalcEngine
       if ((i&1)!=0)
         stack[0].neg();
       stack[0].add(Real.HALF);
+      stackI[0].assign(stack[0]);
       stack[0].mul(H);
+      stackI[0].mul(HI);
       rTmp.assign(H);  // Should do this outside loop, but lack temp
       rTmp2.assign(n); // .
       rTmp.mul(rTmp2); // .
       rTmp.add(x0);    // .
       stack[0].add(rTmp);
+      rTmp.assign(HI); // Should do this outside loop, but lack temp
+      rTmp.mul(rTmp2); // .
+      rTmp.add(x0i);   // .
+      stackI[0].add(rTmp);
 
       executeProgram();
-      if (!stack[0].isFinite() || !stackI[0].isZero()) {
-        // Discontinuous or complex function
+      if (!stack[0].isFinite() || !stackI[0].isFinite()) {
+        // Discontinuous function
         sum.makeNan();
+        sumI.makeZero();
         H.scalbn(depth); // Restore H
+        HI.scalbn(depth);
         return;
       }
       if (i<2)
@@ -4657,11 +4706,14 @@ public final class CalcEngine
       else
         rTmp.assign(0, 0x3ffffffe, 0x53797e10309329b9L);
       stack[0].mul(rTmp);
+      stackI[0].mul(rTmp);
 
       sum.add(stack[0]);
+      sumI.add(stackI[0]);
     }
-    sum.mul(H);
+    Complex.mul(sum,sumI,H,HI);
     H.scalbn(depth); // Restore H
+    HI.scalbn(depth);
   }
 
   public void continueGraph(Graphics g, int gx, int gy, int gw, int gh) {
@@ -4699,10 +4751,10 @@ public final class CalcEngine
             x.mul(Real.TEN); // 10 "rounds"
           }
         }
-      
+
         push(x,null);
         executeProgram();
-        
+
         Real y = stack[0];
         Real yimag = stackI[0];
 
@@ -4763,11 +4815,11 @@ public final class CalcEngine
         Real.magicRounding = false;
         if (gh/3+3+integralDepth<gh) {
           // Draw progress
-          rTmp3.assign(b);
+          rTmp3.assign(Real.ONE);
           rTmp3.scalbn(-integralDepth);
           rTmp2.assign(integralN);
           rTmp2.mul(rTmp3);
-          rTmp2.add(xMin);
+          rTmp2.add(Real.ONE);
           int x1 = rangeScale(rTmp2,xMin,xMax,gw,Real.ZERO);
           rTmp2.add(rTmp3);
           int x2 = rangeScale(rTmp2,xMin,xMax,gw,Real.ZERO);
@@ -4776,27 +4828,34 @@ public final class CalcEngine
         }
 
         if (y0.isNan())
-          GL4_stripe(y0,xMin,b,integralDepth,integralN);
-        GL4_stripe(y1,xMin,b,integralDepth+1,(integralN<<1));
-        GL4_stripe(y2,xMin,b,integralDepth+1,(integralN<<1)+1);
+          GL4_stripe(y0,y0i,x0,x0i,b,bi,integralDepth,integralN);
+        GL4_stripe(y1,y1i,x0,x0i,b,bi,integralDepth+1,(integralN<<1));
+        GL4_stripe(y2,y2i,x0,x0i,b,bi,integralDepth+1,(integralN<<1)+1);
 
         boolean recurse = false;
-        if (!y1.isFinite() || !y2.isFinite()) {
+        if (!y1.isFinite() || !y1i.isFinite() ||
+            !y2.isFinite() || !y2i.isFinite())
+        {
           // Reached a singularity
-          totalExtra = total.add128(totalExtra,y0,0);
+          totalExtra  = total. add128(totalExtra, y0, 0);
+          totalExtraI = totalI.add128(totalExtraI,y0i,0);
           integralFailed = true;
         } else {
           rTmp.assign(y1);
           rTmp.add(y2);
           rTmp.sub(y0);
-          if (rTmp.absLessThan(a)) {
-            totalExtra = total.add128(totalExtra,y1,0);
-            totalExtra = total.add128(totalExtra,y2,0);
-          } else if ((integralN<<2)<0 || integralDepth>=2000) {
-            // Too much recursion
-            totalExtra = total.add128(totalExtra,y1,0);
-            totalExtra = total.add128(totalExtra,y2,0);
-            integralFailed = true;
+          rTmp2.assign(y1i);
+          rTmp2.add(y2i);
+          rTmp2.sub(y0i);
+          if ((rTmp.absLessThan(a) && rTmp2.absLessThan(a)) ||
+              (integralN<<2)<0 || integralDepth>=2000)
+          {
+            totalExtra  = total. add128(totalExtra, y1, 0);
+            totalExtraI = totalI.add128(totalExtraI,y1i,0);
+            totalExtra  = total. add128(totalExtra, y2, 0);
+            totalExtraI = totalI.add128(totalExtraI,y2i,0);
+            if ((integralN<<2)<0 || integralDepth>=2000)
+              integralFailed = true; // Too much recursion
           } else {
             recurse = true;
           }
@@ -4806,6 +4865,7 @@ public final class CalcEngine
           integralDepth++;
           integralN <<= 1;
           y0.assign(y1);
+          y0i.assign(y1i);
         } else {
           while ((integralN & 1)!=0) {
             integralDepth--;
@@ -4816,14 +4876,15 @@ public final class CalcEngine
         }
 
         // Let stack always hold best value till now
-        stack[0].assign(total);
-        stack[0].roundFrom128(totalExtra);
-        stackI[0].makeZero(); // We don't want anything complex
+        stack[0]. assign(total);
+        stackI[0].assign(totalI);
+        stack[0]. roundFrom128(totalExtra);
+        stackI[0].roundFrom128(totalExtraI);
 
         Real.magicRounding = true;
         if (integralDepth<63 && (integralN>>integralDepth)!=0) {
           // We're done
-          if (stack[0].isFinite() && integralFailed)
+          if (stack[0].isFinite() && stackI[0].isFinite() && integralFailed)
             push(Real.NAN,null); // Push inaccuracy indicator
           progRunning = false;
           return;
@@ -4909,7 +4970,7 @@ public final class CalcEngine
       // Draw progress
       rTmp.assign(a);
       rTmp.sub(b);
-      int progress = 
+      int progress =
         Math.min(Math.max(0,Math.max(a.exponent,b.exponent)-rTmp.exponent),63);
       g.setColor(255,0,128);
       g.fillRect(gx,gy+gh/2-10,progress*gw/63,7);
@@ -4919,11 +4980,11 @@ public final class CalcEngine
     else if (graphCmd == PROG_INTEGR) {
       if (integralN>0) {
         // Draw progress
-        x.assign(b);
+        x.assign(Real.ONE);
         x.scalbn(-integralDepth);
         rTmp.assign(integralN);
         x.mul(rTmp);
-        x.add(xMin);
+        x.add(Real.ONE);
         xi = rangeScale(x,xMin,xMax,gw-1,Real.ZERO)+1;
         g.setColor(255,0,128);
         g.fillRect(gx,gy+gh/3-10,xi,7);

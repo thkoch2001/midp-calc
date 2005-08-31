@@ -560,11 +560,13 @@ href="Calc.html#Notes">notes</a> section.
     <li><b>split</b>: Split matrix in y at row or column specified by
   x. If x is positive, matrix is split horizontally after x rows. If x
   is negative, matrix is split vertically after -x columns
-    <li><b>A<sup>T</sup></b>: Transpose matrix in x
     <li><b>det</b>: Calculate determinant of matrix in x. (This
   operation is just as slow as calculating the inverse by "1/x")
     <li><b>Tr</b>: Calculate the trace of matrix in x, i.e. the sum of
   all the elements along the diagonal
+    <li><b>A<sup>T</sup></b>: Transpose matrix in x
+    <li><b><span style="text-decoration:
+  overline;">A</span><sup>T</sup></b>: Transpose and conjungate matrix in x
     <li><b>|A|<sub>F</sub></b>: Calculate the Frobenius norm of matrix
   in x, i.e. the square root of the sum of the squares of all the
   matrix elements. For row and column vectors this calculates the
@@ -1002,10 +1004,12 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
   calculates a parametric curve z=f(t), where the input t is in the
   range [0,1] and the output is a point in the (complex) plane
     <li><b>integrate</b>: Integrate program function f(x). Prior
-  to using this operation, you should enter x-limit-1,
-  x-limit-2, and the desired accuracy on the stack, in that order
+  to using this operation, you should enter the integration limits a
+  and b, and the desired accuracy on the stack, in that
+  order. a and b may be complex
     <li><b>diff.</b>: Differentiate program function f(x). Prior
-  to using this operation, enter the x you want to differentiate for
+  to using this operation, enter the x you want to differentiate for,
+  which may also be complex
     <li><b>solve</b>: Solve program function f(x), i.e. find a root
   where f(x)=0. Prior to using this operation, enter <b>two</b>
   limits x1 and x2 on the stack, so that f(x1)·f(x2)&lt;0
@@ -1189,8 +1193,7 @@ when you stack or concat two normal numbers.<br>
 <br>
 Most operations that logically extends to matrix arguments have been
 implemented for matrices, i.e. all basic operations, "1/x" and
-"x²", and y<sup>x</sup> for integer x. However, complex
-matrices has been left as a future expansion.<br>
+"x²", and y<sup>x</sup> for integer x.<br>
 
 <br>
 All stack and memory operations handle matrices
@@ -1465,7 +1468,7 @@ this state, it will eat your battery.<br>
 When <b>integrating</b>, you must enter the range over which you want
 to integrate, and the accuracy you desire from the result. When the
 operation is finished, the result is placed on the stack. If the
-program returns complex, <tt>inf</tt> or <tt>nan</tt> values during the
+program returns <tt>inf</tt> or <tt>nan</tt> values during the
 operation, the result will be <tt>nan</tt>. If the algorithm fails to produce
 the desired accuracy, the unfinished result is placed on the stack
 along with a <tt>nan</tt>. The algorithm may handle integration through a
@@ -1478,7 +1481,7 @@ integrated, it may be much better or worse than this.<br>
 <br>
 When <b>differentiating</b>, you must enter the x for which you want
 to differentiate. When the operation is finished, the result is placed
-on the stack. If the program returns complex, <tt>inf</tt> or
+on the stack. If the program returns <tt>inf</tt> or
 <tt>nan</tt> values during the operation, the result will be
 <tt>nan</tt>. The accuracy of the result is at most 13 digits.<br>
 
