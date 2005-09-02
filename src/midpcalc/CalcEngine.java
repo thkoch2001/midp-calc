@@ -3423,7 +3423,7 @@ public final class CalcEngine
         break;
 
       case NEG:   case RECIP: case SQR:   case ABS:
-      case TRANSP:case DETERM:case TRACE:
+      case TRANSP:case TRANSP_CONJ:       case DETERM:case TRACE:
       case SQRT:  case PERCENT:
       case CPLX_ARG: case CPLX_CONJ:
       case LN:    case EXP:
