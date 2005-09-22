@@ -398,6 +398,22 @@ public class Guess
   public void doGuess(Real d, int maxAB) {
     int i;
 
+    // Expression      Entropy penalty
+    // -------------------------------
+    // whenever b!=1         +1    (Achieved by 2*b-1 in information formula)
+    // for every "-" sign    +1
+    // ±a/b                   0
+    // ±sqrt(a/b)             2
+    // ±cbrt(a/b)             4
+    // ±a*pi/b                2
+    // ±a*pi^2/b              3
+    // ±a/(b*pi)              3
+    // ±a/(b*pi^2)            4
+    // ±e^(±a/b)              3
+    // ±2^(±a/b)              4
+    // ln(a/b)                3
+    // log2(a/b)              4
+
     firstGuess.init();
     secondGuess.init();
     firstGuess.eI.assign(Real.ONE);
@@ -417,7 +433,7 @@ public class Guess
     for (i=1; i<=3; i++) {
       tmp1.mul(d);
       newGuess.power = i;
-      entropyPenalty = i-1+d.sign;
+      entropyPenalty = 2*(i-1)+d.sign;
       minInteger = i>1 ? 2 : 1;
       tmp2.assign(tmp1);
       tmp2.copysign(d);
