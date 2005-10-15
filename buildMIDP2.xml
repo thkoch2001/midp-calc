@@ -1,0 +1,17 @@
+<project name="CalcMIDP2" default="make-jar">
+  <taskdef name="wtkpackage" classname="de.pleumann.antenna.WtkPackage"/>
+  <target name="make-jar">
+    <wtkpackage jarfile="CalcMIDP2.jar"
+                jadfile="CalcMIDP2.jad"
+                config="CLDC-1.1"
+                profile="MIDP-2.0"
+                cldc="false"
+                nofloat="false"
+                obfuscate="true"
+                preverify="true"
+                autoversion="false"
+                bootclasspath="${bootclasspath}">
+      <fileset dir="." includes="ral/*,*.dat" />
+    </wtkpackage> 
+  </target>
+</project>

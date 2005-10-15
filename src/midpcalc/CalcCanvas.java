@@ -4,7 +4,7 @@ import javax.microedition.lcdui.*;
 import java.io.*;
 
 public final class CalcCanvas
-    extends Canvas
+    extends MyCanvas
     implements CommandListener
 {
 // Commands:
@@ -76,6 +76,7 @@ public final class CalcCanvas
 //            -> sys     -> font   -> small  medium large  system
 //                       -> exit
 //                       -> reset
+//                       -> fullscreen
 //
 // *  replaces coord if x or y are complex
 // ** replaces math/trig in hex/oct/bin mode
@@ -85,11 +86,9 @@ public final class CalcCanvas
 //                       -> D->D.MS
 //                       -> D.MS->D
 //   math     -> misc    -> gcd
-//                       -> guess
 //            -> matrix  -> more   -> draw
 //   mode     -> prog[1] -> draw   -> z=f(z)
-//            -> sys     -> screen -> fullscreen
-//                                 -> double-buffering
+//            -> sys     -> screen -> double-buffering
 
 // Complex operations:
 //   + - * / +/- 1/x x² sqrt
@@ -246,7 +245,7 @@ public final class CalcCanvas
     }),
     new Menu("exit",EXIT,Menu.NO_REPEAT),
     new Menu("reset",RESET,Menu.NO_REPEAT),
-    //new Menu("fullscreen",FULLSCREEN,Menu.NO_REPEAT),
+    new Menu("fullscreen",FULLSCREEN,Menu.NO_REPEAT),
   });
 
   private Menu menu = new Menu("menu",new Menu[] {
@@ -716,8 +715,8 @@ public final class CalcCanvas
   public boolean fullScreen;
   public CalcEngine calc;
 
-  private final Command add;
-  private final Command enter;
+  private Command add;
+  private Command enter;
 
   private final Calc midlet;
 
@@ -729,6 +728,7 @@ public final class CalcCanvas
   private int offY2, offYMonitor, nLinesMonitor;
   private boolean evenFrame = true;
   private int menuX,menuY,menuW,menuH;
+  private int header,footer;
 
   private Menu [] menuStack;
   private int menuStackPtr;
@@ -753,23 +753,12 @@ public final class CalcCanvas
       // Now, remove the font menu.
       systemMenu.subMenu[0] = null;
     }
-
-    if ((m.commandArrangement & 0x80) == 0) {
-      enter = new Command("ENTER",
-        SetupCanvas.commandArrangement[(m.commandArrangement&0x7f)*2], 1);
-      add   = new Command("+",
-        SetupCanvas.commandArrangement[(m.commandArrangement&0x7f)*2+1], 1);
-      addCommand(enter);
-      addCommand(add);
-    } else {
-      // Reverse order
-      add   = new Command("+",
-        SetupCanvas.commandArrangement[(m.commandArrangement&0x7f)*2], 1);
-      enter = new Command("ENTER",
-        SetupCanvas.commandArrangement[(m.commandArrangement&0x7f)*2+1], 1);
-      addCommand(add);
-      addCommand(enter);
+    if (!canToggleFullScreen()) {
+      // Remove the fullscreen command.
+      systemMenu.subMenu[3] = null;
     }
+
+    setCommands("ENTER","+");
     setCommandListener(this);
 
     menuFont = Font.getFont(
@@ -780,6 +769,8 @@ public final class CalcCanvas
       Font.FACE_PROPORTIONAL,Font.STYLE_PLAIN,Font.SIZE_SMALL);
     smallBoldMenuFont = Font.getFont(
       Font.FACE_PROPORTIONAL,Font.STYLE_BOLD,Font.SIZE_SMALL);
+    header = smallMenuFont.getHeight();
+    footer = automaticCommands() ? 0 : boldMenuFont.getHeight()+1;
     setNumberFont(numberFontStyle);
 
     setFullScreen(fullScreen);
@@ -789,6 +780,30 @@ public final class CalcCanvas
 
     numRepaintLines = 100;
     checkRepaint();
+  }
+
+  private void setCommands(String enterStr, String addStr) {
+    if (enter != null)
+      removeCommand(enter);
+    if (add != null)
+      removeCommand(add);
+
+    if ((midlet.commandArrangement & 0x80) == 0) {
+      enter = new Command(enterStr,
+        SetupCanvas.commandArrangement[(midlet.commandArrangement&0x7f)*2], 1);
+      add   = new Command(addStr,
+       SetupCanvas.commandArrangement[(midlet.commandArrangement&0x7f)*2+1],1);
+      addCommand(enter);
+      addCommand(add);
+    } else {
+      // Reverse order
+      add   = new Command(addStr,
+        SetupCanvas.commandArrangement[(midlet.commandArrangement&0x7f)*2], 1);
+      enter = new Command(enterStr,
+       SetupCanvas.commandArrangement[(midlet.commandArrangement&0x7f)*2+1],1);
+      addCommand(add);
+      addCommand(enter);
+    }
   }
 
   protected void sizeChanged(int w, int h) {
@@ -803,24 +818,22 @@ public final class CalcCanvas
     menuH = menuFont.getHeight()*2+3*2+5*2+21;
     if (menuH>getHeight()) menuH = getHeight();
     menuX = (getWidth()-menuW)/2;
-    menuY = smallMenuFont.getHeight()+
-      (getHeight()-menuH-smallMenuFont.getHeight())/2;
-    if (menuY-menuFont.getHeight()-1<smallMenuFont.getHeight())
-      menuY = smallMenuFont.getHeight()+menuFont.getHeight()+1;
+    menuY = header+(getHeight()-menuH-header-footer)/2;
+    if (menuY-menuFont.getHeight()-1<header)
+      menuY = header+menuFont.getHeight()+1;
     if (menuY+menuH > getHeight())
       menuY = getHeight()-menuH;
 
     // Number font
     nDigits = getWidth()/numberWidth;
     offX = (getWidth()-nDigits*numberWidth)/2;
-    nLines = (getHeight()-smallMenuFont.getHeight())/numberHeight;
-    offY = (getHeight()-smallMenuFont.getHeight()-nLines*numberHeight)/2 +
-      smallMenuFont.getHeight();
-    nLinesMonitor = (getHeight()-smallMenuFont.getHeight()-4)/numberHeight;
-    offYMonitor = (getHeight()-smallMenuFont.getHeight()-
-                   nLinesMonitor*numberHeight)/4+smallMenuFont.getHeight();
-    offY2 = 3*(getHeight()-smallMenuFont.getHeight()-
-               nLinesMonitor*numberHeight)/4+smallMenuFont.getHeight();
+    nLines = (getHeight()-header-footer)/numberHeight;
+    offY = (getHeight()-header-footer-nLines*numberHeight)/2 + header;
+    nLinesMonitor = (getHeight()-header-footer-4)/numberHeight;
+    offYMonitor = (getHeight()-header-footer-
+                   nLinesMonitor*numberHeight)/4+header;
+    offY2 = 3*(getHeight()-header-footer-
+               nLinesMonitor*numberHeight)/4+header;
     calc.setMaxWidth(nDigits);
     calc.setMaxMonitorSize(nLinesMonitor-1);
   }
@@ -829,9 +842,9 @@ public final class CalcCanvas
     try {
       numberFontStyle = numberFont.getStyle();
       numberFont = null; // Free some memory before saveState()
-      out.writeShort(1/*+1*/);
+      out.writeShort(1+1);
       out.writeByte(numberFontStyle);
-      //out.writeBoolean(fullScreen);
+      out.writeBoolean(fullScreen);
       calc.command(CalcEngine.FINALIZE,0);
       calc.saveState(out);
     } catch (Throwable e) {
@@ -845,10 +858,10 @@ public final class CalcCanvas
         numberFontStyle = in.readByte();
         length -= 1;
       }
-      //if (length >= 1) {
-      //  fullScreen = in.readBoolean();
-      //  length -= 1;
-      //}
+      if (length >= 1) {
+        fullScreen = in.readBoolean();
+        length -= 1;
+      }
       in.skip(length);
       calc.restoreState(in);
     } catch (IOException ioe) {
@@ -865,7 +878,7 @@ public final class CalcCanvas
 
   public void drawModeIndicators(Graphics g, boolean toggleRun) {
     g.setColor(0xffffff);
-    g.fillRect(0,0,getWidth(),smallMenuFont.getHeight()-1);
+    g.fillRect(0,0,getWidth(),header-1);
     g.setColor(0);
     g.setFont(smallMenuFont);
     int n = 4;
@@ -919,8 +932,11 @@ public final class CalcCanvas
     // Clear screen and draw mode indicators
     drawModeIndicators(g,false);
     g.setColor(0);
-    g.fillRect(0,smallMenuFont.getHeight()-1,getWidth(),
-               getHeight()-smallMenuFont.getHeight()+1);
+    g.fillRect(0,header-1,getWidth(),
+               getHeight()-header-footer+1);
+    if (!automaticCommands())
+      paintCommands(g,boldMenuFont,calc.isInsideMonitor ? "move" : "menu",
+                    menuFont);
   }
 
   private boolean plainLabel(String label) {
@@ -928,6 +944,13 @@ public final class CalcCanvas
       if ("^~_»«¿ß¡¶ÞãëÐ".indexOf(label.charAt(i))>=0)
         return false;
     return true;
+  }
+
+  public static int getBaselinePosition(Font f) {
+    int b = f.getBaselinePosition();
+    if (b < f.getHeight()/2) // Obviously wrong
+      return f.getHeight()*19/22;
+    return b;
   }
 
   private int labelWidth(String label, boolean bold) {
@@ -948,7 +971,7 @@ public final class CalcCanvas
       else if (c=='Þ')
         width += font.charWidth('o')*(6+4)/6;
       else if (c=='ã') {
-        int h2 = (font.getBaselinePosition()*2/3+1)&~1;
+        int h2 = (getBaselinePosition(font)*2/3+1)&~1;
         width += h2/2+5+(h2<10?0:1);
       } else if (c=='ë')
         width += font.charWidth('e')*67/112 + 1;
@@ -982,7 +1005,7 @@ public final class CalcCanvas
         overline = !overline;
       } else if ("»«¿ß¡¶ÞãëÐ".indexOf(c)>=0) {
         int w = font.charWidth('O');
-        int h = font.getBaselinePosition();
+        int h = getBaselinePosition(font);
         switch (c) {
           case '»': // Arrow ->
             g.drawLine(x,y+h/2+1,x+w-2,y+h/2+1);
@@ -1043,10 +1066,10 @@ public final class CalcCanvas
             break;
           case 'Þ': // _infinity
             g.drawChar('o',x,y+normalFont.getHeight()-
-                       smallFont.getBaselinePosition(),g.TOP|g.LEFT);
+                       getBaselinePosition(smallFont),g.TOP|g.LEFT);
             g.drawChar('o',x+font.charWidth('o')*4/6,
                        y+normalFont.getHeight()-
-                       smallFont.getBaselinePosition(),g.TOP|g.LEFT);
+                       getBaselinePosition(smallFont),g.TOP|g.LEFT);
             w = font.charWidth('o')*(6+4)/6;
             break;
           case 'ã': // alpha
@@ -1094,7 +1117,7 @@ public final class CalcCanvas
       else {
         if (sub)
           g.drawChar(c,x,y+normalFont.getHeight()-
-                     smallFont.getBaselinePosition(),g.TOP|g.LEFT);
+                     getBaselinePosition(smallFont),g.TOP|g.LEFT);
         else if (sup)
           g.drawChar(c,x,y-1,g.TOP|g.LEFT);
         else
@@ -1285,6 +1308,7 @@ public final class CalcCanvas
   private void clearKeyPressed() throws OutOfMemoryError {
     if (calc.isInsideMonitor) {
       calc.command(CalcEngine.MONITOR_EXIT,0);
+      setCommands("ENTER","+");
       return;
     } else if (menuStackPtr >= 0) {
       menuStackPtr--;
@@ -1313,11 +1337,7 @@ public final class CalcCanvas
 
   private void setFullScreen(boolean fs) {
     fullScreen = fs;
-    try {
-      //setFullScreenMode(fullScreen);
-    } catch (Throwable e) {
-      // In case of MIDP 1.0
-    }
+    setFullScreenMode(fullScreen);
   }
 
   private void menuAction(int menuIndex) throws OutOfMemoryError {
@@ -1441,6 +1461,8 @@ public final class CalcCanvas
           graph = true;
         } else {
           // Normal calculator command
+          if (command == CalcEngine.MONITOR_ENTER)
+            setCommands("STO","RCL"); // Different commands inside monitor
           calc.command(command,0);
         }
 
@@ -1462,8 +1484,8 @@ public final class CalcCanvas
 
     if (graph && calc.prepareGraph(menuCommand,graphParam)) {
       evenFrame = true;
-      midlet.displayGraph(0,smallMenuFont.getHeight()-1,getWidth(),
-                          getHeight()-smallMenuFont.getHeight()+1);
+      midlet.displayGraph(0,header-1,getWidth(),
+                          getHeight()-header+1);
       numRepaintLines = 100;
     }
   }
@@ -1514,7 +1536,13 @@ public final class CalcCanvas
         }
         calc.command(CalcEngine.DIGIT_0+key-'0',0);
         break;
-      case '\b':
+      case KEY_SEND:
+        if (midlet.hasClearKey)
+          clearKeyPressed();
+        else
+          menuIndex =  4;
+        break;
+      case '\b': case KEY_END:
         clearKeyPressed();
         break;
       case '#':
@@ -1537,15 +1565,13 @@ public final class CalcCanvas
           calc.command(CalcEngine.DEC_POINT,0);
         break;
       case '\n': case '\r':
-        if (menuStackPtr >= 0)
-          return;
-        calc.command(CalcEngine.ENTER,0);
-        break;
+      case KEY_SOFTKEY1:
+        commandAction(enter,this);
+        return;
       case '+':
-        if (menuStackPtr >= 0)
-          return;
-        calc.command(CalcEngine.ADD,0);
-        break;
+      case KEY_SOFTKEY2:
+        commandAction(add,this);
+        return;
       default:
         switch (getGameAction(key)) {
           case UP:    menuIndex = 0; break;
@@ -1560,14 +1586,13 @@ public final class CalcCanvas
             clearKeyPressed();
             break;
           default:
-            // Some keys are not mapped to game keys and must be
-            // handled directly in this dirty fashion...
+            // Nokia and other direct key mappings
             switch (key) {
-              case -1: menuIndex = 0; break; // UP
-              case -2: menuIndex = 3; break; // DOWN
-              case -3: menuIndex = 1; break; // LEFT
-              case -4: menuIndex = 2; break; // RIGHT
-              case -5: menuIndex = 4; break; // PUSH
+              case KEY_UP_ARROW:    menuIndex = 0; break; // UP
+              case KEY_DOWN_ARROW:  menuIndex = 3; break; // DOWN
+              case KEY_LEFT_ARROW:  menuIndex = 1; break; // LEFT
+              case KEY_RIGHT_ARROW: menuIndex = 2; break; // RIGHT
+              case KEY_SOFTKEY3:    menuIndex = 4; break; // PUSH
               case -8:  // SonyEricsson "c"
               case -23: // Motorola "menu"
                 clearKeyPressed();
@@ -1608,7 +1633,11 @@ public final class CalcCanvas
           return;
         calc.command(CalcEngine.DIGIT_A+key-'1',0);
         break;
-      case '\b':
+      case KEY_SEND:
+        if (midlet.hasClearKey)
+          clearKeyRepeated();
+        break;
+      case '\b': case KEY_END:
         clearKeyRepeated();
         break;
       case '#':
@@ -1658,6 +1687,14 @@ public final class CalcCanvas
   protected void pointerPressed(int x, int y) {
     try {
     int menuIndex, q=0;
+
+    if (!automaticCommands() && y >= getHeight()-footer) {
+      if (x < getWidth()/2)
+        commandAction(enter,this);
+      else
+        commandAction(add,this);
+      return;
+    }
 
     x = x-menuX-menuW/2; if (x<0) { x = -x; q += 1; }
     y = y-menuY-menuH/2; if (y<0) { y = -y; q += 2; }

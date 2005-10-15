@@ -103,10 +103,30 @@ To summarize: I might be stupid. You too.
 <h2>Download</h2>
 
 You can download Calc into your phone or MIDP device using one of these
-links: <a
+links: <br><a
 href="http://midp-calc.sourceforge.net/calc.jad">http://midp-calc.sourceforge.net/calc.jad</a>,
-or <a
+or <br><a
 href="http://midp-calc.sourceforge.net/calc.jar">http://midp-calc.sourceforge.net/calc.jar</a>
+<br>
+
+<br>
+<b>Patches:</b> The Nokia patch gives a fullscreen window and better
+control of the command keys for "ENTER" and "+". The middle joystick
+button is also handled correctly, so "dial" can instead be used as a
+"clear" key. SonyEricsson phones support the Nokia patch and I
+actually prefer using this patch on SonyEricsson phones. The MIDP 2.0
+patch only gives access to the fullscreen mode and this works rather
+poorly, but you might prefer to switch to fullscreen e.g. before you
+draw a graph.
+
+<br><a
+href="http://midp-calc.sourceforge.net/calcnokia.jad">http://midp-calc.sourceforge.net/calcnokia.jad</a>
+<br><a
+href="http://midp-calc.sourceforge.net/calcnokia.jar">http://midp-calc.sourceforge.net/calcnokia.jar</a>
+<br><a
+href="http://midp-calc.sourceforge.net/calcmidp2.jad">http://midp-calc.sourceforge.net/calcmidp2.jad</a>
+<br><a
+href="http://midp-calc.sourceforge.net/calcmidp2.jar">http://midp-calc.sourceforge.net/calcmidp2.jar</a>
 <br>
 
 <br>
@@ -118,15 +138,6 @@ software for your device. Download one of the above URL's to the
 computer and add it to the synchronization software before
 synchronizing. In the latter case I would probably try the ".jar" URL
 first.<br>
-
-<br>
-<b>Upgrade notice:</b> If you are upgrading from an earlier version of
-Calc (pre-2.0), the internal state of the previous Calc version
-(settings, stack contents, memory contents, etc) will be
-lost. However, the old data records will remain (taking up some
-kilobytes of memory for no good reason) unless you
-<b>delete</b> the old Calc application before downloading the new
-version.<br>
 
 <br>
 I have noticed one thing when upgrading with my SonyEricsson K700i,
@@ -297,7 +308,7 @@ keys 1-6 until the digit changes.
   application, most often it is called "hangup", "back", "return" or
   has a symbol of some sort to this effect. On some devices,
   e.g. K700i, you must press and hold the button for several
-  seconds. The state of the calculator will be saved.
+  seconds. The state of the calculator will be saved until the next time.
 </ul>
 
 <h2><a id="Setup" name="Setup">Setup</a></h2>
@@ -317,8 +328,8 @@ keys are located left and right directly below the display). Some
 phones may for instance map "yes" and "no" to a menu named "Options"
 on the left side, with nothing on the right side. If you select "yes"
 when such a mapping is active, your "ENTER" and "+" key will be
-accessible in the same cumbersome manner. <!--a
-href="Calc-keymapping.html">Why this problem?</a--><br>
+accessible in the same cumbersome manner. (In the Nokia patch, this
+screen is skipped.)
 
 <br>
 Second, to make sure that a "clear" or "c" key is available (and
@@ -328,17 +339,30 @@ clear key, and "*" will be used to magically enter both minus sign,
 decimal point and exponent marker. On some Motorola phones the "menu"
 button can be used as "clear".<br>
 
+<br>If you have downloaded the Nokia patch, be extra careful at this
+point. If your phone has a "joystick" or direction keys with an
+<em>extra button</em> in the center, you can use "dial" (the green
+button) as the clear key. In that case press "dial". If you don't have
+a button in the center of your direction keys, you must use "dial" as
+a replacement for the center button. In that case you <em>don't</em>
+have a clear key, so press "#". You might be tempted to try pressing
+"hangup" (the red button) to use that as a clear key, but in most
+cases that just exits the application immediately, leaving the setup
+unfinished. In that case, you can use the "mode/sys/reset" to access
+the setup again.<br>
+
 <br>
-Third, for color devices, Calc uses sub-pixel anti-aliasing to improve
-the visibility of numbers displayed on screen. However, some phones
-uses different pixel ordering (BGR instead of RGB), and then the
-numbers may look strange. Select the font that looks best on your
-device (beware that the commands "left" and "right" may be mapped to
-the right and left command key respectively). Some phones may have a
-90 degrees rotated screen where the red, green and blue color cells
-are stacked vertically instead of horizontally. There is no support
-for such screens, so on these devices the numbers will always look bit
-strange, unless you select the "system" font.<br>
+The third setup item is font selection. For color devices, Calc uses
+sub-pixel anti-aliasing to improve the visibility of numbers displayed
+on screen. However, some phones uses different pixel ordering (BGR
+instead of RGB), and then the numbers may look strange. Select the
+font that looks best on your device (beware that the commands "left"
+and "right" may be mapped to the right and left command key
+respectively). Some phones may have a 90 degrees rotated screen where
+the red, green and blue color cells are stacked vertically instead of
+horizontally. There is no support for such screens, so on these
+devices the numbers will always look bit strange, unless you select
+the "system" font.<br>
 
 <br>
 If your phone does not have a 5-way joystick, most times on Nokia you
@@ -347,6 +371,7 @@ you only have a two-way joystick or none at all, the number keys 2, 4,
 5, 6 and 8 will work as joystick keys once a menu is activated. In
 that case, you can only hope that the menu will be activated by "dial"
 or some other button, otherwise you will be stuck.
+
 
 <h2><a id="RPN" name="RPN">RPN logic</a></h2>
 
@@ -1562,17 +1587,18 @@ When monitoring is active, the usual <i><b>repeat</b></i> operation in
 the "basic" menu is exchanged with the symbol <b>[&rarr;]</b>. Selecting
 this operation lets you enter the monitor area in the upper part of
 the screen, where one monitor element will be highlighted. You can
-then move about in the monitor area using the arrow keys.<br>
+then move about in the monitor area using the arrow keys. The normal
+commands, "ENTER" and "+" will be replaced with "STO" and "RCL".<br>
 
 <br>
-Pressing "ENTER" in this mode will copy x into the current monitor
-element (like STO). Pressing "+" in this mode extracts the current
-monitor element and pushes it on the stack (like RCL). Pressing the
-middle joystick button pops one element off the stack, stores it in
-the current monitor element, and exits the editing mode so you can
-enter or calculate the next number. All these operations also have the
-side effect of advancing to the next monitor element below (or in the
-next column if you are at the bottom). Pressing "clear" will exit the
+Pressing "STO" in this mode will copy x into the current monitor
+element. Pressing "RCL" in this mode extracts the current monitor
+element and pushes it on the stack. Pressing the middle joystick
+button pops one element off the stack, stores it in the current
+monitor element, and exits the editing mode so you can enter or
+calculate the next number. All these operations also have the side
+effect of advancing to the next monitor element below (or in the next
+column if you are at the bottom). Pressing "clear" will exit the
 editing mode.<br>
 
 <br>

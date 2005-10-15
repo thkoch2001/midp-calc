@@ -1,0 +1,13 @@
+<project name="CalcNokia" default="make-jar">
+  <taskdef name="wtkpackage" classname="de.pleumann.antenna.WtkPackage"/>
+  <target name="make-jar">
+    <wtkpackage jarfile="CalcNokia.jar"
+                jadfile="CalcNokia.jad"
+                obfuscate="true"
+                preverify="true"
+                autoversion="false"
+                bootclasspath="${bootclasspath}">
+      <fileset dir="." includes="ral/*,*.dat" />
+    </wtkpackage> 
+  </target>
+</project>

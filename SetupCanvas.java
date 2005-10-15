@@ -3,7 +3,7 @@ package ral;
 import javax.microedition.lcdui.*;
 
 public class SetupCanvas
-    extends Canvas
+    extends MyCanvas
     implements CommandListener
 {
   private final Calc midlet;
@@ -108,6 +108,12 @@ public class SetupCanvas
         finish();
       }
     }
+    if (!automaticCommands() && query == COMMAND_QUERY) {
+      // We must draw and handle commands ourself (Nokia Fullcanvas)
+      query = CLEAR_QUERY;
+      setupHeading = clearQueryHeading;
+      setupText = clearQueryText;
+    }
   }
 
   public boolean isFinished() {
@@ -140,6 +146,7 @@ public class SetupCanvas
 
   public void paint(Graphics g) {
     String text,heading;
+    int height = getHeight();
     if (alertText != null) {
       g.setColor(216,156,156);
       text = alertText;
@@ -149,20 +156,24 @@ public class SetupCanvas
       text = setupText;
       heading = setupHeading;
     }
-    g.fillRect(0,0,getWidth(),getHeight());
+    g.fillRect(0,0,getWidth(),height);
     g.setColor(0);
     g.setFont(boldMenuFont);
     g.drawString(heading,2,0,g.TOP|g.LEFT);
     g.setFont(menuFont);
     drawWrapped(g,2,boldMenuFont.getHeight()+3,getWidth()-3,text);
+    if (!automaticCommands()) {
+      paintCommands(g,boldMenuFont,null,null);
+      height -= boldMenuFont.getHeight()+1;
+    }
     if (alertText == null && query == BGR_QUERY) {
       if (fontLeft == null) {
         fontLeft = new GFont(GFont.MEDIUM);
         fontRight = new GFont(GFont.MEDIUM|GFont.BGR_ORDER);
       }
-      fontLeft.drawString(g,2,getHeight()-fontLeft.getHeight()-2," 567 ");
+      fontLeft.drawString(g,2,height-fontLeft.getHeight()-2," 567 ");
       fontRight.drawString(g,getWidth()-fontRight.charWidth()*5-2,
-                           getHeight()-fontRight.getHeight()-2," 567 ");
+                           height-fontRight.getHeight()-2," 567 ");
     }
   }
 
@@ -252,6 +263,11 @@ public class SetupCanvas
   }
 
   protected void keyPressed(int key) {
+    if (alertText != null) {
+      if (!automaticCommands() && key == KEY_SOFTKEY1)
+        commandAction(ok, this);
+      return;
+    }
     if (query == QUERY_FINISHED) {
       finish();
       return;
@@ -260,6 +276,12 @@ public class SetupCanvas
       unknownKeyPressed = true;
       return;
     } else if (query == BGR_QUERY) {
+      if (!automaticCommands()) {
+        if (key == KEY_SOFTKEY1)
+          commandAction(left, this);
+        else if (key == KEY_SOFTKEY2)
+          commandAction(right, this);
+      }
       return;
     }
     // So, it's a CLEAR_QUERY
@@ -269,8 +291,12 @@ public class SetupCanvas
       case '*': case '.': case ',': case 65452:
       case '-': case 'e': case 'E':
       case '\n': case '\r': case '+':
+      case KEY_SOFTKEY1:
+      case KEY_SOFTKEY2:
         clearKeyInUse();
         break;
+      case KEY_SEND:
+      case KEY_END:
       case '\b': // BackSpace
         clearKeyPressed(true);
         break;
@@ -289,11 +315,11 @@ public class SetupCanvas
             // Some keys are not mapped to game keys and must be
             // handled directly in this dirty fashion...
             switch (key) {
-              case -1: // UP
-              case -2: // DOWN
-              case -3: // LEFT
-              case -4: // RIGHT
-              case -5: // PUSH
+              case KEY_UP_ARROW:    // UP
+              case KEY_DOWN_ARROW:  // DOWN
+              case KEY_LEFT_ARROW:  // LEFT
+              case KEY_RIGHT_ARROW: // RIGHT
+              case KEY_SOFTKEY3:    // PUSH
                 clearKeyInUse();
                 break;
               case -8:  // SonyEricsson "c"

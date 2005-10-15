@@ -1,18 +1,32 @@
-VERSION = 2.08
-TARGETS = Calc.jar Calc.jad CalcApplet.jar
+VERSION = 3.00
+TARGETS = Calc.jar \
+          Calc.jad \
+          CalcMIDP2.jar \
+          CalcNokia.jar \
+          CalcApplet.jar
 
-WTK_HOME = ../../WTK104
+BASEURL = http://midp-calc.sourceforge.net
 
-## For use with gcj:
-#JFLAGS = --bootclasspath=$(WTK_HOME)/lib/midpapi.zip --encoding="ISO 8859-1" -Wall -C -d . -O2
+# antenna and proguard must be installed in $(WTK_1)/lib
+WTK_1 = ../../WTK104
+WTK_2 = ../../WTK2.2
+WTK_N = ../../Nokia/Devices/Nokia_Series_40_MIDP_Concept_SDK_Beta_0_3
+BOOTCLASSPATH_1 = $(WTK_1)/lib/midpapi.zip
+BOOTCLASSPATH_2 = $(WTK_2)/lib/midpapi20.jar:$(WTK_2)/lib/cldcapi11.jar
+BOOTCLASSPATH_N = $(WTK_N)/lib/classes.zip
 
-# For use with javac:
-JFLAGS = -bootclasspath $(WTK_HOME)/lib/midpapi.zip -encoding "ISO8859-1" -d . -O
+JFLAGS = -encoding "ISO8859-1" -O
+JFLAGS_1 = -bootclasspath $(BOOTCLASSPATH_1) -d . $(JFLAGS)
+JFLAGS_2 = -bootclasspath $(BOOTCLASSPATH_2) -d . $(JFLAGS)
+JFLAGS_N = -bootclasspath $(BOOTCLASSPATH_N) -d . $(JFLAGS)
+
+JAVAC = javac
 
 JAVAFILES =  Calc.java \
              CalcCanvas.java \
              CalcEngine.java \
              GraphCanvas.java \
+             Real.java \
              Complex.java \
              Matrix.java \
              GFont.java \
@@ -63,26 +77,68 @@ Calc.jad: Makefile
 	echo "MIDlet-Version: $(VERSION)"            >> $@
 	echo "MIDlet-Description: Scientific RPN Calculator" >> $@
 	echo "MIDlet-Icon: /ral/Calc.png"            >> $@
-	echo "MIDlet-Info-URL: http://midp-calc.sourceforge.net/Calc.html" >> $@
+	echo "MIDlet-Info-URL: $(BASEURL)/Calc.html" >> $@
 	echo "MIDlet-Data-Size: 2048"                >> $@
-	echo "MIDlet-Jar-URL: http://midp-calc.sourceforge.net/Calc.jar" >> $@
+	echo "MIDlet-Jar-URL: $(BASEURL)/Calc.jar"   >> $@
 	echo "MIDlet-Jar-Size: 0"                    >> $@
 	echo "MIDletX-LG-Contents: G7100"            >> $@
 	echo "MicroEdition-Profile: MIDP-1.0"        >> $@
 	echo "MicroEdition-Configuration: CLDC-1.0"  >> $@
 	echo "MIDlet-1: Calc, /ral/Calc.png, ral.Calc" >> $@
 
-Calc.jar: $(JAVAFILES) Real.java Calc.jad Calc.png
-	rm -rf ral
-#	gcj $(JFLAGS) $(JAVAFILES) Real.java
-	javac $(JFLAGS) $(JAVAFILES) Real.java
-	cp Calc.png ral/
-	ant -buildfile build.xml -lib $(WTK_HOME)/lib -Dwtk.home=${WTK_HOME} make-jar
-	touch Calc.jar
+CalcMIDP2.jad: Makefile
+	echo "MIDlet-Name: Calc"                     >  $@
+	echo "MIDlet-Vendor: Roar Lauritzsen"        >> $@
+	echo "MIDlet-Version: $(VERSION)"            >> $@
+	echo "MIDlet-Description: Scientific RPN Calculator" >> $@
+	echo "MIDlet-Icon: /ral/Calc.png"            >> $@
+	echo "MIDlet-Info-URL: $(BASEURL)/Calc.html" >> $@
+	echo "MIDlet-Data-Size: 2048"                >> $@
+	echo "MIDlet-Jar-URL: $(BASEURL)/CalcMIDP2.jar" >> $@
+	echo "MIDlet-Jar-Size: 0"                    >> $@
+	echo "MIDletX-LG-Contents: G7100"            >> $@
+	echo "MicroEdition-Profile: MIDP-2.0"        >> $@
+	echo "MicroEdition-Configuration: CLDC-1.1"  >> $@
+	echo "MIDlet-1: Calc, /ral/Calc.png, ral.Calc" >> $@
 
-CalcApplet.jar: CalcApplet.java $(JAVAFILES) Real.java $(MIDPFILES)
-	gcj --encoding="ISO 8859-1" -Wall -C -d midp -O2 --classpath=$(JAVA_HOME)/jre/lib/plugin.jar CalcApplet.java $(JAVAFILES) Real.java $(MIDPFILES)
-#	javac -encoding "ISO8859-1" -d midp -O -classpath $(JAVA_HOME)/jre/lib/javaplugin.jar CalcApplet.java $(JAVAFILES) Real.java $(MIDPFILES)
+CalcNokia.jad: Makefile
+	echo "MIDlet-Name: Calc"                     >  $@
+	echo "MIDlet-Vendor: Roar Lauritzsen"        >> $@
+	echo "MIDlet-Version: $(VERSION)"            >> $@
+	echo "MIDlet-Description: Scientific RPN Calculator" >> $@
+	echo "MIDlet-Icon: /ral/Calc.png"            >> $@
+	echo "MIDlet-Info-URL: $(BASEURL)/Calc.html" >> $@
+	echo "MIDlet-Data-Size: 2048"                >> $@
+	echo "MIDlet-Jar-URL: $(BASEURL)/CalcNokia.jar" >> $@
+	echo "MIDlet-Jar-Size: 0"                    >> $@
+	echo "MIDletX-LG-Contents: G7100"            >> $@
+	echo "MicroEdition-Profile: MIDP-1.0"        >> $@
+	echo "MicroEdition-Configuration: CLDC-1.0"  >> $@
+	echo "MIDlet-1: Calc, /ral/Calc.png, ral.Calc" >> $@
+
+Calc.jar: $(JAVAFILES) midp1/MyCanvas.java Calc.jad Calc.png
+	rm -rf ral
+	$(JAVAC) $(JFLAGS_1) $(JAVAFILES) midp1/MyCanvas.java
+	cp Calc.png ral/
+	ant -buildfile build.xml -lib $(WTK_1)/lib -Dwtk.home=$(WTK_1) make-jar
+	touch $@
+
+CalcMIDP2.jar: $(JAVAFILES) midp2/MyCanvas.java CalcMIDP2.jad Calc.png
+	rm -rf ral
+	$(JAVAC) $(JFLAGS_2) $(JAVAFILES) midp2/MyCanvas.java
+	cp Calc.png ral/
+	ant -buildfile buildMIDP2.xml -lib $(WTK_1)/lib -Dwtk.home=$(WTK_2) -Dbootclasspath=$(BOOTCLASSPATH_2) make-jar
+	touch $@
+
+CalcNokia.jar: $(JAVAFILES) nokia/MyCanvas.java CalcNokia.jad Calc.png
+	rm -rf ral
+	javac $(JFLAGS_N) $(JAVAFILES) nokia/MyCanvas.java
+	cp Calc.png ral/
+	ant -buildfile buildNokia.xml -lib $(WTK_1)/lib -Dwtk.home=$(WTK_N) -Dbootclasspath=$(BOOTCLASSPATH_N) make-jar
+	touch $@
+
+CalcApplet.jar: CalcApplet.java $(JAVAFILES) midp1/MyCanvas.java $(MIDPFILES)
+	$(JAVAC) -d midp $(JFLAGS) -classpath $(JAVA_HOME)/jre/lib/plugin.jar CalcApplet.java $(JAVAFILES) midp1/MyCanvas.java $(MIDPFILES)
 	cp [a-d].dat midp
 	cd midp && jar cf ../CalcApplet.jar ral javax [a-d].dat
 
@@ -90,9 +146,9 @@ clean:
 	rm -rf $(TARGETS) ral midp/ral midp/javax Real.java GFontBase.java pgm2java *.dat *~ .\#* midp/*~ midp/.\#* midp-*.tgz
 
 derived.tgz: Real.java GFontBase.java Calc.jad
-	tar czf derived.tgz Real.java GFontBase.java Calc.jad [a-d].dat
+	tar czf derived.tgz $< [a-d].dat
 
-midp-calc-$(VERSION)-src.tgz: $(JAVAFILES) Real.java CalcApplet.java $(MIDPFILES) Calc.png pgm2java.c small.pgm medium.pgm large.pgm xlarge.pgm Makefile build.xml derived.tgz README
+midp-calc-$(VERSION)-src.tgz: $(JAVAFILES) midp1/MyCanvas.java midp2/MyCanvas.java nokia/MyCanvas.java CalcApplet.java $(MIDPFILES) Calc.png pgm2java.c small.pgm medium.pgm large.pgm xlarge.pgm Makefile build.xml derived.tgz README
 	tar czf $@ $^
 
 publish: $(TARGETS) midp-calc-$(VERSION)-src.tgz

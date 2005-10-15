@@ -3,11 +3,12 @@ package ral;
 import javax.microedition.lcdui.*;
 
 public final class GraphCanvas
-    extends Canvas
+    extends MyCanvas
     implements CommandListener, Runnable
 {
   private CalcCanvas cc;
   private final Calc midlet;
+  private final Command brk;
 
   private int gx,gy,gw,gh;
   private boolean internalRepaint = false;
@@ -17,18 +18,14 @@ public final class GraphCanvas
     midlet = m;
     cc = c;
     if ((m.commandArrangement & 0x80) != 0) {
-      addCommand(new Command("Break",
+      addCommand(brk = new Command("Break",
         SetupCanvas.commandArrangement[(m.commandArrangement&0x7f)*2], 1));
     } else {
-      addCommand(new Command("Break",
+      addCommand(brk = new Command("Break",
         SetupCanvas.commandArrangement[(m.commandArrangement&0x7f)*2+1], 1));
     }
     setCommandListener(this);
-    //try {
-    //  setFullScreenMode(c.fullScreen);
-    //} catch (Throwable e) {
-    //  // In case of MIDP 1.0
-    //}
+    setFullScreenMode(c.fullScreen);
 
 //    sizeChanged(getWidth(),getHeight());
   }
@@ -51,6 +48,7 @@ public final class GraphCanvas
     this.gw = gw;
     this.gh = gh;
     internalRepaint = false;
+    setFullScreenMode(cc.fullScreen);
   }
 
   public void paint(Graphics g /*gr*/) {
@@ -94,6 +92,34 @@ public final class GraphCanvas
     if (isShown() && !internalRepaint) {
       internalRepaint = true;
       repaint();
+    }
+  }
+
+  public void keyPressed(int key) {
+    if (!isFullScreen())
+      return;
+
+    // In full-screen mode, what normally works as "clear" should abort
+    switch (key) {
+      case '0': case '1': case '2': case '3': case '4':
+      case '5': case '6': case '7': case '8': case '9': case '*':
+        // As long as there are *some* that *don't* abort
+        break;
+      case KEY_SEND:
+      case KEY_END:
+      case '#':
+      case '\b':
+      case -8:
+      case -23:
+        commandAction(brk, this);
+        break;
+      default:
+        switch (getGameAction(key)) {
+          case GAME_A: case GAME_B: case GAME_C: case GAME_D:
+            commandAction(brk, this);
+            break;
+        }
+        break;
     }
   }
 
