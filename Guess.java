@@ -265,6 +265,7 @@ public class Guess
       Real.NumberFormat format = new Real.NumberFormat();
       format.fse = Real.NumberFormat.FSE_FIX;
       format.precision = 1;
+      format.maxwidth = 4;
       s.append("  [");
       s.append(tmp1.toString(format));
       s.append("%]");
@@ -273,7 +274,7 @@ public class Guess
     }
   }
 
-  public Real origValue;
+  public Real origValue,origValueI;
   public Real eI_sum;
   public GuessExpr firstGuess, secondGuess;
 
@@ -289,6 +290,7 @@ public class Guess
     newGuess    = new GuessExpr();
     eI_sum      = new Real();
     origValue   = new Real();
+    origValueI  = new Real();
 
     // Temporary objects to avoid garbage production during calculations
     tmp1 = new Real();
@@ -395,7 +397,7 @@ public class Guess
 
   // Guess a fraction or a simple expression for a given input
   //   maxAB = maximum numerator or denominator
-  public void doGuess(Real d, int maxAB) {
+  public void doGuess(Real d, Real di, int maxAB) {
     int i;
 
     // Expression      Entropy penalty
@@ -423,6 +425,7 @@ public class Guess
     minInteger = 1;
     numberOfTries = 0;
     origValue.assign(d);
+    origValueI.assign(di != null ? di : Real.ZERO);
 
     if (d.isZero() || !d.isFinite())
       return;
@@ -549,4 +552,44 @@ public class Guess
 //     return found;
 //   }
 
+  public String guess(Real d, Real di) {
+    if (di != null && !di.isZero())
+      return "This is a quite complex number.";
+
+    if (d.isZero())
+      return "This is zero.";
+
+    if (d.isNan())
+      return "This is Not A Number.";
+
+    if (d.isInfinity())
+      return "This is "+(d.isNegative()?"negative ":"")+"infinity.";
+
+    doGuess(d,di,2147483647);
+    d.assign(firstGuess.value);
+    firstGuess.calcProbability(tmp2);
+
+    tmp3.assign("99.95");
+    if (tmp2.greaterEqual(tmp3))
+      return "This is definitely "+firstGuess.toString()+".";
+
+    tmp3.assign("98");
+    if (tmp2.greaterEqual(tmp3))
+      return "This is probably "+firstGuess.toString()+
+        ",  but there is a tiny chance it could be "+
+        secondGuess.toString()+".";
+
+    tmp3.assign("80");
+    if (tmp2.greaterEqual(tmp3))
+      return "This looks like "+firstGuess.toString()+
+        ",  but it also looks a bit like "+secondGuess.toString()+".";
+
+    tmp3.assign("50");
+    if (tmp2.greaterEqual(tmp3))
+      return "This looks somewhat like "+firstGuess.toString()+
+        ",  but it could also be "+secondGuess.toString()+".";
+
+    return "This could be "+firstGuess.toString()+
+      ",  but it might as well be "+secondGuess.toString()+".";
+  }
 }

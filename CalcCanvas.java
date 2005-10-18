@@ -53,6 +53,7 @@ public final class CalcCanvas
 //                                         -> MJD  -> DH.MS->MJD  MJD->DH.MS
 //                       -> metric -> length weight vol  energy temp
 //                       -> const  -> univ   chem   phys atom   astro
+//                       -> guess
 //   mode     -> number  -> normal FIX#   SCI#   ENG#                  ( -> # )
 //                       -> sepr   -> decimal  -> dot comma remove keep
 //                                 -> thousand -> dot/comma space ' none
@@ -440,6 +441,7 @@ public final class CalcCanvas
             new Menu("pc",CalcEngine.CONST_pc),
           }),
         }),
+        new Menu("guess",CalcEngine.GUESS),
       }),
     }),
     new Menu("mode",new Menu[] {
@@ -1256,6 +1258,14 @@ public final class CalcCanvas
   public void paint(Graphics g) {
     boolean cleared = false;
     int i;
+    String message;
+
+    message = calc.getMessage();
+    if (message != null) {
+      midlet.displayMessage(calc.getMessageCaption(), message);
+      return;
+    }
+    
     if (numRepaintLines == 100 || !internalRepaint) {
       clearScreen(g);
       cleared = true;

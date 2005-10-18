@@ -29,6 +29,7 @@ JAVAFILES =  Calc.java \
              Real.java \
              Complex.java \
              Matrix.java \
+             Guess.java \
              GFont.java \
              GFontBase.java \
              DataStore.java \

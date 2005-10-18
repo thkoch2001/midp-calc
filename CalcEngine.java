@@ -266,6 +266,7 @@ public final class CalcEngine
   public static final int MATRIX_SIZE    = 259;
   public static final int MATRIX_AIJ     = 260;
   public static final int TRANSP_CONJ    = 261;
+  public static final int GUESS          = 262;
 
   public static final int MATRIX_STO     = 512; // Special bit pattern
   public static final int MATRIX_RCL     = 768; // Special bit pattern
@@ -322,6 +323,7 @@ public final class CalcEngine
   private Real rTmp,rTmp2,rTmp3,rTmp4;
   private int repaintLines;
   public boolean initialized = false;
+  private String message, messageCaption;
 
   public Matrix[] matrixCache;
 
@@ -1152,6 +1154,22 @@ public final class CalcEngine
       parseInput();
     clearStrings();
     setMonitorX(monitorX,false); // Possibly update monitorCaption
+  }
+
+  private void setMessage(String mc, String m) {
+    messageCaption = mc;
+    message = m;
+    repaintAll(); // Ensure repaint
+  }
+
+  public String getMessage() {
+    String m = message;
+    message = null;
+    return m;
+  }
+
+  public String getMessageCaption() {
+    return messageCaption;
   }
 
   public int numRepaintLines() {
@@ -3515,6 +3533,14 @@ public final class CalcEngine
         rTmp2.date();
         rTmp.add(rTmp2);
         push(rTmp,null);
+        break;
+
+      case GUESS:
+        push(stack[0],stackI[0]);
+        Guess g = new Guess();
+        String m = g.guess(stack[0],stackI[0]);
+        if (!progRunning)
+          setMessage("Guess", m);
         break;
 
       case IF_EQUAL:
