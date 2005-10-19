@@ -1157,6 +1157,8 @@ public final class CalcEngine
   }
 
   private void setMessage(String mc, String m) {
+    if (progRunning)
+      return; // Ignore messages triggered while program is running
     messageCaption = mc;
     message = m;
     repaintAll(); // Ensure repaint
@@ -1692,6 +1694,8 @@ public final class CalcEngine
           if (rows > 0 && rows < 65536 && cols > 0 && cols < 65536) {
             matrixOk = true;
             Y = new Matrix(rows,cols);
+          } else {
+            setMessage("Matrix", "Illegal matrix size");
           }
         }
         break;
@@ -2473,10 +2477,7 @@ public final class CalcEngine
     Real xi = stackI[0];
     Real yi = stackI[1];
     Real zi = stackI[2];
-    boolean complex = false;
-//    boolean matrix  = false;
-
-    complex = !xi.isZero() || !yi.isZero() || !zi.isZero();
+    boolean complex = !xi.isZero() || !yi.isZero() || !zi.isZero();
 
     lastx.assign(x);
     lasty.assign(y);
@@ -2488,18 +2489,10 @@ public final class CalcEngine
       stackStr[0]==empty ? 3 : 2 : 1 : 0;
     undoOp = UNDO_TRINARY;
 
-//     Matrix X = getMatrix(x);
-//     Matrix Y = getMatrix(y);
-//     Matrix Z = getMatrix(z);
-//     if (X != null || Y != null || Z != null) {
-//       if (complex) {
-//         // Can't handle complex matrix yet
-//         z.makeNan();
-//         cmd = -1;
-//       } else {
-//         matrix = true;
-//       }
-//     }
+    Matrix X = getMatrix(x);
+    Matrix Y = getMatrix(y);
+    Matrix Z = getMatrix(z);
+    boolean matrix = X != null || Y != null || Z != null;
 
     switch (cmd)
     {
@@ -2511,42 +2504,44 @@ public final class CalcEngine
           z.assign(y);
           zi.assign(yi);
         } else {
-//           if (matrix) {
-//             if (X != null) {
-//               if (X.cols != X.rows || ((Y == null) != (Z == null))) {
-//                 matrix = false;
-//                 z.makeNan();
-//               } else {
-//                 // Weird, but perhaps sometime it will be useful
-//                 Matrix Tmp = new Matrix(X.cols);
-//                 for (int i=0; i<X.cols; i++)
-//                   Tmp.setElement(i,i,Real.ONE,null);
-//                 Tmp = Matrix.sub(Tmp,X);
-//                 if (Y == null /*&& Z == null*/) {
-//                   // X*y + (I-X)*z
-//                   Z = Matrix.mul(Tmp,z);
-//                   Y = Matrix.mul(X,y);
-//                 } else {
-//                   // X*Y + (I-X)*Z
-//                   Z = Matrix.mul(Tmp,Z);
-//                   Y = Matrix.mul(X,Y);
-//                 }
-//                 Z = Matrix.add(Z,Y);
-//               }
-//             } else {
-//               if (Y == null || Z == null) {
-//                 matrix = false;
-//                 z.makeNan();
-//               } else {
-//                 // x*Y + (1-x)*Z
-//                 rTmp3.assign(Real.ONE);
-//                 rTmp3.sub(x);
-//                 Z = Matrix.mul(Z,rTmp3);
-//                 Y = Matrix.mul(Y,x);
-//                 Z = Matrix.add(Z,Y);
-//               }
-//             }
-//           } else {
+          if (matrix) {
+            if (X != null) {
+              if (X.cols != X.rows || ((Y == null) != (Z == null))) {
+                matrix = false;
+                z.makeNan();
+              } else {
+                // Weird, but perhaps sometime it will be useful
+                Matrix Tmp = new Matrix(X.cols);
+                for (int i=0; i<X.cols; i++)
+                  Tmp.setElement(i,i,Real.ONE,null);
+                Tmp = Matrix.sub(Tmp,X);
+                if (Y == null /*&& Z == null*/) {
+                  // X*y + (I-X)*z
+                  Z = Matrix.mul(Tmp,z,zi);
+                  Y = Matrix.mul(X,y,yi);
+                } else {
+                  // X*Y + (I-X)*Z
+                  Z = Matrix.mul(Tmp,Z);
+                  Y = Matrix.mul(X,Y);
+                }
+                Z = Matrix.add(Z,Y);
+              }
+            } else {
+              if (Y == null || Z == null) {
+                matrix = false;
+                z.makeNan();
+              } else {
+                // x*Y + (1-x)*Z
+                rTmp3.assign(Real.ONE);
+                rTmp3.sub(x);
+                rTmp4.assign(xi);
+                rTmp4.neg();
+                Z = Matrix.mul(Z,rTmp3,rTmp4);
+                Y = Matrix.mul(Y,x,xi);
+                Z = Matrix.add(Z,Y);
+              }
+            }
+          } else {
             rTmp3.assign(Real.ONE);
             rTmp3.sub(x);
             if (complex) {
@@ -2561,21 +2556,21 @@ public final class CalcEngine
               y.mul(x);
               z.add(y);
             }
-//          }
+          }
         }
         break;
     }
     // Result is in z...
-//    if (matrix) {
-//      linkToMatrix(z,zi,Z);
-//    } else {
+    if (matrix) {
+      linkToMatrix(z,zi,Z);
+    } else {
       if (z.isNan() || zi.isNan()) {
         z.makeNan();
         zi.makeZero();
       }
       if (z.isZero() && !zi.isZero())
         z.abs(); // Remove annoying "-"
-//    }
+    }
 
     rollDown(true);
     rollDown(true);
@@ -3538,9 +3533,7 @@ public final class CalcEngine
       case GUESS:
         push(stack[0],stackI[0]);
         Guess g = new Guess();
-        String m = g.guess(stack[0],stackI[0]);
-        if (!progRunning)
-          setMessage("Guess", m);
+        setMessage("Guess", g.guess(stack[0],stackI[0]));
         break;
 
       case IF_EQUAL:
@@ -3741,6 +3734,8 @@ public final class CalcEngine
         if (stack[0].exponent > 0x4000001e || !stack[0].isFinite() ||
             !stackI[0].isZero())
         {
+          setMessage("Factorize","Argument must not be abnormal, complex or "+
+                     "greater than 2^31-1.");
           push(Real.NAN,null);
         } else {
           int a = stack[0].toInteger();
@@ -4090,11 +4085,15 @@ public final class CalcEngine
     progRunning = false;
 
     if (cmd >= PROG_DRAW) {
-      if (param<0 || param>=NUM_PROGS || prog[param] == null)
+      if (param<0 || param>=NUM_PROGS || prog[param] == null) {
+        setMessage("Draw", "The selected program is empty");
         return false;
+      }
       currentProg = param;
-    } else if (stat == null || statLogSize == 0)
+    } else if (stat == null || statLogSize == 0) {
+      setMessage("Draw", "The statistics are empty");
       return false;
+    }
 
     xMin = new Real();
     xMax = new Real();
@@ -4114,6 +4113,13 @@ public final class CalcEngine
       xMax.assign(stack[2]);
       yMin.assign(stack[1]);
       yMax.assign(stack[0]);
+      if (xMin.greaterEqual(xMax) || yMin.greaterEqual(yMax)) {
+        setMessage("Draw", "The draw area limits, xMin, xMax, yMin and yMax "+
+                   "must be pushed to the stack (in that order) before "+
+                   "drawing. xMin must be less than xMax and yMin must be "+
+                   "less than yMax.");
+        return false;
+      }
     }
     else if (cmd == PROG_SOLVE)
     {
@@ -4134,6 +4140,7 @@ public final class CalcEngine
       if (!a.isFinite() || !b.isFinite() ||
           !stackI[1].isZero() || !stackI[2].isZero()) {
         // Abnormal limits. (nan is already pushed)
+        setMessage("Solve", "Abnormal or complex search bounds");
         return false;
       }
       Real.magicRounding = false;
@@ -4148,6 +4155,7 @@ public final class CalcEngine
           stack[0].makeNan();
           stackI[0].makeZero();
           Real.magicRounding = true;
+          setMessage("Solve", "Discontinuous or complex function");
           return false;
         }
         if (y1.isZero()) {
@@ -4165,6 +4173,7 @@ public final class CalcEngine
         stack[0].makeNan();
         stackI[0].makeZero();
         Real.magicRounding = true;
+        setMessage("Solve", "Discontinuous or complex function");
         return false;
       }
       if (y1.isZero()) {
@@ -4182,6 +4191,12 @@ public final class CalcEngine
         stack[0].makeNan();
         stackI[0].makeZero();
         Real.magicRounding = true;
+        if (y1.sign == y2.sign)
+          setMessage("Solve", "Initial search bounds a and b do not straddle "+
+                     "the root, i.e. either f(a) or f(b) must be negative, "+
+                     "but not both");
+        else
+          setMessage("Solve", "Discontinuous or complex function");
         return false;
       }
       if (y2.isZero()) {
@@ -4257,6 +4272,7 @@ public final class CalcEngine
           !stackI[1].isZero() || !stackI[2].isZero()) {
         // Abnormal limits. (nan is already pushed)
         Real.magicRounding = true;
+        setMessage("Min/max", "Abnormal or complex search bounds");
         return false;
       }
 
@@ -4269,6 +4285,7 @@ public final class CalcEngine
         stack[0].makeNan();
         stackI[0].makeZero();
         Real.magicRounding = true;
+        setMessage("Min/max", "Discontinuous or complex function");
         return false;
       }
 
@@ -4280,6 +4297,7 @@ public final class CalcEngine
         stack[0].makeNan();
         stackI[0].makeZero();
         Real.magicRounding = true;
+        setMessage("Min/max", "Discontinuous or complex function");
         return false;
       }
 
@@ -4291,6 +4309,7 @@ public final class CalcEngine
         stack[0].makeNan();
         stackI[0].makeZero();
         Real.magicRounding = true;
+        setMessage("Min/max", "Discontinuous or complex function");
         return false;
       }
 
@@ -4305,6 +4324,10 @@ public final class CalcEngine
         stack[0].makeNan();
         stackI[0].makeZero();
         Real.magicRounding = true;
+        setMessage("Min/max", "Undecidable min/max condition. The initial "+
+                   "search bounds a and b must be set so that the function "+
+                   "value at the midpoint, f((a+b)/2), is either greater than"+
+                   " both f(a) and f(b), or less than both f(a) and f(b).");
         return false;
       }
 
@@ -4312,7 +4335,7 @@ public final class CalcEngine
       stack[0].assign(b);
       Real.magicRounding = true;
     }
-    else
+    else // Draw statistics
     {
       for (i=0; i<statLogSize; i++) {
         int index = (statLogStart+i)%STATLOG_SIZE;
@@ -4331,9 +4354,11 @@ public final class CalcEngine
       xMax.mul(rTmp);
       yMin.mul(rTmp);
       yMax.mul(rTmp);
+      if (xMin.greaterEqual(xMax) || yMin.greaterEqual(yMax)) {
+        setMessage("Draw", "Statistics contain only zeros");
+        return false;
+      }
     }
-    if (xMin.greaterEqual(xMax) || yMin.greaterEqual(yMax))
-      return false;
 
     progRunning = true;
     return true;
@@ -4671,6 +4696,7 @@ public final class CalcEngine
       if (!y.isFinite() || !stackI[0].isZero()) {
         // Discontinuous or complex function
         x1.makeNan();
+        setMessage("Solve", "Discontinuous or complex function");
         return false;
       }
       if (y.isZero()) { // perhaps we nailed the root?
@@ -4911,7 +4937,7 @@ public final class CalcEngine
         if (integralDepth<63 && (integralN>>integralDepth)!=0) {
           // We're done
           if (stack[0].isFinite() && stackI[0].isFinite() && integralFailed)
-            push(Real.NAN,null); // Push inaccuracy indicator
+            setMessage("Integrate","Failed to produce the desired accuracy");
           progRunning = false;
           return;
         }
@@ -4936,6 +4962,7 @@ public final class CalcEngine
           stackI[0].makeZero();
           progRunning = false;
           Real.magicRounding = true;
+          setMessage("Min/max", "Discontinuous or complex function");
           return;
         }
 
@@ -4962,6 +4989,7 @@ public final class CalcEngine
             stackI[0].makeZero();
             progRunning = false;
             Real.magicRounding = true;
+            setMessage("Min/max", "Discontinuous or complex function");
             return;
           }
 
