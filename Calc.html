@@ -104,29 +104,29 @@ To summarize: I might be stupid. You too.
 
 You can download Calc into your phone or MIDP device using one of these
 links: <br><a
-href="http://midp-calc.sourceforge.net/calc.jad">http://midp-calc.sourceforge.net/calc.jad</a>,
+href="http://midp-calc.sourceforge.net/Calc.jad">http://midp-calc.sourceforge.net/Calc.jad</a>,
 or <br><a
-href="http://midp-calc.sourceforge.net/calc.jar">http://midp-calc.sourceforge.net/calc.jar</a>
+href="http://midp-calc.sourceforge.net/Calc.jar">http://midp-calc.sourceforge.net/Calc.jar</a>
 <br>
 
 <br>
 <b>Patches:</b> The Nokia patch gives a fullscreen window and better
 control of the command keys for "ENTER" and "+". The middle joystick
 button is also handled correctly, so "dial" can instead be used as a
-"clear" key. SonyEricsson phones support the Nokia patch and I
-actually prefer using this patch on SonyEricsson phones. The MIDP 2.0
+"clear" key. Many phones, such as SonyEricsson, support the Nokia
+patch and I actually prefer using this patch on my K700i. The MIDP 2.0
 patch only gives access to the fullscreen mode and this works rather
 poorly, but you might prefer to switch to fullscreen e.g. before you
 draw a graph.
 
 <br><a
-href="http://midp-calc.sourceforge.net/calcnokia.jad">http://midp-calc.sourceforge.net/calcnokia.jad</a>,
+href="http://midp-calc.sourceforge.net/CalcNokia.jad">http://midp-calc.sourceforge.net/CalcNokia.jad</a>,
 <a
-href="http://midp-calc.sourceforge.net/calcnokia.jar">.jar</a>
+href="http://midp-calc.sourceforge.net/CalcNokia.jar">.jar</a>
 <br><a
-href="http://midp-calc.sourceforge.net/calcmidp2.jad">http://midp-calc.sourceforge.net/calcmidp2.jad</a>,
+href="http://midp-calc.sourceforge.net/CalcMIDP2.jad">http://midp-calc.sourceforge.net/CalcMIDP2.jad</a>,
 <a
-href="http://midp-calc.sourceforge.net/calcmidp2.jar">.jar</a>
+href="http://midp-calc.sourceforge.net/CalcMIDP2.jar">.jar</a>
 <br>
 
 <br>
@@ -976,10 +976,14 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
     </ul>
     <li><b>guess</b>: Guess and display the formula for the number in
     x. The calculated guess is pushed on the stack. This function can
-    guess formulas of the following types: a/b, sqrt(a/b),
-    (a/b)<sup>1/3</sup>, a·pi/b, a·pi²/b, a/(b·pi), a/(b·pi²),
-    e<sup>(a/b)</sup>, 2<sup>(a/b)</sup>, ln(a/b) and
-    log<sub>2</sub>(a/b).
+    guess formulas of the following types: a/b, &#8730;<span
+    style="text-decoration: overline;">a/b</span>,
+    (a/b)<sup>(1/3)</sup>, a&pi;/b, a&pi;²/b, a/(b&pi;),
+    a/(b&pi;²), e<sup>(a/b)</sup>, 2<sup>(a/b)</sup>, ln(a/b) and
+    log<sub>2</sub>(a/b), where a and b are integers less than
+    2³¹. The probability estimate is only correct given that no
+    <em>other</em> type of formula fits even better, such as
+    (a±&#8730;<span style="text-decoration: overline;">b</span>)/c.
   </ul>
 </ul>
 
@@ -1028,7 +1032,7 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
   on the stack, in that order
     <li><b>draw r=f(&theta;)</b>: As above, but this time the program
   calculates a polar graph r=f(&theta;), where the input is the angle
-  and the output is the radius. Input will be in range [0,20·&pi;],
+  and the output is the radius. Input will be in range [0,20&pi;],
   i.e. 10 "rounds".
     <li><b>draw z=f(t)</b>: As above, but this time the program
   calculates a parametric curve z=f(t), where the input t is in the
@@ -1073,7 +1077,7 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
   "x&gt;y?", "select". When selection criterion x exactly equals 1 or
   0, y or z is copied directly instead of calculating it. This enables
   selecting away <tt>inf</tt>'s and <tt>nan</tt>'s.
-<!--  If x contains a square matrix, X·Y+(I-X)·Z is calculated.-->
+  If x contains a square matrix, X·Y+(I-X)·Z is calculated.
       <li><b>sgn</b>: Keep only the sign of x as ±1. With this you can
   e.g. simulate "abs" by pressing "ENTER", "sgn", "*". Also ±0 becomes ±1
     </ul>
@@ -1499,14 +1503,14 @@ When <b>integrating</b>, you must enter the range over which you want
 to integrate, and the accuracy you desire from the result. When the
 operation is finished, the result is placed on the stack. If the
 program returns <tt>inf</tt> or <tt>nan</tt> values during the
-operation, the result will be <tt>nan</tt>. If the algorithm fails to produce
-the desired accuracy, the unfinished result is placed on the stack
-along with a <tt>nan</tt>. The algorithm may handle integration through a
-singularity, but in this case the algorithm works better if the
-singularity is at x=0 and the first integration limit is also 0. The
-accuracy of the result will most often be of the same magnitude as the
-input accuracy, but depending on the difficulty of the function to be
-integrated, it may be much better or worse than this.<br>
+operation, the result will be <tt>nan</tt>. If the algorithm fails to
+produce the desired accuracy, the unfinished result is placed on the
+stack and a message is shown. The algorithm may handle integration
+through a singularity, but in this case the algorithm works better if
+the singularity is at x=0 and the first integration limit is also
+0. The accuracy of the result will most often be of the same magnitude
+as the input accuracy, but depending on the difficulty of the function
+to be integrated, it may be much better or worse than this.<br>
 
 <br>
 When <b>differentiating</b>, you must enter the x for which you want
