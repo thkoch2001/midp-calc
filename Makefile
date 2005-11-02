@@ -2,7 +2,9 @@ VERSION = 3.00
 TARGETS = Calc.jar \
           Calc.jad \
           CalcMIDP2.jar \
+          CalcMIDP2.jad \
           CalcNokia.jar \
+          CalcNokia.jad \
           CalcApplet.jar
 
 BASEURL = http://midp-calc.sourceforge.net
@@ -154,7 +156,9 @@ midp-calc-$(VERSION)-src.tgz: $(JAVAFILES) midp1/MyCanvas.java midp2/MyCanvas.ja
 
 publish: $(TARGETS) midp-calc-$(VERSION)-src.tgz
 	cp Calc.jar Calc$(subst .,,$(VERSION)).jar
-	scp $(TARGETS) Calc$(subst .,,$(VERSION)).jar $(HTMLFILES) shell.sf.net:/home/groups/m/mi/midp-calc/htdocs
+	cp CalcNokia.jar CalcNokia$(subst .,,$(VERSION)).jar
+	cp CalcMIDP2.jar CalcMIDP2$(subst .,,$(VERSION)).jar
+	scp $(TARGETS) Calc$(subst .,,$(VERSION)).jar CalcNokia$(subst .,,$(VERSION)).jar CalcMIDP2$(subst .,,$(VERSION)).jar $(HTMLFILES) shell.sf.net:/home/groups/m/mi/midp-calc/htdocs
 	tar czf midp-calc-$(VERSION).tgz $(TARGETS) $(HTMLFILES)
 	@echo ""
 	@echo "***************************************************************"

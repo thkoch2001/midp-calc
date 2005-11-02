@@ -9,7 +9,7 @@ enables building under IDE's and/or under other operating systems. The new
 building process should preferrably encompass all that is achieved in the
 current Makefile.
 
-The Makefile and build.xms Ant script enables compilation under Linux. To make
+The Makefile and build.xml Ant script enables compilation under Linux. To make
 this Makefile work without modification you need to set up your system
 accordingly:
 
@@ -20,8 +20,15 @@ accordingly:
 2) You need J2SE SDK from http://java.sun.com. $JAVA_HOME should should be set
    to the location of the SDK, and $JAVA_HOME/bin should be added to the path.
 
-3) You need J2ME Wireless Toolkit version 1.04 (not 2.0) from
+3) You need J2ME Wireless Toolkit version 1.04 from
    http://java.sun.com, installed in ../../WTK104 relative to this file.
+
+3b) You need J2ME Wireless Toolkit version 2.2 from
+   http://java.sun.com, installed in ../../WTK2.2 relative to this file.
+
+3c) You need Nokia Wireless Toolkit version 2.2 (not 2.0) installed in
+   ../../Nokia/Devices/xxx relative to this file. Modify the WTK_N variable in
+   Makefile accordingly.
 
 4) You need Apache Ant installed, from http://ant.apache.org. $ANT_HOME should
    be set to the location of Ant, and $ANT_HOME/bin should be added to the
@@ -70,7 +77,8 @@ If you want to contribute to the development, I want you to consider the
 following guidelines first:
 
 1) Make it compact: Many phones and also many WAP gateways have a limit of
-   64kB for the jar file containing an application.
+   64kB for the jar file containing an application. (After version 3.00, 
+   we don't care any more.)
 
 2) Make the least impact on the code: Unless there is a very good reason for
    it, do not change or refactor large portions of the code simultaneously.
