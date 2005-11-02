@@ -1360,7 +1360,10 @@ public final class CalcCanvas
         case 3: calc.command(CalcEngine.MONITOR_DOWN ,0); break;
         case 1: calc.command(CalcEngine.MONITOR_LEFT ,0); break;
         case 2: calc.command(CalcEngine.MONITOR_RIGHT,0); break;
-        case 4: calc.command(CalcEngine.MONITOR_PUSH ,0); break;
+        case 4:
+          calc.command(CalcEngine.MONITOR_PUSH ,0);
+          setCommands("ENTER","+");
+          break;
       }
       return;
     }
