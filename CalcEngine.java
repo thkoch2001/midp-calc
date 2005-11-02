@@ -4073,6 +4073,12 @@ public final class CalcEngine
       updateMatrixMonitor();
   }
 
+
+  // Create an inner class to limit each class size to 64kB
+  // This is a temporary solution
+  protected class CalcEngineInner {
+
+
   int graphCmd;
   Real xMin,xMax,yMin,yMax,a,b,c,bi,x0,x0i,y0,y1,y2,y0i,y1i,y2i,total,totalI;
   long integralN,totalExtra,totalExtraI;
@@ -5044,5 +5050,22 @@ public final class CalcEngine
         g.fillRect(gx,gy+gh/3-10,xi,7);
       }
     }
+  }
+
+  // This ends the inner class
+  }
+  // Create an inner class object to use from the outer
+  CalcEngineInner inner = new CalcEngineInner();
+
+  // Now for some convenience methods to access the inner class from the outer
+  public boolean prepareGraph(int cmd, int param) {
+    return inner.prepareGraph(cmd,param);
+  }
+  public void startGraph(Graphics g, int gx, int gy, int gw, int gh,
+                         boolean bgrDisplay) {
+    inner.startGraph(g,gx,gy,gw,gh,bgrDisplay);
+  }
+  public void continueGraph(Graphics g, int gx, int gy, int gw, int gh) {
+    inner.continueGraph(g,gx,gy,gw,gh);
   }
 }
