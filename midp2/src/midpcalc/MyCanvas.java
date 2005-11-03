@@ -9,8 +9,8 @@ public abstract class MyCanvas
   public static final int KEY_DOWN_ARROW  = -2;
   public static final int KEY_LEFT_ARROW  = -3;
   public static final int KEY_RIGHT_ARROW = -4;
-  public static final int KEY_SOFTKEY1    = -6;
-  public static final int KEY_SOFTKEY2    = -7;
+  public static final int KEY_SOFTKEY1    = -6000; // Unmap these keys because
+  public static final int KEY_SOFTKEY2    = -7000; // they are not used
   public static final int KEY_SOFTKEY3    = -5;
   public static final int KEY_SEND        = -10;
   public static final int KEY_END         = -11;

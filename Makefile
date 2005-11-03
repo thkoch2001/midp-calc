@@ -172,7 +172,7 @@ publish: $(TARGETS) midp-calc-$(VERSION)-src.tgz
 	@echo ""
 	@echo "% cvs update"
 	@echo "% cvs commit -m \"Release $(VERSION)\""
-	@echo "% cvs tag -R RELEASE_$(subst .,_,$(VERSION))"
+	@echo "% cvs tag -RF RELEASE_$(subst .,_,$(VERSION))"
 	@echo ""
 	@echo "Open http://sourceforge.net/projects/midp-calc/"
 	@echo "Select Admin, File Releases"
