@@ -22,7 +22,7 @@ JFLAGS_1 = -bootclasspath $(BOOTCLASSPATH_1) -d . $(JFLAGS)
 JFLAGS_2 = -bootclasspath $(BOOTCLASSPATH_2) -d . $(JFLAGS)
 JFLAGS_N = -bootclasspath $(BOOTCLASSPATH_N) -d . $(JFLAGS)
 
-JAVAC = javac
+JAVAC = javac -source 1.3
 
 JAVAFILES =  Calc.java \
              CalcCanvas.java \
@@ -68,10 +68,10 @@ Real.java: ../real-java/Real.jpp Makefile
 GFontBase.java: pgm2java small.pgm medium.pgm large.pgm xlarge.pgm Makefile
 	echo "package ral;"                          >  $@
 	echo "abstract class GFontBase {"            >> $@
-	pgm2java small.pgm small_ a.dat              >> $@
-	pgm2java medium.pgm medium_ b.dat            >> $@
-	pgm2java large.pgm large_ c.dat              >> $@
-	pgm2java xlarge.pgm xlarge_ d.dat            >> $@
+	./pgm2java small.pgm small_ a.dat            >> $@
+	./pgm2java medium.pgm medium_ b.dat          >> $@
+	./pgm2java large.pgm large_ c.dat            >> $@
+	./pgm2java xlarge.pgm xlarge_ d.dat          >> $@
 	echo "}"                                     >> $@
 
 Calc.jad: Makefile
@@ -135,7 +135,7 @@ CalcMIDP2.jar: $(JAVAFILES) midp2/MyCanvas.java CalcMIDP2.jad Calc.png
 
 CalcNokia.jar: $(JAVAFILES) nokia/MyCanvas.java CalcNokia.jad Calc.png
 	rm -rf ral
-	javac $(JFLAGS_N) $(JAVAFILES) nokia/MyCanvas.java
+	$(JAVAC) $(JFLAGS_N) $(JAVAFILES) nokia/MyCanvas.java
 	cp Calc.png ral/
 	ant -buildfile buildNokia.xml -lib $(WTK_1)/lib -Dwtk.home=$(WTK_N) -Dbootclasspath=$(BOOTCLASSPATH_N) make-jar
 	touch $@
