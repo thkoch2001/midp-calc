@@ -117,7 +117,10 @@ button is also handled correctly, so "dial" can instead be used as a
 patch and I actually prefer using this patch on my K700i. The MIDP 2.0
 patch only gives access to the fullscreen mode so far, and this works
 rather poorly, but you might prefer to switch to fullscreen
-e.g. before you draw a graph.
+e.g. before you draw a graph. The Siemens patch is created by Michael
+Schierl and remaps keys (as documented <a
+href="http://sourceforge.net/tracker/index.php?func=detail&aid=1236823&group_id=130988&atid=719588">here</a>)
+for the Siemens A65. It might work on other Siemens phones as well.
 
 <br><a
 href="http://midp-calc.sourceforge.net/CalcNokia.jad">http://midp-calc.sourceforge.net/CalcNokia.jad</a>,
@@ -127,6 +130,10 @@ href="http://midp-calc.sourceforge.net/CalcNokia.jar">.jar</a>
 href="http://midp-calc.sourceforge.net/CalcMIDP2.jad">http://midp-calc.sourceforge.net/CalcMIDP2.jad</a>,
 -<a
 href="http://midp-calc.sourceforge.net/CalcMIDP2.jar">.jar</a>
+<br><a
+href="http://midp-calc.sourceforge.net/CalcSiemens.jad">http://midp-calc.sourceforge.net/CalcSiemens.jad</a>,
+-<a
+href="http://midp-calc.sourceforge.net/CalcSiemens.jar">.jar</a>
 <br>
 
 <br>
@@ -162,49 +169,41 @@ The following MIDP phones/devices have been tested with Calc 3.00:
 
 <ul>
   <li><b>Sony Ericsson T610</b><sup>1</sup><b>,
-  K700i</b><sup>1,2,N</sup><b>, Z800</b><sup>1,2,N</sup>: Tested OK
+  K700i</b><sup>1,2,N</sup><b>, Z800</b><sup>1,2,N</sup><b>,
+  K300i</b><sup>1</sup>: Tested OK
   <li><b>Nokia 6230i</b><sup>1,2,N</sup>: Tested OK
   <li><b>Motorola Razr V3</b><sup>1</sup><b>, V547</b><sup>1</sup>:
   Tested OK
-  <li><b>Siemens A65</b><sup>1</sup>: Tested OK
+  <li><b>Siemens A65</b><sup>1,S</sup>: Tested OK
   <li><b>Samsung Z500</b><sup>1,2</sup>: Tested OK
 </ul>
 <font size=-1>
 <sup>1</sup> works with the normal Midp 1.0 version<br>
 <sup>2</sup> works with the Midp 2.0 patch<br>
-<sup>N</sup> works with the Nokia 1.0 patch
+<sup>N</sup> works with the Nokia patch<br>
+<sup>S</sup> works with the Siemens patch
 </font><br>
 
 <br>
-The following MIDP phones/devices have been tested or surveyed for
-usability with Calc 2.08:
+The following MIDP phones/devices have been tested with Calc 2.08:
 
 <ul>
   <li><b>Sony Ericsson T610, T630, Z600, Z800, Z1010, K500i, K508i, K700i,
   S710a</b>: Tested OK
   <li><b>Sony Ericsson P900, P910</b>: Tested OK. Very
   inconvenient to use because of the mapping of ENTER and +
-  <li><b>Sony Ericsson Z500, T616, P800</b>: Not
-  tested. Probably works OK
   <li><b>Nokia 6100*), 6610, 7210, 7600, 3200*), N-Gage</b>: Tested OK
   <li><b>Nokia 3510i</b>: Tested OK. Awkward with the small screen and
   without joystick, but fully functional
   <li><b>Nokia 6260, 6820*), 5140, 6600</b>: Tested almost OK. None of the key
   mappings work perfectly so it is a bit inconvenient to use
-  <li><b>Nokia 3100, 3105, 3300, 3520, 3530, 3560, 3586i, 3595,
-  3620, 3650, 3660, 5100, 6200, 6220, 6225, 6230, 6560,
-  6650, 6800, 6810, 7200, 7250, 7250i, 7650</b>: Not
-  tested. Probably works OK
-  <li><b>Nokia 3410, 3570, 3585, 3585i, 3590, 6310i, 7700, 8910i,
-  9210i, 9290</b>: Not tested. May work, but there can be
-  issues with small screen, black/white screen or lack of joystick or
-  input keys
+  <li><b>Nokia 3120</b>: Works with version 2.03
   <li><b>Sagem MyX5-2, MyX7</b>: Tested OK
   <li><b>Audiovox CDM-8900</b>: Tested OK
   <li><b>Sharp GX15</b>: Tested almost OK. The state of the calculator
   is not remembered between runs
   <li><b>Motorola Razr V3, V300, V547, V551, C650, E398</b>: Tested OK
-  <li><b>Motorola V180</b>: Probably works in the last version. Can
+  <li><b>Motorola V180</b>: Probably works in version 2.08 or 3.00. Can
   anyone verify?
   <li><b>Siemens M55</b>: Tested OK
   <li><b>Siemens M65</b>: Tested OK. Very inconvenient to use because
