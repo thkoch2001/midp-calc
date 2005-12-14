@@ -57,6 +57,17 @@ HTMLFILES =  Calc.html \
              Calc-prog.html \
              CalcApplet.html
 
+IMAGES =     Calc.ico \
+             images/Calc.jpg \
+             images/Calc_menu0.gif \
+             images/Calc_menu1.gif \
+             images/Calc_menu2.gif \
+             images/Calc_menu3.gif \
+             images/Calc_menu4.gif \
+             images/Calc_menu5.gif \
+             images/Calc_menu6.gif \
+             images/Calc_menu7.gif
+
 default: $(TARGETS)
 
 pgm2java: pgm2java.c
@@ -158,8 +169,8 @@ publish: $(TARGETS) midp-calc-$(VERSION)-src.tgz
 	cp Calc.jar Calc$(subst .,,$(VERSION)).jar
 	cp CalcNokia.jar CalcNokia$(subst .,,$(VERSION)).jar
 	cp CalcMIDP2.jar CalcMIDP2$(subst .,,$(VERSION)).jar
-	scp $(TARGETS) Calc$(subst .,,$(VERSION)).jar CalcNokia$(subst .,,$(VERSION)).jar CalcMIDP2$(subst .,,$(VERSION)).jar $(HTMLFILES) shell.sf.net:/home/groups/m/mi/midp-calc/htdocs
-	tar czf midp-calc-$(VERSION).tgz $(TARGETS) $(HTMLFILES)
+	scp $(TARGETS) Calc$(subst .,,$(VERSION)).jar CalcNokia$(subst .,,$(VERSION)).jar CalcMIDP2$(subst .,,$(VERSION)).jar $(HTMLFILES) $(IMAGES) Calc.ico shell.sf.net:/home/groups/m/mi/midp-calc/htdocs
+	tar czf midp-calc-$(VERSION).tgz $(TARGETS) $(HTMLFILES) $(IMAGES)
 	@echo ""
 	@echo "***************************************************************"
 	@echo "To make the release available on SourceForge, do the following:"
