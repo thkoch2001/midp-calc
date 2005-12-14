@@ -16,7 +16,8 @@ public final class CalcCanvas
 //   math     -> simple  -> 1/x    x^2    sqrt    %       %chg
 //            -> pow     -> y^x    y^1/x  ln      e^x
 //                       -> pow10/2 -> log10 10^x log2 2^x
-//            -> prob    -> Py,x   Cy,x   x!      Gam(x)  erfc
+//            -> prob    -> Py,x   Cy,x   x!      Gam(x)
+//                       -> erfc   phi    inverfc invphi
 //            -> misc    -> mod    div    random  factorize
 //                       -> int -> round ceil floor trunc frac
 //            -> matrix  -> new    concat stack   split

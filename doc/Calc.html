@@ -11,7 +11,7 @@
 
 <h1>Calc - Java Calculator for cell-phones and MIDP devices</h1>
 
-<a href="Calc-prog.html#Spline"><img src="Calc.jpg" border=0 align=right alt=""></a>
+<a href="Calc-prog.html#Spline"><img src="images/Calc.jpg" border=0 align=right alt=""></a>
 
 <b><font size="+1">
 <ul>
@@ -60,7 +60,7 @@ where the source is available under the <a
 href="http://www.gnu.org/licenses/gpl.txt">GPL</a> license<br>
 
 <b>Contribute:</b> If you find this program useful, you can inspire
-to future work by donating here:<br>
+to future work by donating e.g. $10 here:<br>
 <a href="http://sourceforge.net/donate/index.php?group_id=130988"><img src="http://images.sourceforge.net/images/project-support.jpg" width="88" height="32" border="0" alt="Support This Project" /></a>
 <a href="http://sourceforge.net"><img src="http://sourceforge.net/sflogo.php?group_id=130988&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo" /></a>
 
@@ -94,10 +94,7 @@ factorial of 40000000.<br>
 <font color="800000">
 The Calc Java program is supplied "AS IS", without any guarantee of
 operation, and without any responsibility for damages which may result
-from usage.<br>
-
-<br>
-To summarize: I might be stupid. You too.
+from usage. To summarize: I might be stupid. You too.
 </font>
 
 <h2>Download</h2>
@@ -149,9 +146,8 @@ first.<br>
 <br>
 I have noticed one thing when upgrading with my SonyEricsson K700i,
 which might apply to other phones as well. After downloading, the
-phone says "The new version may be from another source". Unless I
-answer "yes" when asked "Trust source?", the program does not retain
-its previous state.<br>
+phone says "The new version may be from another source. Trust
+source?". If I don't answer "yes", the program memory is cleared.<br>
 
 <br>
 &rarr;&nbsp;&rarr;&nbsp;<a href="Calc-log.html">Older versions</a>
@@ -162,7 +158,7 @@ From version 3.00, the size of Calc exceeds 64kB. This means that on
 several old phones, Calc won't work. For those users, there is always
 version 2.08. Since I don't know what phones from the old
 compatibility list work with version 3.00, the new list will be rather
-empty, but let's fill it up quickly!<br>
+empty, but give me feedback and I'll fill it up quickly!<br>
 
 <br>
 The following MIDP phones/devices have been tested with Calc 3.00:
@@ -201,8 +197,8 @@ The following MIDP phones/devices have been tested with Calc 2.08:
   <li><b>Nokia 3120</b>: Works with version 2.03
   <li><b>Sagem MyX5-2, MyX7</b>: Tested OK
   <li><b>Audiovox CDM-8900</b>: Tested OK
-  <li><b>Sharp GX15</b>: Tested almost OK. The state of the calculator
-  is not remembered between runs
+  <li><b>Sharp GX15</b>: Tested almost OK. The memory of the calculator
+  is cleared between runs
   <li><b>Motorola Razr V3, V300, V547, V551, C650, E398</b>: Tested OK
   <li><b>Motorola V180</b>: Probably works in version 2.08 or 3.00. Can
   anyone verify?
@@ -333,16 +329,17 @@ keys 1-6 until the digit changes.
   application, most often it is called "hangup", "back", "return" or
   has a symbol of some sort to this effect. On some devices,
   e.g. K700i, you must press and hold the button for several
-  seconds. The state of the calculator will be saved until the next time.
+  seconds. The state of the calculator will be saved in memory until
+  the next time.
 </ul>
 
 <h2><a id="Setup" name="Setup">Setup</a></h2>
 
 To be able to use Calc on devices with fewer keys than the T610 (most
 Nokias, that is), a couple of setup dialogs <em>may</em> appear the
-first time Calc is started. If you don't answer these dialogs
-correctly the first time, you can get to the setup dialogs again using
-the "reset" command.<br>
+first time Calc is started. If you don't answer these dialogs correctly the
+first time, you can get to the setup dialogs again using the "reset"
+command.<br>
 
 <br>
 First, to make sure that "ENTER" and "+" is immediately available,
@@ -384,11 +381,11 @@ on screen. However, some phones uses different pixel ordering (BGR
 instead of RGB), and then the numbers may look strange. Select the
 font that looks best on your device (beware that the commands "left"
 and "right" may be mapped to the right and left command key
-respectively). Some phones may have a 90 degrees rotated screen where
-the red, green and blue color cells are stacked vertically instead of
-horizontally. There is no support for such screens, so on these
-devices the numbers will always look bit strange, unless you select
-the "system" font.<br>
+respectively, if you chose that setting in the first screen). Some
+phones may have a 90 degrees rotated screen where the red, green and
+blue color cells are stacked vertically instead of horizontally. There
+is no support for such screens, so on these devices the numbers will
+always look bit strange, unless you select the "system" font.<br>
 
 <br>
 If your phone does not have a 5-way joystick, most times on Nokia you
@@ -470,14 +467,14 @@ menu as you proceed. The following illustration shows the main menu
 subsequent sub-menus activated by the right joystick button are
 shown. Sub-menu entries are displayed in normal text and actual
 operations are displayed in bold text. Through this hierarchical system,
-almost 200 operations can be reached.<br>
+more than 200 operations can be reached.<br>
 
 <br>
 <table cellpadding="1" cellspacing="1" border="0">
   <tr>
     <td></td><td></td>
     <td align="center" valign="middle"><img
-    src="Calc_menu1.gif" alt="" width=101 height=83></td>
+    src="images/Calc_menu1.gif" alt="" width=114 height=83></td>
   </tr>
   <tr>
     <td></td><td></td>
@@ -485,14 +482,14 @@ almost 200 operations can be reached.<br>
   </tr>
   <tr>
     <td align="center" valign="middle"><img
-    src="Calc_menu2.gif" alt="" width=101 height=83></td>
+    src="images/Calc_menu2.gif" alt="" width=114 height=83></td>
     <td align="center" valign="middle"><br>&larr;</td>
     <td align="center" valign="middle"><img
-    src="Calc_menu0.gif" alt="" width=101 height=83></td>
+    src="images/Calc_menu0.gif" alt="" width=114 height=83></td>
     <td align="center" valign="middle"><br>&rarr;</td>
     <td rowspan="1" colspan="2"
-    align="center" valign="middle"><img src="Calc_menu3.gif"
-    alt="" width=101 height=83></td>
+    align="center" valign="middle"><img src="images/Calc_menu3.gif"
+    alt="" width=114 height=83></td>
   </tr>
   <tr>
     <td></td><td></td>
@@ -501,20 +498,20 @@ almost 200 operations can be reached.<br>
   <tr>
     <td></td><td></td>
     <td rowspan="2" colspan="1"
-    align="center" valign="middle"><img src="Calc_menu4.gif"
-    alt="" width=101 height=83></td>
+    align="center" valign="middle"><img src="images/Calc_menu4.gif"
+    alt="" width=114 height=83></td>
   </tr>
   <tr>
     <td></td><td></td><td></td>
     <td align="center" valign="middle"><br>&rarr;</td>
     <td align="center" valign="middle"><img
-    src="Calc_menu5.gif" alt="" width=101 height=83></td>
+    src="images/Calc_menu5.gif" alt="" width=114 height=83></td>
     <td align="center" valign="middle"><br>&rarr;</td>
     <td align="center" valign="middle"><img
-    src="Calc_menu6.gif" alt="" width=101 height=83></td>
+    src="images/Calc_menu6.gif" alt="" width=114 height=83></td>
     <td align="center" valign="middle"><br>&rarr;</td>
     <td align="center" valign="middle"><img
-    src="Calc_menu7.gif" alt="" width=101 height=83></td>
+    src="images/Calc_menu7.gif" alt="" width=114 height=83></td>
   </tr>
 </table>
 <br>
@@ -526,8 +523,8 @@ up/down/right/left on the joystick without activating the main menu
 first activates the corresponding sub-menu directly. In this way, you
 can reach the most used "ENTER" and "<b>+</b>" operations in one
 keyclick (they are not on the menu, but on soft-keys), and the rest
-of the most basic operations, "<b>-</b>", "<b>*</b>", "<b>/</b>",
-"<b>+/-</b>" and "<b>%</b>" in just two keyclicks.<br>
+of the most basic operations, "<b>-</b>", "<b>*</b>", "<b>/</b>" and
+"<b>+/-</b>" in just two keyclicks.<br>
 
 <br>Some operations require a number argument ("STO", "FIX",
 etc). When such an operation is activated, a two-level number menu is
@@ -1311,11 +1308,11 @@ Apart from these limitations in the program itself, it is the
 limitations of the host (i.e. you phone) that may be the most
 severe. When creating especially large matrices you may experience
 "Out of memory error". If you get this, is advised to exit the program
-to be on the safe side if you want to save the state of the
-calculator. There may also be a limit to how much matrix data the
-calculator can save when you exit. If the calculator was unable to
-save all the matrices, some of your matrices will be replaced by
-<tt>nan</tt> when you start up again.<br>
+to avoid further errors which may be caused by this. There may also be
+a limit to how much matrix data the calculator can save when you
+exit. If the calculator was unable to save all the matrices, some of
+your matrices will be replaced by <tt>nan</tt> when you start up
+again.<br>
 
 <br>
 Matrices are stored by reference, so copying a matrix many times on
