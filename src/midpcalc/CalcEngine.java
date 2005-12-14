@@ -267,6 +267,9 @@ public final class CalcEngine
   public static final int MATRIX_AIJ     = 260;
   public static final int TRANSP_CONJ    = 261;
   public static final int GUESS          = 262;
+  public static final int INVERFC        = 263;
+  public static final int PHI            = 264;
+  public static final int INVPHI         = 265;
 
   public static final int MATRIX_STO     = 512; // Special bit pattern
   public static final int MATRIX_RCL     = 768; // Special bit pattern
@@ -1611,24 +1614,55 @@ public final class CalcEngine
         break;
 
       case PYX:
-        // fact(y)/fact(y-x)
-        x.neg();
-        x.add(y);
-        x.fact();
-        y.fact();
-        y.div(x);
+        if (y.isNegative() && x.isIntegral()) {
+          // Special case
+          // Py,x = (-1)^x * fact(-y-1+x)/fact(-y-1)
+          boolean negative = x.isOdd();
+          y.neg();
+          y.sub(Real.ONE);
+          x.add(y);
+          x.fact();
+          y.fact();
+          y.rdiv(x);
+          if (negative)
+            y.neg();
+        } else {
+          // Py,x = fact(y)/fact(y-x)
+          x.neg();
+          x.add(y);
+          x.fact();
+          y.fact();
+          y.div(x);
+        }
         break;
 
       case CYX:
-        // fact(y)/(fact(y-x)*fact(x))
-        rTmp.assign(x);
-        rTmp.fact();
-        x.neg();
-        x.add(y);
-        x.fact();
-        x.mul(rTmp);
-        y.fact();
-        y.div(x);
+        if (y.isNegative() && x.isIntegral()) {
+          // Special case
+          // Cy,x = (-1)^x * fact(-y-1+x)/(fact(-y-1) * fact(x))
+          boolean negative = x.isOdd();
+          rTmp.assign(x);
+          rTmp.fact();
+          y.neg();
+          y.sub(Real.ONE);
+          x.add(y);
+          x.fact();
+          y.fact();
+          y.mul(rTmp);
+          y.rdiv(x);
+          if (negative)
+            y.neg();
+        } else {
+          // Cy,x = fact(y)/(fact(y-x)*fact(x))
+          rTmp.assign(x);
+          rTmp.fact();
+          x.neg();
+          x.add(y);
+          x.fact();
+          x.mul(rTmp);
+          y.fact();
+          y.div(x);
+        }
         break;
 
       case ATAN2: y.atan2(x); fromRAD(y);  break;
@@ -1819,11 +1853,26 @@ public final class CalcEngine
       case FACT:    x.fact();  break;
       case GAMMA:   x.gamma(); break;
       case ERFC:    x.erfc();  break;
+      case INVERFC: x.inverfc(); break;
       case NOT:     x.xor(Real.ONE_N); break;
       case TO_DEG:  x.div(Real.PI); x.mul(180); break;
       case TO_RAD:  x.mul(Real.PI); x.div(180); break;
       case TO_DHMS: x.toDHMS(); break;
       case TO_H:    x.fromDHMS(); break;
+
+      case PHI:
+        x.mul(Real.SQRT1_2);
+        x.neg();
+        x.erfc();
+        x.scalbn(-1);
+        break;
+      case INVPHI:
+        x.scalbn(1);
+        x.inverfc();
+        if (!x.isZero())
+          x.neg();
+        x.mul(Real.SQRT2);
+        break;
 
       case SGN:
         rTmp.assign(Real.ONE);
@@ -3450,7 +3499,8 @@ public final class CalcEngine
         unaryComplexMatrix(cmd,param);
         break;
 
-      case FACT:  case GAMMA: case ERFC:
+      case FACT:  case GAMMA:
+      case ERFC:  case INVERFC: case PHI: case INVPHI:
       case NOT:
       case TO_DEG:case TO_RAD:case TO_DHMS:case TO_H:
       case SGN:

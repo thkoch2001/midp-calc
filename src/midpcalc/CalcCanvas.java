@@ -579,8 +579,13 @@ public final class CalcCanvas
       new Menu("P y,x",CalcEngine.PYX),
       new Menu("C y,x",CalcEngine.CYX),
       new Menu("x!",CalcEngine.FACT),
-      new Menu("erfc",CalcEngine.ERFC),
       new Menu("¡x",CalcEngine.GAMMA),
+      new Menu("more",Menu.TITLE_SKIP,new Menu[] {
+        new Menu("erfc^-1",CalcEngine.INVERFC),
+        new Menu("erfc",CalcEngine.ERFC),
+        new Menu("phi",CalcEngine.PHI),
+        new Menu("phi^-1",CalcEngine.INVPHI),
+      }),
     }),
   });
 
