@@ -75,11 +75,11 @@ int printStringChar(unsigned char b)
 int main(int argc, char *argv[])
 {
   unsigned char* image;
-  int c,i,j,k;
-  unsigned char bits[32*3][100]; // Works for size up to 20x20
+  int c,i,j,nBytes;
+  unsigned char bits[100]; // Works for size up to 20x20
   int char_height, char_width;
   char *prefix;
-  char *charSet = " \"$%&'*+,-./0123456789:=>ABCDEFMR[]_aefilmnoprtvxy";
+  char *charSet = " %'*+,-./0123456789:=ABCDEFMR[]_aefilmnoprtvxy£²»ß";
   FILE *f;
   // Strings written with font
   //
@@ -87,33 +87,29 @@ int main(int argc, char *argv[])
   // -1'234.5+6.78e9i
   // /0A,BCDE,F000
   // nan inf *****
-  // n= $x= $x"= $y= $y"= $xy= $&x= $&"x= $&y= $&"y= $x&y= $y&x= $&x&y=
+  // n= ßx= ßx²= ßy= ßy²= ßxy= ß£x= ß£²x= ß£y= ß£²y= ßx£y= ßy£x= ß£x£y=
   // pv= fv= np= pmt= ir%=
   // M0= M1=
-  // R0= R1> Col:1 M:[3x4] no matrix
+  // R0= R1» Col:1 M:[3x4] no matrix
 
-  if (argc<4 || (image=readImage(argv[1],&iW,&iH))==0 || iW%32!=0 || iH%3!=0) {
+  if (argc<4 || (image=readImage(argv[1],&iW,&iH))==0 || iW%32!=0 || iH%6!=0) {
     printf("Usage: %s image.pgm prefix out.dat > out.java\n",argv[0]);
     exit(1);
   }
   prefix = argv[2];
   
   char_width = iW/32;
-  char_height = iH/3;
-  for (i=0; i<3; i++)
-    for (j=0; j<32; j++)
-      scan(image,j*char_width,i*char_height,char_height,char_width,
-           bits[i*32+j]);
+  char_height = iH/6;
+  nBytes = (char_height*char_width*2+7)/8;
 
   f = fopen(argv[3],"w");
   for (c=0; c<(int)strlen(charSet); c++) {
-    i = charSet[c]/32-1;
-    j = charSet[c]%32;
-    int nBytes = (char_height*char_width*2+7)/8;
-    for (k=0; k<nBytes; k++) {
-      unsigned char b = bits[i*32+j][k];
-      fputc(b,f);
-    }
+    i = (charSet[c]&0xff)/32-1;
+    if (i>3) i--;
+    j = (charSet[c]&0xff)%32;
+    scan(image,j*char_width,i*char_height,char_height,char_width,bits);
+    fwrite(bits,1,nBytes,f);
+    fflush(f);
   }
   fclose(f);
 

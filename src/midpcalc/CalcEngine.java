@@ -343,8 +343,8 @@ public final class CalcEngine
   public String [] monitorStr;
   public String [] monitorLabels;
   private static final String [] statLabels =
-    { "n","$x","$x\"","$y","$y\"","$xy","$&x","$&\"x",
-      "$&y","$&\"y","$x&y","$y&x","$&x&y" };
+    { "n","ßx","ßx²","ßy","ßy²","ßxy","ß£x","ß£²x",
+      "ß£y","ß£²y","ßx£y","ßy£x","ß£x£y" };
   private static final String [] financeLabels =
     { "pv","fv","np","pmt","ir%" };
   private String [] memLabels;
@@ -1120,7 +1120,7 @@ public final class CalcEngine
     }
     n += monitorYOff;
     if (isInsideMonitor && n == monitorY)
-      return ">";
+      return "»";
     else
       return "=";
   }
@@ -4169,7 +4169,8 @@ public final class CalcEngine
       xMax.assign(stack[2]);
       yMin.assign(stack[1]);
       yMax.assign(stack[0]);
-      if (xMin.greaterEqual(xMax) || yMin.greaterEqual(yMax)) {
+      if (getStackHeight()<4 ||
+          xMin.greaterEqual(xMax) || yMin.greaterEqual(yMax)) {
         setMessage("Draw", "The draw area limits, xMin, xMax, yMin and yMax "+
                    "must be pushed to the stack (in that order) before "+
                    "drawing. xMin must be less than xMax and yMin must be "+
@@ -4179,6 +4180,13 @@ public final class CalcEngine
     }
     else if (cmd == PROG_SOLVE)
     {
+      if (getStackHeight()<2) {
+        setMessage("Solve", "The search bounds, a and b, must be pushed to"+
+                   " the stack before solving. The search bounds must"+
+                   " straddle the root, i.e. either f(a) or f(b) must be"+
+                   " negative, but not both");
+        return false;
+      }
       y1 = new Real();
       y2 = new Real();
 
@@ -4248,9 +4256,10 @@ public final class CalcEngine
         stackI[0].makeZero();
         Real.magicRounding = true;
         if (y1.sign == y2.sign)
-          setMessage("Solve", "Initial search bounds a and b do not straddle "+
-                     "the root, i.e. either f(a) or f(b) must be negative, "+
-                     "but not both");
+          setMessage("Solve", "The search bounds, a and b, must be pushed to"+
+                     " the stack before solving. The search bounds must"+
+                     " straddle the root, i.e. either f(a) or f(b) must be"+
+                     " negative, but not both");
         else
           setMessage("Solve", "Discontinuous or complex function");
         return false;
@@ -4267,6 +4276,12 @@ public final class CalcEngine
     }
     else if (cmd == PROG_INTEGR)
     {
+      if (getStackHeight()<3 || stack[0].isZero()) {
+        setMessage("Integrate", "The integration limits and the desired"+
+                   " accuracy (i.e. some small nonzero number) must be pushed"+
+                   " to the stack in that order before integrating");
+        return false;
+      }
       total  = new Real();
       totalI = new Real();
       y0  = new Real();
@@ -4303,6 +4318,14 @@ public final class CalcEngine
     }
     else if (cmd == PROG_MINMAX)
     {
+      if (getStackHeight()<2) {
+        setMessage("Min/max", "The search bounds, a and b, must be pushed to"+
+                   " the stack before activating this function. The search"+
+                   " bounds must be set so that the function value at the"+
+                   " midpoint, f((a+b)/2), is either greater than both"+
+                   " f(a) and f(b), or less than both f(a) and f(b).");
+        return false;
+      }
       c = new Real();
       y0 = new Real();
       y1 = new Real();

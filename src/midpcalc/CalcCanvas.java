@@ -235,7 +235,7 @@ public final class CalcCanvas
   });
 
   private Menu enterMonitor =
-    new Menu("[»]",CalcEngine.MONITOR_ENTER,Menu.NO_REPEAT);
+    new Menu("[­]",CalcEngine.MONITOR_ENTER,Menu.NO_REPEAT);
 
   private Menu systemMenu = new Menu("sys",new Menu[] {
     new Menu("font",new Menu[] {
@@ -280,36 +280,36 @@ public final class CalcCanvas
         new Menu("result",Menu.TITLE_SKIP,new Menu[] {
           new Menu("average",new Menu [] {
             new Menu("~x~, ~y~",CalcEngine.AVG),
-            new Menu("s_x_, s_y_",CalcEngine.STDEV),
+            new Menu("s_x, s_y",CalcEngine.STDEV),
             new Menu("~x~w",CalcEngine.AVGXW),
-            new Menu("S_x_, S_y_",CalcEngine.PSTDEV),
+            new Menu("S_x, S_y",CalcEngine.PSTDEV),
             new Menu("draw",CalcEngine.AVG_DRAW),
           }),
           new Menu("ax+b",new Menu[] {
             new Menu("a,b", CalcEngine.LIN_AB),
-            new Menu("y^*^",CalcEngine.LIN_YEST),
-            new Menu("x^*^",CalcEngine.LIN_XEST),
+            new Menu("y^*",CalcEngine.LIN_YEST),
+            new Menu("x^*",CalcEngine.LIN_XEST),
             new Menu("r",   CalcEngine.LIN_R),
             new Menu("draw",CalcEngine.LIN_DRAW),
           }),
           new Menu("alnx+b",new Menu[] {
             new Menu("a,b", CalcEngine.LOG_AB),
-            new Menu("y^*^",CalcEngine.LOG_YEST),
-            new Menu("x^*^",CalcEngine.LOG_XEST),
+            new Menu("y^*",CalcEngine.LOG_YEST),
+            new Menu("x^*",CalcEngine.LOG_XEST),
             new Menu("r",   CalcEngine.LOG_R),
             new Menu("draw",CalcEngine.LOG_DRAW),
           }),
           new Menu("be^ax",new Menu[] {
             new Menu("a,b", CalcEngine.EXP_AB),
-            new Menu("y^*^",CalcEngine.EXP_YEST),
-            new Menu("x^*^",CalcEngine.EXP_XEST),
+            new Menu("y^*",CalcEngine.EXP_YEST),
+            new Menu("x^*",CalcEngine.EXP_XEST),
             new Menu("r",   CalcEngine.EXP_R),
             new Menu("draw",CalcEngine.EXP_DRAW),
           }),
           new Menu("bx^a",new Menu[] {
             new Menu("a,b", CalcEngine.POW_AB),
-            new Menu("y^*^",CalcEngine.POW_YEST),
-            new Menu("x^*^",CalcEngine.POW_XEST),
+            new Menu("y^*",CalcEngine.POW_YEST),
+            new Menu("x^*",CalcEngine.POW_XEST),
             new Menu("r",   CalcEngine.POW_R),
             new Menu("draw",CalcEngine.POW_DRAW),
           }),
@@ -350,28 +350,28 @@ public final class CalcCanvas
       }),
       new Menu("conv",new Menu [] {
         new Menu("time",new Menu[] {
-          new Menu("»DH.MS",CalcEngine.TO_DHMS),
-          new Menu("»H",CalcEngine.TO_H),
+          new Menu("­DH.MS",CalcEngine.TO_DHMS),
+          new Menu("­H",CalcEngine.TO_H),
           new Menu("now",CalcEngine.TIME_NOW),
           new Menu("DH.MS+",CalcEngine.DHMS_PLUS),
           new Menu("more",Menu.TITLE_SKIP,new Menu [] {
             new Menu("unix",Menu.TITLE_SKIP,new Menu [] {
-              new Menu("DH.MS»unix",CalcEngine.DHMS_TO_UNIX),
+              new Menu("DH.MS­unix",CalcEngine.DHMS_TO_UNIX),
               null,
               null,
-              new Menu("unix»DH.MS",CalcEngine.UNIX_TO_DHMS),
+              new Menu("unix­DH.MS",CalcEngine.UNIX_TO_DHMS),
             }),
             new Menu("JD",Menu.TITLE_SKIP,new Menu [] {
-              new Menu("DH.MS»JD",CalcEngine.DHMS_TO_JD),
+              new Menu("DH.MS­JD",CalcEngine.DHMS_TO_JD),
               null,
               null,
-              new Menu("JD»DH.MS",CalcEngine.JD_TO_DHMS),
+              new Menu("JD­DH.MS",CalcEngine.JD_TO_DHMS),
             }),
             new Menu("MJD",Menu.TITLE_SKIP,new Menu [] {
-              new Menu("DH.MS»MJD",CalcEngine.DHMS_TO_MJD),
+              new Menu("DH.MS­MJD",CalcEngine.DHMS_TO_MJD),
               null,
               null,
-              new Menu("MJD»DH.MS",CalcEngine.MJD_TO_DHMS),
+              new Menu("MJD­DH.MS",CalcEngine.MJD_TO_DHMS),
             }),
             new Menu("time",CalcEngine.TIME),
             new Menu("date",CalcEngine.DATE),
@@ -392,8 +392,8 @@ public final class CalcCanvas
             new Menu("ton/kg",CalcEngine.CONST_kg_ton),
           }),
           new Menu("temp",new Menu [] {
-            new Menu("°C»°F",CalcEngine.CONV_C_F),
-            new Menu("°F»°C",CalcEngine.CONV_F_C),
+            new Menu("°C­°F",CalcEngine.CONV_C_F),
+            new Menu("°F­°C",CalcEngine.CONV_F_C),
             new Menu("°K-°C",CalcEngine.CONST_K_C),
           }),
           new Menu("energy",new Menu [] {
@@ -613,8 +613,8 @@ public final class CalcCanvas
     }),
     new Menu("more",Menu.TITLE_SKIP,new Menu[] {
       new Menu("RAD/DEG",CalcEngine.TRIG_DEGRAD),
-      new Menu("»RAD",CalcEngine.TO_RAD),
-      new Menu("»DEG",CalcEngine.TO_DEG),
+      new Menu("­RAD",CalcEngine.TO_RAD),
+      new Menu("­DEG",CalcEngine.TO_DEG),
       null, // coord or cplx
       new Menu("¶",CalcEngine.PI),
     }),
@@ -622,14 +622,14 @@ public final class CalcCanvas
 
   private Menu coordMenu = new Menu("coord",new Menu[] {
     new Menu("hypot",CalcEngine.HYPOT),
-    new Menu("r»p",CalcEngine.RP),
-    new Menu("p»r",CalcEngine.PR),
+    new Menu("r­p",CalcEngine.RP),
+    new Menu("p­r",CalcEngine.PR),
     new Menu("atan_2",CalcEngine.ATAN2),
-    new Menu("r»cplx",CalcEngine.TO_CPLX),
+    new Menu("r­cplx",CalcEngine.TO_CPLX),
   });
 
   private Menu cplxMenu = new Menu("cplx",new Menu[] {
-    new Menu("cplx»r",CalcEngine.CPLX_SPLIT),
+    new Menu("cplx­r",CalcEngine.CPLX_SPLIT),
     new Menu("abs",CalcEngine.ABS),
     new Menu("arg",CalcEngine.CPLX_ARG),
     new Menu("conj",CalcEngine.CPLX_CONJ),
@@ -949,7 +949,7 @@ public final class CalcCanvas
 
   private boolean plainLabel(String label) {
     for (int i=0; i<label.length(); i++)
-      if ("^~_»«¿ß¡¶ÞãëÐ".indexOf(label.charAt(i))>=0)
+      if ("^~_­«¿ß¡¶ÞãëÐ".indexOf(label.charAt(i))>=0)
         return false;
     return true;
   }
@@ -974,7 +974,7 @@ public final class CalcCanvas
         font = font==normalFont ? smallFont : normalFont;
       else if (c=='~')
         ; // overline... no font change
-      else if ("»«¿ß¡¶Ð".indexOf(c)>=0)
+      else if ("­«¿ß¡¶Ð".indexOf(c)>=0)
         width += font.charWidth('O');
       else if (c=='Þ')
         width += font.charWidth('o')*(6+4)/6;
@@ -1011,11 +1011,11 @@ public final class CalcCanvas
         }
       } else if (c=='~') {
         overline = !overline;
-      } else if ("»«¿ß¡¶ÞãëÐ".indexOf(c)>=0) {
+      } else if ("­«¿ß¡¶ÞãëÐ".indexOf(c)>=0) {
         int w = font.charWidth('O');
         int h = getBaselinePosition(font);
         switch (c) {
-          case '»': // Arrow ->
+          case '­': // Arrow ->
             g.drawLine(x,y+h/2+1,x+w-2,y+h/2+1);
             g.drawLine(x,y+h/2+2,x+w-2,y+h/2+2);
             g.drawLine(x+w-2,y+h/2+1,x+w-2-2,y+h/2+1-2);

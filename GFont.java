@@ -62,8 +62,8 @@ final class GFont
     if (char_bits_resource != null) {
       try {
         char_cache = new Image[32*3];
-        char_index = new byte[96];
-        for (char c=32; c<128; c++)
+        char_index = new byte[256-32];
+        for (char c=32; c<256; c++)
           char_index[c-32] = (byte)char_set.indexOf(c);
         InputStream in = getClass().getResourceAsStream(char_bits_resource);
         byte bits[] = new
@@ -91,7 +91,7 @@ final class GFont
   }
 
   private int charToIndex(char c) {
-    if (c>=32 && c<128)
+    if (c>=32 && c<256)
       return (int)char_index[c-32];
     return -1;
   }
