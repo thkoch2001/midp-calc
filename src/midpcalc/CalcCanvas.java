@@ -248,6 +248,7 @@ public final class CalcCanvas
     new Menu("exit",EXIT,Menu.NO_REPEAT),
     new Menu("reset",RESET,Menu.NO_REPEAT),
     new Menu("fullscreen",FULLSCREEN,Menu.NO_REPEAT),
+    //new Menu("free",CalcEngine.FREE_MEM,Menu.NO_REPEAT),
   });
 
   private Menu menu = new Menu("menu",new Menu[] {

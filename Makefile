@@ -1,4 +1,4 @@
-VERSION = 3.00
+VERSION = 3.01
 TARGETS = Calc.jar \
           Calc.jad \
           CalcMIDP2.jar \
@@ -7,14 +7,14 @@ TARGETS = Calc.jar \
           CalcNokia.jad \
           CalcApplet.jar
 
-BASEURL = http://midp-calc.sourceforge.net
+BASEURL = http://midp-calc.sf.net
 
 # antenna and proguard must be installed in $(WTK_1)/lib
 WTK_1 = ../../WTK104
 WTK_2 = ../../WTK2.2
 WTK_N = ../../Nokia/Devices/Nokia_Series_40_MIDP_Concept_SDK_Beta_0_3
 BOOTCLASSPATH_1 = $(WTK_1)/lib/midpapi.zip
-BOOTCLASSPATH_2 = $(WTK_2)/lib/midpapi20.jar:$(WTK_2)/lib/cldcapi11.jar
+BOOTCLASSPATH_2 = $(WTK_2)/lib/midpapi20.jar:$(WTK_2)/lib/cldcapi10.jar
 BOOTCLASSPATH_N = $(WTK_N)/lib/classes.zip
 
 JFLAGS = -encoding "ISO8859-1" -O
@@ -112,7 +112,7 @@ CalcMIDP2.jad: Makefile
 	echo "MIDlet-Jar-Size: 0"                    >> $@
 	echo "MIDletX-LG-Contents: G7100"            >> $@
 	echo "MicroEdition-Profile: MIDP-2.0"        >> $@
-	echo "MicroEdition-Configuration: CLDC-1.1"  >> $@
+	echo "MicroEdition-Configuration: CLDC-1.0"  >> $@
 	echo "MIDlet-1: Calc, /ral/Calc.png, ral.Calc" >> $@
 
 CalcNokia.jad: Makefile

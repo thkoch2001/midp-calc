@@ -90,17 +90,19 @@ public class SetupCanvas
     } catch (Exception e) {
     }
     if (name != null) {
-      if (name.startsWith("Nokia")) {
+      name = name.toLowerCase();
+      if (name.startsWith("nokia")) {
         // Just start with the most likely command arrangement for Nokia
         arrng = 1;
-      } else if (name.indexOf("T610")>0 || name.indexOf("Z600")>0 ||
-                 name.indexOf("Z1010")>0 || name.indexOf("K700i")>0) {
+      } else if (name.indexOf("t610")>0 || name.indexOf("z600")>0 ||
+                 name.indexOf("z1010")>0 || name.indexOf("k700i")>0 ||
+                 name.indexOf("x120")>0) {
         midlet.hasClearKey = true;
         midlet.commandArrangement = 0;
         midlet.bgrDisplay = false;
         query = QUERY_FINISHED;
         finish();
-      } else if (name.indexOf("T630")>0) {
+      } else if (name.indexOf("t630")>0) {
         midlet.hasClearKey = true;
         midlet.commandArrangement = 0;
         midlet.bgrDisplay = true;
