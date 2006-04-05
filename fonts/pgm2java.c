@@ -79,7 +79,8 @@ int main(int argc, char *argv[])
   unsigned char bits[100]; // Works for size up to 20x20
   int char_height, char_width;
   char *prefix;
-  char *charSet = " %'*+,-./0123456789:=ABCDEFMR[]_aefilmnoprtvxy£²»ß";
+  char *charSet = " !#%'()*+,-./0123456789:<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_" \
+    "abcdefghijklmnoprstuvwxyz¡£«­°²µ¶»¿ÐÞßãë";
   FILE *f;
   // Strings written with font
   //
@@ -91,6 +92,7 @@ int main(int argc, char *argv[])
   // pv= fv= np= pmt= ir%=
   // M0= M1=
   // R0= R1» Col:1 M:[3x4] no matrix
+  // 0>math/x^2
 
   if (argc<4 || (image=readImage(argv[1],&iW,&iH))==0 || iW%32!=0 || iH%6!=0) {
     printf("Usage: %s image.pgm prefix out.dat > out.java\n",argv[0]);

@@ -172,15 +172,12 @@ public final class CalcCanvas
     public byte flags;
     public Menu [] subMenu;
 
-    public static final byte NUMBER_REQUIRED = 1;
-    public static final byte FINANCE_REQUIRED = 2;
-    public static final byte PROG_REQUIRED = 4;
-    public static final byte SUBMENU_REQUIRED = 7;
-    public static final byte TITLE_SKIP = 8;
-    public static final byte NO_REPEAT = 16;
-    public static final byte REPEAT_PARENT = 32;
-    public static final byte NO_PROG = 64;
-
+    // get Details from CmdStr class
+    Menu(int c) {
+      label = CmdDesc.getStr(c, true);
+      command = c;
+      flags = CmdDesc.getFlags(c);
+    }
     Menu(String l, int c) {
       label = l;
       command = c;
@@ -227,28 +224,28 @@ public final class CalcCanvas
   private static final int NUMBER_15 = -20+15;
 
   private Menu basicMenu = new Menu("basic",new Menu[] {
-    new Menu("-",CalcEngine.SUB,Menu.NO_REPEAT),
-    new Menu("*",CalcEngine.MUL,Menu.NO_REPEAT),
-    new Menu("/",CalcEngine.DIV,Menu.NO_REPEAT),
-    new Menu("+/-",CalcEngine.NEG,Menu.NO_REPEAT),
+    new Menu(CalcEngine.SUB),
+    new Menu(CalcEngine.MUL),
+    new Menu(CalcEngine.DIV),
+    new Menu(CalcEngine.NEG),
     null,
   });
 
   private Menu enterMonitor =
-    new Menu("[­]",CalcEngine.MONITOR_ENTER,Menu.NO_REPEAT);
+    new Menu(CalcEngine.MONITOR_ENTER);
 
   private Menu systemMenu = new Menu("sys",new Menu[] {
     new Menu("font",new Menu[] {
-      new Menu("medium",FONT_MEDIUM,Menu.REPEAT_PARENT),
-      new Menu("small",FONT_SMALL,Menu.REPEAT_PARENT),
-      new Menu("large",FONT_LARGE,Menu.REPEAT_PARENT),
-      new Menu("xlarge",FONT_XLARGE,Menu.REPEAT_PARENT),
-      new Menu("sys",FONT_SYSTEM,Menu.REPEAT_PARENT),
+      new Menu("medium",FONT_MEDIUM,CmdDesc.REPEAT_PARENT),
+      new Menu("small",FONT_SMALL,CmdDesc.REPEAT_PARENT),
+      new Menu("large",FONT_LARGE,CmdDesc.REPEAT_PARENT),
+      new Menu("xlarge",FONT_XLARGE,CmdDesc.REPEAT_PARENT),
+      new Menu("sys",FONT_SYSTEM,CmdDesc.REPEAT_PARENT),
     }),
-    new Menu("exit",EXIT,Menu.NO_REPEAT),
-    new Menu("reset",RESET,Menu.NO_REPEAT),
-    new Menu("fullscreen",FULLSCREEN,Menu.NO_REPEAT),
-    //new Menu("free",CalcEngine.FREE_MEM,Menu.NO_REPEAT),
+    new Menu("exit",EXIT,CmdDesc.NO_REPEAT),
+    new Menu("reset",RESET,CmdDesc.NO_REPEAT),
+    new Menu("fullscreen",FULLSCREEN,CmdDesc.NO_REPEAT),
+    //new Menu("free",CalcEngine.FREE_MEM,CmdDesc.NO_REPEAT),
   });
 
   private Menu menu = new Menu("menu",new Menu[] {
@@ -257,456 +254,448 @@ public final class CalcCanvas
     null, // trig or binop2
     new Menu("special",new Menu [] {
       new Menu("stack",new Menu[] {
-        new Menu("LAST x",CalcEngine.LASTX),
-        new Menu("x«y",CalcEngine.XCHG),
-        new Menu("undo",CalcEngine.UNDO),
-        new Menu("more",Menu.TITLE_SKIP,new Menu [] {
-          new Menu("RCL st#",CalcEngine.RCLST,Menu.NUMBER_REQUIRED),
-          new Menu("rolldn",CalcEngine.ROLLDN),
-          new Menu("rollup",CalcEngine.ROLLUP),
-          new Menu("x«st#",CalcEngine.XCHGST,Menu.NUMBER_REQUIRED),
+        new Menu(CalcEngine.LASTX),
+        new Menu(CalcEngine.XCHG),
+        new Menu(CalcEngine.UNDO),
+        new Menu("more",CmdDesc.TITLE_SKIP,new Menu [] {
+          new Menu(CalcEngine.RCLST),
+          new Menu(CalcEngine.ROLLDN),
+          new Menu(CalcEngine.ROLLUP),
+          new Menu(CalcEngine.XCHGST),
         }),
-        new Menu("clear",CalcEngine.CLS,Menu.NO_REPEAT),
+        new Menu(CalcEngine.CLS),
       }),
       new Menu("mem",new Menu[] {
-        new Menu("STO",CalcEngine.STO,Menu.NUMBER_REQUIRED),
-        new Menu("RCL",CalcEngine.RCL,Menu.NUMBER_REQUIRED),
-        new Menu("STO+",CalcEngine.STP,Menu.NUMBER_REQUIRED),
-        new Menu("x«mem",CalcEngine.XCHGMEM,Menu.NUMBER_REQUIRED),
-        new Menu("clear",CalcEngine.CLMEM,Menu.NO_REPEAT),
+        new Menu(CalcEngine.STO),
+        new Menu(CalcEngine.RCL),
+        new Menu(CalcEngine.STP),
+        new Menu(CalcEngine.XCHGMEM),
+        new Menu(CalcEngine.CLMEM),
       }),
       new Menu("stat",new Menu[] {
-        new Menu("ß+",CalcEngine.SUMPL),
-        new Menu("ß-",CalcEngine.SUMMI),
-        new Menu("result",Menu.TITLE_SKIP,new Menu[] {
+        new Menu(CalcEngine.SUMPL),
+        new Menu(CalcEngine.SUMMI),
+        new Menu("result",CmdDesc.TITLE_SKIP,new Menu[] {
           new Menu("average",new Menu [] {
-            new Menu("~x~, ~y~",CalcEngine.AVG),
-            new Menu("s_x, s_y",CalcEngine.STDEV),
-            new Menu("~x~w",CalcEngine.AVGXW),
-            new Menu("S_x, S_y",CalcEngine.PSTDEV),
-            new Menu("draw",CalcEngine.AVG_DRAW),
+            new Menu(CalcEngine.AVG),
+            new Menu(CalcEngine.STDEV),
+            new Menu(CalcEngine.AVGXW),
+            new Menu(CalcEngine.PSTDEV),
+            new Menu(CalcEngine.AVG_DRAW),
           }),
           new Menu("ax+b",new Menu[] {
-            new Menu("a,b", CalcEngine.LIN_AB),
-            new Menu("y^*",CalcEngine.LIN_YEST),
-            new Menu("x^*",CalcEngine.LIN_XEST),
-            new Menu("r",   CalcEngine.LIN_R),
-            new Menu("draw",CalcEngine.LIN_DRAW),
+            new Menu(CalcEngine.LIN_AB),
+            new Menu(CalcEngine.LIN_YEST),
+            new Menu(CalcEngine.LIN_XEST),
+            new Menu(CalcEngine.LIN_R),
+            new Menu(CalcEngine.LIN_DRAW),
           }),
           new Menu("alnx+b",new Menu[] {
-            new Menu("a,b", CalcEngine.LOG_AB),
-            new Menu("y^*",CalcEngine.LOG_YEST),
-            new Menu("x^*",CalcEngine.LOG_XEST),
-            new Menu("r",   CalcEngine.LOG_R),
-            new Menu("draw",CalcEngine.LOG_DRAW),
+            new Menu(CalcEngine.LOG_AB),
+            new Menu(CalcEngine.LOG_YEST),
+            new Menu(CalcEngine.LOG_XEST),
+            new Menu(CalcEngine.LOG_R),
+            new Menu(CalcEngine.LOG_DRAW),
           }),
           new Menu("be^ax",new Menu[] {
-            new Menu("a,b", CalcEngine.EXP_AB),
-            new Menu("y^*",CalcEngine.EXP_YEST),
-            new Menu("x^*",CalcEngine.EXP_XEST),
-            new Menu("r",   CalcEngine.EXP_R),
-            new Menu("draw",CalcEngine.EXP_DRAW),
+            new Menu(CalcEngine.EXP_AB),
+            new Menu(CalcEngine.EXP_YEST),
+            new Menu(CalcEngine.EXP_XEST),
+            new Menu(CalcEngine.EXP_R),
+            new Menu(CalcEngine.EXP_DRAW),
           }),
           new Menu("bx^a",new Menu[] {
-            new Menu("a,b", CalcEngine.POW_AB),
-            new Menu("y^*",CalcEngine.POW_YEST),
-            new Menu("x^*",CalcEngine.POW_XEST),
-            new Menu("r",   CalcEngine.POW_R),
-            new Menu("draw",CalcEngine.POW_DRAW),
+            new Menu(CalcEngine.POW_AB),
+            new Menu(CalcEngine.POW_YEST),
+            new Menu(CalcEngine.POW_XEST),
+            new Menu(CalcEngine.POW_R),
+            new Menu(CalcEngine.POW_DRAW),
           }),
         }),
         new Menu("sums",new Menu[] {
-          new Menu("n",CalcEngine.N),
-          new Menu("x",Menu.TITLE_SKIP,new Menu[] {
-            new Menu("ßx",CalcEngine.SUMX),
-            new Menu("ßx^2",CalcEngine.SUMXX),
-            new Menu("ßlnx",CalcEngine.SUMLNX),
-            new Menu("ßln^2^x",CalcEngine.SUMLN2X),
+          new Menu(CalcEngine.N),
+          new Menu("x",CmdDesc.TITLE_SKIP,new Menu[] {
+            new Menu(CalcEngine.SUMX),
+            new Menu(CalcEngine.SUMXX),
+            new Menu(CalcEngine.SUMLNX),
+            new Menu(CalcEngine.SUMLN2X),
           }),
-          new Menu("y",Menu.TITLE_SKIP,new Menu[] {
-            new Menu("ßy",CalcEngine.SUMY),
-            new Menu("ßy^2",CalcEngine.SUMYY),
-            new Menu("ßlny",CalcEngine.SUMLNY),
-            new Menu("ßln^2^y",CalcEngine.SUMLN2Y),
+          new Menu("y",CmdDesc.TITLE_SKIP,new Menu[] {
+            new Menu(CalcEngine.SUMY),
+            new Menu(CalcEngine.SUMYY),
+            new Menu(CalcEngine.SUMLNY),
+            new Menu(CalcEngine.SUMLN2Y),
           }),
-          new Menu("xy",Menu.TITLE_SKIP,new Menu[] {
-            new Menu("ßxy",CalcEngine.SUMXY),
-            new Menu("ßxlny",CalcEngine.SUMXLNY),
-            new Menu("ßylnx",CalcEngine.SUMYLNX),
-            new Menu("ßlnxlny",CalcEngine.SUMLNXLNY),
+          new Menu("xy",CmdDesc.TITLE_SKIP,new Menu[] {
+            new Menu(CalcEngine.SUMXY),
+            new Menu(CalcEngine.SUMXLNY),
+            new Menu(CalcEngine.SUMYLNX),
+            new Menu(CalcEngine.SUMLNXLNY),
           }),
         }),
-        new Menu("clear",CalcEngine.CLST,Menu.NO_REPEAT),
+        new Menu(CalcEngine.CLST),
       }),
       new Menu("finance",new Menu [] {
-        new Menu("STO",CalcEngine.FINANCE_STO,Menu.FINANCE_REQUIRED),
-        new Menu("RCL",CalcEngine.FINANCE_RCL,Menu.FINANCE_REQUIRED),
-        new Menu("solve",CalcEngine.FINANCE_SOLVE,Menu.FINANCE_REQUIRED),
-        new Menu("more",Menu.TITLE_SKIP,new Menu [] {
-          new Menu("END/BGN",CalcEngine.FINANCE_BGNEND),
-          new Menu("y%*x",CalcEngine.FINANCE_MULINT),
-          new Menu("y%/x",CalcEngine.FINANCE_DIVINT),
+        new Menu(CalcEngine.FINANCE_STO),
+        new Menu(CalcEngine.FINANCE_RCL),
+        new Menu(CalcEngine.FINANCE_SOLVE),
+        new Menu("more",CmdDesc.TITLE_SKIP,new Menu [] {
+          new Menu(CalcEngine.FINANCE_BGNEND),
+          new Menu(CalcEngine.FINANCE_MULINT),
+          new Menu(CalcEngine.FINANCE_DIVINT),
         }),
-        new Menu("clear",CalcEngine.FINANCE_CLEAR,Menu.NO_REPEAT),
+        new Menu(CalcEngine.FINANCE_CLEAR),
       }),
       new Menu("conv",new Menu [] {
         new Menu("time",new Menu[] {
-          new Menu("­DH.MS",CalcEngine.TO_DHMS),
-          new Menu("­H",CalcEngine.TO_H),
-          new Menu("now",CalcEngine.TIME_NOW),
-          new Menu("DH.MS+",CalcEngine.DHMS_PLUS),
-          new Menu("more",Menu.TITLE_SKIP,new Menu [] {
-            new Menu("unix",Menu.TITLE_SKIP,new Menu [] {
-              new Menu("DH.MS­unix",CalcEngine.DHMS_TO_UNIX),
+          new Menu(CalcEngine.TO_DHMS),
+          new Menu(CalcEngine.TO_H),
+          new Menu(CalcEngine.TIME_NOW),
+          new Menu(CalcEngine.DHMS_PLUS),
+          new Menu("more",CmdDesc.TITLE_SKIP,new Menu [] {
+            new Menu("unix",CmdDesc.TITLE_SKIP,new Menu [] {
+              new Menu(CalcEngine.DHMS_TO_UNIX),
               null,
               null,
-              new Menu("unix­DH.MS",CalcEngine.UNIX_TO_DHMS),
+              new Menu(CalcEngine.UNIX_TO_DHMS),
             }),
-            new Menu("JD",Menu.TITLE_SKIP,new Menu [] {
-              new Menu("DH.MS­JD",CalcEngine.DHMS_TO_JD),
+            new Menu("JD",CmdDesc.TITLE_SKIP,new Menu [] {
+              new Menu(CalcEngine.DHMS_TO_JD),
               null,
               null,
-              new Menu("JD­DH.MS",CalcEngine.JD_TO_DHMS),
+              new Menu(CalcEngine.JD_TO_DHMS),
             }),
-            new Menu("MJD",Menu.TITLE_SKIP,new Menu [] {
-              new Menu("DH.MS­MJD",CalcEngine.DHMS_TO_MJD),
+            new Menu("MJD",CmdDesc.TITLE_SKIP,new Menu [] {
+              new Menu(CalcEngine.DHMS_TO_MJD),
               null,
               null,
-              new Menu("MJD­DH.MS",CalcEngine.MJD_TO_DHMS),
+              new Menu(CalcEngine.MJD_TO_DHMS),
             }),
-            new Menu("time",CalcEngine.TIME),
-            new Menu("date",CalcEngine.DATE),
+            new Menu(CalcEngine.TIME),
+            new Menu(CalcEngine.DATE),
           }),
         }),
         new Menu("metric",new Menu [] {
           new Menu("length",new Menu [] {
-            new Menu("mi/km",CalcEngine.CONST_km_mi),
-            new Menu("in/cm",CalcEngine.CONST_cm_in),
-            new Menu("yd/m",CalcEngine.CONST_m_yd),
-            new Menu("n.m./km",CalcEngine.CONST_km_nm),
-            new Menu("ft/m",CalcEngine.CONST_m_ft),
+            new Menu(CalcEngine.CONST_km_mi),
+            new Menu(CalcEngine.CONST_cm_in),
+            new Menu(CalcEngine.CONST_m_yd),
+            new Menu(CalcEngine.CONST_km_nm),
+            new Menu(CalcEngine.CONST_m_ft),
           }),
           new Menu("weight",new Menu [] {
-            new Menu("oz/g",CalcEngine.CONST_g_oz),
-            new Menu("lb/kg",CalcEngine.CONST_kg_lb),
-            new Menu("gr/mg",CalcEngine.CONST_mg_gr),
-            new Menu("ton/kg",CalcEngine.CONST_kg_ton),
+            new Menu(CalcEngine.CONST_g_oz),
+            new Menu(CalcEngine.CONST_kg_lb),
+            new Menu(CalcEngine.CONST_mg_gr),
+            new Menu(CalcEngine.CONST_kg_ton),
           }),
           new Menu("temp",new Menu [] {
-            new Menu("°C­°F",CalcEngine.CONV_C_F),
-            new Menu("°F­°C",CalcEngine.CONV_F_C),
-            new Menu("°K-°C",CalcEngine.CONST_K_C),
+            new Menu(CalcEngine.CONV_C_F),
+            new Menu(CalcEngine.CONV_F_C),
+            new Menu(CalcEngine.CONST_K_C),
           }),
           new Menu("energy",new Menu [] {
-            new Menu("cal/J",CalcEngine.CONST_J_cal),
-            new Menu("Btu/J",CalcEngine.CONST_J_Btu),
-            new Menu("hp/W",CalcEngine.CONST_W_hp),
+            new Menu(CalcEngine.CONST_J_cal),
+            new Menu(CalcEngine.CONST_J_Btu),
+            new Menu(CalcEngine.CONST_W_hp),
           }),
           new Menu("vol",new Menu [] {
-            new Menu("pt/l",CalcEngine.CONST_l_pt),
-            new Menu("cup/l",CalcEngine.CONST_l_cup),
-            new Menu("gal/l",CalcEngine.CONST_l_gal),
-            new Menu("fl.oz/ml",CalcEngine.CONST_ml_floz),
+            new Menu(CalcEngine.CONST_l_pt),
+            new Menu(CalcEngine.CONST_l_cup),
+            new Menu(CalcEngine.CONST_l_gal),
+            new Menu(CalcEngine.CONST_ml_floz),
           }),
         }),
         new Menu("const",new Menu [] {
           new Menu("univ",new Menu [] {
-            new Menu("c",CalcEngine.CONST_c),
-            new Menu("h",CalcEngine.CONST_h),
-            new Menu("µ_0",CalcEngine.CONST_mu_0),
-            new Menu("ë_0",CalcEngine.CONST_eps_0),
+            new Menu(CalcEngine.CONST_c),
+            new Menu(CalcEngine.CONST_h),
+            new Menu(CalcEngine.CONST_mu_0),
+            new Menu(CalcEngine.CONST_eps_0),
           }),
           new Menu("chem",new Menu [] {
-            new Menu("N_A",CalcEngine.CONST_NA),
-            new Menu("R",CalcEngine.CONST_R),
-            new Menu("k",CalcEngine.CONST_k),
-            new Menu("F",CalcEngine.CONST_F),
+            new Menu(CalcEngine.CONST_NA),
+            new Menu(CalcEngine.CONST_R),
+            new Menu(CalcEngine.CONST_k),
+            new Menu(CalcEngine.CONST_F),
           }),
           new Menu("phys",new Menu [] {
-            new Menu("ã",CalcEngine.CONST_alpha),
-            new Menu("a_0",CalcEngine.CONST_a_0),
-            new Menu("R_Þ",CalcEngine.CONST_R_inf),
-            new Menu("µ_B",CalcEngine.CONST_mu_B),
+            new Menu(CalcEngine.CONST_alpha),
+            new Menu(CalcEngine.CONST_a_0),
+            new Menu(CalcEngine.CONST_R_inf),
+            new Menu(CalcEngine.CONST_mu_B),
           }),
           new Menu("atom",new Menu [] {
-            new Menu("e",CalcEngine.CONST_e),
-            new Menu("m_e",CalcEngine.CONST_m_e),
-            new Menu("m_p",CalcEngine.CONST_m_p),
-            new Menu("m_n",CalcEngine.CONST_m_n),
-            new Menu("m_u",CalcEngine.CONST_m_u),
+            new Menu(CalcEngine.CONST_e),
+            new Menu(CalcEngine.CONST_m_e),
+            new Menu(CalcEngine.CONST_m_p),
+            new Menu(CalcEngine.CONST_m_n),
+            new Menu(CalcEngine.CONST_m_u),
           }),
           new Menu("astro",new Menu [] {
-            new Menu("G",CalcEngine.CONST_G),
-            new Menu("g_n",CalcEngine.CONST_g_n),
-            new Menu("l.y.",CalcEngine.CONST_ly),
-            new Menu("A.U.",CalcEngine.CONST_AU),
-            new Menu("pc",CalcEngine.CONST_pc),
+            new Menu(CalcEngine.CONST_G),
+            new Menu(CalcEngine.CONST_g_n),
+            new Menu(CalcEngine.CONST_ly),
+            new Menu(CalcEngine.CONST_AU),
+            new Menu(CalcEngine.CONST_pc),
           }),
         }),
-        new Menu("guess",CalcEngine.GUESS),
+        new Menu(CalcEngine.GUESS),
       }),
     }),
     new Menu("mode",new Menu[] {
       new Menu("number",new Menu[] {
-        new Menu("normal",CalcEngine.NORM),
-        new Menu("FIX",CalcEngine.FIX,Menu.NUMBER_REQUIRED),
-        new Menu("SCI",CalcEngine.SCI,Menu.NUMBER_REQUIRED),
-        new Menu("ENG",CalcEngine.ENG,Menu.NUMBER_REQUIRED),
+        new Menu(CalcEngine.NORM),
+        new Menu(CalcEngine.FIX),
+        new Menu(CalcEngine.SCI),
+        new Menu(CalcEngine.ENG),
         new Menu("sepr",new Menu[] {
           new Menu("point",new Menu[] {
-            new Menu(".",CalcEngine.POINT_DOT,Menu.REPEAT_PARENT),
-            new Menu(",",CalcEngine.POINT_COMMA,Menu.REPEAT_PARENT),
-            new Menu("keep",CalcEngine.POINT_KEEP,Menu.REPEAT_PARENT),
-            new Menu("remove",CalcEngine.POINT_REMOVE,Menu.REPEAT_PARENT),
+            new Menu(CalcEngine.POINT_DOT),
+            new Menu(CalcEngine.POINT_COMMA),
+            new Menu(CalcEngine.POINT_KEEP),
+            new Menu(CalcEngine.POINT_REMOVE),
           }),
           null,
           null,
           new Menu("thousand",new Menu[] {
-            new Menu(". or ,",CalcEngine.THOUSAND_DOT,Menu.REPEAT_PARENT),
-            new Menu("space",CalcEngine.THOUSAND_SPACE,Menu.REPEAT_PARENT),
-            new Menu("'",CalcEngine.THOUSAND_QUOTE,Menu.REPEAT_PARENT),
-            new Menu("none",CalcEngine.THOUSAND_NONE,Menu.REPEAT_PARENT),
+            new Menu(CalcEngine.THOUSAND_DOT),
+            new Menu(CalcEngine.THOUSAND_SPACE),
+            new Menu(CalcEngine.THOUSAND_QUOTE),
+            new Menu(CalcEngine.THOUSAND_NONE),
           }),
         }),
       }),
       null, // prog1 or prog2
       new Menu("base",new Menu[] {
-        new Menu("DEC",CalcEngine.BASE_DEC,Menu.REPEAT_PARENT),
-        new Menu("HEX",CalcEngine.BASE_HEX,Menu.REPEAT_PARENT),
-        new Menu("OCT",CalcEngine.BASE_OCT,Menu.REPEAT_PARENT),
-        new Menu("BIN",CalcEngine.BASE_BIN,Menu.REPEAT_PARENT),
+        new Menu(CalcEngine.BASE_DEC),
+        new Menu(CalcEngine.BASE_HEX),
+        new Menu(CalcEngine.BASE_OCT),
+        new Menu(CalcEngine.BASE_BIN),
       }),
       new Menu("monitor",new Menu[] {
-        new Menu("finance",CalcEngine.MONITOR_FINANCE,Menu.REPEAT_PARENT),
-        new Menu("stat",CalcEngine.MONITOR_STAT,
-                 Menu.NUMBER_REQUIRED|Menu.REPEAT_PARENT),
-        new Menu("mem",CalcEngine.MONITOR_MEM,
-                 Menu.NUMBER_REQUIRED|Menu.REPEAT_PARENT),
-        new Menu("matrix",CalcEngine.MONITOR_MATRIX,
-                 Menu.NUMBER_REQUIRED|Menu.REPEAT_PARENT),
-        new Menu("off",CalcEngine.MONITOR_NONE,Menu.REPEAT_PARENT),
+        new Menu(CalcEngine.MONITOR_FINANCE),
+        new Menu(CalcEngine.MONITOR_STAT),
+        new Menu(CalcEngine.MONITOR_MEM),
+        new Menu(CalcEngine.MONITOR_MATRIX),
+        new Menu(CalcEngine.MONITOR_NONE),
       }),
       systemMenu,
     }),
   });
   
   private Menu numberMenu = new Menu(null,new Menu[] {
-    new Menu("<0-3>",Menu.TITLE_SKIP|Menu.REPEAT_PARENT,new Menu[] {
-      new Menu("<0>",NUMBER_0,Menu.REPEAT_PARENT),
-      new Menu("<1>",NUMBER_1,Menu.REPEAT_PARENT),
-      new Menu("<2>",NUMBER_2,Menu.REPEAT_PARENT),
-      new Menu("<3>",NUMBER_3,Menu.REPEAT_PARENT),
+    new Menu("<0-3>",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,new Menu[] {
+      new Menu("<0>",NUMBER_0,CmdDesc.REPEAT_PARENT),
+      new Menu("<1>",NUMBER_1,CmdDesc.REPEAT_PARENT),
+      new Menu("<2>",NUMBER_2,CmdDesc.REPEAT_PARENT),
+      new Menu("<3>",NUMBER_3,CmdDesc.REPEAT_PARENT),
     }),
-    new Menu("<4-7>",Menu.TITLE_SKIP|Menu.REPEAT_PARENT,new Menu[] {
-      new Menu("<4>",NUMBER_4,Menu.REPEAT_PARENT),
-      new Menu("<5>",NUMBER_5,Menu.REPEAT_PARENT),
-      new Menu("<6>",NUMBER_6,Menu.REPEAT_PARENT),
-      new Menu("<7>",NUMBER_7,Menu.REPEAT_PARENT),
+    new Menu("<4-7>",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,new Menu[] {
+      new Menu("<4>",NUMBER_4,CmdDesc.REPEAT_PARENT),
+      new Menu("<5>",NUMBER_5,CmdDesc.REPEAT_PARENT),
+      new Menu("<6>",NUMBER_6,CmdDesc.REPEAT_PARENT),
+      new Menu("<7>",NUMBER_7,CmdDesc.REPEAT_PARENT),
     }),
-    new Menu("<8-11>",Menu.TITLE_SKIP|Menu.REPEAT_PARENT,new Menu[] {
-      new Menu("<8>",NUMBER_8,Menu.REPEAT_PARENT),
-      new Menu("<9>",NUMBER_9,Menu.REPEAT_PARENT),
-      new Menu("<10>",NUMBER_10,Menu.REPEAT_PARENT),
-      new Menu("<11>",NUMBER_11,Menu.REPEAT_PARENT),
+    new Menu("<8-11>",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,new Menu[] {
+      new Menu("<8>",NUMBER_8,CmdDesc.REPEAT_PARENT),
+      new Menu("<9>",NUMBER_9,CmdDesc.REPEAT_PARENT),
+      new Menu("<10>",NUMBER_10,CmdDesc.REPEAT_PARENT),
+      new Menu("<11>",NUMBER_11,CmdDesc.REPEAT_PARENT),
     }),
-    new Menu("<12-15>",Menu.TITLE_SKIP|Menu.REPEAT_PARENT,new Menu[] {
-      new Menu("<12>",NUMBER_12,Menu.REPEAT_PARENT),
-      new Menu("<13>",NUMBER_13,Menu.REPEAT_PARENT),
-      new Menu("<14>",NUMBER_14,Menu.REPEAT_PARENT),
-      new Menu("<15>",NUMBER_15,Menu.REPEAT_PARENT),
+    new Menu("<12-15>",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,new Menu[] {
+      new Menu("<12>",NUMBER_12,CmdDesc.REPEAT_PARENT),
+      new Menu("<13>",NUMBER_13,CmdDesc.REPEAT_PARENT),
+      new Menu("<14>",NUMBER_14,CmdDesc.REPEAT_PARENT),
+      new Menu("<15>",NUMBER_15,CmdDesc.REPEAT_PARENT),
     }),
   });
 
   private Menu financeMenu = new Menu(null,new Menu[] {
-    new Menu("pv" ,NUMBER_0,Menu.REPEAT_PARENT),
-    new Menu("fv" ,NUMBER_1,Menu.REPEAT_PARENT),
-    new Menu("np" ,NUMBER_2,Menu.REPEAT_PARENT),
-    new Menu("pmt",NUMBER_3,Menu.REPEAT_PARENT),
-    new Menu("ir%",NUMBER_4,Menu.REPEAT_PARENT),
+    new Menu("pv" ,NUMBER_0,CmdDesc.REPEAT_PARENT),
+    new Menu("fv" ,NUMBER_1,CmdDesc.REPEAT_PARENT),
+    new Menu("np" ,NUMBER_2,CmdDesc.REPEAT_PARENT),
+    new Menu("pmt",NUMBER_3,CmdDesc.REPEAT_PARENT),
+    new Menu("ir%",NUMBER_4,CmdDesc.REPEAT_PARENT),
   });
 
   private Menu intMenu = new Menu("int",new Menu[] {
-    new Menu("round",CalcEngine.ROUND),
-    new Menu("ceil",CalcEngine.CEIL),
-    new Menu("floor",CalcEngine.FLOOR),
-    new Menu("trunc",CalcEngine.TRUNC),
-    new Menu("frac",CalcEngine.FRAC),
+    new Menu(CalcEngine.ROUND),
+    new Menu(CalcEngine.CEIL),
+    new Menu(CalcEngine.FLOOR),
+    new Menu(CalcEngine.TRUNC),
+    new Menu(CalcEngine.FRAC),
   });
 
   private Menu math = new Menu("math",new Menu[] {
-    new Menu("simple",Menu.TITLE_SKIP,new Menu[] {
-      new Menu("¿x",CalcEngine.SQRT),
-      new Menu("x^2",CalcEngine.SQR),
-      new Menu("1/x",CalcEngine.RECIP),
-      new Menu("%chg",CalcEngine.PERCENT_CHG),
-      new Menu("%",CalcEngine.PERCENT),
+    new Menu("simple",CmdDesc.TITLE_SKIP,new Menu[] {
+      new Menu(CalcEngine.SQRT),
+      new Menu(CalcEngine.SQR),
+      new Menu(CalcEngine.RECIP),
+      new Menu(CalcEngine.PERCENT_CHG),
+      new Menu(CalcEngine.PERCENT),
     }),
     new Menu("pow",new Menu[] {
-      new Menu("e^x",CalcEngine.EXP),
-      new Menu("y^x",CalcEngine.YPOWX),
-      new Menu("ln",CalcEngine.LN),
-      new Menu("^x^¿y",CalcEngine.XRTY),
-      new Menu("pow_10,2",Menu.TITLE_SKIP,new Menu[] {
-        new Menu("2^x",CalcEngine.EXP2),
-        new Menu("10^x",CalcEngine.EXP10),
-        new Menu("log_2",CalcEngine.LOG2),
-        new Menu("log_10",CalcEngine.LOG10),
+      new Menu(CalcEngine.EXP),
+      new Menu(CalcEngine.YPOWX),
+      new Menu(CalcEngine.LN),
+      new Menu(CalcEngine.XRTY),
+      new Menu("pow_10,2",CmdDesc.TITLE_SKIP,new Menu[] {
+        new Menu(CalcEngine.EXP2),
+        new Menu(CalcEngine.EXP10),
+        new Menu(CalcEngine.LOG2),
+        new Menu(CalcEngine.LOG10),
       }),
     }),
     new Menu("misc",new Menu[] {
-      new Menu("random",CalcEngine.RANDOM),
-      new Menu("mod",CalcEngine.MOD),
-      new Menu("div",CalcEngine.DIVF),
-      new Menu("factorize",CalcEngine.FACTORIZE),
+      new Menu(CalcEngine.RANDOM),
+      new Menu(CalcEngine.MOD),
+      new Menu(CalcEngine.DIVF),
+      new Menu(CalcEngine.FACTORIZE),
       intMenu,
     }),
     new Menu("matrix",new Menu[] {
-      new Menu("new",CalcEngine.MATRIX_NEW),
-      new Menu("stack",CalcEngine.MATRIX_STACK),
-      new Menu("split",CalcEngine.MATRIX_SPLIT),
-      new Menu("concat",CalcEngine.MATRIX_CONCAT),
-      new Menu("more",Menu.TITLE_SKIP,new Menu[] {
-        new Menu("det",CalcEngine.DETERM),
-        new Menu("A^T",CalcEngine.TRANSP),
-        new Menu("Tr",CalcEngine.TRACE),
-        new Menu("~A~^T",CalcEngine.TRANSP_CONJ),
-        new Menu("more",Menu.TITLE_SKIP,new Menu[] {
-          new Menu("|A|_F",CalcEngine.ABS),
-          new Menu("size",CalcEngine.MATRIX_SIZE),
-          new Menu("a_ij",CalcEngine.MATRIX_AIJ),
+      new Menu(CalcEngine.MATRIX_NEW),
+      new Menu(CalcEngine.MATRIX_STACK),
+      new Menu(CalcEngine.MATRIX_SPLIT),
+      new Menu(CalcEngine.MATRIX_CONCAT),
+      new Menu("more",CmdDesc.TITLE_SKIP,new Menu[] {
+        new Menu(CalcEngine.DETERM),
+        new Menu(CalcEngine.TRANSP),
+        new Menu(CalcEngine.TRACE),
+        new Menu(CalcEngine.TRANSP_CONJ),
+        new Menu("more",CmdDesc.TITLE_SKIP,new Menu[] {
+          new Menu(CalcEngine.ABS),
+          new Menu(CalcEngine.MATRIX_SIZE),
+          new Menu(CalcEngine.MATRIX_AIJ),
         }),
       }),
     }),
     new Menu("prob",new Menu[] {
-      new Menu("P y,x",CalcEngine.PYX),
-      new Menu("C y,x",CalcEngine.CYX),
-      new Menu("x!",CalcEngine.FACT),
-      new Menu("¡x",CalcEngine.GAMMA),
-      new Menu("more",Menu.TITLE_SKIP,new Menu[] {
-        new Menu("erfc^-1",CalcEngine.INVERFC),
-        new Menu("erfc",CalcEngine.ERFC),
-        new Menu("phi",CalcEngine.PHI),
-        new Menu("phi^-1",CalcEngine.INVPHI),
+      new Menu(CalcEngine.PYX),
+      new Menu(CalcEngine.CYX),
+      new Menu(CalcEngine.FACT),
+      new Menu(CalcEngine.GAMMA),
+      new Menu("more",CmdDesc.TITLE_SKIP,new Menu[] {
+        new Menu(CalcEngine.INVERFC),
+        new Menu(CalcEngine.ERFC),
+        new Menu(CalcEngine.PHI),
+        new Menu(CalcEngine.INVPHI),
       }),
     }),
   });
 
   private Menu trig = new Menu("trig",new Menu[] {
-    new Menu("normal",Menu.TITLE_SKIP,new Menu[] {
-      new Menu("sin",CalcEngine.SIN),
-      new Menu("cos",CalcEngine.COS),
-      new Menu("tan",CalcEngine.TAN),
+    new Menu("normal",CmdDesc.TITLE_SKIP,new Menu[] {
+      new Menu(CalcEngine.SIN),
+      new Menu(CalcEngine.COS),
+      new Menu(CalcEngine.TAN),
     }),
-    new Menu("arc",Menu.TITLE_SKIP,new Menu[] {
-      new Menu("asin",CalcEngine.ASIN),
-      new Menu("acos",CalcEngine.ACOS),
-      new Menu("atan",CalcEngine.ATAN),
+    new Menu("arc",CmdDesc.TITLE_SKIP,new Menu[] {
+      new Menu(CalcEngine.ASIN),
+      new Menu(CalcEngine.ACOS),
+      new Menu(CalcEngine.ATAN),
     }),
-    new Menu("hyp",Menu.TITLE_SKIP,new Menu[] {
-      new Menu("sinh",CalcEngine.SINH),
-      new Menu("cosh",CalcEngine.COSH),
-      new Menu("tanh",CalcEngine.TANH),
+    new Menu("hyp",CmdDesc.TITLE_SKIP,new Menu[] {
+      new Menu(CalcEngine.SINH),
+      new Menu(CalcEngine.COSH),
+      new Menu(CalcEngine.TANH),
     }),
-    new Menu("archyp",Menu.TITLE_SKIP,new Menu[] {
-      new Menu("asinh",CalcEngine.ASINH),
-      new Menu("acosh",CalcEngine.ACOSH),
-      new Menu("atanh",CalcEngine.ATANH),
+    new Menu("archyp",CmdDesc.TITLE_SKIP,new Menu[] {
+      new Menu(CalcEngine.ASINH),
+      new Menu(CalcEngine.ACOSH),
+      new Menu(CalcEngine.ATANH),
     }),
-    new Menu("more",Menu.TITLE_SKIP,new Menu[] {
-      new Menu("RAD/DEG",CalcEngine.TRIG_DEGRAD),
-      new Menu("­RAD",CalcEngine.TO_RAD),
-      new Menu("­DEG",CalcEngine.TO_DEG),
+    new Menu("more",CmdDesc.TITLE_SKIP,new Menu[] {
+      new Menu(CalcEngine.TRIG_DEGRAD),
+      new Menu(CalcEngine.TO_RAD),
+      new Menu(CalcEngine.TO_DEG),
       null, // coord or cplx
-      new Menu("¶",CalcEngine.PI),
+      new Menu(CalcEngine.PI),
     }),
   });
 
   private Menu coordMenu = new Menu("coord",new Menu[] {
-    new Menu("hypot",CalcEngine.HYPOT),
-    new Menu("r­p",CalcEngine.RP),
-    new Menu("p­r",CalcEngine.PR),
-    new Menu("atan_2",CalcEngine.ATAN2),
-    new Menu("r­cplx",CalcEngine.TO_CPLX),
+    new Menu(CalcEngine.HYPOT),
+    new Menu(CalcEngine.RP),
+    new Menu(CalcEngine.PR),
+    new Menu(CalcEngine.ATAN2),
+    new Menu(CalcEngine.TO_CPLX),
   });
 
   private Menu cplxMenu = new Menu("cplx",new Menu[] {
-    new Menu("cplx­r",CalcEngine.CPLX_SPLIT),
-    new Menu("abs",CalcEngine.ABS),
-    new Menu("arg",CalcEngine.CPLX_ARG),
-    new Menu("conj",CalcEngine.CPLX_CONJ),
+    new Menu(CalcEngine.CPLX_SPLIT),
+    new Menu(CalcEngine.ABS),
+    new Menu(CalcEngine.CPLX_ARG),
+    new Menu(CalcEngine.CPLX_CONJ),
   });
 
   private Menu bitOp = new Menu("bitop",new Menu[] {
-    new Menu("and",CalcEngine.AND),
-    new Menu("or",CalcEngine.OR),
-    new Menu("bic",CalcEngine.BIC),
-    new Menu("xor",CalcEngine.XOR),
+    new Menu(CalcEngine.AND),
+    new Menu(CalcEngine.OR),
+    new Menu(CalcEngine.BIC),
+    new Menu(CalcEngine.XOR),
   });
   private Menu bitMath = new Menu("bitop_2",new Menu[] {
-    new Menu("not",CalcEngine.NOT),
-    new Menu("y<<x",CalcEngine.YUPX),
-    new Menu("y>>x",CalcEngine.YDNX),
+    new Menu(CalcEngine.NOT),
+    new Menu(CalcEngine.YUPX),
+    new Menu(CalcEngine.YDNX),
     intMenu,
   });
 
   private Menu prog1 = new Menu("prog",new Menu[] {
-    new Menu("new",CalcEngine.PROG_NEW,Menu.PROG_REQUIRED|Menu.NO_REPEAT),
-    new Menu("run",CalcEngine.PROG_RUN,Menu.PROG_REQUIRED|Menu.NO_PROG),
-    new Menu("draw",Menu.NO_PROG,new Menu[] {
-      new Menu("y=f(x)",CalcEngine.PROG_DRAW,
-               Menu.PROG_REQUIRED|Menu.REPEAT_PARENT),
-      new Menu("r=f(Ð)",CalcEngine.PROG_DRAWPOL,
-               Menu.PROG_REQUIRED|Menu.REPEAT_PARENT),
-      new Menu("z=f(t)",CalcEngine.PROG_DRAWPARM,
-               Menu.PROG_REQUIRED|Menu.REPEAT_PARENT),
+    new Menu(CalcEngine.PROG_EDIT),
+    new Menu(CalcEngine.PROG_RUN),
+    new Menu("draw",CmdDesc.NO_PROG,new Menu[] {
+      new Menu(CalcEngine.PROG_DRAW),
+      new Menu(CalcEngine.PROG_DRAWPOL),
+      new Menu(CalcEngine.PROG_DRAWPARM),
     }),
-    new Menu("more",Menu.TITLE_SKIP,new Menu[] {
-      new Menu("integrate",CalcEngine.PROG_INTEGR,
-               Menu.PROG_REQUIRED|Menu.NO_PROG),
-      new Menu("diff.",CalcEngine.PROG_DIFF,Menu.PROG_REQUIRED|Menu.NO_PROG),
-      new Menu("solve",CalcEngine.PROG_SOLVE,Menu.PROG_REQUIRED|Menu.NO_PROG),
-      new Menu("min/max",CalcEngine.PROG_MINMAX,
-               Menu.PROG_REQUIRED|Menu.NO_PROG),
+    new Menu("more",CmdDesc.TITLE_SKIP,new Menu[] {
+      new Menu(CalcEngine.PROG_INTEGR),
+      new Menu(CalcEngine.PROG_DIFF),
+      new Menu(CalcEngine.PROG_SOLVE),
+      new Menu(CalcEngine.PROG_MINMAX),
     }),
-    new Menu("clear",CalcEngine.PROG_CLEAR,Menu.PROG_REQUIRED|Menu.NO_REPEAT),
+    new Menu(CalcEngine.PROG_CLEAR),
   });
 
   private Menu prog2 = new Menu("prog",new Menu[] {
-    new Menu("finish",CalcEngine.PROG_FINISH,Menu.NO_REPEAT),
+    new Menu(CalcEngine.PROG_FINISH),
     new Menu("cond",new Menu[] {
-      new Menu("x=y?",CalcEngine.IF_EQUAL),
-      new Menu("x!=y?",CalcEngine.IF_NEQUAL),
-      new Menu("x<y?",CalcEngine.IF_LESS),
-      new Menu("x<=y?",CalcEngine.IF_LEQUAL),
-      new Menu("x>y?",CalcEngine.IF_GREATER),
+      new Menu(CalcEngine.IF_EQUAL),
+      new Menu(CalcEngine.IF_NEQUAL),
+      new Menu(CalcEngine.IF_LESS),
+      new Menu(CalcEngine.IF_LEQUAL),
+      new Menu(CalcEngine.IF_GREATER),
     }),
     new Menu("util",new Menu[] {
-      new Menu("abs",CalcEngine.ABS),
-      new Menu("max",CalcEngine.MAX),
-      new Menu("min",CalcEngine.MIN),
-      new Menu("select",CalcEngine.SELECT),
+      new Menu(CalcEngine.ABS),
+      new Menu(CalcEngine.MAX),
+      new Menu(CalcEngine.MIN),
+      new Menu(CalcEngine.SELECT),
       new Menu("sgn",CalcEngine.SGN),
     }),
-    new Menu("purge",CalcEngine.PROG_PURGE,Menu.NO_REPEAT),
+    new Menu(CalcEngine.MONITOR_PROG),
     new Menu("mem",new Menu[] {
-      new Menu("RCL[x]",CalcEngine.RCL_X),
-      new Menu("STO[x]",CalcEngine.STO_X),
+      new Menu(CalcEngine.RCL_X),
+      new Menu(CalcEngine.STO_X),
       null,
-      new Menu("STO+[x]",CalcEngine.STP_X),
+      new Menu(CalcEngine.STP_X),
     }),
   });
 
   private Menu progMenu = new Menu(null,new Menu[] {
-    new Menu("",NUMBER_0,Menu.REPEAT_PARENT),
-    new Menu("",NUMBER_1,Menu.REPEAT_PARENT),
-    new Menu("",NUMBER_2,Menu.REPEAT_PARENT),
-    new Menu("",NUMBER_3,Menu.REPEAT_PARENT),
-    new Menu("more",Menu.TITLE_SKIP|Menu.REPEAT_PARENT,new Menu[] {
-      new Menu("",NUMBER_4,Menu.REPEAT_PARENT),
-      new Menu("",NUMBER_5,Menu.REPEAT_PARENT),
-      new Menu("",NUMBER_6,Menu.REPEAT_PARENT),
-      new Menu("",NUMBER_7,Menu.REPEAT_PARENT),
-      new Menu("",NUMBER_8,Menu.REPEAT_PARENT),
+    new Menu("",NUMBER_0,CmdDesc.REPEAT_PARENT),
+    new Menu("",NUMBER_1,CmdDesc.REPEAT_PARENT),
+    new Menu("",NUMBER_2,CmdDesc.REPEAT_PARENT),
+    new Menu("",NUMBER_3,CmdDesc.REPEAT_PARENT),
+    new Menu("more",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,new Menu[] {
+      new Menu("",NUMBER_4,CmdDesc.REPEAT_PARENT),
+      new Menu("",NUMBER_5,CmdDesc.REPEAT_PARENT),
+      new Menu("",NUMBER_6,CmdDesc.REPEAT_PARENT),
+      new Menu("",NUMBER_7,CmdDesc.REPEAT_PARENT),
+      new Menu("",NUMBER_8,CmdDesc.REPEAT_PARENT),
       // Remember to set CalcEngine.NUM_PROGS accordingly
     }),
   });
@@ -850,7 +839,7 @@ public final class CalcCanvas
   public void saveState(DataOutputStream out) {
     try {
       numberFontStyle = numberFont.getStyle();
-      numberFont = null; // Free some memory before saveState()
+      numberFont = null; // Free some memory before saveSqtate()
       out.writeShort(1+1);
       out.writeByte(numberFontStyle);
       out.writeBoolean(fullScreen);
@@ -944,8 +933,9 @@ public final class CalcCanvas
     g.fillRect(0,header-1,getWidth(),
                getHeight()-header-footer+1);
     if (!automaticCommands())
-      paintCommands(g,boldMenuFont,calc.isInsideMonitor ? "move" : "menu",
-                    menuFont);
+      paintCommands(g,boldMenuFont,calc.isInsideMonitor ? 
+                    ((calc.monitorMode == CalcEngine.MONITOR_PROG) ? "SST" : "move") 
+                    : "menu", menuFont);
   }
 
   private boolean plainLabel(String label) {
@@ -1144,7 +1134,7 @@ public final class CalcCanvas
   private void drawMenuItem(Graphics g, Menu menu, int x, int y, int anchor) {
     if (menu==null)
       return;
-    boolean bold = menu.subMenu==null && (menu.flags&Menu.SUBMENU_REQUIRED)==0;
+    boolean bold = menu.subMenu==null && (menu.flags&CmdDesc.SUBMENU_REQUIRED)==0;
     int width = labelWidth(menu.label,bold);
     if ((anchor & g.RIGHT) != 0)
       x -= width;
@@ -1167,7 +1157,7 @@ public final class CalcCanvas
     g.setColor(menuColor[menuStackPtr]);
     g.setFont(menuFont);
     int titleStackPtr = menuStackPtr;
-    while ((menuStack[titleStackPtr].flags & Menu.TITLE_SKIP)!=0)
+    while ((menuStack[titleStackPtr].flags & CmdDesc.TITLE_SKIP)!=0)
       titleStackPtr--;
     String label = menuStack[titleStackPtr].label;
     drawLabel(g,label,false,x+2,y-menuFont.getHeight());
@@ -1369,7 +1359,8 @@ public final class CalcCanvas
         case 2: calc.command(CalcEngine.MONITOR_RIGHT,0); break;
         case 4:
           calc.command(CalcEngine.MONITOR_PUSH ,0);
-          setCommands("ENTER","+");
+          if( calc.monitorMode != CalcEngine.MONITOR_PROG)
+            setCommands("ENTER","+");
           break;
       }
       return;
@@ -1396,7 +1387,7 @@ public final class CalcCanvas
         menu.subMenu[4].subMenu[1] = prog2;
         // Cannot use NO_PROG commands during program recording
         if (repeatedMenuItem!=null &&
-            (repeatedMenuItem.flags & Menu.NO_PROG)!=0)
+            (repeatedMenuItem.flags & CmdDesc.NO_PROG)!=0)
           repeatedMenuItem = null;
       } else {
         menu.subMenu[4].subMenu[1] = prog1;        
@@ -1432,11 +1423,11 @@ public final class CalcCanvas
           for (int i=0; i<5; i++)
             progMenu.subMenu[4].subMenu[i].label = calc.progLabels[i+4];
         numRepaintLines = 0; // Force repaint of menu
-      } else if ((subItem.flags & Menu.SUBMENU_REQUIRED)!=0) {
+      } else if ((subItem.flags & CmdDesc.SUBMENU_REQUIRED)!=0) {
         // Open number/finance/program submenu
         Menu sub =
-          (subItem.flags & Menu.NUMBER_REQUIRED )!=0 ? numberMenu :
-          (subItem.flags & Menu.FINANCE_REQUIRED)!=0 ? financeMenu :
+          (subItem.flags & CmdDesc.NUMBER_REQUIRED )!=0 ? numberMenu :
+          (subItem.flags & CmdDesc.FINANCE_REQUIRED)!=0 ? financeMenu :
           progMenu;
         // Set correct labels
         if (sub == progMenu)
@@ -1467,11 +1458,15 @@ public final class CalcCanvas
               menuCommand <= CalcEngine.PROG_MINMAX) {
             graph = true;
             graphParam = command-NUMBER_0;
-          } if (menuCommand == CalcEngine.PROG_NEW) {
+          } if (menuCommand == CalcEngine.PROG_EDIT) {
             int n = command-NUMBER_0;
-            String name = calc.progLabels[n]==calc.emptyProg ? "" :
-              calc.progLabels[n];
-            midlet.askNewProgram(name,n);
+            if (calc.progLabels[n]==calc.emptyProg) {
+              calc.progLabels[n] = "";
+              midlet.askNewProgram(calc.progLabels[n], n, true);
+            } else if (calc.progInitialMonitorSize == 0)
+              midlet.askNewProgram(calc.progLabels[n],n, false);
+            else
+              calc.command(CalcEngine.PROG_EDIT, n);
           } else {
             calc.command(menuCommand,command-NUMBER_0);
           }
@@ -1482,18 +1477,21 @@ public final class CalcCanvas
         } else {
           // Normal calculator command
           if (command == CalcEngine.MONITOR_ENTER)
-            setCommands("STO","RCL"); // Different commands inside monitor
+            if (calc.monitorMode == CalcEngine.MONITOR_PROG) // Different commands inside monitor 
+              setCommands("reset","DEL");
+            else
+              setCommands("STO","RCL"); 
           calc.command(command,0);
         }
 
-        if ((subItem.flags & Menu.NO_REPEAT)==0) {
+        if ((subItem.flags & CmdDesc.NO_REPEAT)==0) {
           // Repeat this command or parent in basicMenu[4]
           Menu item = subItem;
-          while ((item.flags & Menu.REPEAT_PARENT)!=0)
+          while ((item.flags & CmdDesc.REPEAT_PARENT)!=0)
             item = menuStack[menuStackPtr--];
-          if ((item.flags & Menu.SUBMENU_REQUIRED)!=0)
+          if ((item.flags & CmdDesc.SUBMENU_REQUIRED)!=0)
             item = menuItem; // Switch from submenu to actual menu item
-          if ((item.flags & Menu.NO_REPEAT)==0)
+          if ((item.flags & CmdDesc.NO_REPEAT)==0)
             repeatedMenuItem = item;
         }
 
@@ -1525,11 +1523,11 @@ public final class CalcCanvas
 
             // Repeat menu or parent in basicMenu[4]
             Menu item = menuStack[menuStackPtr--];
-            while ((item.flags & Menu.REPEAT_PARENT)!=0)
+            while ((item.flags & CmdDesc.REPEAT_PARENT)!=0)
               item = menuStack[menuStackPtr--];
-            if ((item.flags & Menu.SUBMENU_REQUIRED)!=0)
+            if ((item.flags & CmdDesc.SUBMENU_REQUIRED)!=0)
               item = menuItem; // Switch from submenu to actual menu item
-            if ((item.flags & Menu.NO_REPEAT)==0)
+            if ((item.flags & CmdDesc.NO_REPEAT)==0)
               repeatedMenuItem = item;
 
             menuStackPtr = -1;

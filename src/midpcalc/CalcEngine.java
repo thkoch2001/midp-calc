@@ -234,7 +234,7 @@ public final class CalcEngine
   public static final int PUSH_ZERO_N    = 227;
   public static final int PUSH_INF       = 228;
   public static final int PUSH_INF_N     = 229;
-  public static final int PROG_NEW       = 230;
+  public static final int PROG_EDIT      = 230;
   public static final int PROG_FINISH    = 231;
   public static final int PROG_RUN       = 232;
   public static final int PROG_PURGE     = 233;
@@ -270,6 +270,7 @@ public final class CalcEngine
   public static final int INVERFC        = 263;
   public static final int PHI            = 264;
   public static final int INVPHI         = 265;
+  public static final int MONITOR_PROG   = 266;
 
   public static final int MATRIX_STO     = 512; // Special bit pattern
   public static final int MATRIX_RCL     = 768; // Special bit pattern
@@ -372,6 +373,10 @@ public final class CalcEngine
   private short [][] prog;
   private int progCounter;
   private int currentProg;
+
+  private int progLineAddr [] = null;
+  // for reopening monitor with same amount of lines by "edit" command
+  public int progInitialMonitorSize = 0;
 
   private static Real[] allocRealArray(int n) {
     Real[] a = new Real[n];
@@ -569,6 +574,9 @@ public final class CalcEngine
     lasty.makeZero(); // Clear this in case it is a Matrix reference
     lastz.makeZero(); // ...and this
     matrixGC();
+
+    if (monitorMode == MONITOR_PROG)
+      monitorMode = MONITOR_NONE;
 
     int i,j;
     byte [] realBuf = new byte[12];
@@ -943,9 +951,19 @@ public final class CalcEngine
       monitorYOff = monitorY;
     if (monitorY+1 >
         monitorYOff+Math.min(monitorSize,maxMonitorDisplaySize-
-                             (monitorMode==MONITOR_MATRIX?1:0)))
+                             ((monitorMode==MONITOR_MATRIX || 
+                               monitorMode==MONITOR_PROG)?1:0)))
       monitorYOff = monitorY+1-Math.min(monitorSize,maxMonitorDisplaySize-
-                                        (monitorMode==MONITOR_MATRIX?1:0));
+                                        ((monitorMode==MONITOR_MATRIX|| 
+                                          monitorMode==MONITOR_PROG)?1:0));
+    if (monitorYOff > Math.max(0, maxMonitorSize-
+                               Math.min(monitorSize, maxMonitorDisplaySize-
+                               ((monitorMode==MONITOR_MATRIX || 
+                                 monitorMode==MONITOR_PROG)?1:0))))
+      monitorYOff = Math.max(0, maxMonitorSize-
+                             Math.min(monitorSize, maxMonitorDisplaySize-
+                             ((monitorMode==MONITOR_MATRIX || 
+                               monitorMode==MONITOR_PROG)?1:0)));
     repaintAll();
   }
 
@@ -1015,6 +1033,75 @@ public final class CalcEngine
     }
   }
 
+  private void updateProgMonitor( boolean pointToEnd ) {
+    progLineAddr = new int[progCounter]; // probably too big, but enough
+    maxMonitorSize=0;
+    for (int i=0; i<progCounter; i++, maxMonitorSize++) {
+      progLineAddr[maxMonitorSize]= i;
+      if ((prog[currentProg][i] & 0x8000) != 0) 
+        i += 5;
+    }
+    if (monitorStr.length < maxMonitorSize+1)
+      monitorStr = new String[maxMonitorSize+1];
+    else
+      clearMonitorStrings();
+    monitorLabels= new String[maxMonitorSize+1];
+    for (int i=0; i<maxMonitorSize; i++) {
+      monitorLabels[i]= ""+ i;
+      int labelWidth = monitorLabels[i].length()+1;
+      int a= progLineAddr[i];
+      short cmd= prog[currentProg][a];
+      if ((cmd & 0x8000) != 0) {
+        if (a+5 < prog[currentProg].length) { // Just a precaution
+          rTmp.mantissa = (((long)(prog[currentProg][a  ]&0xffff)<<47)+
+                           ((long)(prog[currentProg][a+1]&0xffff)<<31)+
+                           ((long)(prog[currentProg][a+2]&0xffff)<<15)+
+                           ((long)(prog[currentProg][a+3]&0xffff)>>1));
+          rTmp.sign     = (byte)(prog[currentProg][a+3]&1);
+          rTmp.exponent = (((prog[currentProg][a+4]&0xffff)<<16)+
+                           ((prog[currentProg][a+5]&0xffff)));
+          format.maxwidth -= labelWidth;
+          monitorStr[i] = rTmp.toString(format);
+          format.maxwidth += labelWidth;
+        }
+      } else {
+        if ((cmd & MATRIX_STO) != 0) {
+          int col = (cmd & 0x3f)+1 ;
+          int row = (((cmd>>6)&0x3) + ((cmd>>8)&0x7c))+1;
+          cmd &= MATRIX_STO|MATRIX_RCL;
+          String s= (cmd == MATRIX_STO) ? "> M:["+row+","+col+"]"
+            : "M:["+row+","+col+"] >";
+          monitorStr[i] = s.substring(0,Math.min(s.length(),
+                                                 format.maxwidth-labelWidth+1));
+        } else {
+          int param= cmd>>>10;
+          cmd &= 0x3ff;
+          String tmp= CmdDesc.getStr( cmd, false );
+          if ((CmdDesc.getFlags(cmd) & CmdDesc.NUMBER_REQUIRED) != 0 ) 
+            tmp += " "+param;
+          else if (((CmdDesc.getFlags(cmd) & CmdDesc.FINANCE_REQUIRED) != 0) 
+                   || cmd == FINANCE_RCL || cmd == FINANCE_STO )
+            tmp += " "+financeLabels[param];
+          else if ( cmd == STAT_STO || cmd == STAT_RCL )
+            tmp += " "+statLabels[param];
+          else if ((CmdDesc.getFlags(cmd) & CmdDesc.PROG_REQUIRED) != 0 )
+            tmp += " "+progLabels[cmd]; // for future extensions
+          monitorStr[i] = tmp.substring(Math.max(0,tmp.length()
+                                                 -format.maxwidth+labelWidth));
+        }
+      }
+    }
+    monitorStr[maxMonitorSize] = "[prg end]";
+    monitorLabels[maxMonitorSize] = ""+maxMonitorSize;
+    maxMonitorSize++;
+    monitorSize = Math.min(initialMonitorSize,maxMonitorSize);
+    
+    if (pointToEnd)
+      setMonitorY(-1,false);
+
+    repaintAll();
+  }
+
   private void setMonitoring(int mode, int size, int maxSize,
                              Real[] m, Real [] mi, String[] labels) {
     if (size == 0)
@@ -1069,33 +1156,40 @@ public final class CalcEngine
   }
 
   public String getMonitorElement(int n) {
-    if (monitorMode == MONITOR_MATRIX) {
+    if (monitorMode == MONITOR_MATRIX || monitorMode == MONITOR_PROG) {
       if (n==0)
-        if (monitoredMatrix == null)
-          return "no matrix";
+        if (monitorMode == MONITOR_MATRIX)  
+          if (monitoredMatrix == null)
+            return "no matrix";
+          else
+            return monitorCaption;
         else
-          return monitorCaption;
+          return "Prog: "+progLabels[currentProg];
       else
         n--;
     }
     n += monitorYOff;
     if (monitorStr[n] == null) {
-      format.maxwidth -= monitorLabels[n].length()+1;
-      if (monitors != null && monitors[n] != null) {
-        if (imagMonitors != null)
-          monitorStr[n] = makeString(monitors[n],imagMonitors[n]);
-        else
-          monitorStr[n] = makeString(monitors[n],null);
-      } else {
-        monitorStr[n] = Real.ZERO.toString(format);
+      if (monitorMode == MONITOR_PROG) 
+        updateProgMonitor(false);
+      else {
+        format.maxwidth -= monitorLabels[n].length()+1;
+        if (monitors != null && monitors[n] != null) {
+          if (imagMonitors != null)
+            monitorStr[n] = makeString(monitors[n],imagMonitors[n]);
+          else
+            monitorStr[n] = makeString(monitors[n],null);
+        } else {
+          monitorStr[n] = Real.ZERO.toString(format);
+        }
+        format.maxwidth += monitorLabels[n].length()+1;
       }
-      format.maxwidth += monitorLabels[n].length()+1;
     }
     return monitorStr[n];
   }
 
   public String getMonitorLabel(int n) {
-    if (monitorMode == MONITOR_MATRIX) {
+    if (monitorMode == MONITOR_MATRIX  || monitorMode == MONITOR_PROG) {
       if (n==0)
         return "";
       else
@@ -1112,7 +1206,7 @@ public final class CalcEngine
   }
 
   public String getMonitorLead(int n) {
-    if (monitorMode == MONITOR_MATRIX) {
+    if (monitorMode == MONITOR_MATRIX || monitorMode == MONITOR_PROG) {
       if (n==0)
         return "";
       else
@@ -1121,12 +1215,15 @@ public final class CalcEngine
     n += monitorYOff;
     if (isInsideMonitor && n == monitorY)
       return "»";
+    else if (monitorMode == MONITOR_PROG && n == monitorY)
+      return ">";
     else
       return "=";
   }
 
   public int getMonitorSize() {
-    return Math.min(monitorSize+(monitorMode == MONITOR_MATRIX ? 1 : 0),
+    return Math.min(monitorSize+((monitorMode == MONITOR_MATRIX ||
+                                  monitorMode == MONITOR_PROG) ? 1 : 0),
                     maxMonitorDisplaySize);
   }
 
@@ -1136,7 +1233,7 @@ public final class CalcEngine
 
   public void setMaxMonitorSize(int max) {
     maxMonitorDisplaySize = max;
-    if (monitorMode == MONITOR_MATRIX)
+    if (monitorMode == MONITOR_MATRIX || monitorMode == MONITOR_PROG )
       maxMonitorDisplaySize--;
     if (monitorY >= monitorYOff+maxMonitorDisplaySize) {
       monitorYOff = monitorY-maxMonitorDisplaySize+1;
@@ -1147,7 +1244,7 @@ public final class CalcEngine
       monitorYOff = maxMonitorSize-Math.min(maxMonitorDisplaySize,monitorSize);
       repaintAll();
     }
-    if (monitorMode == MONITOR_MATRIX)
+    if (monitorMode == MONITOR_MATRIX || monitorMode == MONITOR_PROG )
       maxMonitorDisplaySize++;
   }
 
@@ -3200,16 +3297,26 @@ public final class CalcEngine
 
   private void record(int cmd, int param) {
     if (prog[currentProg] == null ||
-        (cmd >= PROG_NEW    && cmd <= PROG_DIFF) ||
+        (cmd >= PROG_EDIT   && cmd <= PROG_DIFF) ||
         (cmd >= AVG_DRAW    && cmd <= POW_DRAW) ||
-        (cmd >= PROG_DRAW   && cmd <= PROG_MINMAX))
+        (cmd >= PROG_DRAW   && cmd <= PROG_MINMAX) ||
+        (cmd == MONITOR_PROG))
       return; // Such commands cannot be recorded
+
     if (progCounter == prog[currentProg].length) {
       matrixGC();
       short [] prog2 = new short[prog[currentProg].length*2];
       System.arraycopy(prog[currentProg],0,prog2,0,progCounter);
       prog[currentProg] = prog2;
     }
+
+    int inspos= progCounter;
+    if ( monitorMode == MONITOR_PROG  && monitorY < maxMonitorSize-1) {
+      inspos= progLineAddr[monitorY];
+      System.arraycopy(prog[currentProg],inspos,prog[currentProg],
+                       inspos+1, progCounter-inspos);
+    }
+    
     if (cmd == MATRIX_STO || cmd == MATRIX_RCL) {
       // Special case, utilizing 9 bits to store row/col
       int col = param&0xffff;
@@ -3217,9 +3324,14 @@ public final class CalcEngine
       if (col>=64 || row>=128)
         return; // Cannot program so large index (should we warn?)
       cmd += col+((row&0x3)<<6)+((row&0x7c)<<8);
-      prog[currentProg][progCounter++] = (short)cmd;
+      prog[currentProg][inspos++] = (short)cmd;
     } else {
-      prog[currentProg][progCounter++] = (short)(cmd+(param<<10));
+      prog[currentProg][inspos++] = (short)(cmd+(param<<10));
+    }
+    progCounter++;
+    if (monitorMode == MONITOR_PROG) {
+      updateProgMonitor( false );
+      setMonitorY( monitorY+1, false );
     }
   }
 
@@ -3230,47 +3342,80 @@ public final class CalcEngine
       System.arraycopy(prog[currentProg],0,prog2,0,progCounter);
       prog[currentProg] = prog2;
     }
-    if (x.isZero())
-      prog[currentProg][progCounter++] = (short)(PUSH_ZERO + x.sign);
-    else if (x.isInfinity())
-      prog[currentProg][progCounter++] = (short)(PUSH_INF + x.sign);
-    else {
-      prog[currentProg][progCounter++] = (short)(x.mantissa>>47);
-      prog[currentProg][progCounter++] = (short)(x.mantissa>>31);
-      prog[currentProg][progCounter++] = (short)(x.mantissa>>15);
-      prog[currentProg][progCounter++] = (short)((x.mantissa<<1)+x.sign);
-      prog[currentProg][progCounter++] = (short)(x.exponent>>16);
-      prog[currentProg][progCounter++] = (short)(x.exponent);
+    int inspos= progCounter;
+    if ( monitorMode == MONITOR_PROG  && monitorY < maxMonitorSize-1) {
+      inspos= progLineAddr[monitorY];
+      int d= (x.isZero() || x.isInfinity()) ? 1 : 6;
+      System.arraycopy(prog[currentProg],inspos,prog[currentProg],
+                       inspos+d, progCounter-inspos);
+    }
+    if (x.isZero()) {
+      prog[currentProg][inspos++] = (short)(PUSH_ZERO + x.sign);
+      progCounter++;
+    } else if (x.isInfinity()) {
+      prog[currentProg][inspos++] = (short)(PUSH_INF + x.sign);
+      progCounter++;
+    } else {
+      prog[currentProg][inspos++] = (short)(x.mantissa>>47);
+      prog[currentProg][inspos++] = (short)(x.mantissa>>31);
+      prog[currentProg][inspos++] = (short)(x.mantissa>>15);
+      prog[currentProg][inspos++] = (short)((x.mantissa<<1)+x.sign);
+      prog[currentProg][inspos++] = (short)(x.exponent>>16);
+      prog[currentProg][inspos++] = (short)(x.exponent);
+      progCounter += 6;
+    }
+    if (monitorMode == MONITOR_PROG) {
+      updateProgMonitor( false );
+      if (monitorY >= monitorYOff+maxMonitorDisplaySize) 
+        monitorYOff = monitorY-maxMonitorDisplaySize+1;
+      setMonitorY( monitorY+1, false );
+    }
+  }
+
+  // execute instruction at address a in program
+  // returns position of next instruction
+  private int executePrgAddr( int a ) {
+    short cmd = prog[currentProg][a];
+    if ((cmd & 0x8000) == 0) {
+      if ((cmd & MATRIX_STO) != 0) {
+        int col = cmd & 0x3f;
+        int row = ((cmd>>6)&0x3) + ((cmd>>8)&0x7c);
+        cmd &= MATRIX_STO|MATRIX_RCL;
+        command(cmd,(row<<16)+col);
+      } else {
+        command(cmd&0x3ff, cmd>>>10);
+      }
+      return a+1;
+    } else {
+      if (a+5 < prog[currentProg].length) { // Just a precaution
+        rTmp.mantissa = (((long)(prog[currentProg][a  ]&0xffff)<<47)+
+                         ((long)(prog[currentProg][a+1]&0xffff)<<31)+
+                         ((long)(prog[currentProg][a+2]&0xffff)<<15)+
+                         ((long)(prog[currentProg][a+3]&0xffff)>>1));
+        rTmp.sign     = (byte)(prog[currentProg][a+3]&1);
+        rTmp.exponent = (((prog[currentProg][a+4]&0xffff)<<16)+
+                         ((prog[currentProg][a+5]&0xffff)));
+        push(rTmp,null);
+     
+      }
+      return a+6;     
     }
   }
 
   private void executeProgram() {
-    for (int i=0; i<prog[currentProg].length; i++) {
-      short cmd = prog[currentProg][i];
-      if ((cmd & 0x8000) == 0) {
-        if ((cmd & MATRIX_STO) != 0) {
-          int col = cmd & 0x3f;
-          int row = ((cmd>>6)&0x3) + ((cmd>>8)&0x7c);
-          cmd &= MATRIX_STO|MATRIX_RCL;
-          command(cmd,(row<<16)+col);
-        } else {
-          command(cmd&0x3ff, cmd>>>10);
-        }
-      } else {
-        if (i+5 < prog[currentProg].length) { // Just a precaution
-          rTmp.mantissa = (((long)(prog[currentProg][i  ]&0xffff)<<47)+
-                           ((long)(prog[currentProg][i+1]&0xffff)<<31)+
-                           ((long)(prog[currentProg][i+2]&0xffff)<<15)+
-                           ((long)(prog[currentProg][i+3]&0xffff)>>1));
-          rTmp.sign     = (byte)(prog[currentProg][i+3]&1);
-          rTmp.exponent = (((prog[currentProg][i+4]&0xffff)<<16)+
-                           ((prog[currentProg][i+5]&0xffff)));
-          push(rTmp,null);
-        }
-        i += 5; // in addition to i++
-      }
+    for (int i=0; i<prog[currentProg].length; ) {
+      i = executePrgAddr( i );
     }
     if (inputInProgress) // From the program...
+      parseInput();
+  }
+
+  private void singleStepProgram( int step ) {
+    if ( monitorMode != MONITOR_PROG || 
+         step > maxMonitorSize-1 )
+      return;
+    executePrgAddr( progLineAddr[step] );
+    if (inputInProgress) 
       parseInput();
   }
 
@@ -3410,14 +3555,32 @@ public final class CalcEngine
         return;
 
       case MONITOR_LEFT:
-        setMonitorX(monitorX-1,true);
+        if (monitorMode == MONITOR_PROG) // page up
+          setMonitorY(monitorY-maxMonitorDisplaySize+1, false);
+        else
+          setMonitorX(monitorX-1,true);
         return;
 
       case MONITOR_RIGHT:
-        setMonitorX(monitorX+1,true);
+        if (monitorMode == MONITOR_PROG) // page down
+          setMonitorY(monitorY+maxMonitorDisplaySize-1, false);
+        else
+          setMonitorX(monitorX+1,true);
         return;
 
       case MONITOR_PUSH:
+        if (monitorMode == MONITOR_PROG) { // label (middle): SST 
+          if (monitorY < maxMonitorSize-1) {
+            progRecording = false;
+            progRunning = true;
+            singleStepProgram( monitorY );
+            progRunning = false;
+            progRecording = true;
+            setMonitorY(monitorY+1, false);
+          }
+          return;
+        }
+        // no break here
       case MONITOR_PUT:
         switch (monitorMode) {
           case MONITOR_MEM:     command(STO,monitorY);         break;
@@ -3431,6 +3594,10 @@ public final class CalcEngine
             }
             command(MATRIX_STO,(monitorY<<16)+monitorX);
             break;
+          case MONITOR_PROG:                   // label: reset
+            progCounter = 0;                   // delete programm
+            updateProgMonitor( true );
+            return;
         }
         setMonitorY(monitorY+1,true); // Proceed to next element
         if (cmd == MONITOR_PUSH) {
@@ -3448,6 +3615,25 @@ public final class CalcEngine
           case MONITOR_MATRIX:
             command(MATRIX_RCL,(monitorY<<16)+monitorX);
             break;
+          case MONITOR_PROG: // delete current line
+            // cannot delete end of program mark
+            if (monitorY < maxMonitorSize-1) { 
+              int a= progLineAddr[monitorY];
+              int d= 1;
+              if ( (prog[currentProg][a] & 0x8000) != 0)
+                d = 6;
+              progCounter -= d;
+              System.arraycopy(prog[currentProg],a+d,prog[currentProg],a,
+                               progCounter-a);
+              updateProgMonitor(false);
+              if (monitorYOff+Math.min(maxMonitorDisplaySize-1,monitorSize)
+                  >maxMonitorSize) {
+                monitorYOff = maxMonitorSize-Math.min(maxMonitorDisplaySize-1,
+                                                      monitorSize);
+                repaintAll();
+              }
+            }
+            return;
         }
         setMonitorY(monitorY+1,true); // Proceed to next element
         return;
@@ -3883,6 +4069,14 @@ public final class CalcEngine
         // updateMatrixMonitor() will be run later
         break;
 
+      case MONITOR_PROG:
+        if (!progRecording)
+          break;             // what happened here? Should not happen!
+        progInitialMonitorSize = param; // also for size = 0
+        setMonitoring(MONITOR_PROG,param,0,null,null,null);
+        updateProgMonitor( true );
+        break;
+
       case MATRIX_STO:
         Matrix M = getCurrentMatrix();
         if (M == null)
@@ -4067,12 +4261,20 @@ public final class CalcEngine
         stackStr[1] = null;
         break;
 
-      case PROG_NEW:
+      case PROG_EDIT:
         progRecording = true;
         currentProg = param;
         matrixGC();
-        prog[currentProg] = new short[10];
-        progCounter = 0;
+        if (prog[currentProg] == null || prog[currentProg].length == 0) {
+          prog[currentProg] = new short[10];
+          progCounter = 0;
+        } else {
+          progCounter = prog[currentProg].length;
+        } 
+        if (progInitialMonitorSize > 0) {
+          setMonitoring(MONITOR_PROG,progInitialMonitorSize,0,null,null,null);
+          updateProgMonitor( true );
+        }
         break;
 
       case FINALIZE:
@@ -4083,6 +4285,8 @@ public final class CalcEngine
           short [] prog2 = new short[progCounter];
           System.arraycopy(prog[currentProg],0,prog2,0,progCounter);
           prog[currentProg] = prog2;
+          if (monitorMode == MONITOR_PROG) 
+            setMonitoring(MONITOR_NONE,0,0,null,null,null);
         }
         break;
 
@@ -4094,10 +4298,6 @@ public final class CalcEngine
           executeProgram();
           progRunning = false;
         }
-        break;
-
-      case PROG_PURGE:
-        progCounter = 0;
         break;
 
       case PROG_CLEAR:

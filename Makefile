@@ -1,4 +1,4 @@
-VERSION = 3.01
+VERSION = 3.02
 TARGETS = Calc.jar \
           Calc.jad \
           CalcMIDP2.jar \
@@ -12,10 +12,10 @@ BASEURL = http://midp-calc.sf.net
 # antenna and proguard must be installed in $(WTK_1)/lib
 WTK_1 = ../../WTK104
 WTK_2 = ../../WTK2.2
-WTK_N = ../../Nokia/Devices/Nokia_Series_40_MIDP_Concept_SDK_Beta_0_3
+WTK_N = ../../WTK104
 BOOTCLASSPATH_1 = $(WTK_1)/lib/midpapi.zip
 BOOTCLASSPATH_2 = $(WTK_2)/lib/midpapi20.jar:$(WTK_2)/lib/cldcapi10.jar
-BOOTCLASSPATH_N = $(WTK_N)/lib/classes.zip
+BOOTCLASSPATH_N = $(WTK_N)/lib/classes.zip:$(WTK_1)/lib/midpapi.zip
 
 JFLAGS = -encoding "ISO8859-1" -O
 JFLAGS_1 = -bootclasspath $(BOOTCLASSPATH_1) -d . $(JFLAGS)
@@ -35,7 +35,8 @@ JAVAFILES =  Calc.java \
              GFont.java \
              GFontBase.java \
              DataStore.java \
-             SetupCanvas.java
+             SetupCanvas.java \
+             CmdDesc.java
 
 MIDPFILES =  midp/MIDlet.java \
              midp/Display.java \

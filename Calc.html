@@ -26,7 +26,7 @@
 </ul>
 </font></b>
 
-<p><b>Current version: 3.01</b>, <a
+<p><b>Current version: 3.02</b>, <a
 href="Calc-log.html">change-log</a><br>
 
 <script language="JavaScript">
@@ -1057,8 +1057,8 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
   <li><a id="Prog" name="Prog">Programming</a> <a
     href="Calc.html#ProgNote"><b>(*)</b></a>
   <ul>
-    <li><b>new</b>: Start entering a new program. If you pick a used
-  entry in the menu that program will be overwritten
+    <li><b>edit/new</b>: Start entering a new program or append to an existing 
+  program.
     <li><b>run</b>: Run a program
     <li><b>clear</b>: Clear a program
     <li><b>draw y=f(x)</b>: Draw program function y=f(x). Prior to
@@ -1090,9 +1090,8 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
   <li>Programming 2 (available while entering a new program)
   <ul>
     <li><b>finish</b>: Finish entering current program
-    <li><b>purge</b>: Start entering current program from
-  scratch. Faster than pressing "finish", "new" and selecting a
-  free spot and a program name again.
+    <li><b>view</b>: Activate the program editing monitor (monitor <i>n</i> 
+    lines of the program at the same time)
     <li>Conditionals for programming
     <ul>
       <li><b>x=y?</b>: Enter 1 on stack if x exactly equals y, otherwise 0
@@ -1472,6 +1471,27 @@ of Calc. Constants given using "&asymp;" are not precisely known by
 science, but are as up-to-date as the CODATA internationally
 recommended values of 2002.
 
+<h3><a id="MonitorNote" name="MonitorNote">Monitor editing mode</a></h3>
+
+When monitoring is active, the usual <i><b>repeat</b></i> operation in
+the "basic" menu is exchanged with the symbol <b>[&rarr;]</b>. Selecting
+this operation lets you enter the monitor area in the upper part of
+the screen, where one monitor element will be highlighted. You can
+then move about in the monitor area using the arrow keys. The normal
+commands, "ENTER" and "+" will be replaced with "STO" and "RCL".<br>
+
+<br>
+Pressing "STO" in this mode will copy x into the current monitor
+element. Pressing "RCL" in this mode extracts the current monitor
+element and pushes it on the stack. Pressing the middle joystick
+button pops one element off the stack, stores it in the current
+monitor element, and exits the editing mode so you can enter or
+calculate the next number. All these operations also have the side
+effect of advancing to the next monitor element below (or in the next
+column if you are at the bottom). Pressing "clear" will exit the
+editing mode.<br>
+
+
 <h3><a id="ProgNote" name="ProgNote">Programming</a></h3>
 
 (Programming is found on the "mode" menu because it was added last and
@@ -1481,7 +1501,7 @@ operations reached from this menu are "mode-like".)<br>
 <br>
 The programming mode in Calc is basically a keyboard/command logging
 facility with playback. In programming mode (i.e. after executing
-"new"), all activity is stored in the current program, but the
+"new/edit"), all activity is stored in the current program, but the
 calculator looks and behaves exactly as before except a "PRG"
 indicator to the upper right. There is no limit to the size of a
 program, but beware, do not leave Calc in programming mode (look for
@@ -1489,12 +1509,51 @@ the "PRG" indicator), because Calc will <em>eventually</em> run out of
 memory, giving the "Out of memory error".<br>
 
 <br>
-Programs cannot be viewed or edited, only recorded, so if you perform
-the wrong operation you must start over using "purge". Using the
-"undo" operation does not remove any statements from the program, it
-only adds the "undo" operation to the program as well. Advice: If your
-program is complex, plan the steps beforehand on a piece of
-paper.</br>
+Programs can be viewed or edited using the program editing monitor
+command: "view". Using the "undo" operation does not remove any
+statements from the program, it only adds the "undo" operation to the
+program as well. Advice: If your program is complex, plan the steps
+beforehand on a piece of paper.</br>
+
+<br>
+The program editing monitor can be used to view or edit programs. Note
+that the program editing monitor can only be accessed in the
+programming mode and as usual the number of lines to display have to
+be chosen. As the other monitor modes, it has a display mode and an
+editing mode (accessed by the <b>[&rarr;]</b> command). In the display
+mode, the active line is marked by an "&gt;" after the line number. In
+the display mode, all commands recorded will be inserted at this
+marked position. After activating the editing mode, the inseration
+mark is at the end of the program, so all new instructions will be
+appended to the program. When the editing mode is entered, the mark
+can be moved using the joystick (up/down, left=page up, right=page
+down). In the editing mode, the softkeys have the following meanings:
+<b>reset</b> purges the whole program (NB: <b>no undo</b> for this
+operation),
+<b>DEL</b> removes the marked current instruction and the middle
+joystick button invokes the <b>SST</b> operation, which executes the
+marked current instruction. Note that the availability of commands you
+want to insert depends on the current state of the calculator, e.g. if
+you want to use complex number operations, there has to be a complex
+number on the stack at x. As usual the instructions recorded at the
+insert position are executed immediately, not necessarily in the order
+of the finished program. So if you want to insert an instruction and
+review an example calculation in parallel, it could be a good idea to
+run the program from the beginning using the <b>SST</b> up to the
+point where you want to extend your program -- then the calculator
+would be in the same state as when running the program offering all
+appropriate commands in the main menu. As all monitor modes, the
+monitor mode can be activated by setting it to display 0 lines
+("special/monitor/off" would do the same job, but would also be
+inserted into the program). However, when the program editing is
+finished using the "prog/finish" command, the program monitor is
+deactivated and it is reactivated with the same number of lines next
+time the "edit/new" command is issued, even if a different monitor
+mode was active. In this case, if the "edit/new" command is used to
+edit an existing program, no program name dialog will appear to speed
+up editing. If you want to change a program name, first set program
+monitor mode to 0 lines (=off) and after the "finish" command, the
+next "edit/new" command will allow to change the program name.  </br>
 
 <br>
 The programming mode offers no control flow (if-statements) or looping
@@ -1624,26 +1683,6 @@ interpreting the bits. However, beware that normal rounding that
 occurs when the display cannot display all the significant digits of a
 number may cause inexact values to appear different in the display
 than their internal representation.<br>
-
-<h3><a id="MonitorNote" name="MonitorNote">Monitor editing mode</a></h3>
-
-When monitoring is active, the usual <i><b>repeat</b></i> operation in
-the "basic" menu is exchanged with the symbol <b>[&rarr;]</b>. Selecting
-this operation lets you enter the monitor area in the upper part of
-the screen, where one monitor element will be highlighted. You can
-then move about in the monitor area using the arrow keys. The normal
-commands, "ENTER" and "+" will be replaced with "STO" and "RCL".<br>
-
-<br>
-Pressing "STO" in this mode will copy x into the current monitor
-element. Pressing "RCL" in this mode extracts the current monitor
-element and pushes it on the stack. Pressing the middle joystick
-button pops one element off the stack, stores it in the current
-monitor element, and exits the editing mode so you can enter or
-calculate the next number. All these operations also have the side
-effect of advancing to the next monitor element below (or in the next
-column if you are at the bottom). Pressing "clear" will exit the
-editing mode.<br>
 
 <br>
 <br>
