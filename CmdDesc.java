@@ -281,6 +281,7 @@ public final class CmdDesc
     case CalcEngine.PROG_DRAW:return brief ? "y=f(x)" : "prog/draw/y=f(x)";
     case CalcEngine.PROG_DRAWPOL:return brief ? "r=f(Ð)" : "prog/draw/r=f(Ð)";
     case CalcEngine.PROG_DRAWPARM:return brief ? "z=f(t)" : "prog/draw/z=f(t)";
+    case CalcEngine.PROG_DRAWZZ:return brief ? "z=f(z)" : "prog/draw/z=f(z)";
     case CalcEngine.PROG_SOLVE:return brief ? "solve" : "prog/solve";
     case CalcEngine.PROG_INTEGR:return brief ? "integrate" : "prog/integrate";
     case CalcEngine.PROG_MINMAX:return brief ? "min/max" : "prog/min/max";
@@ -387,6 +388,7 @@ public final class CmdDesc
     case CalcEngine.PROG_DRAW:
     case CalcEngine.PROG_DRAWPOL:
     case CalcEngine.PROG_DRAWPARM:
+    case CalcEngine.PROG_DRAWZZ:
       return PROG_REQUIRED|REPEAT_PARENT;
 
     case CalcEngine.MONITOR_MEM:

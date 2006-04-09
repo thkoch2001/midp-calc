@@ -650,6 +650,7 @@ public final class CalcCanvas
       new Menu(CalcEngine.PROG_DRAW),
       new Menu(CalcEngine.PROG_DRAWPOL),
       new Menu(CalcEngine.PROG_DRAWPARM),
+      new Menu(CalcEngine.PROG_DRAWZZ),
     }),
     new Menu("more",CmdDesc.TITLE_SKIP,new Menu[] {
       new Menu(CalcEngine.PROG_INTEGR),

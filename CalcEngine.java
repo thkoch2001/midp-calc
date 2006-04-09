@@ -284,9 +284,10 @@ public final class CalcEngine
   public static final int PROG_DRAW      = 305;
   public static final int PROG_DRAWPOL   = 306;
   public static final int PROG_DRAWPARM  = 307;
-  public static final int PROG_SOLVE     = 308;
-  public static final int PROG_INTEGR    = 309;
-  public static final int PROG_MINMAX    = 310;
+  public static final int PROG_DRAWZZ    = 308;
+  public static final int PROG_SOLVE     = 309;
+  public static final int PROG_INTEGR    = 310;
+  public static final int PROG_MINMAX    = 311;
 
   // Special commands
   public static final int FINALIZE       = 400;
@@ -4341,6 +4342,7 @@ public final class CalcEngine
   int integralDepth;
   boolean integralFailed;
   boolean maximizing;
+  int zzN, zzNbits;
 
   public boolean prepareGraph(int cmd, int param) {
     graphCmd = cmd;
@@ -4368,7 +4370,7 @@ public final class CalcEngine
     int i;
 
     // Find boundaries
-    if (cmd >= PROG_DRAW && cmd <= PROG_DRAWPARM) {
+    if (cmd >= PROG_DRAW && cmd <= PROG_DRAWZZ) {
       if (inputInProgress)
         parseInput();
       xMin.assign(stack[3]);
@@ -4797,6 +4799,13 @@ public final class CalcEngine
     xi = gx+rangeScale(Real.ZERO,xMin,xMax,gw,Real.ZERO);
     g.drawLine(xi,gy-2,xi,gy+gh+1);
 
+    if (graphCmd==PROG_DRAWZZ) {
+      zzN = 0;
+      zzNbits = 0;
+      for (int s2=1; s2<gw+4 || s2<gh+4; s2<<=1)
+        zzNbits+=2;
+    }
+
     if (graphCmd==PROG_SOLVE || graphCmd==PROG_INTEGR || graphCmd==PROG_MINMAX)
       return; // Return now to continue later
 
@@ -4855,7 +4864,7 @@ public final class CalcEngine
       i++;
     }
 
-    if (graphCmd >= PROG_DRAW && graphCmd <= PROG_DRAWPARM) {
+    if (graphCmd >= PROG_DRAW && graphCmd <= PROG_DRAWZZ) {
       // Return now to continue drawing graph indefinitely
       a.assign(0, 0x3fffffff, 0x4f1bbcdcbfa53e0bL); // a = golden ratio, 0.618
       b.makeZero();
@@ -5056,7 +5065,7 @@ public final class CalcEngine
   public void continueGraph(Graphics g, int gx, int gy, int gw, int gh) {
     long start = System.currentTimeMillis();
     Real x = rTmp3;
-    int i,xi=0,yi;
+    int i,xi=0,yi=0,size=0;
 
     g.setClip(gx,gy,gw,gh);
     // shrink window by 4 pixels
@@ -5067,7 +5076,7 @@ public final class CalcEngine
 
     do
     {
-      if (graphCmd >= PROG_DRAW && graphCmd <= PROG_DRAWPARM) {
+      if (graphCmd >= PROG_DRAW && graphCmd <= PROG_DRAWZZ) {
         Real.magicRounding = false;
         b.add(a);
         if (b.greaterThan(Real.ONE))
@@ -5078,6 +5087,45 @@ public final class CalcEngine
           x.mul(b);
           x.add(xMin);
           xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
+          push(x,null);
+        } else if (graphCmd == PROG_DRAWZZ) {
+          if (zzN >= (1<<zzNbits)) {
+            try {
+              Thread.sleep(500);
+            } catch (InterruptedException e) {}
+            return;
+          }
+          do {
+            xi = 0;
+            yi = 0;
+            size = 1<<(zzNbits/2);
+            for (i=0; i<zzNbits; i+=2) {
+              xi = (xi<<1)+((zzN>>i)&1);
+              yi = (yi<<1)+((zzN>>(i+1))&1);
+              if ((zzN>>i)!=0)
+                size >>= 1;
+            }
+            if (size>16) size=16;
+            yi ^= xi;
+            zzN++;
+          } while (xi>=gw+4 || yi>=gh+4);
+          if (zzN >= (1<<zzNbits))
+            return;
+          x.assign(xi-2);
+          x.div(gw);
+          b.assign(xMax);
+          b.sub(xMin);
+          x.mul(b);
+          x.add(xMin);
+
+          Real ximag = a;
+          ximag.assign(yi-2);
+          ximag.div(gh);
+          b.assign(yMin);
+          b.sub(yMax);
+          ximag.mul(b);
+          ximag.add(yMax);
+          push(x,ximag);
         } else {
           x.assign(b);
           if (graphCmd == PROG_DRAWPOL) {
@@ -5087,9 +5135,9 @@ public final class CalcEngine
               x.mul(Real.PI2);
             x.mul(Real.TEN); // 10 "rounds"
           }
+          push(x,null);
         }
 
-        push(x,null);
         executeProgram();
 
         Real y = stack[0];
@@ -5107,6 +5155,27 @@ public final class CalcEngine
             g.setColor(255,255,yi2==yi ? 255 : 0);
             g.drawLine(xi,yi2-1,xi,yi2);
           }
+        } else if (graphCmd == PROG_DRAWZZ) {
+          rTmp.assign(y);
+          rTmp.hypot(yimag);
+          if (rTmp.isZero()) {
+            g.setColor(0);
+          } else {
+            y.div(rTmp);
+            yimag.div(rTmp);
+            rTmp.mod(Real.ONE);
+            y.scalbn(8);
+            yimag.scalbn(8);
+            rTmp.scalbn(8);
+            int X = y.toInteger();
+            int Y = yimag.toInteger();
+            int L = rTmp.toInteger();
+            int R = ((255*128-X*90+Y*90)*L)>>16;
+            int G = ((255*128+X*90)*L)>>16;
+            int B = ((255*128-X*90-Y*90)*L)>>16;
+            g.setColor(R,G,B);
+          }
+          g.fillRect(gx-2+xi,gy-2+yi,size,size);
         } else { // PROG_DRAWPOL or PROG_DRAWPARM
           if (graphCmd == PROG_DRAWPOL) {
             x.assign(b);
