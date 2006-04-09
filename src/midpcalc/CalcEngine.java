@@ -1034,6 +1034,12 @@ public final class CalcEngine
   }
 
   private void updateProgMonitor( boolean pointToEnd ) {
+    StringBuffer caption = new StringBuffer( "Prog: "+progLabels[currentProg]);
+    int nSpaces = (format.maxwidth-caption.length())/2;
+    for (int i=0; i<nSpaces; i++)
+      caption.append(' ');
+    monitorCaption = caption.toString();
+    
     progLineAddr = new int[progCounter]; // probably too big, but enough
     maxMonitorSize=0;
     for (int i=0; i<progCounter; i++, maxMonitorSize++) {
@@ -1047,7 +1053,7 @@ public final class CalcEngine
       clearMonitorStrings();
     monitorLabels= new String[maxMonitorSize+1];
     for (int i=0; i<maxMonitorSize; i++) {
-      monitorLabels[i]= ""+ i;
+      monitorLabels[i]= ""+ (i+1);
       int labelWidth = monitorLabels[i].length()+1;
       int a= progLineAddr[i];
       short cmd= prog[currentProg][a];
@@ -1092,7 +1098,7 @@ public final class CalcEngine
       }
     }
     monitorStr[maxMonitorSize] = "[prg end]";
-    monitorLabels[maxMonitorSize] = ""+maxMonitorSize;
+    monitorLabels[maxMonitorSize] = ""+(maxMonitorSize+1);
     maxMonitorSize++;
     monitorSize = Math.min(initialMonitorSize,maxMonitorSize);
     
@@ -1163,8 +1169,8 @@ public final class CalcEngine
             return "no matrix";
           else
             return monitorCaption;
-        else
-          return "Prog: "+progLabels[currentProg];
+        else 
+          return monitorCaption;
       else
         n--;
     }
@@ -1218,7 +1224,7 @@ public final class CalcEngine
     else if (monitorMode == MONITOR_PROG && n == monitorY)
       return ">";
     else
-      return "=";
+      return (monitorMode == MONITOR_PROG) ? ":" : "=";
   }
 
   public int getMonitorSize() {
