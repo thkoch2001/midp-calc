@@ -161,11 +161,11 @@ public final class CmdDesc
     case CalcEngine.FINANCE_MULINT:return brief ? "y%*x" : "finance/y%*x";
     case CalcEngine.FINANCE_DIVINT:return brief ? "y%/x" : "finance/y%/x";
     case CalcEngine.SIGN_POINT_E:return "-/./E"; 
-    case CalcEngine.TO_CPLX:return brief ? "r­cplx" : "complex/r­cplx";
-    case CalcEngine.CPLX_SPLIT:return brief ? "cplx­r" : "complex/cplx­r";
+    case CalcEngine.TO_CPLX:return brief ? "r­cplx" : "trig/coord/r­cplx";
+    case CalcEngine.CPLX_SPLIT:return brief ? "cplx­r" : "trig/complex/cplx­r";
     case CalcEngine.ABS:return brief ? "abs" : "abs";
-    case CalcEngine.CPLX_ARG:return brief ? "arg" : "complex/arg";
-    case CalcEngine.CPLX_CONJ:return brief ? "conj" : "complex/conj";
+    case CalcEngine.CPLX_ARG:return brief ? "arg" : "trig/complex/arg";
+    case CalcEngine.CPLX_CONJ:return brief ? "conj" : "trig/complex/conj";
     case CalcEngine.ERFC:return brief ? "erfc" : "math/prob/erfc";
     case CalcEngine.MOD:return brief ? "mod" : "math/mod";
     case CalcEngine.DIVF:return brief ? "div" : "math/div";
