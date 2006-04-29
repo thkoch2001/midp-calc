@@ -236,9 +236,10 @@ public final class CmdDesc
     case CalcEngine.PUSH_ZERO_N:return "-0";
     case CalcEngine.PUSH_INF:return "Þ";
     case CalcEngine.PUSH_INF_N:return "-Þ";
-    case CalcEngine.PROG_EDIT:return brief ? "edit/new" : "prog/edit";
+    case CalcEngine.PROG_NEW:return brief ? "new" : "prog/new";
     case CalcEngine.PROG_FINISH:return brief ? "finish" : "prog/finish";
     case CalcEngine.PROG_RUN:return brief ? "run" : "prog/run";
+    case CalcEngine.PROG_PURGE:return brief ? "reset" : "prog/reset";
     case CalcEngine.PROG_CLEAR:return brief ? "clear" : "prog/clear";
     case CalcEngine.PROG_DIFF:return brief ? "diff." : "prog/diff.";
     case CalcEngine.TRANSP:return brief ? "A^T" : "matrix/transp";
@@ -285,7 +286,8 @@ public final class CmdDesc
     case CalcEngine.PROG_SOLVE:return brief ? "solve" : "prog/solve";
     case CalcEngine.PROG_INTEGR:return brief ? "integrate" : "prog/integrate";
     case CalcEngine.PROG_MINMAX:return brief ? "min/max" : "prog/min/max";
-    case CalcEngine.MONITOR_PROG:return brief ? "view" : "prog/view";
+    case CalcEngine.MONITOR_PROG:return brief ? "prog" : "monitor/prog";
+    case CalcEngine.PROG_APPEND:return brief ? "append" : "prog/append";
     default:
       return "[nop]";
     }
@@ -371,8 +373,9 @@ public final class CmdDesc
     case CalcEngine.FINANCE_SOLVE:
       return FINANCE_REQUIRED;
 
-    case CalcEngine.PROG_EDIT:
+    case CalcEngine.PROG_NEW:
     case CalcEngine.PROG_CLEAR:
+    case CalcEngine.PROG_APPEND:
       return PROG_REQUIRED|NO_REPEAT;
 
     case CalcEngine.PROG_RUN:

@@ -234,7 +234,7 @@ public final class CalcEngine
   public static final int PUSH_ZERO_N    = 227;
   public static final int PUSH_INF       = 228;
   public static final int PUSH_INF_N     = 229;
-  public static final int PROG_EDIT      = 230;
+  public static final int PROG_NEW       = 230;
   public static final int PROG_FINISH    = 231;
   public static final int PROG_RUN       = 232;
   public static final int PROG_PURGE     = 233;
@@ -271,6 +271,7 @@ public final class CalcEngine
   public static final int PHI            = 264;
   public static final int INVPHI         = 265;
   public static final int MONITOR_PROG   = 266;
+  public static final int PROG_APPEND    = 267;
 
   public static final int MATRIX_STO     = 512; // Special bit pattern
   public static final int MATRIX_RCL     = 768; // Special bit pattern
@@ -3304,10 +3305,10 @@ public final class CalcEngine
 
   private void record(int cmd, int param) {
     if (prog[currentProg] == null ||
-        (cmd >= PROG_EDIT   && cmd <= PROG_DIFF) ||
+        (cmd >= PROG_NEW    && cmd <= PROG_DIFF) ||
         (cmd >= AVG_DRAW    && cmd <= POW_DRAW) ||
         (cmd >= PROG_DRAW   && cmd <= PROG_MINMAX) ||
-        (cmd == MONITOR_PROG))
+        (cmd >= MONITOR_PROG && cmd <= PROG_APPEND))
       return; // Such commands cannot be recorded
 
     if (progCounter == prog[currentProg].length) {
@@ -3576,15 +3577,8 @@ public final class CalcEngine
         return;
 
       case MONITOR_PUSH:
-        if (monitorMode == MONITOR_PROG) { // label (middle): SST 
-          if (monitorY < maxMonitorSize-1) {
-            progRecording = false;
-            progRunning = true;
-            singleStepProgram( monitorY );
-            progRunning = false;
-            progRecording = true;
-            setMonitorY(monitorY+1, false);
-          }
+        if ( monitorMode == MONITOR_PROG ) {
+          command(MONITOR_EXIT,0);
           return;
         }
         // no break here
@@ -3601,11 +3595,18 @@ public final class CalcEngine
             }
             command(MATRIX_STO,(monitorY<<16)+monitorX);
             break;
-          case MONITOR_PROG:                   // label: reset
-            progCounter = 0;                   // delete programm
-            updateProgMonitor( true );
+          case MONITOR_PROG:                   // label: SST
+	    if (monitorY < maxMonitorSize-1) {
+              progRecording = false;
+              progRunning = true;
+              singleStepProgram( monitorY );
+              progRunning = false;
+              progRecording = true;
+              setMonitorY(monitorY+1, false);
+            }
             return;
         }
+
         setMonitorY(monitorY+1,true); // Proceed to next element
         if (cmd == MONITOR_PUSH) {
           // Put, pop and return
@@ -4267,14 +4268,18 @@ public final class CalcEngine
         stackStr[0] = null;
         stackStr[1] = null;
         break;
-
-      case PROG_EDIT:
+	
+      case PROG_APPEND:
+        if ( prog[param] == null )
+          return; // cannot modify a nonexistent program
+      case PROG_NEW:
         progRecording = true;
         currentProg = param;
         matrixGC();
-        if (prog[currentProg] == null || prog[currentProg].length == 0) {
-          prog[currentProg] = new short[10];
-          progCounter = 0;
+        if (cmd == PROG_NEW || prog[currentProg] == null || 
+	    prog[currentProg].length == 0) {
+	  prog[currentProg] = new short[10];
+	  progCounter = 0;
         } else {
           progCounter = prog[currentProg].length;
         } 
@@ -4305,6 +4310,11 @@ public final class CalcEngine
           executeProgram();
           progRunning = false;
         }
+        break;
+
+      case PROG_PURGE:
+	progCounter = 0;                   // delete programm
+	updateProgMonitor( true );
         break;
 
       case PROG_CLEAR:

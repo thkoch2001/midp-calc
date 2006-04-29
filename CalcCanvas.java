@@ -60,7 +60,7 @@ public final class CalcCanvas
 //                                 -> thousand -> dot/comma space ' none
 //            -> prog[1] -> run    -> #
 //                       -> new    -> # -> name?
-//                       -> clear  -> #
+//                       -> append -> # 
 //                       -> draw   -> y=f(x)      -> #
 //                                 -> r=f(theta)  -> #
 //                                 -> z=f(t)      -> #
@@ -68,13 +68,14 @@ public final class CalcCanvas
 //                                 -> diff        -> #
 //                                 -> solve       -> #
 //                                 -> min/max     -> #
+//                                 -> clear        -> #
 //            -> prog[2] -> finish
 //                       -> cond   -> x=y? x!=y? x<y? x<=y? x>y?
 //                       -> util   -> abs max min sgn select
-//                       -> purge
+//                       -> reset
 //                       -> mem    -> RCL[x] STO[x] STO+[x]
 //            -> base    -> dec    hex    oct      bin
-//            -> monitor -> mem    stat   finance  off                 ( -> # )
+//            -> monitor -> mem    stat   finance  matrix  off (prog)            ( -> # )
 //            -> sys     -> font   -> small  medium large  system
 //                       -> exit
 //                       -> reset
@@ -478,12 +479,15 @@ public final class CalcCanvas
         new Menu(CalcEngine.MONITOR_STAT),
         new Menu(CalcEngine.MONITOR_MEM),
         new Menu(CalcEngine.MONITOR_MATRIX),
-        new Menu(CalcEngine.MONITOR_NONE),
+        null, // off or prog
       }),
       systemMenu,
     }),
   });
   
+  private Menu monitorOffMenu = new Menu(CalcEngine.MONITOR_NONE);
+  private Menu monitorProgMenu = new Menu(CalcEngine.MONITOR_PROG);
+
   private Menu numberMenu = new Menu(null,new Menu[] {
     new Menu("<0-3>",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,new Menu[] {
       new Menu("<0>",NUMBER_0,CmdDesc.REPEAT_PARENT),
@@ -644,7 +648,7 @@ public final class CalcCanvas
   });
 
   private Menu prog1 = new Menu("prog",new Menu[] {
-    new Menu(CalcEngine.PROG_EDIT),
+    new Menu(CalcEngine.PROG_NEW),
     new Menu(CalcEngine.PROG_RUN),
     new Menu("draw",CmdDesc.NO_PROG,new Menu[] {
       new Menu(CalcEngine.PROG_DRAW),
@@ -652,13 +656,14 @@ public final class CalcCanvas
       new Menu(CalcEngine.PROG_DRAWPARM),
       new Menu(CalcEngine.PROG_DRAWZZ),
     }),
+    new Menu(CalcEngine.PROG_APPEND),
     new Menu("more",CmdDesc.TITLE_SKIP,new Menu[] {
       new Menu(CalcEngine.PROG_INTEGR),
       new Menu(CalcEngine.PROG_DIFF),
       new Menu(CalcEngine.PROG_SOLVE),
       new Menu(CalcEngine.PROG_MINMAX),
+      new Menu(CalcEngine.PROG_CLEAR),
     }),
-    new Menu(CalcEngine.PROG_CLEAR),
   });
 
   private Menu prog2 = new Menu("prog",new Menu[] {
@@ -677,7 +682,7 @@ public final class CalcCanvas
       new Menu(CalcEngine.SELECT),
       new Menu("sgn",CalcEngine.SGN),
     }),
-    new Menu(CalcEngine.MONITOR_PROG),
+    new Menu(CalcEngine.PROG_PURGE),
     new Menu("mem",new Menu[] {
       new Menu(CalcEngine.RCL_X),
       new Menu(CalcEngine.STO_X),
@@ -934,8 +939,7 @@ public final class CalcCanvas
     g.fillRect(0,header-1,getWidth(),
                getHeight()-header-footer+1);
     if (!automaticCommands())
-      paintCommands(g,boldMenuFont,calc.isInsideMonitor ? 
-                    ((calc.monitorMode == CalcEngine.MONITOR_PROG) ? "SST" : "move") 
+      paintCommands(g,boldMenuFont,calc.isInsideMonitor ? "move"
                     : "menu", menuFont);
   }
 
@@ -1384,14 +1388,17 @@ public final class CalcCanvas
         menu.subMenu[2] = bitMath;
       }
       // Switch between prog1 and prog2 if recording a program
+      // and between monitor off and prog monitor
       if (calc.progRecording) {
         menu.subMenu[4].subMenu[1] = prog2;
+        menu.subMenu[4].subMenu[3].subMenu[4] = monitorProgMenu;
         // Cannot use NO_PROG commands during program recording
         if (repeatedMenuItem!=null &&
             (repeatedMenuItem.flags & CmdDesc.NO_PROG)!=0)
           repeatedMenuItem = null;
       } else {
         menu.subMenu[4].subMenu[1] = prog1;        
+        menu.subMenu[4].subMenu[3].subMenu[4] = monitorOffMenu;
       }
       // Change basicMenu[4] to enterMonitor if monitoring or repeated item
       if (calc.getActualMonitorSize() > 0)
@@ -1459,15 +1466,11 @@ public final class CalcCanvas
               menuCommand <= CalcEngine.PROG_MINMAX) {
             graph = true;
             graphParam = command-NUMBER_0;
-          } if (menuCommand == CalcEngine.PROG_EDIT) {
+          } if (menuCommand == CalcEngine.PROG_NEW) {
             int n = command-NUMBER_0;
-            if (calc.progLabels[n]==calc.emptyProg) {
-              calc.progLabels[n] = "";
-              midlet.askNewProgram(calc.progLabels[n], n, true);
-            } else if (calc.progInitialMonitorSize == 0)
-              midlet.askNewProgram(calc.progLabels[n],n, false);
-            else
-              calc.command(CalcEngine.PROG_EDIT, n);
+            String name = calc.progLabels[n]==calc.emptyProg ? "" :
+              calc.progLabels[n];
+            midlet.askNewProgram(name,n);
           } else {
             calc.command(menuCommand,command-NUMBER_0);
           }
@@ -1479,7 +1482,7 @@ public final class CalcCanvas
           // Normal calculator command
           if (command == CalcEngine.MONITOR_ENTER)
             if (calc.monitorMode == CalcEngine.MONITOR_PROG) // Different commands inside monitor 
-              setCommands("reset","DEL");
+              setCommands("SST","DEL");
             else
               setCommands("STO","RCL"); 
           calc.command(command,0);

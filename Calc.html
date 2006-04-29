@@ -1057,8 +1057,8 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
   <li><a id="Prog" name="Prog">Programming</a> <a
     href="Calc.html#ProgNote"><b>(*)</b></a>
   <ul>
-    <li><b>edit/new</b>: Start entering a new program or append to an existing 
-  program.
+    <li><b>new</b>: Start entering a new program
+    <li><b>append</b>: Append commands to an existing program
     <li><b>run</b>: Run a program
     <li><b>clear</b>: Clear a program
     <li><b>draw y=f(x)</b>: Draw program function y=f(x). Prior to
@@ -1090,8 +1090,7 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
   <li>Programming 2 (available while entering a new program)
   <ul>
     <li><b>finish</b>: Finish entering current program
-    <li><b>view</b>: Activate the program editing monitor (monitor <i>n</i> 
-    lines of the program at the same time)
+    <li><b>reset</b>: Reset the current program (purge and start from beginning)
     <li>Conditionals for programming
     <ul>
       <li><b>x=y?</b>: Enter 1 on stack if x exactly equals y, otherwise 0
@@ -1140,7 +1139,10 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
     <li><b>finance</b>: Monitor financial registers
     <li><b>matrix</b>: Monitor <i>n</i> rows from the <em>lowest</em>
     matrix on the stack
-    <li><b>off</b>: Turn monitoring off
+    <li><b>off</b>: Turn monitoring off (equivalent to set a monitor to display <i>n=0</i> lines).
+    <br> When in program recording mode, this command is replaced by:
+    <li><b>prog</b>: Activate the program editing monitor (monitor <i>n</i> 
+    consecutive lines of the program)
   </ul>
   <li><a id="System" name="System">System menu</a>
   <ul>
@@ -1501,20 +1503,22 @@ operations reached from this menu are "mode-like".)<br>
 <br>
 The programming mode in Calc is basically a keyboard/command logging
 facility with playback. In programming mode (i.e. after executing
-"new/edit"), all activity is stored in the current program, but the
-calculator looks and behaves exactly as before except a "PRG"
-indicator to the upper right. There is no limit to the size of a
-program, but beware, do not leave Calc in programming mode (look for
+"prog/new" or "prog/append"), all activity is stored in the current
+program, but the calculator looks and behaves exactly as before except
+a "PRG" indicator to the upper right. There is no limit to the size of
+a program, but beware, do not leave Calc in programming mode (look for
 the "PRG" indicator), because Calc will <em>eventually</em> run out of
 memory, giving the "Out of memory error".<br>
 
 <br>
-Programs can be viewed or edited using the program editing monitor
-command: "view". Using the "undo" operation does not remove any
+Using the "undo" operation does not remove any
 statements from the program, it only adds the "undo" operation to the
-program as well. Advice: If your program is complex, plan the steps
+program as well. So use the program editing mode described below to 
+remove an operation. Advice: If your program is complex, plan the steps
 beforehand on a piece of paper.</br>
-
+<br>
+Programs can be viewed or edited using the program editing monitor
+command: "monitor/prog":</br>
 <br>
 The program editing monitor can be used to view or edit programs. Note
 that the program editing monitor can only be accessed in the
@@ -1528,32 +1532,25 @@ mark is at the end of the program, so all new instructions will be
 appended to the program. When the editing mode is entered, the mark
 can be moved using the joystick (up/down, left=page up, right=page
 down). In the editing mode, the softkeys have the following meanings:
-<b>reset</b> purges the whole program (NB: <b>no undo</b> for this
-operation),
-<b>DEL</b> removes the marked current instruction and the middle
-joystick button invokes the <b>SST</b> operation, which executes the
-marked current instruction. Note that the availability of commands you
-want to insert depends on the current state of the calculator, e.g. if
-you want to use complex number operations, there has to be a complex
-number on the stack at x. As usual the instructions recorded at the
-insert position are executed immediately, not necessarily in the order
-of the finished program. So if you want to insert an instruction and
-review an example calculation in parallel, it could be a good idea to
-run the program from the beginning using the <b>SST</b> up to the
-point where you want to extend your program -- then the calculator
-would be in the same state as when running the program offering all
-appropriate commands in the main menu. As all monitor modes, the
-monitor mode can be activated by setting it to display 0 lines
-("special/monitor/off" would do the same job, but would also be
-inserted into the program). However, when the program editing is
+<b>DEL</b> removes the marked current instruction and <b>SST</b>
+executes the marked current instruction and advances the mark. Note
+that the availability of commands you want to insert depends on the
+current state of the calculator, e.g. if you want to use complex
+number operations, there has to be a complex number on the stack at
+x. As usual the instructions recorded at the insert position are
+executed immediately, not necessarily in the order of the finished
+program. So if you want to insert an instruction and review an example
+calculation in parallel, it could be a good idea to run the program
+from the beginning using the <b>SST</b> up to the point where you want
+to extend your program -- then the calculator would be in the same
+state as when running the program offering all appropriate commands in
+the main menu. As all monitor modes, the monitor mode can be activated
+by setting it to display 0 lines. However, when the program editing is
 finished using the "prog/finish" command, the program monitor is
 deactivated and it is reactivated with the same number of lines next
-time the "edit/new" command is issued, even if a different monitor
-mode was active. In this case, if the "edit/new" command is used to
-edit an existing program, no program name dialog will appear to speed
-up editing. If you want to change a program name, first set program
-monitor mode to 0 lines (=off) and after the "finish" command, the
-next "edit/new" command will allow to change the program name.  </br>
+time the "new" or "append" commands are issued, even if a different
+monitor mode was active. 
+</br>
 
 <br>
 The programming mode offers no control flow (if-statements) or looping

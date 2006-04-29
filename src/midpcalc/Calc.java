@@ -68,18 +68,18 @@ public final class Calc
     display.setCurrent(graph);
   }
   
-  public void askNewProgram(String name, int n, boolean newprog) {
-    // always create because of varying title -- setTitle requires MIDP2
-    newProgram = new TextBox(newprog ? "New program" : "Edit program",
-                               "", CalcEngine.PROGLABEL_SIZE, TextField.ANY);
-    if (okCommand == null) {
-      okCommand = new Command("Ok", Command.OK, 1);
-      cancelCommand = new Command("Cancel", Command.CANCEL, 1);
+  public void askNewProgram(String name, int n) {
+    if (newProgram == null) {
+      newProgram = new TextBox("New program", "", CalcEngine.PROGLABEL_SIZE,
+                               TextField.ANY);
+      if (okCommand == null) {
+        okCommand = new Command("Ok", Command.OK, 1);
+        cancelCommand = new Command("Cancel", Command.CANCEL, 1);
+      }
+      newProgram.addCommand(okCommand);
+      newProgram.addCommand(cancelCommand);
+      newProgram.setCommandListener(this);
     }
-    newProgram.addCommand(okCommand);
-    newProgram.addCommand(cancelCommand);
-    newProgram.setCommandListener(this);
-    
     newProgram.setString(name);
     whichProgram = n;
     display.setCurrent(newProgram);
@@ -120,7 +120,7 @@ public final class Calc
     if (d == newProgram) {
       if (c == okCommand) {
         screen.calc.progLabels[whichProgram] = newProgram.getString();
-        screen.calc.command(CalcEngine.PROG_EDIT, whichProgram);
+        screen.calc.command(CalcEngine.PROG_NEW, whichProgram);
       }
       displayScreen();
     } else if (d == resetConfirmation) {
