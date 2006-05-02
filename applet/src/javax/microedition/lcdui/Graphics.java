@@ -27,6 +27,13 @@ public class Graphics
     g.setColor(new java.awt.Color(red,green,blue));
   }
   
+  public void drawRect(int x, int y, int width, int height) {
+    g.drawLine(x, y, x+width, y);
+    g.drawLine(x+width, y, x+width, y+height);
+    g.drawLine(x+width, y+height, x, y+height);
+    g.drawLine(x, y+height, x, y);
+  }
+
   public void fillRect(int x, int y, int width, int height) {
     g.fillRect(x,y,width,height);
   }

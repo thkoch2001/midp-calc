@@ -4340,6 +4340,14 @@ public final class CalcEngine
       updateMatrixMonitor();
   }
 
+  private static class GridStep {
+    short pos;
+    byte type;
+    String label;
+
+    static final byte ZERO = 1;
+    static final byte BIGTICK = 2;
+  }
 
   // Create an inner class to limit each class size to 64kB
   // This is a temporary solution
@@ -4388,7 +4396,11 @@ public final class CalcEngine
       yMin.assign(stack[1]);
       yMax.assign(stack[0]);
       if (getStackHeight()<4 ||
-          xMin.greaterEqual(xMax) || yMin.greaterEqual(yMax)) {
+          xMin.greaterEqual(xMax) || yMin.greaterEqual(yMax) ||
+          !xMin.isFinite() || !xMax.isFinite() ||
+          !yMin.isFinite() || !yMax.isFinite() ||
+          !stackI[0].isZero() || !stackI[1].isZero() ||
+          !stackI[2].isZero() || !stackI[3].isZero()) {
         setMessage("Draw", "The draw area limits, xMin, xMax, yMin and yMax "+
                    "must be pushed to the stack (in that order) before "+
                    "drawing. xMin must be less than xMax and yMin must be "+
@@ -4733,114 +4745,167 @@ public final class CalcEngine
     //  -1-2-3-4                  500   2  1e3
   }
 
-  public void startGraph(Graphics g, int gx, int gy, int gw, int gh,
-                         boolean bgrDisplay)
-  {
-    int i,xi,yi,pyi,inc,bigTick,lx,ly;
-    Real h = rTmp2;
-    Real x = rTmp3;
-    Real y = rTmp4;
+  private GridStep[] calcGridSteps(Real min, Real max, int off, int size) {
+    Real step = rTmp2;
+    Real pos = rTmp3;
     Real fac = new Real();
-    Real tmp = new Real();
-    GFont font = new GFont(GFont.SMALL | (bgrDisplay ? GFont.BGR_ORDER : 0));
-    int fh = font.getHeight()-1;
-    int fw = font.charWidth();
     Real.NumberFormat fmt = new Real.NumberFormat();
     fmt.point = format.point;
 
-    g.setClip(gx,gy,gw,gh);
+    boolean inverted = false;
+    if (min.greaterThan(max)) {
+      min.swap(max);
+      inverted = true;
+    }
+
+    int bigTick = findTickStep(step,fac,min,max,size);
+    pos.assign(max);
+    pos.div(step);
+    pos.floor();
+    long lastTick = pos.toLong();
+    pos.assign(min);
+    pos.div(step);
+    pos.ceil();
+    long tickNo = pos.toLong();
+    pos.mul(step);
+
+    int n = (int)(lastTick-tickNo+1);
+    GridStep[] gridSteps = new GridStep[n];
+
+    for (int i=0; i<n; i++) {
+      gridSteps[i] = new GridStep();
+      if (inverted)
+        gridSteps[i].pos=(short)(off+rangeScale(pos,max,min,size,Real.ZERO));
+      else
+        gridSteps[i].pos=(short)(off+rangeScale(pos,min,max,size,Real.ZERO));
+
+      if (tickNo == 0) {
+        gridSteps[i].type = GridStep.ZERO;
+      } else if (tickNo%bigTick == 0) {
+        gridSteps[i].type = GridStep.BIGTICK;
+        rTmp4.assign(pos);
+        rTmp4.div(fac);
+        gridSteps[i].label = rTmp4.toString(fmt);
+      }
+      pos.add(step);
+      tickNo++;
+    }
+    if (inverted)
+      min.swap(max); // Swap back
+
+    return gridSteps;
+  }
+
+  public void drawAxes(Graphics g, int gx, int gy, int gw, int gh,
+                       boolean bgrDisplay, boolean sparse) {
+    int i,j,xi,yi,x0,y0,inc,lx,ly;
+    GFont font = new GFont(GFont.SMALL | (bgrDisplay ? GFont.BGR_ORDER : 0));
+    int fh = font.getHeight()-1;
+    int fw = font.charWidth();
+    boolean skipYAxis = graphCmd>=PROG_SOLVE;
+
     // shrink window by 4 pixels
     gx += 2;
     gy += 2;
     gw -= 4;
     gh -= 4;
 
+    // Calculate grid steps
+    GridStep[] gridStepsX = calcGridSteps(xMin,xMax,gx,gw);
+    GridStep[] gridStepsY = calcGridSteps(yMax,yMin,gy,gh);
+
     // Draw X axis
     g.setColor(0,255,128);
-    yi = gy+rangeScale(Real.ZERO,yMax,yMin,gh,Real.ZERO);
-    g.drawLine(gx-2,yi,gx+gw+1,yi);
-    bigTick = findTickStep(h,fac,xMin,xMax,gw);
-    x.assign(xMin);
-    x.div(h);
-    x.ceil();
-    i = x.toInteger();
-    x.mul(h);
-    h.scalbn(-1);
-    y.assign(h);
-    y.add(xMax);
-    while (x.lessThan(y)) {
-      if (!x.absLessThan(h)) {
-        xi = gx+rangeScale(x,xMin,xMax,gw,Real.ZERO);
+    y0 = gy+rangeScale(Real.ZERO,yMax,yMin,gh,Real.ZERO);
+    g.drawLine(gx-2,y0,gx+gw+1,y0);
+    x0 = gx+rangeScale(Real.ZERO,xMin,xMax,gw,Real.ZERO);
+    g.drawLine(x0,gy-2,x0,gy+gh+1);
+
+    if (sparse && !skipYAxis) {
+      for (i=0; i<gridStepsX.length; i++) {
+        for (j=0; j<gridStepsY.length; j++) {
+          xi = gridStepsX[i].pos;
+          yi = gridStepsY[j].pos;
+          if (gridStepsX[i].type == GridStep.ZERO ||
+              gridStepsY[j].type == GridStep.ZERO) {
+            g.setColor(0,255,128);
+            if (gridStepsX[i].type == GridStep.BIGTICK ||
+                gridStepsY[j].type == GridStep.BIGTICK)
+              inc = 2;
+            else
+              inc = 1;
+          } else {
+            g.setColor(0,32,16);
+            if (gridStepsX[i].type == GridStep.BIGTICK &&
+                gridStepsY[j].type == GridStep.BIGTICK)
+              inc = 3;
+            else
+              inc = 2;
+          }
+          g.drawLine(xi,yi-inc,xi,yi+inc);
+          g.drawLine(xi-inc,yi,xi+inc,yi);
+        }
+      }
+    } else {
+      for (i=0; i<gridStepsX.length; i++) {
+        if (gridStepsX[i].type == GridStep.ZERO)
+          continue;
+        xi = gridStepsX[i].pos;
         g.setColor(0,32,16);
         g.drawLine(xi,gy-2,xi,gy+gh+1);
-
-        if (i%bigTick == 0 && graphCmd<PROG_SOLVE)
-        {
-          tmp.assign(x);
-          tmp.div(fac);
-          String label = tmp.toString(fmt);
-          lx = xi-fw*label.length()/2;
-          if (lx < gx-2)
-            lx = gx-2;
-          if (lx > gx+gw+2-fw*label.length())
-            lx = gx+gw+2-fw*label.length();
-
-          if ((yi>=gy+gh/2 && yi+4+fh <= gy+gh+1) || yi-3-fh<gy-1)
-            ly = yi+4;
-          else
-            ly = yi-3-fh;
-
-          if (ly<gy-1)
-            ly = gy-1;
-          if (ly > gy+gh+1-fh)
-            ly = gy+gh+1-fh;
-          font.drawString(g,lx,ly,label);
-        }
-        inc = (i%bigTick == 0) ? 2 : 1;
+        inc = (gridStepsX[i].type == GridStep.BIGTICK) ? 2 : 1;
         g.setColor(0,255,128);
-        g.drawLine(xi,yi-inc,xi,yi+inc);
+        g.drawLine(xi,y0-inc,xi,y0+inc);
       }
-      x.add(h);
-      x.add(h);
-      i++;
+
+      if (!skipYAxis) {
+        for (i=0; i<gridStepsY.length; i++) {
+          if (gridStepsY[i].type == GridStep.ZERO)
+            continue;
+          yi = gridStepsY[i].pos;
+          g.setColor(0,32,16);
+          g.drawLine(gx-2,yi,gx+gw+1,yi);
+          inc = (gridStepsY[i].type == GridStep.BIGTICK) ? 2 : 1;
+          g.setColor(0,255,128);
+          g.drawLine(x0-inc,yi,x0+inc,yi);
+        }
+      }
     }
 
-    // Draw Y axis
-    xi = gx+rangeScale(Real.ZERO,xMin,xMax,gw,Real.ZERO);
-    g.drawLine(xi,gy-2,xi,gy+gh+1);
+    if (sparse)
+      return;
 
-    if (graphCmd==PROG_DRAWZZ) {
-      zzN = 0;
-      zzNbits = 0;
-      for (int s2=1; s2<gw+4 || s2<gh+4; s2<<=1)
-        zzNbits+=2;
+    // Draw labels
+    for (i=0; i<gridStepsX.length; i++) {
+      String label = gridStepsX[i].label;
+      if (label != null && !skipYAxis) {
+        xi = gridStepsX[i].pos;
+        lx = xi-fw*label.length()/2;
+        if (lx < gx-2)
+          lx = gx-2;
+        if (lx > gx+gw+2-fw*label.length())
+          lx = gx+gw+2-fw*label.length();
+
+        if ((y0>=gy+gh/2 && y0+4+fh <= gy+gh+1) || y0-3-fh<gy-1)
+          ly = y0+4;
+        else
+          ly = y0-3-fh;
+
+        if (ly<gy-1)
+          ly = gy-1;
+        if (ly > gy+gh+1-fh)
+          ly = gy+gh+1-fh;
+        font.drawString(g,lx,ly,label);
+      }
     }
 
-    if (graphCmd==PROG_SOLVE || graphCmd==PROG_INTEGR || graphCmd==PROG_MINMAX)
-      return; // Return now to continue later
-
-    bigTick = findTickStep(h,fac,yMin,yMax,gh);
-    y.assign(yMin);
-    y.div(h);
-    y.ceil();
-    i = y.toInteger();
-    y.mul(h);
-    h.scalbn(-1);
-    x.assign(h);
-    x.add(yMax);
-    boolean sideSelected = false;
-    boolean rightSide = false;
-    while (y.lessThan(x)) {
-      if (!y.absLessThan(h)) {
-        yi = gy+rangeScale(y,yMax,yMin,gh,Real.ZERO);
-        g.setColor(0,32,16);
-        g.drawLine(gx-2,yi,gx+gw+1,yi);
-
-        if (i%bigTick == 0)
-        {
-          tmp.assign(y);
-          tmp.div(fac);
-          String label = tmp.toString(fmt);
+    if (!skipYAxis) {
+      boolean sideSelected = false;
+      boolean rightSide = false;
+      for (i=0; i<gridStepsY.length; i++) {
+        String label = gridStepsY[i].label;
+        if (label != null) {
+          yi = gridStepsY[i].pos;
           ly = yi-fh/2;
           if (ly < gy-1)
             ly = gy-1;
@@ -4849,14 +4914,14 @@ public final class CalcEngine
 
           if ((sideSelected && rightSide) ||
               (!sideSelected &&
-               ((xi>gx+gw/2 && xi+4+fw*label.length() <= gx+gw+2) ||
-                xi-3-fw*label.length()<gx-2)))
-          {
-            rightSide = true;
-            lx = xi+4;
-          } else {
-            lx = xi-3-fw*label.length();
-          }
+               ((x0>gx+gw/2 && x0+4+fw*label.length() <= gx+gw+2) ||
+                x0-3-fw*label.length()<gx-2)))
+            {
+              rightSide = true;
+              lx = x0+4;
+            } else {
+              lx = x0-3-fw*label.length();
+            }
           sideSelected = true; // Keep to one side of axis once it is selected
 
           if (lx < gx-2)
@@ -4865,20 +4930,38 @@ public final class CalcEngine
             lx = gx+gw+2-fw*label.length();
           font.drawString(g,lx,ly,label);
         }
-        inc = (i%bigTick == 0) ? 2 : 1;
-        g.setColor(0,255,128);
-        g.drawLine(xi-inc,yi,xi+inc,yi);
       }
-      y.add(h);
-      y.add(h);
-      i++;
     }
+  }
 
-    if (graphCmd >= PROG_DRAW && graphCmd <= PROG_DRAWZZ) {
-      // Return now to continue drawing graph indefinitely
+  public void startGraph(Graphics g, int gx, int gy, int gw, int gh,
+                         boolean bgrDisplay)
+  {
+    int i,xi,yi,pyi,inc;
+    Real x = rTmp3;
+    Real y = rTmp4;
+
+    g.setClip(gx,gy,gw,gh);
+    drawAxes(g,gx,gy,gw,gh,bgrDisplay,false);
+    // shrink window by 4 pixels
+    gx += 2;
+    gy += 2;
+    gw -= 4;
+    gh -= 4;
+
+    if (graphCmd >= PROG_SOLVE)
+      return; // Return now to continue later
+
+    if (graphCmd >= PROG_DRAW) {
+      if (graphCmd==PROG_DRAWZZ) {
+        zzN = 0;
+        zzNbits = 0;
+        for (int s2=1; s2<gw+4 || s2<gh+4; s2<<=1)
+          zzNbits+=2;
+      }
       a.assign(0, 0x3fffffff, 0x4f1bbcdcbfa53e0bL); // a = golden ratio, 0.618
       b.makeZero();
-      return;
+      return; // Return now to continue later
     }
 
     // Draw statistics graph
@@ -5410,6 +5493,28 @@ public final class CalcEngine
     }
   }
 
+  public void zoomGraph(Real factor, Real xOff, Real yOff) {
+    xMax.sub(xMin);
+    xOff.mul(xMax);
+    xMax.mul(factor);
+    xMin.add(xOff);
+    xMax.add(xMin);
+    yMax.sub(yMin);
+    yOff.mul(yMax);
+    yMax.mul(factor);
+    yMin.add(yOff);
+    yMax.add(yMin);
+    // In case the program *doesn't* clutter the stack, update limits on stack
+    binary(CLEAR);
+    binary(CLEAR);
+    binary(CLEAR);
+    binary(CLEAR);
+    push(xMin,null);
+    push(xMax,null);
+    push(yMin,null);
+    push(yMax,null);
+  }
+
   // This ends the inner class
   }
   // Create an inner class object to use from the outer
@@ -5419,11 +5524,18 @@ public final class CalcEngine
   public boolean prepareGraph(int cmd, int param) {
     return inner.prepareGraph(cmd,param);
   }
+  public void drawAxes(Graphics g, int gx, int gy, int gw, int gh,
+                       boolean bgrDisplay, boolean sparse) {
+    inner.drawAxes(g,gx,gy,gw,gh,bgrDisplay,sparse);
+  }
   public void startGraph(Graphics g, int gx, int gy, int gw, int gh,
                          boolean bgrDisplay) {
     inner.startGraph(g,gx,gy,gw,gh,bgrDisplay);
   }
   public void continueGraph(Graphics g, int gx, int gy, int gw, int gh) {
     inner.continueGraph(g,gx,gy,gw,gh);
+  }
+  public void zoomGraph(Real factor, Real xOff, Real yOff) {
+    inner.zoomGraph(factor,xOff,yOff);
   }
 }

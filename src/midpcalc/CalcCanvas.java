@@ -880,7 +880,7 @@ public final class CalcCanvas
     sizeChanged(getWidth(),getHeight());
   }
 
-  public void drawModeIndicators(Graphics g, boolean toggleRun) {
+  public void drawModeIndicators(Graphics g, boolean toggleRun, boolean stop) {
     g.setColor(0xffffff);
     g.fillRect(0,0,getWidth(),header-1);
     g.setColor(0);
@@ -926,7 +926,12 @@ public final class CalcCanvas
 
     if (calc.progRecording)
       g.drawString("PRG",x,0,g.TOP|g.LEFT);
-    else if (calc.progRunning && (evenFrame || !toggleRun))
+    else if (stop) {
+      w = smallMenuFont.stringWidth("STOP");
+      if (x+w-1>getWidth())
+        x = getWidth()-w-1;
+      g.drawString("STOP",x,0,g.TOP|g.LEFT);      
+    } else if (calc.progRunning && (evenFrame || !toggleRun))
       g.drawString("RUN",x,0,g.TOP|g.LEFT);
     if (toggleRun)
       evenFrame = !evenFrame;
@@ -934,7 +939,7 @@ public final class CalcCanvas
 
   private void clearScreen(Graphics g) {
     // Clear screen and draw mode indicators
-    drawModeIndicators(g,false);
+    drawModeIndicators(g,false,false);
     g.setColor(0);
     g.fillRect(0,header-1,getWidth(),
                getHeight()-header-footer+1);

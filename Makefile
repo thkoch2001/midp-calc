@@ -152,7 +152,7 @@ CalcNokia.jar: $(JAVAFILES) nokia/MyCanvas.java CalcNokia.jad Calc.png
 	touch $@
 
 CalcApplet.jar: CalcApplet.java $(JAVAFILES) midp1/MyCanvas.java $(MIDPFILES)
-	$(JAVAC) -d midp $(JFLAGS) -classpath $(JAVA_HOME)/jre/lib/plugin.jar CalcApplet.java $(JAVAFILES) midp1/MyCanvas.java $(MIDPFILES)
+	$(JAVAC) -d midp $(JFLAGS) -classpath JSObject.jar CalcApplet.java $(JAVAFILES) midp1/MyCanvas.java $(MIDPFILES)
 	cp [a-d].dat midp
 	cd midp && jar cf ../CalcApplet.jar ral javax [a-d].dat
 
@@ -162,7 +162,7 @@ clean:
 derived.tgz: Real.java GFontBase.java Calc.jad
 	tar czf derived.tgz $< [a-d].dat
 
-midp-calc-$(VERSION)-src.tgz: $(JAVAFILES) midp1/MyCanvas.java midp2/MyCanvas.java nokia/MyCanvas.java CalcApplet.java $(MIDPFILES) Calc.png pgm2java.c small.pgm medium.pgm large.pgm xlarge.pgm Makefile build.xml derived.tgz README
+midp-calc-$(VERSION)-src.tgz: $(JAVAFILES) midp1/MyCanvas.java midp2/MyCanvas.java nokia/MyCanvas.java CalcApplet.java $(MIDPFILES) Calc.png pgm2java.c small.pgm medium.pgm large.pgm xlarge.pgm Makefile build.xml derived.tgz JSObject.jar README
 	tar czf $@ $^
 
 publish: $(TARGETS) midp-calc-$(VERSION)-src.tgz
