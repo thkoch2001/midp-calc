@@ -120,7 +120,8 @@ public final class GraphCanvas
           midlet.displayScreen();
       }
     } else {
-      cc.drawModeIndicators(g, false, true);
+      stopped = true;
+      cc.drawModeIndicators(g, false, stopped);
     }
 
 //    if (doubleBuffer != null)

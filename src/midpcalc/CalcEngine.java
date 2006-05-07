@@ -5505,14 +5505,16 @@ public final class CalcEngine
     yMin.add(yOff);
     yMax.add(yMin);
     // In case the program *doesn't* clutter the stack, update limits on stack
-    binary(CLEAR);
-    binary(CLEAR);
-    binary(CLEAR);
-    binary(CLEAR);
-    push(xMin,null);
-    push(xMax,null);
-    push(yMin,null);
-    push(yMax,null);
+    if (graphCmd >= PROG_DRAW && graphCmd <= PROG_DRAWZZ) {
+      binary(CLEAR);
+      binary(CLEAR);
+      binary(CLEAR);
+      binary(CLEAR);
+      push(xMin,null);
+      push(xMax,null);
+      push(yMin,null);
+      push(yMax,null);
+    }
   }
 
   // This ends the inner class
