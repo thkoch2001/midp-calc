@@ -22,7 +22,7 @@ JFLAGS_1 = -bootclasspath $(BOOTCLASSPATH_1) -d . $(JFLAGS)
 JFLAGS_2 = -bootclasspath $(BOOTCLASSPATH_2) -d . $(JFLAGS)
 JFLAGS_N = -bootclasspath $(BOOTCLASSPATH_N) -d . $(JFLAGS)
 
-JAVAC = javac -source 1.3
+JAVAC = javac -source 1.3 -target 1.3
 
 JAVAFILES =  Calc.java \
              CalcCanvas.java \

@@ -718,6 +718,7 @@ public final class CalcCanvas
   private int numberFontStyle;
   public boolean fullScreen;
   public CalcEngine calc;
+  public static CalcCanvas canvas;
 
   private Command add;
   private Command enter;
@@ -741,6 +742,7 @@ public final class CalcCanvas
   private Menu repeatedMenuItem;
 
   public CalcCanvas(Calc m, DataInputStream in) {
+    canvas = this;
     midlet = m;
 
     calc = new CalcEngine();
@@ -874,7 +876,16 @@ public final class CalcCanvas
 
   private void setNumberFont(int size) {
     numberFont = null;
-    numberFont = new GFont(size | (midlet.bgrDisplay ? GFont.BGR_ORDER : 0));
+    try {
+      numberFont = GFont.
+        getFont(size | (midlet.bgrDisplay ? GFont.BGR_ORDER : 0), true, this);
+    } catch (OutOfMemoryError e) {
+      // Fallback to System font
+      numberFont = GFont.
+        getFont(GFont.SYSTEM | (midlet.bgrDisplay ? GFont.BGR_ORDER : 0),
+                true, this);
+      midlet.outOfMemory();
+    }
     numberWidth = numberFont.charWidth();
     numberHeight = numberFont.getHeight();
     sizeChanged(getWidth(),getHeight());

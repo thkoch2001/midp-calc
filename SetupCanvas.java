@@ -46,7 +46,6 @@ public class SetupCanvas
 
   private Font menuFont;
   private Font boldMenuFont;
-  private GFont fontLeft,fontRight;
   private boolean unknownKeyPressed = false;
 
   public static final int [] commandArrangement = {
@@ -169,13 +168,13 @@ public class SetupCanvas
       height -= boldMenuFont.getHeight()+1;
     }
     if (alertText == null && query == BGR_QUERY) {
-      if (fontLeft == null) {
-        fontLeft = new GFont(GFont.MEDIUM);
-        fontRight = new GFont(GFont.MEDIUM|GFont.BGR_ORDER);
-      }
-      fontLeft.drawString(g,2,height-fontLeft.getHeight()-2," 567 ");
-      fontRight.drawString(g,getWidth()-fontRight.charWidth()*5-2,
-                           height-fontRight.getHeight()-2," 567 ");
+      GFont font = GFont.getFont(GFont.MEDIUM, false, this);
+      font.drawString(g,2,height-font.getHeight()-2," 567 ");
+      font.close();
+      font = GFont.getFont(GFont.MEDIUM|GFont.BGR_ORDER, false, this);
+      font.drawString(g,getWidth()-font.charWidth()*5-2,
+                      height-font.getHeight()-2," 567 ");
+      font.close();
     }
   }
 

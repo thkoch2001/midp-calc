@@ -52,8 +52,40 @@ public class Graphics
     return font;
   }
 
-  public void setClip(int x, int y, int width, int height) {
+  public int getClipX() {
+    java.awt.Rectangle r =
+      new java.awt.Rectangle(0, 0, applet.getWidth(), applet.getHeight());
+    g.getClipBounds(r);
+    return (int)r.getX();
+  }
+
+  public int getClipY() {
+    java.awt.Rectangle r =
+      new java.awt.Rectangle(0, 0, applet.getWidth(), applet.getHeight());
+    g.getClipBounds(r);
+    return (int)r.getY();
+  }
+
+  public int getClipWidth() {
+    java.awt.Rectangle r =
+      new java.awt.Rectangle(0, 0, applet.getWidth(), applet.getHeight());
+    g.getClipBounds(r);
+    return (int)r.getWidth();
+  }
+
+  public int getClipHeight() {
+    java.awt.Rectangle r =
+      new java.awt.Rectangle(0, 0, applet.getWidth(), applet.getHeight());
+    g.getClipBounds(r);
+    return (int)r.getHeight();
+  }
+
+  public void clipRect(int x, int y, int width, int height) {
     g.clipRect(x,y,width,height);
+  }
+
+  public void setClip(int x, int y, int width, int height) {
+    g.setClip(x,y,width,height);
   }
 
   public void drawString(String str, int x, int y, int anchor) {

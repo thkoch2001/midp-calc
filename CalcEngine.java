@@ -4799,7 +4799,9 @@ public final class CalcEngine
   public void drawAxes(Graphics g, int gx, int gy, int gw, int gh,
                        boolean bgrDisplay, boolean sparse) {
     int i,j,xi,yi,x0,y0,inc,lx,ly;
-    GFont font = new GFont(GFont.SMALL | (bgrDisplay ? GFont.BGR_ORDER : 0));
+    GFont font =
+      GFont.getFont(GFont.SMALL | (bgrDisplay ? GFont.BGR_ORDER : 0), false,
+                    CalcCanvas.canvas);
     int fh = font.getHeight()-1;
     int fw = font.charWidth();
     boolean skipYAxis = graphCmd>=PROG_SOLVE;
