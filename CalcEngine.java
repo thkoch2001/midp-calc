@@ -5062,7 +5062,7 @@ public final class CalcEngine
         x.add(x2);
         x.scalbn(-1);
         if (x.equalTo(x1) || x.equalTo(x2)) {
-          // Pathological case may oscillate between two "nextAfter" x-values
+          // Pathological case may oscillate between two "nextafter" x-values
           // => root is the x with the smallest y
           if (y2.absLessThan(y1))
             x1.assign(x2);
@@ -5258,6 +5258,7 @@ public final class CalcEngine
           } else {
             y.div(rTmp);
             yimag.div(rTmp);
+            rTmp.nextafter(Real.ZERO); // Make 1.0 into 0.9999...
             rTmp.mod(Real.ONE);
             y.scalbn(8);
             yimag.scalbn(8);
