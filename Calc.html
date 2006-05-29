@@ -161,12 +161,12 @@ compatibility list work after version 3.00, I have made a new list.
 I'll fill it up as I get feedback from you!<br>
 
 <br>
-The following MIDP phones/devices have been tested with Calc 3.01:
+The following MIDP phones/devices have been tested with Calc v3.0x:
 
 <ul>
   <li><b>Sony Ericsson T610</b><sup>1</sup><b>,
   T630</b><sup>1</sup><b>, Z520i</b><sup>1,N</sup><b>,
-  Z600</b><sup>1</sup><b>, Z800</b><sup>1,2,N</sup><b>,
+  Z600</b><sup>1</sup><b>, Z800</b><sup>1,2,N</sup><b>, Z1010, W600i,
   W800i</b><sup>1,2,N</sup><b>, K300i</b><sup>1</sup><b>,
   K700i</b><sup>1,2,N</sup>: Tested OK
   <li><b>Nokia 3230</b><sup>1,N</sup><b>,
@@ -190,7 +190,7 @@ The following MIDP phones/devices have been tested with Calc 3.01:
 </font><br>
 
 <br>
-The following MIDP phones/devices have been tested with Calc 2.08:
+The following MIDP phones/devices have been tested with Calc v2.08:
 
 <ul>
   <li><b>Sony Ericsson T610, T630, Z600, Z800, Z1010, K500i, K508i, K700i,
@@ -290,6 +290,7 @@ compatibility issues.<br>
   <dt><a href="Calc.html#DateNote">Date calculation</a></dt>
   <dt><a href="Calc.html#ConstNote">Constants</a></dt>
   <dt><a href="Calc.html#ProgNote">Programming</a></dt>
+  <dt><a href="Calc.html#GraphNote">Graph drawing</a></dt>
   <dt><a href="Calc.html#BinaryNote">Binary representation</a></dt>
   <dt><a href="Calc.html#MonitorNote">Monitor editing mode</a></dt>
 </dl></dd>
@@ -1062,8 +1063,10 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
     <li><b>run</b>: Run a program
     <li><b>clear</b>: Clear a program
     <li><b>draw y=f(x)</b>: Draw program function y=f(x). Prior to
-  using this operation, you should enter min-x, max-x, min-y and max-y
-  on the stack, in that order
+  using this operation, you should enter x<sub>min</sub>,
+  x<sub>max</sub>, y<sub>min</sub> and y<sub>max</sub> on the stack,
+  in that order. See note on <a href="Calc.html#GraphNote">graph
+  drawing</a>.
     <li><b>draw r=f(&theta;)</b>: As above, but this time the program
   calculates a polar graph r=f(&theta;), where the input is the angle
   and the output is the radius. Input will be in range [0,20&pi;],
@@ -1071,6 +1074,14 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
     <li><b>draw z=f(t)</b>: As above, but this time the program
   calculates a parametric curve z=f(t), where the input t is in the
   range [0,1] and the output is a point in the (complex) plane
+    <li><b>draw z=f(z)</b>: As above, but this time the program
+  calculates a complex number z<sub>o</sub>=f(z<sub>i</sub>), where
+  the input z<sub>i</sub> is a complex point in the plane delimited by
+  x<sub>min</sub>, x<sub>max</sub>, y<sub>min</sub> and
+  y<sub>max</sub>. For each point in the plane, the result is drawn so
+  that the intensity varies according to the absolute of z<sub>o</sub>
+  modulo 1, and the color varies according to the the angle (complex
+  argument) of z<sub>o</sub>.
     <li><b>integrate</b>: Integrate program function f(x). Prior
   to using this operation, you should enter the integration limits a
   and b, and the desired accuracy on the stack, in that
@@ -1080,12 +1091,14 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
   which may also be complex
     <li><b>solve</b>: Solve program function f(x), i.e. find a root
   where f(x)=0. Prior to using this operation, enter <b>two</b>
-  limits x1 and x2 on the stack, so that f(x1)·f(x2)&lt;0
+  limits x<sub>1</sub> and x<sub>2</sub> on the stack, so that
+  f(x<sub>1</sub>)·f(x<sub>2</sub>)&lt;0
     <li><b>min/max</b>: Find local minima or maxima in program
   function f(x). Prior to using this operation, enter <b>two</b>
-  limits x1 and x2 on the stack, so that at the mid-point between x1
-  and x2, the function f((x1+x2)/2) is either greater or less than
-  both f(x1) and f(x2).
+  limits x<sub>1</sub> and x<sub>2</sub> on the stack, so that at the
+  mid-point between x<sub>1</sub> and x<sub>2</sub>, the function
+  f((x<sub>1</sub>+x<sub>2</sub>)/2) is either greater or less than
+  both f(x<sub>1</sub>) and f(x<sub>2</sub>).
   </ul>
   <li>Programming 2 (available while entering a new program)
   <ul>
@@ -1493,7 +1506,6 @@ effect of advancing to the next monitor element below (or in the next
 column if you are at the bottom). Pressing "clear" will exit the
 editing mode.<br>
 
-
 <h3><a id="ProgNote" name="ProgNote">Programming</a></h3>
 
 (Programming is found on the "mode" menu because it was added last and
@@ -1583,10 +1595,8 @@ x axis and y axis that you want to see during drawing. When drawing
 functions as y=f(x), if a program returns a complex value, the graph
 will split into two lines of different color. This is a neat way to
 display two (non-complex) graphs at once, placing both graph values in
-x and y and using "r&rarr;cplx". While drawing the graph, Calc will
-continue calculating new graph points and improving the graph
-indefinitely, until "Break" is pressed. Do not leave the program in
-this state, it will eat your battery.<br>
+x and y and using "r&rarr;cplx". See note on <a
+href="Calc.html#GraphNote">graph drawing</a>.<br>
 
 <br>
 When <b>integrating</b>, you must enter the range over which you want
@@ -1648,6 +1658,25 @@ commands on the "System menu".<br>
 
 <br>
 Here are some <a href="Calc-prog.html">programming examples</a>.<br>
+
+<h3><a id="GraphNote" name="GraphNote">Graph drawing</a></h3>
+
+While drawing a graph, as explained in the previous note, Calc will
+continue calculating new graph points and improving the graph
+indefinitely, until "Break", "clear", or "#" is pressed. Do not leave
+the program in this state, it will eat your battery.<br>
+
+<br>To save battery, you can stop program drawing using the "*" key
+when you are satisfied with the look of the graph. If some parts of
+the axes are obscured by the graph, the axes can be refreshed using
+the "0" key. If drawing is stopped, another hit on the "0" key draws
+the numbers along the axes as well.<br>
+
+<br>
+When drawing is stopped, the graph can be zoomed using direction keys
+(or the corresponding number keys). Zoom in using the middle button or
+"5". Zoom out using "1". To restart drawing, press "*" again. Zooming
+can also be used when drawing statistics.<br>
 
 <h3><a id="BinaryNote" name="BinaryNote">Binary representation</a></h3>
 
