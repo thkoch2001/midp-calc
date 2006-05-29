@@ -237,6 +237,15 @@ final class GFont
       return -j-1; // Signaling cache miss
   }
 
+  int clipX1, clipX2, clipY1, clipY2;
+
+  private void getClip(Graphics g) {
+    clipX1 = g.getClipX();
+    clipY1 = g.getClipY();
+    clipX2 = clipX1 + g.getClipWidth();
+    clipY2 = clipY1 + g.getClipHeight();
+  }
+
   private void drawChar(Graphics g, int x, int y, char ch) {
     int index = getIndex(ch);
     boolean cacheMiss = false;
@@ -275,13 +284,14 @@ final class GFont
         }
       }
     }
-    int clipX = g.getClipX();
-    int clipY = g.getClipY();
-    int clipWidth = g.getClipWidth();
-    int clipHeight = g.getClipHeight();
-    g.clipRect(x, y, char_width, char_height);
-    g.drawImage(char_cache, x-cacheX, y-cacheY, Graphics.TOP|Graphics.LEFT);
-    g.setClip(clipX, clipY, clipWidth, clipHeight);
+    int cx1 = clipX1 > x ? clipX1 : x;
+    int cx2 = clipX2 < x+char_width ? clipX2 : x+char_width;
+    int cy1 = clipY1 > y ? clipY1 : y;
+    int cy2 = clipY2 < y+char_height ? clipY2 : y+char_height;
+    if (cx1<cx2 && cy1<cy2) {
+      g.setClip(cx1, cy1, cx2-cx1, cy2-cy1);
+      g.drawImage(char_cache, x-cacheX, y-cacheY, Graphics.TOP|Graphics.LEFT);
+    }
   }
 
   public int getHeight() {
@@ -310,10 +320,12 @@ final class GFont
     }
     int length;
     length = string.length();
+    getClip(g);
     for (int i=0; i<length; i++) {
       drawChar(g,x,y,string.charAt(i));
       x += char_width;
     }
+    g.setClip(clipX1, clipY1, clipX2-clipX1, clipY2-clipY1);
     return x;
   }
 
@@ -330,10 +342,12 @@ final class GFont
     }
     int length;
     length = string.length();
+    getClip(g);
     for (int i=start; i<length; i++) {
       drawChar(g,x,y,string.charAt(i));
       x += char_width;
     }
+    g.setClip(clipX1, clipY1, clipX2-clipX1, clipY2-clipY1);
     return x;
   }
 }
