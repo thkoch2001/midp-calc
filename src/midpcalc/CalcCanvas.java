@@ -205,8 +205,10 @@ public final class CalcCanvas
   private static final int FONT_SMALL  = -50+GFont.SMALL;
   private static final int FONT_MEDIUM = -50+GFont.MEDIUM;
   private static final int FONT_LARGE  = -50+GFont.LARGE;
-  private static final int FONT_SYSTEM = -50+GFont.SYSTEM;
   private static final int FONT_XLARGE = -50+GFont.XLARGE;
+  private static final int FONT_XXLARGE= -50+GFont.XXLARGE;
+  private static final int FONT_XXXLARGE=-50+GFont.XXXLARGE;
+  private static final int FONT_SYSTEM = -50+GFont.SYSTEM;
   private static final int NUMBER_0 = -20+0;
   private static final int NUMBER_1 = -20+1;
   private static final int NUMBER_2 = -20+2;
@@ -241,7 +243,12 @@ public final class CalcCanvas
       new Menu("small",FONT_SMALL,CmdDesc.REPEAT_PARENT),
       new Menu("large",FONT_LARGE,CmdDesc.REPEAT_PARENT),
       new Menu("xlarge",FONT_XLARGE,CmdDesc.REPEAT_PARENT),
-      new Menu("sys",FONT_SYSTEM,CmdDesc.REPEAT_PARENT),
+      new Menu("more",CmdDesc.TITLE_SKIP,new Menu [] {
+        new Menu("xxlarge",FONT_XXLARGE,CmdDesc.REPEAT_PARENT),
+        new Menu("sys",FONT_SYSTEM,CmdDesc.REPEAT_PARENT),
+        null,
+        new Menu("xxxlarge",FONT_XXXLARGE,CmdDesc.REPEAT_PARENT),
+      }),
     }),
     new Menu("exit",EXIT,CmdDesc.NO_REPEAT),
     new Menu("reset",RESET,CmdDesc.NO_REPEAT),
@@ -747,8 +754,10 @@ public final class CalcCanvas
 
     calc = new CalcEngine();
 
-    numberFontStyle = (getWidth()>=160 ? GFont.XLARGE :
-                       getWidth()>=128 ? GFont.LARGE  :
+    numberFontStyle = (getWidth()>=320 ? GFont.XXXLARGE :
+                       getWidth()>=256 ? GFont.XXLARGE :
+                       getWidth()>=160 ? GFont.XLARGE :
+                       getWidth()>=128 ? GFont.LARGE :
                        getWidth()>=96  ? GFont.MEDIUM : GFont.SMALL);
     if (in != null)
       restoreState(in);
@@ -1221,6 +1230,7 @@ public final class CalcCanvas
 
   private void drawNumber(Graphics g, int i, boolean cleared, int offY,
                           int nLines) {
+    numberFont.setMonospaced(true);
     if (i==0 && calc.inputInProgress) {
       StringBuffer tmp = calc.inputBuf;
       tmp.append('_');
@@ -1258,6 +1268,7 @@ public final class CalcCanvas
     String element = calc.getMonitorElement(i);
     if (element.length()+label.length()+lead.length()>nDigits)
       element = "*****";
+    numberFont.setMonospaced(true);
     numberFont.drawString(
       g,offX+(nDigits-element.length())*numberWidth,
       offYMonitor+i*numberHeight,element);
@@ -1473,7 +1484,7 @@ public final class CalcCanvas
           midlet.resetRequested();
         } else if (command == FULLSCREEN) {
           setFullScreen(!fullScreen);
-        } else if (command >= FONT_SMALL && command <= FONT_XLARGE) {
+        } else if (command >= FONT_SMALL && command <= FONT_XXXLARGE) {
           // Internal font command
           setNumberFont(command-FONT_SMALL);
         } else if (command >= NUMBER_0 && command <= NUMBER_15) {
