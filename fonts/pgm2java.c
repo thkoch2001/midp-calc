@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
   int char_height, char_width;
   char *prefix;
   char *charSet = " !#%'()*+,-./0123456789:<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_" \
-    "abcdefghijklmnoprstuvwxyz¡£«­°²µ¶»¿ÐÞßãë";
+    "abcdefghijklmnopqrstuvwxyz¡£«­°²µ¶»¿ÐÞßãë";
   FILE *f;
   // Strings written with font
   //
