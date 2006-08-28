@@ -1391,8 +1391,7 @@ public final class CalcCanvas
         case 2: calc.command(CalcEngine.MONITOR_RIGHT,0); break;
         case 4:
           calc.command(CalcEngine.MONITOR_PUSH ,0);
-          if( calc.monitorMode != CalcEngine.MONITOR_PROG)
-            setCommands("ENTER","+");
+          setCommands("ENTER","+");
           break;
       }
       return;
