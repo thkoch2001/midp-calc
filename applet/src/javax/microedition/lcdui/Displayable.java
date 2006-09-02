@@ -44,6 +44,7 @@ public abstract class Displayable
 
   protected void keyPressed(int keyCode) { }
   protected void keyRepeated(int keyCode) { }
+  protected void keyReleased(int keyCode) { }
   protected void pointerPressed(int x, int y) { }
 
   public void processKeyPress(int keyCode) {
@@ -52,6 +53,11 @@ public abstract class Displayable
   public void processKeyRepeat(int keyCode) {
     keyRepeated(keyCode);
   }
+  public void processKeyRelease(int keyCode) {
+    keyReleased(keyCode);
+  }
+
+  int pressedKey = 0;
   public void processPointerPress(int x, int y) {
     if (y<height-(commandFont.getHeight()+1)*6)
       pointerPressed(x,y);
@@ -65,13 +71,20 @@ public abstract class Displayable
             commandListener.commandAction(b, this);
         }
       } else if (y<=height-(commandFont.getHeight()+1)*4) {
-        keyPressed('\b');
+        pressedKey = '\b';
+        keyPressed(pressedKey);
       } else {
         x = x*3/width;
         y = (height-y)/(commandFont.getHeight()+1);
-        keyPressed(key[y*3+x]);
+        pressedKey = key[y*3+x];
+        keyPressed(pressedKey);
       }
     }
+  }
+  public void processPointerRelease() {
+    if (pressedKey != 0)
+      keyReleased(pressedKey);
+    pressedKey = 0;
   }
   
   public int getHeight() {

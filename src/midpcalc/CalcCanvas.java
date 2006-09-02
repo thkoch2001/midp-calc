@@ -795,6 +795,48 @@ public final class CalcCanvas
 
     numRepaintLines = 100;
     checkRepaint();
+
+    if (!hasRepeatEvents()) {
+      keyRepeatSignal = new Object();
+      keyRepeater = new Runnable() {
+        public void run() { keyRepeated(currentRepeatingKey); }
+      };
+      keyRepeatThread = new Thread() {
+        public void run() { runKeyRepeatThread(); }
+      };
+      keyRepeatThread.start();
+    }
+  }
+
+  private Thread keyRepeatThread = null;
+  private Object keyRepeatSignal;
+  private Runnable keyRepeater;
+  private int repeatedKey = 0;
+  private int currentRepeatingKey;
+  private long repeatedKeyDueTime;
+  private static final long keyRepeatInitialDelay = 750;
+  private static final long keyRepeatSubsequentDelay = 200;
+
+  void runKeyRepeatThread() {
+    Thread thread = Thread.currentThread();
+    while (thread == keyRepeatThread) {
+      try {
+        synchronized (keyRepeatSignal) {
+          keyRepeatSignal.wait();
+          long delay;
+          while (thread == keyRepeatThread && repeatedKey != 0 &&
+                 (delay = repeatedKeyDueTime-System.currentTimeMillis()) > 0) {
+            keyRepeatSignal.wait(delay+10);
+          }
+          if (thread == keyRepeatThread && repeatedKey != 0 && isShown()) {
+            currentRepeatingKey = repeatedKey;
+            midlet.display.callSerially(keyRepeater);
+          }
+          repeatedKey = 0;
+        }
+      } catch (InterruptedException e) {
+      }
+    }
   }
 
   private void setCommands(String enterStr, String addStr) {
@@ -862,6 +904,13 @@ public final class CalcCanvas
       out.writeBoolean(fullScreen);
       calc.command(CalcEngine.FINALIZE,0);
       calc.saveState(out);
+
+      // Try to stop the keyRepeatThread
+      if (keyRepeatThread != null) {
+        keyRepeatThread = null;
+        repeatedKey = 0;
+        keyRepeatSignal.notify();
+      }
     } catch (Throwable e) {
     }
   }
@@ -1541,6 +1590,14 @@ public final class CalcCanvas
   protected void keyPressed(int key) {
     try {
     repeating = false;
+    if (keyRepeatThread != null) {
+      synchronized (keyRepeatSignal) {
+        repeatedKey = key;
+        repeatedKeyDueTime = System.currentTimeMillis()+keyRepeatInitialDelay;
+        keyRepeatSignal.notify();
+      }
+    }
+    
     int menuIndex = -1;
     switch (key) {
       case '0': case '1': case '2': case '3': case '4':
@@ -1675,6 +1732,15 @@ public final class CalcCanvas
       // Can't repeat "delayed clear key"
       return;
     }
+    if (keyRepeatThread != null) {
+      if (key == 0)
+        return;
+      synchronized (keyRepeatSignal) {
+        repeatedKey = key;
+        repeatedKeyDueTime=System.currentTimeMillis()+keyRepeatSubsequentDelay;
+        keyRepeatSignal.notify();
+      }
+    }
     switch (key) {
       case '1': case '2': case '3': case '4': case '5': case '6':
         if (repeating || menuStackPtr >= 0)
@@ -1719,6 +1785,12 @@ public final class CalcCanvas
 
   protected void keyReleased(int key) {
     try {
+    if (keyRepeatThread != null) {
+      synchronized (keyRepeatSignal) {
+        repeatedKey = 0;
+        keyRepeatSignal.notify();
+      }
+    }
     if (unknownKeyPressed) {
       // It's a "delayed clear key"
       unknownKeyPressed = false;

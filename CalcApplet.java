@@ -19,6 +19,8 @@ public class CalcApplet
   private int repeating = -1;
 
   public void keyReleased(KeyEvent e) {
+    int key = e.getKeyChar();
+    Display.getDisplay(calc).getCurrent().processKeyRelease(key);
     repeating = -1;
   }
   public void keyTyped(KeyEvent e) {
@@ -61,9 +63,11 @@ public class CalcApplet
     requestFocus();
   }
   public void mouseExited(MouseEvent e) { }
-  public void mouseReleased(MouseEvent e) { }
-  public void mousePressed(MouseEvent e)
-  {
+  public void mouseReleased(MouseEvent e) {
+    Display.getDisplay(calc).getCurrent().
+      processPointerRelease();
+  }
+  public void mousePressed(MouseEvent e) {
     Display.getDisplay(calc).getCurrent().
       processPointerPress(e.getX(),e.getY());
   }

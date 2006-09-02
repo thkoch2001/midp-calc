@@ -44,6 +44,10 @@ public abstract class Canvas extends Displayable
     return true;
   }
 
+  public boolean hasRepeatEvents() {
+    return false;
+  }
+
   protected abstract void paint(Graphics g);
 
   public void paint(java.awt.Graphics g) {
