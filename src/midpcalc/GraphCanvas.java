@@ -21,6 +21,7 @@ public final class GraphCanvas
   private int zoomWidth,xOff,yOff;
   private int zoomX1,zoomX2,zoomY1,zoomY2;
   private boolean zooming;
+  private boolean unknownKeyPressed;
 
   public GraphCanvas(Calc m, CalcCanvas c) {
     midlet = m;
@@ -176,10 +177,6 @@ public final class GraphCanvas
   }
 
   public void keyPressed(int key) {
-    if (!isFullScreen())
-      return;
-
-    // In full-screen mode, what normally works as "clear" should abort
     switch (key) {
       case '3': case '7': case '9':
         // As long as there are *some* that can be used to "turn lights on"
@@ -274,13 +271,31 @@ public final class GraphCanvas
               case KEY_SOFTKEY3:
                 direction(FIRE);
                 break;
+              default:
+                if (midlet.doubleKeyEvents)
+                  // We don't yet know if we can treat this as "clear"
+                  unknownKeyPressed = true;
+                else
+                  commandAction(brk, this);
+                break;
             }
         }
         break;
     }
   }
 
+  public void keyReleased(int key) {
+    if (unknownKeyPressed) {
+      // It's a "delayed clear key"
+      unknownKeyPressed = false;
+      commandAction(brk, this);
+    }
+  }
+
   public void commandAction(Command c, Displayable d) {
+    // If an unknown key has beed pressed but not released, ignore it
+    unknownKeyPressed = false;
+
     cc.calc.progRunning = false;
     internalRepaint = false;
     midlet.displayScreen();
