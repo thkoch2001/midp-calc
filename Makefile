@@ -1,4 +1,4 @@
-VERSION = 3.02
+VERSION = 3.03
 TARGETS = Calc.jar \
           Calc.jad \
           CalcMIDP2.jar \
