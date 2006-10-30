@@ -1,3 +1,4 @@
+SHELL = /bin/sh
 VERSION = 3.03
 TARGETS = Calc.jar \
           Calc.jad \
@@ -16,6 +17,7 @@ WTK_N = ../../WTK104
 BOOTCLASSPATH_1 = $(WTK_1)/lib/midpapi.zip
 BOOTCLASSPATH_2 = $(WTK_2)/lib/midpapi20.jar:$(WTK_2)/lib/cldcapi10.jar
 BOOTCLASSPATH_N = $(WTK_N)/lib/classes.zip:$(WTK_1)/lib/midpapi.zip
+ANTENNA_PATH= $(WTK_1)/lib/antenna-bin-0.9.14.jar:$(WTK_1)/lib/proguard-3.6.jar
 
 JFLAGS = -encoding "ISO8859-1" -O
 JFLAGS_1 = -bootclasspath $(BOOTCLASSPATH_1) -d . $(JFLAGS)
@@ -134,21 +136,21 @@ Calc.jar: $(JAVAFILES) midp1/MyCanvas.java Calc.jad Calc.png
 	rm -rf ral
 	$(JAVAC) $(JFLAGS_1) $(JAVAFILES) midp1/MyCanvas.java
 	cp Calc.png ral/
-	ant -buildfile build.xml -lib $(WTK_1)/lib -Dwtk.home=$(WTK_1) make-jar
+	ant -buildfile build.xml -Dantennapath=$(ANTENNA_PATH) -Dwtk.home=$(WTK_1) make-jar
 	touch $@
 
 CalcMIDP2.jar: $(JAVAFILES) midp2/MyCanvas.java CalcMIDP2.jad Calc.png
 	rm -rf ral
 	$(JAVAC) $(JFLAGS_2) $(JAVAFILES) midp2/MyCanvas.java
 	cp Calc.png ral/
-	ant -buildfile buildMIDP2.xml -lib $(WTK_1)/lib -Dwtk.home=$(WTK_2) -Dbootclasspath=$(BOOTCLASSPATH_2) make-jar
+	ant -buildfile buildMIDP2.xml -Dantennapath=$(ANTENNA_PATH) -Dwtk.home=$(WTK_2) -Dbootclasspath=$(BOOTCLASSPATH_2) make-jar
 	touch $@
 
 CalcNokia.jar: $(JAVAFILES) nokia/MyCanvas.java CalcNokia.jad Calc.png
 	rm -rf ral
 	$(JAVAC) $(JFLAGS_N) $(JAVAFILES) nokia/MyCanvas.java
 	cp Calc.png ral/
-	ant -buildfile buildNokia.xml -lib $(WTK_1)/lib -Dwtk.home=$(WTK_N) -Dbootclasspath=$(BOOTCLASSPATH_N) make-jar
+	ant -buildfile buildNokia.xml -Dantennapath=$(ANTENNA_PATH) -Dwtk.home=$(WTK_N) -Dbootclasspath=$(BOOTCLASSPATH_N) make-jar
 	touch $@
 
 CalcApplet.jar: CalcApplet.java $(JAVAFILES) midp1/MyCanvas.java $(MIDPFILES)
@@ -159,8 +161,8 @@ CalcApplet.jar: CalcApplet.java $(JAVAFILES) midp1/MyCanvas.java $(MIDPFILES)
 clean:
 	rm -rf $(TARGETS) ral midp/ral midp/javax Real.java GFontBase.java pgm2java *.dat *~ .\#* midp/*~ midp/.\#* midp-*.tgz
 
-derived.tgz: Real.java GFontBase.java Calc.jad
-	tar czf derived.tgz $< [a-d].dat
+derived.tgz: Real.java GFontBase.java Calc.jad CalcMIDP2.jad CalcNokia.jad
+	tar czf $@ $^ [a-d].dat
 
 midp-calc-$(VERSION)-src.tgz: $(JAVAFILES) midp1/MyCanvas.java midp2/MyCanvas.java nokia/MyCanvas.java CalcApplet.java $(MIDPFILES) Calc.png pgm2java.c small.pgm medium.pgm large.pgm xlarge.pgm Makefile build.xml derived.tgz JSObject.jar README
 	tar czf $@ $^

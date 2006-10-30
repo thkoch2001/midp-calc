@@ -1,5 +1,5 @@
 <project name="CalcNokia" default="make-jar">
-  <taskdef name="wtkpackage" classname="de.pleumann.antenna.WtkPackage"/>
+  <taskdef resource="antenna.properties" classpath="${antennapath}"/>
   <target name="make-jar">
     <wtkpackage jarfile="CalcNokia.jar"
                 jadfile="CalcNokia.jad"
