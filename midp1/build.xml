@@ -1,13 +1,16 @@
 <?xml version="1.0"?>
 <project name="Calc" default="make-jar">
-  <taskdef resource="antenna.properties" classpath="${antennapath}"/>
+  <taskdef resource="antenna.properties"/>
+  <property name="wtk.cldc.version" value="1.0"/>
+  <property name="wtk.midp.version" value="1.0"/>
   <target name="make-jar">
-    <wtkpackage jarfile="Calc.jar"
+    <wtkpackage jarfile="target/Calc.jar"
                 jadfile="Calc.jad"
                 obfuscate="true"
                 preverify="true"
                 autoversion="false">
-      <fileset dir="." includes="ral/*,*.dat" />
+      <fileset dir="target" includes="**/*.class"/>
+      <fileset dir="../resources" includes="*"/>
     </wtkpackage> 
   </target>
 </project>

@@ -1,4 +1,4 @@
-package ral;
+package midpcalc;
 
 import javax.microedition.lcdui.*;
 import java.io.*;

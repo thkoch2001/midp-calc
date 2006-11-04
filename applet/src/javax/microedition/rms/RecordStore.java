@@ -13,7 +13,7 @@ public class RecordStore
 
   public static void deleteRecordStore(String a) {
     try {
-      JSObject.getWindow(ral.CalcApplet.getCurrentApplet()).
+      JSObject.getWindow(midpcalc.CalcApplet.getCurrentApplet()).
         eval("document.cookie = 'MIDPCalcState=00000; expires=01-Jan-1970 GMT';");
     } catch (Throwable e) {
     }
@@ -46,7 +46,7 @@ public class RecordStore
 
   public int addRecord(byte[] data, int offset, int numBytes) {
     try {
-      JSObject.getWindow(ral.CalcApplet.getCurrentApplet()).
+      JSObject.getWindow(midpcalc.CalcApplet.getCurrentApplet()).
         eval("document.cookie='MIDPCalcState="+
              encodeByteArray(data,offset,numBytes)+
              "; expires=01-Jan-2020 GMT';");

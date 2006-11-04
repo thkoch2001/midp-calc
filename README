@@ -1,4 +1,187 @@
-This document is not finished yet by far
+Setting up the Eclipse IDE build environment:
+=============================================
+
+Prerequisites:
+--------------
+
+Install Java J2SE JDK >= 1.5.0_07
+Install WTK 1         >= 1.04           (for MIDP1 version)
+Install WTK 2         >= 2.2            (for MIDP2 version)
+Install WTK Nokia Series 40             (for Nokia version)
+Install Antenna       >= 0.9.14
+Install Proguard      >= 3.6
+Install Eclipse       >= 3.2.0
+
+It might work with earlier versions than those listed, but at least
+the listed versions worked for me. Eclipse MUST be version 3.2.0 or
+higher. If you are not planning to compile all of the MIDP1, MIDP2 and
+Nokia versions, the corresponding WTK can be omitted.
+
+The JDK "bin" directory must be in the command path, specifically the
+"jar" command.
+
+Now, start Eclipse. The following descriptions refer to Eclipse menus
+and dialogs. When referring to <this directory>, I mean the main
+project directory, the one containing this file. An important point
+(especially if you are installing in Windows) is that this directory
+should not contain spaces, so it cannot be located in e.g. "Documents
+and Settings".
+
+
+Optionally create a new Eclipse workspace:
+------------------------------------------
+
+(Useful if you are working with other projects with Eclipse.)
+
+File > Switch Workspace...
+  Workspace: [<this directory>/.eclipse]                    (e.g.)
+  click [OK]
+  click [Workbench]
+
+
+Settings path variables before importing the projects:
+------------------------------------------------------
+
+Window > Preferences...
+  General > Workspace > Linked Resources
+    click [New...]
+      Name:     [MAIN               ]
+      Location: [<this directory>   ]
+      click [OK]
+  Java > Build Path > Classpath Variables
+    click [New...]
+      Name:     [WTK_1              ]
+      Path:     [<path to WTK 1>    ]
+      click [OK]
+    click [New...]
+      Name:     [WTK_2              ]
+      Path:     [<path to WTK 2>    ]
+      click [OK]
+    click [New...]
+      Name:     [WTK_N              ]
+      Path:     [<path to WTK Nokia>]
+      click [OK]
+  click [OK]
+
+(The <path to WTK Nokia> is the directory in the Nokia WTK containing
+the subdirectories "lib" and "bin". In my case this was a directory
+named ".../Devices/Nokia_Series_40_MIDP_Concept_SDK_Beta_0_3")
+
+
+Importing projects:
+-------------------
+
+(For some reason, it does not work for me to import the CalcApplet
+project in the first import, so I have to import it separately, after
+the others.)
+
+File > Import...
+  General > Existing Projects into Workspace
+  click [Next]
+  (*) Select root directory: [<this directory>]
+  Projects:
+    [x] Calc                            (the MIDP1 version)
+    [ ] CalcApplet                      (the Applet demo application)
+    [x] CalcMIDP2                       (the MIDP2 version)
+    [x] CalcNokia                       (the Nokia version)
+  click [Finish]
+File > Import...
+  General > Existing Projects into Workspace
+  click [Next]
+  (*) Select root directory: [<this directory>]
+  Projects:
+    [x] CalcApplet
+  click [Finish]
+
+All projects are using the same "main" source directory, so warnings
+and errors will be listed four times each unless you set up a filter
+(using the small, inconspicuous button with three arrows on it).
+
+(Some times, you can get error messages (and a small red cross) on the
+"main" source directory. In that case, simply delete the project,
+check the MAIN path variable, and try to import the project again.)
+
+
+Setting up and executing the Ant build tasks:
+---------------------------------------------
+
+Calc.jar:
+
+Package Explorer > Calc > build.xml, right click, Run As > Ant Build...
+  Classpath tab, select "User Entries", click [Add External JARs]
+    find and add your Antenna jar, e.g. antenna-bin-0.9.14.jar
+    find and add your Proguard jar, e.g. proguard-3.6.jar
+  Properties tab
+    uncheck "Use global properties as specified in the Ant runtime preferences"
+    click [Add Property]
+      Name:     [wtk.home           ]
+      Value:    [<path to WTK 1>    ]
+  click [Run]
+
+After the Ant build tasks have been set up, you can run them directly
+with Run As > Ant Build.
+
+
+CalcMIDP2.jar:
+
+Package Explorer > CalcMIDP2 > build.xml, right click, Run As > Ant Build...
+  Classpath tab, select "User Entries", click [Add External JARs]
+    find and add your Antenna jar, e.g. antenna-bin-0.9.14.jar
+    find and add your Proguard jar, e.g. proguard-3.6.jar
+  Properties tab
+    uncheck "Use global properties as specified in the Ant runtime preferences"
+    click [Add Property]
+      Name:     [wtk.home           ]
+      Value:    [<path to WTK 2>    ]
+  click [Run]
+
+
+CalcNokia.jar:
+
+Package Explorer > CalcNokia > build.xml, right click, Run As > Ant Build...
+  Classpath tab, select "User Entries", click [Add External JARs]
+    find and add your Antenna jar, e.g. antenna-bin-0.9.14.jar
+    find and add your Proguard jar, e.g. proguard-3.6.jar
+  Properties tab
+    uncheck "Use global properties as specified in the Ant runtime preferences"
+    click [Add Property]
+      Name:     [wtk.home           ]
+      Value:    [<path to WTK Nokia>]
+  click [Run]
+
+
+CalcApplet.jar:
+
+Package Explorer > CalcApplet > build.xml, right click, Run As > Ant Build
+  (should work directly if there are no other errors)
+
+
+CalcApplet.jar, running:
+
+Package Explorer > CalcApplet > CalcApplet.html, right click, Run As > Run...
+  Classpath tab, select "User Entries", click [Add External JARs]
+    find and add "<this directory>/applet/target/CalcApplet.jar"
+    select the CalcApplet.jar and move it to the top of "User Entries"
+  click [Run]
+
+
+
+Setting up the Makefile build environment:
+==========================================
+
+Prerequisites:
+--------------
+
+TBD.
+
+
+Building:
+---------
+
+TBD.
+
+
+from old file:
 
 Building
 ========

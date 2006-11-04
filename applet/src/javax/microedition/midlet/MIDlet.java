@@ -11,7 +11,7 @@ public abstract class MIDlet
   public abstract void destroyApp(boolean unconditional);
   public void notifyDestroyed() {
     try {
-      JSObject.getWindow(ral.CalcApplet.getCurrentApplet()).
+      JSObject.getWindow(midpcalc.CalcApplet.getCurrentApplet()).
         eval("window.close();");
     } catch (Throwable e) {
     }

@@ -1,13 +1,17 @@
+<?xml version="1.0"?>
 <project name="CalcNokia" default="make-jar">
-  <taskdef resource="antenna.properties" classpath="${antennapath}"/>
+  <taskdef resource="antenna.properties"/>
+  <property name="wtk.cldc.version" value="1.0"/>
+  <property name="wtk.midp.version" value="1.0"/>
+  <property name="wtk.midpapi" value="${wtk.home}/lib/classes.zip"/>
   <target name="make-jar">
-    <wtkpackage jarfile="CalcNokia.jar"
+    <wtkpackage jarfile="target/CalcNokia.jar"
                 jadfile="CalcNokia.jad"
                 obfuscate="true"
                 preverify="true"
-                autoversion="false"
-                bootclasspath="${bootclasspath}">
-      <fileset dir="." includes="ral/*,*.dat" />
+                autoversion="false">
+      <fileset dir="target" includes="**/*.class" />
+      <fileset dir="../resources" includes="*" />
     </wtkpackage> 
   </target>
 </project>

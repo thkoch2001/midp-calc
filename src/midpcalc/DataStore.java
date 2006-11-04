@@ -1,4 +1,4 @@
-package ral;
+package midpcalc;
 
 import javax.microedition.rms.*;
 import java.io.*;

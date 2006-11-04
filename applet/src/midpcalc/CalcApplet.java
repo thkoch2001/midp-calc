@@ -1,4 +1,4 @@
-package ral;
+package midpcalc;
 
 import java.awt.*;
 import java.awt.event.*;

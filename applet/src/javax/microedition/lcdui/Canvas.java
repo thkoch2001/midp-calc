@@ -21,7 +21,7 @@ public abstract class Canvas extends Displayable
     image = new java.awt.image.BufferedImage(
       getWidth(),getHeight(),java.awt.image.BufferedImage.TYPE_INT_RGB);
     graphics = new Graphics(image.getGraphics(),
-      ral.CalcApplet.getCurrentApplet());
+      midpcalc.CalcApplet.getCurrentApplet());
   }
 
   public int getGameAction(int keyCode) {
@@ -51,10 +51,10 @@ public abstract class Canvas extends Displayable
   protected abstract void paint(Graphics g);
 
   public void paint(java.awt.Graphics g) {
-    g.drawImage(image,0,0,ral.CalcApplet.getCurrentApplet());
+    g.drawImage(image,0,0,midpcalc.CalcApplet.getCurrentApplet());
     graphics.g.setClip(0,0,getWidth(),getHeight());
     paint(graphics);
-    g.drawImage(image,0,0,ral.CalcApplet.getCurrentApplet());
+    g.drawImage(image,0,0,midpcalc.CalcApplet.getCurrentApplet());
   }
 
   public void setFullScreenMode(boolean mode) {

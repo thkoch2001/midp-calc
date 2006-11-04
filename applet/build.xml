@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<project name="CalcApplet" default="make-jar">
+  <target name="make-jar">
+    <jar destfile="target/CalcApplet.jar">
+      <fileset dir="target" includes="**/*.class"/>
+      <fileset dir="../resources" includes="*"/>
+    </jar> 
+  </target>
+</project>

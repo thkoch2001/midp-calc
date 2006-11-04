@@ -1,4 +1,4 @@
-package ral;
+package midpcalc;
 
 // contains the description for each (non-system) command:
 // - brief string for menu

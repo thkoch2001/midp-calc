@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="main"/>
+	<classpathentry kind="var" path="WTK_1/lib/midpapi.zip"/>
+	<classpathentry kind="output" path="target"/>
+</classpath>

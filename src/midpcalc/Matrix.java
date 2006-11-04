@@ -1,4 +1,4 @@
-package ral;
+package midpcalc;
 
 public final class Matrix
 {

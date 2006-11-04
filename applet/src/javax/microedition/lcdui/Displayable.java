@@ -14,8 +14,8 @@ public abstract class Displayable
   Displayable() {
     commandFont = Font.getFont(
       Font.FACE_PROPORTIONAL,Font.STYLE_BOLD,Font.SIZE_MEDIUM);
-    width = ral.CalcApplet.getCurrentApplet().getWidth();
-    height = ral.CalcApplet.getCurrentApplet().getHeight();
+    width = midpcalc.CalcApplet.getCurrentApplet().getWidth();
+    height = midpcalc.CalcApplet.getCurrentApplet().getHeight();
   }
   
   public void addCommand(Command cmd) {
@@ -23,7 +23,7 @@ public abstract class Displayable
       a = cmd;
     else
       b = cmd;
-    ral.CalcApplet.getCurrentApplet().repaint();
+    midpcalc.CalcApplet.getCurrentApplet().repaint();
   }
 
   public boolean isShown() {
@@ -35,7 +35,7 @@ public abstract class Displayable
       a = null;
     else if (cmd == b)
       b = null;
-    ral.CalcApplet.getCurrentApplet().repaint();
+    midpcalc.CalcApplet.getCurrentApplet().repaint();
   }
 
   public void setCommandListener(CommandListener l) {
@@ -96,11 +96,11 @@ public abstract class Displayable
   }
 
   public void repaint() {
-    ral.CalcApplet.getCurrentApplet().repaint();
+    midpcalc.CalcApplet.getCurrentApplet().repaint();
   }
 
   public void repaint(int x, int y, int width, int height) {
-    ral.CalcApplet.getCurrentApplet().repaint(x,y,width,height);
+    midpcalc.CalcApplet.getCurrentApplet().repaint(x,y,width,height);
   }
 
   public abstract void paint(java.awt.Graphics g);
