@@ -43,7 +43,6 @@ public class RecordEnumeration
       record = decodeByteArray((String)JSObject.getWindow(
         midpcalc.CalcApplet.getCurrentApplet()).eval("document.cookie"));
     } catch (Throwable e) {
-      record = null;
     }
     return record;
   }

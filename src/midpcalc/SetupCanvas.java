@@ -137,7 +137,7 @@ public class SetupCanvas
         while (end>start && f.substringWidth(text,start,end-start)>w)
           end--;
       }
-      g.drawSubstring(text,start,end-start,x,y,g.TOP|g.LEFT);
+      g.drawSubstring(text,start,end-start,x,y,Graphics.TOP|Graphics.LEFT);
       y += f.getHeight();
       start = end;
       while (start < text.length() && text.charAt(start)==' ')
@@ -160,7 +160,7 @@ public class SetupCanvas
     g.fillRect(0,0,getWidth(),height);
     g.setColor(0);
     g.setFont(boldMenuFont);
-    g.drawString(heading,2,0,g.TOP|g.LEFT);
+    g.drawString(heading,2,0,Graphics.TOP|Graphics.LEFT);
     g.setFont(menuFont);
     drawWrapped(g,2,boldMenuFont.getHeight()+3,getWidth()-3,text);
     if (!automaticCommands()) {

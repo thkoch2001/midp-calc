@@ -1,7 +1,5 @@
 package javax.microedition.lcdui;
 
-import java.awt.*;
-
 public abstract class Canvas extends Displayable
 {
   public static final int UP = 1;

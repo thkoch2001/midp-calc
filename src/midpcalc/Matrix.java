@@ -243,11 +243,10 @@ public final class Matrix
     if (bI.isZero()) {
       tmp.recip();
       return mul(A,tmp,bI);
-    } else {
-      Real tmpI = new Real(bI);
-      Complex.recip(tmp,tmpI);
-      return mul(A,tmp,tmpI);
     }
+    Real tmpI = new Real(bI);
+    Complex.recip(tmp,tmpI);
+    return mul(A,tmp,tmpI);
   }
 
   public static Matrix div(Real a, Real aI, Matrix B) {

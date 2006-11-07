@@ -94,10 +94,9 @@ public final class GraphCanvas
       g.setColor(0,0,0);
       g.drawRect(zoomX1,zoomY1,zoomX2-zoomX1,zoomY2-zoomY1);
       // Draw zoom frame
-      boolean zoomOut = false;
       int zW = zoomWidth;
       if (zoomWidth > nDiv) {
-        zoomOut = true;
+        // zoom-out
         zW = 2*nDiv-zW;
         g.setColor(255,0,0);
       } else {

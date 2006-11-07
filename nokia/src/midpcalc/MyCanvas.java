@@ -40,10 +40,10 @@ public abstract class MyCanvas
     g.fillRect(0,getHeight()-f.getHeight()-1,getWidth(),1);
     g.setFont(f);
     if (a != null)
-      g.drawString(a.getLabel(),5,getHeight()-f.getHeight(),g.TOP|g.LEFT);
+      g.drawString(a.getLabel(),5,getHeight()-f.getHeight(),Graphics.TOP|Graphics.LEFT);
     if (b != null)
       g.drawString(b.getLabel(),getWidth()-5,getHeight()-f.getHeight(),
-                   g.TOP|g.RIGHT);
+                   Graphics.TOP|Graphics.RIGHT);
     if (middle != null && f2 != null &&
         (a == null ||
          f.stringWidth(a.getLabel())+f2.stringWidth(middle)*5/6<getWidth()/2)&&
@@ -52,7 +52,7 @@ public abstract class MyCanvas
     {
       g.setFont(f2);
       g.drawString(middle,getWidth()/2,getHeight()-f.getHeight(),
-                   g.TOP|g.HCENTER);
+                   Graphics.TOP|Graphics.HCENTER);
     }
   }
 }

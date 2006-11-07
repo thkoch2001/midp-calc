@@ -9,6 +9,8 @@ public class CalcApplet
   extends java.applet.Applet
   implements KeyListener, MouseListener
 {
+  private static final long serialVersionUID = 6607245994314110196L;
+
   private MIDlet calc;
   private static CalcApplet currentApplet;
   

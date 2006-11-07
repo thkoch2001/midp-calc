@@ -326,7 +326,7 @@ public final class CalcEngine
   public boolean degrees;
   public StringBuffer inputBuf;
   public boolean inputInProgress;
-  private Real rTmp,rTmp2,rTmp3,rTmp4;
+  Real rTmp,rTmp2,rTmp3,rTmp4;
   private int repaintLines;
   public boolean initialized = false;
   private String message, messageCaption;
@@ -372,9 +372,9 @@ public final class CalcEngine
   public static final int PROGLABEL_SIZE = 5;
   public static final String emptyProg = "< >";
   public String [] progLabels;
-  private short [][] prog;
+  short [][] prog;
   private int progCounter;
-  private int currentProg;
+  int currentProg;
 
   private int progLineAddr [] = null;
   // for reopening monitor with same amount of lines by "edit" command
@@ -562,7 +562,7 @@ public final class CalcEngine
     }
   }
 
-  private int getStackHeight() {
+  int getStackHeight() {
     int stackHeight;
     for (stackHeight=0; stackHeight<STACK_SIZE; stackHeight++)
       if (stackStr[stackHeight] == empty)
@@ -1165,16 +1165,16 @@ public final class CalcEngine
 
   public String getMonitorElement(int n) {
     if (monitorMode == MONITOR_MATRIX || monitorMode == MONITOR_PROG) {
-      if (n==0)
-        if (monitorMode == MONITOR_MATRIX)  
-          if (monitoredMatrix == null)
+      if (n==0) {
+        if (monitorMode == MONITOR_MATRIX) {  
+          if (monitoredMatrix == null) {
             return "no matrix";
-          else
-            return monitorCaption;
-        else 
+          }
           return monitorCaption;
-      else
-        n--;
+        }
+        return monitorCaption;
+      }
+      n--;
     }
     n += monitorYOff;
     if (monitorStr[n] == null) {
@@ -1198,10 +1198,10 @@ public final class CalcEngine
 
   public String getMonitorLabel(int n) {
     if (monitorMode == MONITOR_MATRIX  || monitorMode == MONITOR_PROG) {
-      if (n==0)
+      if (n==0) {
         return "";
-      else
-        n--;
+      }
+      n--;
     }
     n += monitorYOff;
     if (monitorLabels[n]==null) {
@@ -1215,10 +1215,10 @@ public final class CalcEngine
 
   public String getMonitorLead(int n) {
     if (monitorMode == MONITOR_MATRIX || monitorMode == MONITOR_PROG) {
-      if (n==0)
+      if (n==0) {
         return "";
-      else
-        n--;
+      }
+      n--;
     }
     n += monitorYOff;
     if (isInsideMonitor && n == monitorY)
@@ -1264,7 +1264,7 @@ public final class CalcEngine
     setMonitorX(monitorX,false); // Possibly update monitorCaption
   }
 
-  private void setMessage(String mc, String m) {
+  void setMessage(String mc, String m) {
     if (progRunning)
       return; // Ignore messages triggered while program is running
     messageCaption = mc;
@@ -1438,7 +1438,7 @@ public final class CalcEngine
     }
   }
 
-  private void parseInput() {
+  void parseInput() {
     lasty.assign(stack[0]);
     lastz.makeZero(); // Clear this in case it is a Matrix reference
     lastyi.assign(stackI[0]);
@@ -1577,7 +1577,7 @@ public final class CalcEngine
     return a;
   }
 
-  private void binary(int cmd) {
+  void binary(int cmd) {
     Real x = stack[0];
     Real y = stack[1];
     Real xi = stackI[0];
@@ -1912,8 +1912,8 @@ public final class CalcEngine
       stackStr[0] = null;
   }
 
-  private void statAB(Real a, Real b, Real SUMx, Real SUMx2,
-                      Real SUMy, Real SUMy2, Real SUMxy)
+  void statAB(Real a, Real b, Real SUMx, Real SUMx2,
+                      Real SUMy, Real SUMxy)
   {
     // a = (SUMxy-SUMx*SUMy/n)/(SUMx2-sqr(SUMx)/n)
     a.assign(SUMx);
@@ -1936,7 +1936,6 @@ public final class CalcEngine
   }
 
   private void unary(int cmd) {
-    Real tmp;
     Real x = stack[0];
     Real xi = stackI[0];
     lastx.assign(x);
@@ -2040,21 +2039,21 @@ public final class CalcEngine
 
       case LIN_YEST:
         allocStat();
-        statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
+        statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMy,SUMxy);
         x.mul(rTmp2);
         x.add(rTmp3);
         break;
 
       case LIN_XEST:
         allocStat();
-        statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
+        statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMy,SUMxy);
         x.sub(rTmp3);
         x.div(rTmp2);
         break;
 
       case LOG_YEST:
         allocStat();
-        statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMy,SUMy2,SUMylnx);
+        statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMy,SUMylnx);
         x.ln();
         x.mul(rTmp2);
         x.add(rTmp3);
@@ -2062,7 +2061,7 @@ public final class CalcEngine
 
       case LOG_XEST:
         allocStat();
-        statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMy,SUMy2,SUMylnx);
+        statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMy,SUMylnx);
         x.sub(rTmp3);
         x.div(rTmp2);
         x.exp();
@@ -2070,7 +2069,7 @@ public final class CalcEngine
 
       case EXP_YEST:
         allocStat();
-        statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMlny,SUMln2y,SUMxlny);
+        statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMlny,SUMxlny);
         x.mul(rTmp2);
         x.add(rTmp3);
         x.exp();
@@ -2078,7 +2077,7 @@ public final class CalcEngine
 
       case EXP_XEST:
         allocStat();
-        statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMlny,SUMln2y,SUMxlny);
+        statAB(rTmp2,rTmp3,SUMx,SUMx2,SUMlny,SUMxlny);
         x.ln();
         x.sub(rTmp3);
         x.div(rTmp2);
@@ -2086,7 +2085,7 @@ public final class CalcEngine
 
       case POW_YEST:
         allocStat();
-        statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMlnxlny);
+        statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMlny,SUMlnxlny);
         x.ln();
         x.mul(rTmp2);
         x.add(rTmp3);
@@ -2095,7 +2094,7 @@ public final class CalcEngine
 
       case POW_XEST:
         allocStat();
-        statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMlnxlny);
+        statAB(rTmp2,rTmp3,SUMlnx,SUMln2x,SUMlny,SUMlnxlny);
         x.ln();
         x.sub(rTmp3);
         x.div(rTmp2);
@@ -2114,8 +2113,8 @@ public final class CalcEngine
     Real x = stack[0];
     Real xi = stackI[0];
     Matrix X = getMatrix(x);
-    boolean complex  = complex = !xi.isZero();
-    boolean matrix   = X != null;
+    boolean complex  = !xi.isZero();
+    boolean matrix   = !Matrix.isInvalid(X);
     boolean matrixOk = false;
 
     Complex.degrees = degrees;
@@ -2551,7 +2550,7 @@ public final class CalcEngine
     repaint(2);
   }
 
-  private void push(Real x, Real xi) {
+  void push(Real x, Real xi) {
     rollUp(true);
     lasty.assign(stack[0]);
     lastz.makeZero(); // Clear this in case it is a Matrix reference
@@ -2902,23 +2901,23 @@ public final class CalcEngine
 
       case LIN_AB:
         allocStat();
-        statAB(x,y,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
+        statAB(x,y,SUMx,SUMx2,SUMy,SUMxy);
         break;
 
       case LOG_AB:
         allocStat();
-        statAB(x,y,SUMlnx,SUMln2x,SUMy,SUMy2,SUMylnx);
+        statAB(x,y,SUMlnx,SUMln2x,SUMy,SUMylnx);
         break;
 
       case EXP_AB:
         allocStat();
-        statAB(x,y,SUMx,SUMx2,SUMlny,SUMln2y,SUMxlny);
+        statAB(x,y,SUMx,SUMx2,SUMlny,SUMxlny);
         y.exp();
         break;
 
       case POW_AB:
         allocStat();
-        statAB(x,y,SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMlnxlny);
+        statAB(x,y,SUMlnx,SUMln2x,SUMlny,SUMlnxlny);
         y.exp();
         break;
 
@@ -3394,23 +3393,21 @@ public final class CalcEngine
         command(cmd&0x3ff, cmd>>>10);
       }
       return a+1;
-    } else {
-      if (a+5 < prog[currentProg].length) { // Just a precaution
-        rTmp.mantissa = (((long)(prog[currentProg][a  ]&0xffff)<<47)+
-                         ((long)(prog[currentProg][a+1]&0xffff)<<31)+
-                         ((long)(prog[currentProg][a+2]&0xffff)<<15)+
-                         ((long)(prog[currentProg][a+3]&0xffff)>>1));
-        rTmp.sign     = (byte)(prog[currentProg][a+3]&1);
-        rTmp.exponent = (((prog[currentProg][a+4]&0xffff)<<16)+
-                         ((prog[currentProg][a+5]&0xffff)));
-        push(rTmp,null);
-     
-      }
-      return a+6;     
     }
+    if (a+5 < prog[currentProg].length) { // Just a precaution
+      rTmp.mantissa = (((long)(prog[currentProg][a  ]&0xffff)<<47)+
+                       ((long)(prog[currentProg][a+1]&0xffff)<<31)+
+                       ((long)(prog[currentProg][a+2]&0xffff)<<15)+
+                       ((long)(prog[currentProg][a+3]&0xffff)>>1));
+      rTmp.sign     = (byte)(prog[currentProg][a+3]&1);
+      rTmp.exponent = (((prog[currentProg][a+4]&0xffff)<<16)+
+                       ((prog[currentProg][a+5]&0xffff)));
+      push(rTmp,null);
+    }
+    return a+6;     
   }
 
-  private void executeProgram() {
+  void executeProgram() {
     for (int i=0; i<prog[currentProg].length; ) {
       i = executePrgAddr( i );
     }
@@ -4340,7 +4337,7 @@ public final class CalcEngine
       updateMatrixMonitor();
   }
 
-  private static class GridStep {
+  static class GridStep {
     short pos;
     byte type;
     String label;
@@ -4971,16 +4968,16 @@ public final class CalcEngine
 
     switch (graphCmd) {
       case LIN_DRAW:
-        statAB(a,b,SUMx,SUMx2,SUMy,SUMy2,SUMxy);
+        statAB(a,b,SUMx,SUMx2,SUMy,SUMxy);
         break;
       case LOG_DRAW:
-        statAB(a,b,SUMlnx,SUMln2x,SUMy,SUMy2,SUMylnx);
+        statAB(a,b,SUMlnx,SUMln2x,SUMy,SUMylnx);
         break;
       case EXP_DRAW:
-        statAB(a,b,SUMx,SUMx2,SUMlny,SUMln2y,SUMxlny);
+        statAB(a,b,SUMx,SUMx2,SUMlny,SUMxlny);
         break;
       case POW_DRAW:
-        statAB(a,b,SUMlnx,SUMln2x,SUMlny,SUMln2y,SUMlnxlny);
+        statAB(a,b,SUMlnx,SUMln2x,SUMlny,SUMlnxlny);
         break;
     }
     if (graphCmd != AVG_DRAW && a.isFinite() && b.isFinite()) {

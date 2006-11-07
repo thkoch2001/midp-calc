@@ -91,8 +91,6 @@ final class GFont
       font.refCount++;
       return font;
     } catch (IOException e) {
-      if (font != null)
-        font.close();
       throw new IllegalStateException("Cannot initialize font");
     } catch (OutOfMemoryError e) {
       if (font != null)
@@ -438,11 +436,11 @@ final class GFont
       if (monospaced) {
         x += char_width/2;
         for (int i=0; i<length; i++) {
-          g.drawChar(string.charAt(i),x,y,g.TOP|g.HCENTER);
+          g.drawChar(string.charAt(i),x,y,Graphics.TOP|Graphics.HCENTER);
           x += char_width;
         }
       } else {
-        g.drawString(string,x,y,g.TOP|g.LEFT);
+        g.drawString(string,x,y,Graphics.TOP|Graphics.LEFT);
       }
       return x + systemFont.stringWidth(string);
     }
@@ -463,7 +461,7 @@ final class GFont
       g.fillRect(x,y,char_width*s.length()-start,char_height);
       g.setColor(fg);
       g.setFont(systemFont);
-      g.drawSubstring(s,start,s.length()-start,x,y,g.TOP|g.LEFT);
+      g.drawSubstring(s,start,s.length()-start,x,y,Graphics.TOP|Graphics.LEFT);
       return x + systemFont.substringWidth(s,start,s.length()-start);
     }
     int length;

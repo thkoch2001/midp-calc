@@ -741,6 +741,7 @@ public final class CalcCanvas
   private boolean evenFrame = true;
   private int menuX,menuY,menuW,menuH;
   private int header,footer;
+  private static final int TOP_LEFT = Graphics.TOP | Graphics.LEFT;
 
   private Menu [] menuStack;
   private int menuStackPtr;
@@ -812,7 +813,7 @@ public final class CalcCanvas
   private Object keyRepeatSignal;
   private Runnable keyRepeater;
   private int repeatedKey = 0;
-  private int currentRepeatingKey;
+  int currentRepeatingKey;
   private long repeatedKeyDueTime;
   private static final long keyRepeatInitialDelay = 750;
   private static final long keyRepeatSubsequentDelay = 200;
@@ -871,25 +872,25 @@ public final class CalcCanvas
     menuW = boldMenuFont.stringWidth("acosh")*2+3*2+menuW;
     if (menuW<(menuFont.stringWidth("thousand")+2*2)*2)
       menuW = (menuFont.stringWidth("thousand")+2*2)*2;
-    if (menuW>getWidth()) menuW = getWidth();
+    if (menuW>w) menuW = w;
     menuH = menuFont.getHeight()*2+3*2+5*2+21;
-    if (menuH>getHeight()) menuH = getHeight();
-    menuX = (getWidth()-menuW)/2;
-    menuY = header+(getHeight()-menuH-header-footer)/2;
+    if (menuH>h) menuH = h;
+    menuX = (w-menuW)/2;
+    menuY = header+(h-menuH-header-footer)/2;
     if (menuY-menuFont.getHeight()-1<header)
       menuY = header+menuFont.getHeight()+1;
-    if (menuY+menuH > getHeight())
-      menuY = getHeight()-menuH;
+    if (menuY+menuH > h)
+      menuY = h-menuH;
 
     // Number font
-    nDigits = getWidth()/numberWidth;
-    offX = (getWidth()-nDigits*numberWidth)/2;
-    nLines = (getHeight()-header-footer)/numberHeight;
-    offY = (getHeight()-header-footer-nLines*numberHeight)/2 + header;
-    nLinesMonitor = (getHeight()-header-footer-4)/numberHeight;
-    offYMonitor = (getHeight()-header-footer-
+    nDigits = w/numberWidth;
+    offX = (w-nDigits*numberWidth)/2;
+    nLines = (h-header-footer)/numberHeight;
+    offY = (h-header-footer-nLines*numberHeight)/2 + header;
+    nLinesMonitor = (h-header-footer-4)/numberHeight;
+    offYMonitor = (h-header-footer-
                    nLinesMonitor*numberHeight)/4+header;
-    offY2 = 3*(getHeight()-header-footer-
+    offY2 = 3*(h-header-footer-
                nLinesMonitor*numberHeight)/4+header;
     calc.setMaxWidth(nDigits);
     calc.setMaxMonitorSize(nLinesMonitor-1);
@@ -963,45 +964,45 @@ public final class CalcCanvas
     if (x<0) x=0;
     
     if (calc.degrees)
-      g.drawString("DEG",x,0,g.TOP|g.LEFT);
+      g.drawString("DEG",x,0,TOP_LEFT);
     else
-      g.drawString("RAD",x,0,g.TOP|g.LEFT);
+      g.drawString("RAD",x,0,TOP_LEFT);
 
     x += Math.max(getWidth()/n,w+2);
       
     if (calc.format.fse == Real.NumberFormat.FSE_FIX)
-      g.drawString("FIX",x,0,g.TOP|g.LEFT);
+      g.drawString("FIX",x,0,TOP_LEFT);
     else if (calc.format.fse == Real.NumberFormat.FSE_SCI)
-      g.drawString("SCI",x,0,g.TOP|g.LEFT);
+      g.drawString("SCI",x,0,TOP_LEFT);
     else if (calc.format.fse == Real.NumberFormat.FSE_ENG)
-      g.drawString("ENG",x,0,g.TOP|g.LEFT);
+      g.drawString("ENG",x,0,TOP_LEFT);
 
     x += Math.max(getWidth()/n,w+2);
 
     if (calc.format.base == 2)
-      g.drawString("BIN",x,0,g.TOP|g.LEFT);
+      g.drawString("BIN",x,0,TOP_LEFT);
     else if (calc.format.base == 8)
-      g.drawString("OCT",x,0,g.TOP|g.LEFT);
+      g.drawString("OCT",x,0,TOP_LEFT);
     else if (calc.format.base == 16)
-      g.drawString("HEX",x,0,g.TOP|g.LEFT);
+      g.drawString("HEX",x,0,TOP_LEFT);
 
     x += Math.max(getWidth()/n,w+2);
 
     if (calc.begin)
-      g.drawString("BGN",x,0,g.TOP|g.LEFT);
+      g.drawString("BGN",x,0,TOP_LEFT);
 
     if (n == 5)
       x += Math.max(getWidth()/n,w+2);
 
     if (calc.progRecording)
-      g.drawString("PRG",x,0,g.TOP|g.LEFT);
+      g.drawString("PRG",x,0,TOP_LEFT);
     else if (stop) {
       w = smallMenuFont.stringWidth("STOP");
       if (x+w-1>getWidth())
         x = getWidth()-w-1;
-      g.drawString("STOP",x,0,g.TOP|g.LEFT);      
+      g.drawString("STOP",x,0,TOP_LEFT);      
     } else if (calc.progRunning && (evenFrame || !toggleRun))
-      g.drawString("RUN",x,0,g.TOP|g.LEFT);
+      g.drawString("RUN",x,0,TOP_LEFT);
     if (toggleRun)
       evenFrame = !evenFrame;
   }
@@ -1065,7 +1066,7 @@ public final class CalcCanvas
     Font font = normalFont;
     g.setFont(font);
     if (plainLabel(label)) {
-      g.drawString(label,x,y,g.TOP|g.LEFT);
+      g.drawString(label,x,y,TOP_LEFT);
       return;
     }
     boolean sub=false,sup=false,overline=false;
@@ -1144,10 +1145,10 @@ public final class CalcCanvas
             break;
           case 'Þ': // _infinity
             g.drawChar('o',x,y+normalFont.getHeight()-
-                       getBaselinePosition(smallFont),g.TOP|g.LEFT);
+                       getBaselinePosition(smallFont),TOP_LEFT);
             g.drawChar('o',x+font.charWidth('o')*4/6,
                        y+normalFont.getHeight()-
-                       getBaselinePosition(smallFont),g.TOP|g.LEFT);
+                       getBaselinePosition(smallFont),TOP_LEFT);
             w = font.charWidth('o')*(6+4)/6;
             break;
           case 'ã': // alpha
@@ -1176,7 +1177,7 @@ public final class CalcCanvas
             g.drawLine(x+w-1,y+h-2,x+w-1,y+h-3);
             break;
           case 'ë': // epsilon
-            g.drawChar('e',x,y,g.TOP|g.LEFT);
+            g.drawChar('e',x,y,TOP_LEFT);
             x += font.charWidth('e')*67/112;
             g.setColor(menuColor[menuStackPtr]);
             g.fillRect(x,y,w,h);
@@ -1184,10 +1185,10 @@ public final class CalcCanvas
             w = 1;
             break;
           case 'Ð': // theta
-            g.drawChar('O',x,y,g.TOP|g.LEFT);
-            g.drawChar('-',x,y-1,g.TOP|g.LEFT);
+            g.drawChar('O',x,y,TOP_LEFT);
+            g.drawChar('-',x,y-1,TOP_LEFT);
             g.drawChar('-',x+font.charWidth('O')-font.charWidth('-'),y-1,
-                       g.TOP|g.LEFT);
+                       TOP_LEFT);
             break;
         }
         x += w;
@@ -1195,11 +1196,11 @@ public final class CalcCanvas
       else {
         if (sub)
           g.drawChar(c,x,y+normalFont.getHeight()-
-                     getBaselinePosition(smallFont),g.TOP|g.LEFT);
+                     getBaselinePosition(smallFont),TOP_LEFT);
         else if (sup)
-          g.drawChar(c,x,y-1,g.TOP|g.LEFT);
+          g.drawChar(c,x,y-1,TOP_LEFT);
         else
-          g.drawChar(c,x,y,g.TOP|g.LEFT);
+          g.drawChar(c,x,y,TOP_LEFT);
         if (overline) {
           g.drawLine(x-1,y,x+font.charWidth(c)-1,y);
           if (bold)
@@ -1215,11 +1216,11 @@ public final class CalcCanvas
       return;
     boolean bold = menu.subMenu==null && (menu.flags&CmdDesc.SUBMENU_REQUIRED)==0;
     int width = labelWidth(menu.label,bold);
-    if ((anchor & g.RIGHT) != 0)
+    if ((anchor & Graphics.RIGHT) != 0)
       x -= width;
-    else if ((anchor & g.HCENTER) != 0)
+    else if ((anchor & Graphics.HCENTER) != 0)
       x -= width/2;
-    if ((anchor & g.BOTTOM) != 0)
+    if ((anchor & Graphics.BOTTOM) != 0)
       y -= menuFont.getHeight();
     drawLabel(g,menu.label,bold,x,y);
   }
@@ -1256,16 +1257,16 @@ public final class CalcCanvas
     g.setColor(0);
     Menu [] subMenu = menuStack[menuStackPtr].subMenu;
     if (subMenu.length>=1)
-      drawMenuItem(g,subMenu[0],x+w/2,y+3,g.TOP|g.HCENTER);
+      drawMenuItem(g,subMenu[0],x+w/2,y+3,Graphics.TOP|Graphics.HCENTER);
     if (subMenu.length>=2)
-      drawMenuItem(g,subMenu[1],x+3,ym,g.TOP|g.LEFT);
+      drawMenuItem(g,subMenu[1],x+3,ym,TOP_LEFT);
     if (subMenu.length>=3)
-      drawMenuItem(g,subMenu[2],x+w-3,ym,g.TOP|g.RIGHT);
+      drawMenuItem(g,subMenu[2],x+w-3,ym,Graphics.TOP|Graphics.RIGHT);
     if (subMenu.length>=4)
-      drawMenuItem(g,subMenu[3],x+w/2,y+h-3,g.BOTTOM|g.HCENTER);
+      drawMenuItem(g,subMenu[3],x+w/2,y+h-3,Graphics.BOTTOM|Graphics.HCENTER);
     if (subMenu.length>=5 && subMenu[4]!=null)
       drawMenuItem(g,subMenu[4],x+w/2,ym,
-                   g.TOP|g.HCENTER);
+                   Graphics.TOP|Graphics.HCENTER);
     else {
       // Draw a small "joystick" in the center
       y += h/2;
@@ -1543,7 +1544,7 @@ public final class CalcCanvas
             graphParam = command-NUMBER_0;
           } if (menuCommand == CalcEngine.PROG_NEW) {
             int n = command-NUMBER_0;
-            String name = calc.progLabels[n]==calc.emptyProg ? "" :
+            String name = calc.progLabels[n]==CalcEngine.emptyProg ? "" :
               calc.progLabels[n];
             midlet.askNewProgram(name,n);
           } else {

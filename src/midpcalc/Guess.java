@@ -279,8 +279,8 @@ public class Guess
   public GuessExpr firstGuess, secondGuess;
 
   private GuessExpr newGuess;
-  private int entropyPenalty,minInteger,maxAB;
-  private int numberOfTries;
+  int entropyPenalty,minInteger,maxAB;
+  int numberOfTries;
 
   Real tmp1,tmp2,tmp3,tmp4,tmp5,tmp6;
 
