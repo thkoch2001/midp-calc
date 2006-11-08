@@ -20,6 +20,25 @@ Nokia versions, the corresponding WTK can be omitted.
 The JDK "bin" directory must be in the command path, specifically the
 "jar" command.
 
+
+Installing derived files:
+-------------------------
+
+Some files necessary for compiling this project can only be generated
+from the "Makefile build environment" (described later in this document).
+If you are unable to generate these files, there is a compressed tar
+archive named "derived.tgz" containing the derived files. It is important
+that this archive is extracted into the same directory as the archive
+itself is located in, so that the extracted files end up in the correct
+subdirectories. In Windows, this can be achieved by running an archiving
+program such as WinZip. In Linux, you can use the following command:
+
+    $ tar zxf derived.tgz
+
+
+Starting Eclipse:
+-----------------
+
 Now, start Eclipse. The following descriptions refer to Eclipse menus
 and dialogs. When referring to <this directory>, I mean the main
 project directory, the one containing this file. An important point
@@ -159,6 +178,7 @@ Package Explorer > CalcApplet > build.xml, right click, Run As > Ant Build
 CalcApplet.jar, running:
 
 Package Explorer > CalcApplet > CalcApplet.html, right click, Run As > Run...
+  Double-click "Java Applet"
   Classpath tab, select "User Entries", click [Add External JARs]
     find and add "<this directory>/applet/target/CalcApplet.jar"
     select the CalcApplet.jar and move it to the top of "User Entries"
