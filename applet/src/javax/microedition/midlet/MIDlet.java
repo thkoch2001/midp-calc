@@ -4,7 +4,7 @@ import netscape.javascript.JSObject;
 
 public abstract class MIDlet 
 {
-  public Display display = new Display();
+  public Display midletDisplay = new Display();
 
   public abstract void startApp();
   public abstract void pauseApp();

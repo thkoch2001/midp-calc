@@ -14,7 +14,7 @@ public class Display
   }
 
   public static Display getDisplay(MIDlet m) {
-    return m.display;
+    return m.midletDisplay;
   }
 
   public boolean isColor() {
