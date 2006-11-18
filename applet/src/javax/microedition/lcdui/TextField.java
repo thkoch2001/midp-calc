@@ -2,5 +2,5 @@ package javax.microedition.lcdui;
 
 public class TextField
 {
-  public static final int ANY = 0;
+    public static final int ANY = 0;
 }

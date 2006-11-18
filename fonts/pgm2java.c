@@ -115,11 +115,11 @@ int main(int argc, char *argv[])
   }
   fclose(f);
 
-  printf("  protected final String %schar_bits_resource = \"/%s\";\n",prefix,
+  printf("    protected final String %schar_bits_resource = \"/%s\";\n",prefix,
          argv[3]);
-  printf("  protected final int %schar_width = %d;\n",prefix,char_width/2);
-  printf("  protected final int %schar_height = %d;\n",prefix,char_height);
-  printf("  protected final String %schar_set =\n    \"",prefix);
+  printf("    protected final int %schar_width = %d;\n",prefix,char_width/2);
+  printf("    protected final int %schar_height = %d;\n",prefix,char_height);
+  printf("    protected final String %schar_set =\n        \"",prefix);
   for (c=0; c<(int)strlen(charSet); c++)
     printStringChar(charSet[c]);
   printf("\";\n");
