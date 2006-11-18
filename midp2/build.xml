@@ -12,7 +12,7 @@
                 preverify="true"
                 autoversion="false">
       <fileset dir="target" includes="**/*.class" />
-      <fileset dir=".." includes="*" />
+      <fileset dir=".." includes="resources/*" />
     </wtkpackage> 
   </target>
 </project>

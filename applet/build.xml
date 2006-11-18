@@ -3,7 +3,7 @@
   <target name="make-jar">
     <jar destfile="target/CalcApplet.jar">
       <fileset dir="target" includes="**/*.class"/>
-      <fileset dir="../resources" includes="*"/>
+      <fileset dir=".." includes="resources/*"/>
     </jar> 
   </target>
 </project>
