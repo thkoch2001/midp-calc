@@ -182,6 +182,7 @@ Package Explorer > CalcApplet > CalcApplet.html, right click, Run As > Run...
   Classpath tab, select "User Entries", click [Add External JARs]
     find and add "<this directory>/applet/target/CalcApplet.jar"
     select the CalcApplet.jar and move it to the top of "User Entries"
+  Applet: [midpcalc.CalcApplet]
   click [Run]
 
 
