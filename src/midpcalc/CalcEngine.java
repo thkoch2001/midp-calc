@@ -1,7 +1,10 @@
 package midpcalc;
 
-import javax.microedition.lcdui.*;
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+import javax.microedition.lcdui.Graphics;
 
 public final class CalcEngine
 {

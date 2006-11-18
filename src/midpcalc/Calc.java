@@ -1,8 +1,17 @@
 package midpcalc;
 
-import javax.microedition.midlet.*;
-import javax.microedition.lcdui.*;
-import java.io.*;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+import javax.microedition.lcdui.Command;
+import javax.microedition.lcdui.CommandListener;
+import javax.microedition.lcdui.Display;
+import javax.microedition.lcdui.Displayable;
+import javax.microedition.lcdui.Form;
+import javax.microedition.lcdui.TextBox;
+import javax.microedition.lcdui.TextField;
+import javax.microedition.midlet.MIDlet;
 
 public final class Calc
     extends MIDlet

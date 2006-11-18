@@ -1,6 +1,9 @@
 package midpcalc;
 
-import javax.microedition.lcdui.*;
+import javax.microedition.lcdui.Command;
+import javax.microedition.lcdui.CommandListener;
+import javax.microedition.lcdui.Displayable;
+import javax.microedition.lcdui.Graphics;
 
 public final class GraphCanvas
     extends MyCanvas

@@ -1,9 +1,13 @@
 package midpcalc;
 
-import java.awt.*;
-import java.awt.event.*;
-import javax.microedition.midlet.*;
-import javax.microedition.lcdui.*;
+import java.awt.Color;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+
+import javax.microedition.lcdui.Display;
+import javax.microedition.midlet.MIDlet;
 
 public class CalcApplet
     extends java.applet.Applet

@@ -1,7 +1,11 @@
 package midpcalc;
 
-import javax.microedition.lcdui.*;
-import com.nokia.mid.ui.*;
+import javax.microedition.lcdui.Command;
+import javax.microedition.lcdui.CommandListener;
+import javax.microedition.lcdui.Font;
+import javax.microedition.lcdui.Graphics;
+
+import com.nokia.mid.ui.FullCanvas;
 
 public abstract class MyCanvas
     extends FullCanvas

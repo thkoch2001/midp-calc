@@ -1,7 +1,12 @@
 package midpcalc;
 
-import java.io.*;
-import javax.microedition.lcdui.*;
+import java.io.IOException;
+import java.io.InputStream;
+
+import javax.microedition.lcdui.Canvas;
+import javax.microedition.lcdui.Font;
+import javax.microedition.lcdui.Graphics;
+import javax.microedition.lcdui.Image;
 
 final class GFont
     extends GFontBase

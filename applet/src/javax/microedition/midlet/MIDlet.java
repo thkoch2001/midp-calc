@@ -1,5 +1,7 @@
 package javax.microedition.midlet;
-import javax.microedition.lcdui.*;
+
+import javax.microedition.lcdui.Display;
+
 import netscape.javascript.JSObject;
 
 public abstract class MIDlet 

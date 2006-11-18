@@ -1,7 +1,13 @@
 package midpcalc;
 
-import javax.microedition.rms.*;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+
+import javax.microedition.rms.RecordEnumeration;
+import javax.microedition.rms.RecordStore;
 
 public final class DataStore
     extends ByteArrayOutputStream
