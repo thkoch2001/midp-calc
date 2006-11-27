@@ -234,8 +234,8 @@ public final class CalcEngine
     public static final int DHMS_TO_MJD    = 223;
     public static final int MJD_TO_DHMS    = 224;
     public static final int SGN            = 225;
-    public static final int PUSH_ZERO      = 226;
-    public static final int PUSH_ZERO_N    = 227;
+    public static final int PUSH_INT       = 226;
+    public static final int PUSH_INT_N     = 227;
     public static final int PUSH_INF       = 228;
     public static final int PUSH_INF_N     = 229;
     public static final int PROG_NEW       = 230;
@@ -276,6 +276,18 @@ public final class CalcEngine
     public static final int INVPHI         = 265;
     public static final int MONITOR_PROG   = 266;
     public static final int PROG_APPEND    = 267;
+    public static final int IF_EQUAL_Z     = 268;
+    public static final int IF_NEQUAL_Z    = 269;
+    public static final int IF_LESS_Z      = 270;
+    public static final int IF_LEQUAL_Z    = 271;
+    public static final int IF_GREATER_Z   = 272;
+    public static final int LBL            = 273;
+    public static final int GTO            = 274;
+    public static final int GSB            = 275;
+    public static final int RTN            = 276;
+    public static final int STOP           = 277;
+    public static final int DSE            = 278;
+    public static final int ISG            = 279;
 
     public static final int MATRIX_STO     = 512; // Special bit pattern
     public static final int MATRIX_RCL     = 768; // Special bit pattern
@@ -375,12 +387,17 @@ public final class CalcEngine
     public boolean progRunning;
     public static final int PROGLABEL_SIZE = 5;
     public static final String emptyProg = "< >";
-    public String [] progLabels;
-    short [][] prog;
-    private int progCounter;
+    public String[] progLabels;
+    short[][] prog;
+    private short[] progStepAddr; // Always numProgSteps+1 valid entries
+    private int progSize;
+    private int currentStep;
+    private int numProgSteps;
+    private boolean stopFlag;
+    private short[] returnStack;
+    private int returnStackDepth;
     int currentProg;
 
-    private int progLineAddr [] = null;
     // for reopening monitor with same amount of lines by "edit" command
     public int progInitialMonitorSize = 0;
 
@@ -1034,83 +1051,82 @@ public final class CalcEngine
             repaintAll();
         }
     }
-
-    private void updateProgMonitor( boolean pointToEnd ) {
-        StringBuffer caption = new StringBuffer("Prog: "+
-                                                progLabels[currentProg]);
+    
+    private void initProgMonitor(boolean pointToEnd) {
+        StringBuffer caption = new StringBuffer("Prog: " + progLabels[currentProg]);
         int nSpaces = (format.maxwidth-caption.length())/2;
         for (int i=0; i<nSpaces; i++)
             caption.append(' ');
         monitorCaption = caption.toString();
-    
-        progLineAddr = new int[progCounter]; // probably too big, but enough
-        maxMonitorSize=0;
-        for (int i=0; i<progCounter; i++, maxMonitorSize++) {
-            progLineAddr[maxMonitorSize]= i;
-            if ((prog[currentProg][i] & 0x8000) != 0) 
-                i += 5;
-        }
-        if (monitorStr.length < maxMonitorSize+1)
-            monitorStr = new String[maxMonitorSize+1];
+
+        maxMonitorSize = numProgSteps+1;
+        if (monitorStr.length < maxMonitorSize)
+            monitorStr = new String[maxMonitorSize + 10]; // Prepare for some extra...
         else
             clearMonitorStrings();
-        monitorLabels= new String[maxMonitorSize+1];
-        for (int i=0; i<maxMonitorSize; i++) {
-            monitorLabels[i]= ""+ (i+1);
-            int labelWidth = monitorLabels[i].length()+1;
-            int a= progLineAddr[i];
-            short cmd= prog[currentProg][a];
-            if ((cmd & 0x8000) != 0) {
-                if (a+5 < prog[currentProg].length) { // Just a precaution
-                    rTmp.mantissa=(((long)(prog[currentProg][a  ]&0xffff)<<47)+
-                                   ((long)(prog[currentProg][a+1]&0xffff)<<31)+
-                                   ((long)(prog[currentProg][a+2]&0xffff)<<15)+
-                                   ((long)(prog[currentProg][a+3]&0xffff)>>1));
-                    rTmp.sign     = (byte)(prog[currentProg][a+3]&1);
-                    rTmp.exponent = (((prog[currentProg][a+4]&0xffff)<<16)+
-                                     ((prog[currentProg][a+5]&0xffff)));
-                    format.maxwidth -= labelWidth;
-                    monitorStr[i] = rTmp.toString(format);
-                    format.maxwidth += labelWidth;
-                }
-            } else {
-                if ((cmd & MATRIX_STO) != 0) {
-                    int col = (cmd & 0x3f)+1 ;
-                    int row = (((cmd>>6)&0x3) + ((cmd>>8)&0x7c))+1;
-                    cmd &= MATRIX_STO|MATRIX_RCL;
-                    String s= (cmd == MATRIX_STO) ? "> M:["+row+","+col+"]"
-                        : "M:["+row+","+col+"] >";
-                    monitorStr[i] = s.substring(
-                        0,Math.min(s.length(),format.maxwidth-labelWidth+1));
-                } else {
-                    int param= cmd>>>10;
-                    cmd &= 0x3ff;
-                    String tmp= CmdDesc.getStr( cmd, false );
-                    if ((CmdDesc.getFlags(cmd) & CmdDesc.NUMBER_REQUIRED) != 0)
-                        tmp += " "+param;
-                    else if (((CmdDesc.getFlags(cmd) &
-                               CmdDesc.FINANCE_REQUIRED) != 0) 
-                             || cmd == FINANCE_RCL || cmd == FINANCE_STO)
-                        tmp += " "+financeLabels[param];
-                    else if ( cmd == STAT_STO || cmd == STAT_RCL)
-                        tmp += " "+statLabels[param];
-                    else if ((CmdDesc.getFlags(cmd) &
-                              CmdDesc.PROG_REQUIRED) != 0)
-                        tmp += " "+progLabels[cmd]; // for future extensions
-                    monitorStr[i] = tmp.substring(
-                        Math.max(0,tmp.length()-format.maxwidth+labelWidth));
-                }
-            }
-        }
-        monitorStr[maxMonitorSize] = "[prg end]";
-        monitorLabels[maxMonitorSize] = ""+(maxMonitorSize+1);
-        maxMonitorSize++;
+        monitorLabels = new String[monitorStr.length]; // Always as big as monitorStr
         monitorSize = Math.min(initialMonitorSize,maxMonitorSize);
     
         if (pointToEnd)
             setMonitorY(-1,false);
 
         repaintAll();
+    }
+
+    private void makeProgMonitorString(int n) {
+        monitorLabels[n]= Integer.toString(n+1);
+        if (n == numProgSteps) {
+            monitorStr[n] = "[prg end]";
+            return;
+        }
+        int labelWidth = monitorLabels[n].length()+1;
+        int addr = progStepAddr[n];
+        short cmd = prog[currentProg][addr];
+        if ((cmd & 0x8000) != 0) {
+            decodeProgReal(rTmp, addr);
+            format.maxwidth -= labelWidth;
+            monitorStr[n] = rTmp.toString(format);
+            format.maxwidth += labelWidth;
+        } else {
+            String tmp;
+            if ((cmd & MATRIX_STO) != 0) {
+                int col = (cmd & 0x3f)+1;
+                int row = (((cmd>>6)&0x3) + ((cmd>>8)&0x7c))+1;
+                cmd &= MATRIX_STO|MATRIX_RCL;
+                tmp = CmdDesc.getStr(cmd, false) + "M:["+row+","+col+"]";
+            } else {
+                int param = cmd>>>10;
+                cmd &= 0x3ff;
+                tmp = CmdDesc.getStr(cmd, false);
+                if (cmd == PUSH_INT || cmd == PUSH_INT_N) {
+                    tmp += param;
+                } else if ((CmdDesc.getFlags(cmd) & CmdDesc.NUMBER_REQUIRED) != 0) {
+                    tmp += " "+param;
+                } else if ((CmdDesc.getFlags(cmd) & CmdDesc.FINANCE_REQUIRED) != 0) {
+                    tmp += " "+financeLabels[param];
+                } else if (cmd == STAT_STO || cmd == STAT_RCL) {
+                    tmp += " "+statLabels[param];
+                } else if ((CmdDesc.getFlags(cmd) & CmdDesc.PROG_REQUIRED) != 0) {
+                    tmp += " "+progLabels[cmd]; // for future extensions
+                }
+            }
+            monitorStr[n] = tmp.substring(
+                    Math.max(0,tmp.length()-format.maxwidth+labelWidth));
+        }
+    }
+
+    private void decodeProgReal(Real r, int addr) {
+        if (addr+5 >= prog[currentProg].length) { // Just a precaution
+            r.makeZero();
+            return;
+        }
+        r.mantissa = (((long)(prog[currentProg][addr  ] & 0xffff) << 47)+
+                      ((long)(prog[currentProg][addr+1] & 0xffff) << 31)+
+                      ((long)(prog[currentProg][addr+2] & 0xffff) << 15)+
+                      ((long)(prog[currentProg][addr+3] & 0xffff) >> 1));
+        r.sign     = (byte)(prog[currentProg][addr+3] & 1);
+        r.exponent = (((prog[currentProg][addr+4] & 0xffff) << 16)+
+                      ((prog[currentProg][addr+5] & 0xffff)));
     }
 
     private void setMonitoring(int mode, int size, int maxSize,
@@ -1182,7 +1198,7 @@ public final class CalcEngine
         n += monitorYOff;
         if (monitorStr[n] == null) {
             if (monitorMode == MONITOR_PROG) 
-                updateProgMonitor(false);
+                makeProgMonitorString(n);
             else {
                 format.maxwidth -= monitorLabels[n].length()+1;
                 if (monitors != null && monitors[n] != null) {
@@ -1213,6 +1229,8 @@ public final class CalcEngine
                 monitorLabels[n] = "M"+n;
             else if (monitorMode == MONITOR_MATRIX)
                 monitorLabels[n] = "R"+(n+1);
+            else if (monitorMode == MONITOR_PROG)
+                makeProgMonitorString(n);
         }
         return monitorLabels[n];
     }
@@ -1271,10 +1289,9 @@ public final class CalcEngine
     }
 
     void setMessage(String mc, String m) {
-        if (progRunning)
-            return; // Ignore messages triggered while program is running
         messageCaption = mc;
         message = m;
+        stopFlag = true;
         repaintAll(); // Ensure repaint
     }
 
@@ -2580,27 +2597,50 @@ public final class CalcEngine
         push(rTmp,null);
     }
 
+    private void skipIf(boolean skip) {
+        if (skip && currentStep < numProgSteps)
+            currentStep++;
+    }
+    
     private void cond(int cmd) {
+        if (!progRunning) {
+            return;
+        }
+
         Real x = stack[0];
         Real y = stack[1];
         Real xi = stackI[0];
         Real yi = stackI[1];
+        
+        switch (cmd) {
+            case IF_EQUAL_Z:
+            case IF_NEQUAL_Z:
+            case IF_LESS_Z:
+            case IF_LEQUAL_Z:
+            case IF_GREATER_Z:
+                y = yi = Real.ZERO;
+                break;
+        }
 
-        if (!xi.isZero()|| !yi.isZero()) {
+        if (!xi.isZero() || !yi.isZero()) {
             switch (cmd) {
                 case IF_EQUAL:
-                    push(x.equalTo(y) && xi.equalTo(yi) ?
-                         Real.ONE : Real.ZERO, null);
+                case IF_EQUAL_Z:
+                    skipIf(!(x.equalTo(y) && xi.equalTo(yi)));
                     break;
                 case IF_NEQUAL:
-                    push(x.notEqualTo(y) || xi.notEqualTo(yi) ?
-                         Real.ONE : Real.ZERO, null);
+                case IF_NEQUAL_Z:
+                    skipIf(!(x.notEqualTo(y) || xi.notEqualTo(yi)));
                     break;
                 case IF_LESS:
+                case IF_LESS_Z:
                 case IF_LEQUAL:
+                case IF_LEQUAL_Z:
                 case IF_GREATER:
+                case IF_GREATER_Z:
                     // Perhaps compare absolute values?
-                    push(Real.NAN, null);
+                    setMessage(CmdDesc.getStr(cmd, true),
+                               "Magnitude comparison of complex numbers ignored");
                     break;
             }
             return;
@@ -2610,20 +2650,27 @@ public final class CalcEngine
         Matrix Y = getMatrix(y);
         if (X != null || Y != null) {
             if (X == null || Y == null) {
-                push(Real.NAN, null);
+                setMessage(CmdDesc.getStr(cmd, true),
+                           "Comparison of matrix and number ignored");
                 return;
             }
             switch (cmd) {
                 case IF_EQUAL:
-                    push(Matrix.equals(X,Y) ? Real.ONE:Real.ZERO, null);
+                case IF_EQUAL_Z:
+                    skipIf(!Matrix.equals(X,Y));
                     break;
                 case IF_NEQUAL:
-                    push(Matrix.notEquals(X,Y) ? Real.ONE:Real.ZERO, null);
+                case IF_NEQUAL_Z:
+                    skipIf(!Matrix.notEquals(X,Y));
                     break;
                 case IF_LESS:
+                case IF_LESS_Z:
                 case IF_LEQUAL:
+                case IF_LEQUAL_Z:
                 case IF_GREATER:
-                    push(Real.NAN, null);
+                case IF_GREATER_Z:
+                    setMessage(CmdDesc.getStr(cmd, true),
+                               "Magnitude comparison of matrices ignored");
                     break;
             }
             return;
@@ -2631,23 +2678,113 @@ public final class CalcEngine
 
         switch (cmd) {
             case IF_EQUAL:
-                push(x.equalTo(y)    ?Real.ONE:Real.ZERO, null);
+            case IF_EQUAL_Z:
+                skipIf(!x.equalTo(y));
                 break;
             case IF_NEQUAL:
-                push(x.notEqualTo(y) ?Real.ONE:Real.ZERO, null);
+            case IF_NEQUAL_Z:
+                skipIf(!x.notEqualTo(y));
                 break;
             case IF_LESS:
-                push(x.lessThan(y)   ?Real.ONE:Real.ZERO, null);
+            case IF_LESS_Z:
+                skipIf(!x.lessThan(y));
                 break;
             case IF_LEQUAL:
-                push(x.lessEqual(y)  ?Real.ONE:Real.ZERO, null);
+            case IF_LEQUAL_Z:
+                skipIf(!x.lessEqual(y));
                 break;
             case IF_GREATER:
-                push(x.greaterThan(y)?Real.ONE:Real.ZERO, null);
+            case IF_GREATER_Z:
+                skipIf(!x.greaterThan(y));
                 break;
         }
     }
+    
+    private boolean isLabel(int step, int labelNo) {
+        short cmd = prog[currentProg][progStepAddr[step]];
+        if ((cmd & (0x8000|MATRIX_STO)) == 0) {
+            int param = cmd>>>10;
+            cmd &= 0x3ff;
+            return cmd==LBL && param==labelNo;
+        }
+        return false;
+    }
 
+    private void flow(int cmd, int param) {
+        if (!progRunning) {
+            return;
+        }
+
+        switch (cmd) {
+            case GSB:
+                if (returnStackDepth<returnStack.length) {
+                    returnStack[returnStackDepth++] = (short)currentStep;
+                } else {
+                    setMessage("GSB", "Return stack overflow");
+                }
+                // fall-through to next case...
+            case GTO:
+                for (int i=currentStep; i<numProgSteps; i++) {
+                    if (isLabel(i, param)) {
+                        currentStep = i;
+                        return;
+                    }
+                }
+                for (int i=currentStep-2; i>=0; i--) {
+                    if (isLabel(i, param)) {
+                        currentStep = i;
+                        return;
+                    }
+                }
+                setMessage("GTO", "Nonexistent label");
+                break;
+            case RTN:
+                if (returnStackDepth > 0) {
+                    currentStep = returnStack[--returnStackDepth];
+                } else {
+                    currentStep = 0;
+                    stopFlag = true;
+                }
+                break;
+            case STOP:
+                stopFlag = true;
+                break;
+            case DSE:
+            case ISG:
+                allocMem();
+                rTmp.assign(mem[param]);
+                rTmp.mul(100000);
+                rTmp.round();
+                long n = rTmp.toLong();
+                boolean neg = n<0;
+                n = Math.abs(n);
+                int step = (int)(n%100);
+                n /= 100;
+                int limit = (int)(n%1000);
+                n /= 1000;
+                if (neg) {
+                    n = -n;
+                }
+                if (cmd == DSE) {
+                    n -= step == 0 ? 1 : step;
+                    skipIf(n<=limit);
+                } else { // ISG
+                    n += step == 0 ? 1 : step;
+                    skipIf(n>limit);
+                }
+                n = Math.abs(n);
+                n = (n*1000 + limit)*100 + step;
+                if (neg) {
+                    n = -n;
+                }
+                rTmp.assign(n);
+                rTmp.div(100000);
+                mem[param].assign(rTmp);
+                // memI[param].makeZero();   (Just ignore it)
+                break;
+        }
+    }
+    
     private void trinary(int cmd) {
         Real x = stack[0];
         Real y = stack[1];
@@ -3327,6 +3464,62 @@ public final class CalcEngine
         undoOp = UNDO_NONE; // Cannot undo this
     }
 
+    private void progInsert(int step, int stepSize) {
+        boolean matrixGCdone = false;
+        
+        if (progSize+stepSize > prog[currentProg].length) {
+            if (!matrixGCdone) {
+                matrixGC();
+                matrixGCdone = true;
+            }
+            short[] prog2 = new short[prog[currentProg].length*2];
+            System.arraycopy(prog[currentProg],0,prog2,0,progSize);
+            prog[currentProg] = prog2;
+        }
+        
+        if (numProgSteps+1+1 > progStepAddr.length) {
+            if (!matrixGCdone) {
+                matrixGC();
+                matrixGCdone = true;
+            }
+            short[] progStepAddr2 = new short[progStepAddr.length*2];
+            System.arraycopy(progStepAddr,0,progStepAddr2,0,numProgSteps+1);
+            progStepAddr = progStepAddr2;
+        }
+        
+        int progAddr = progStepAddr[step];
+        System.arraycopy(prog[currentProg], progAddr, prog[currentProg],
+                         progAddr+stepSize, progSize-progAddr);
+        for (int i=numProgSteps+1; i>step; i--) {
+            progStepAddr[i] = (short)(progStepAddr[i-1]+stepSize);
+        }
+        // ...and progStepAddr[step] = progAddr
+        numProgSteps ++;
+        progSize += stepSize;
+
+        if (monitorMode == MONITOR_PROG) {
+            if (maxMonitorSize+1 > monitorStr.length) {
+                if (!matrixGCdone) {
+                    matrixGC();
+                    matrixGCdone = true;
+                }
+                String[] monitorStr2 = new String[monitorStr.length*2];
+                System.arraycopy(monitorStr,0,monitorStr2,0,maxMonitorSize);
+                monitorStr = monitorStr2;
+                String[] monitorLabels2 = new String[monitorStr.length];
+                System.arraycopy(monitorLabels,0,monitorLabels2,0,maxMonitorSize);
+                monitorLabels = monitorLabels2;
+            }
+            System.arraycopy(monitorStr, step, monitorStr, step+1,
+                    maxMonitorSize-step);
+            monitorStr[step] = null;
+            // No need to shift monitorLabels!
+            maxMonitorSize++;
+            monitorSize = Math.min(initialMonitorSize,maxMonitorSize);
+            repaintAll();
+        }
+    }
+    
     private void record(int cmd, int param) {
         if (prog[currentProg] == null ||
             (cmd >= PROG_NEW    && cmd <= PROG_DIFF) ||
@@ -3335,20 +3528,6 @@ public final class CalcEngine
             (cmd >= MONITOR_PROG && cmd <= PROG_APPEND))
             return; // Such commands cannot be recorded
 
-        if (progCounter == prog[currentProg].length) {
-            matrixGC();
-            short [] prog2 = new short[prog[currentProg].length*2];
-            System.arraycopy(prog[currentProg],0,prog2,0,progCounter);
-            prog[currentProg] = prog2;
-        }
-
-        int inspos= progCounter;
-        if ( monitorMode == MONITOR_PROG  && monitorY < maxMonitorSize-1) {
-            inspos= progLineAddr[monitorY];
-            System.arraycopy(prog[currentProg],inspos,prog[currentProg],
-                             inspos+1, progCounter-inspos);
-        }
-    
         if (cmd == MATRIX_STO || cmd == MATRIX_RCL) {
             // Special case, utilizing 9 bits to store row/col
             int col = param&0xffff;
@@ -3356,97 +3535,108 @@ public final class CalcEngine
             if (col>=64 || row>=128)
                 return; // Cannot program so large index (should we warn?)
             cmd += col+((row&0x3)<<6)+((row&0x7c)<<8);
-            prog[currentProg][inspos++] = (short)cmd;
         } else {
-            prog[currentProg][inspos++] = (short)(cmd+(param<<10));
+            cmd += param<<10;
         }
-        progCounter++;
+
+        currentStep = numProgSteps;
         if (monitorMode == MONITOR_PROG) {
-            updateProgMonitor( false );
-            setMonitorY( monitorY+1, false );
+            currentStep = monitorY;
+        }
+        progInsert(currentStep, 1);
+        int inspos = progStepAddr[currentStep];
+        prog[currentProg][inspos] = (short)cmd;
+        if (monitorMode == MONITOR_PROG) {
+            setMonitorY(monitorY+1, false);
         }
     }
 
     private void recordPush(Real x) {
-        if (progCounter+6 > prog[currentProg].length) {
-            matrixGC();
-            short [] prog2 = new short[prog[currentProg].length*2];
-            System.arraycopy(prog[currentProg],0,prog2,0,progCounter);
-            prog[currentProg] = prog2;
+        currentStep = numProgSteps;
+        if (monitorMode == MONITOR_PROG) {
+            currentStep = monitorY;
         }
-        int inspos= progCounter;
-        if ( monitorMode == MONITOR_PROG  && monitorY < maxMonitorSize-1) {
-            inspos= progLineAddr[monitorY];
-            int d= (x.isZero() || x.isInfinity()) ? 1 : 6;
-            System.arraycopy(prog[currentProg],inspos,prog[currentProg],
-                             inspos+d, progCounter-inspos);
-        }
-        if (x.isZero()) {
-            prog[currentProg][inspos++] = (short)(PUSH_ZERO + x.sign);
-            progCounter++;
+        int inspos = progStepAddr[currentStep];
+        int intVal = Math.abs(x.toInteger());
+
+        if (x.isIntegral() && intVal<=31) {
+            progInsert(currentStep, 1);
+            prog[currentProg][inspos  ] = (short)(PUSH_INT + x.sign + (intVal<<10));
         } else if (x.isInfinity()) {
-            prog[currentProg][inspos++] = (short)(PUSH_INF + x.sign);
-            progCounter++;
+            progInsert(currentStep, 1);
+            prog[currentProg][inspos  ] = (short)(PUSH_INF + x.sign);
         } else {
+            progInsert(currentStep, 6);
             prog[currentProg][inspos++] = (short)(x.mantissa>>47);
             prog[currentProg][inspos++] = (short)(x.mantissa>>31);
             prog[currentProg][inspos++] = (short)(x.mantissa>>15);
             prog[currentProg][inspos++] = (short)((x.mantissa<<1)+x.sign);
             prog[currentProg][inspos++] = (short)(x.exponent>>16);
-            prog[currentProg][inspos++] = (short)(x.exponent);
-            progCounter += 6;
+            prog[currentProg][inspos  ] = (short)(x.exponent);
         }
         if (monitorMode == MONITOR_PROG) {
-            updateProgMonitor( false );
-            if (monitorY >= monitorYOff+maxMonitorDisplaySize) 
-                monitorYOff = monitorY-maxMonitorDisplaySize+1;
-            setMonitorY( monitorY+1, false );
+            setMonitorY(monitorY+1, false);
         }
     }
 
-    // execute instruction at address a in program
-    // returns position of next instruction
-    private int executePrgAddr( int a ) {
+    // execute step in program
+    private void executeProgStep() {
+        if (currentStep >= numProgSteps)
+            return;
+        int a = progStepAddr[currentStep];
+        currentStep++;
         short cmd = prog[currentProg][a];
-        if ((cmd & 0x8000) == 0) {
-            if ((cmd & MATRIX_STO) != 0) {
-                int col = cmd & 0x3f;
-                int row = ((cmd>>6)&0x3) + ((cmd>>8)&0x7c);
-                cmd &= MATRIX_STO|MATRIX_RCL;
-                command(cmd,(row<<16)+col);
-            } else {
-                command(cmd&0x3ff, cmd>>>10);
-            }
-            return a+1;
-        }
-        if (a+5 < prog[currentProg].length) { // Just a precaution
-            rTmp.mantissa = (((long)(prog[currentProg][a  ]&0xffff)<<47)+
-                             ((long)(prog[currentProg][a+1]&0xffff)<<31)+
-                             ((long)(prog[currentProg][a+2]&0xffff)<<15)+
-                             ((long)(prog[currentProg][a+3]&0xffff)>>1));
-            rTmp.sign     = (byte)(prog[currentProg][a+3]&1);
-            rTmp.exponent = (((prog[currentProg][a+4]&0xffff)<<16)+
-                             ((prog[currentProg][a+5]&0xffff)));
+        if ((cmd & 0x8000) != 0) {
+            decodeProgReal(rTmp, a);
             push(rTmp,null);
+            return;
         }
-        return a+6;     
+        if ((cmd & MATRIX_STO) != 0) {
+            int col = cmd & 0x3f;
+            int row = ((cmd>>6)&0x3) + ((cmd>>8)&0x7c);
+            cmd &= MATRIX_STO|MATRIX_RCL;
+            command(cmd,(row<<16)+col);
+            return;
+        }
+        command(cmd&0x3ff, cmd>>>10);
     }
 
     void executeProgram() {
-        for (int i=0; i<prog[currentProg].length; ) {
-            i = executePrgAddr( i );
+        currentStep = 0;
+        stopFlag = false;
+        while (currentStep < numProgSteps && !stopFlag) {
+            executeProgStep();
         }
         if (inputInProgress) // From the program...
             parseInput();
     }
 
-    private void singleStepProgram( int step ) {
-        if ( monitorMode != MONITOR_PROG || 
-             step > maxMonitorSize-1 )
-            return;
-        executePrgAddr( progLineAddr[step] );
-        if (inputInProgress) 
-            parseInput();
+    void enterProgState(int progNo, boolean forEdit) {
+        currentProg = progNo;
+        if (prog[currentProg] == null || prog[currentProg].length == 0) {
+            if (forEdit) {
+                prog[currentProg] = new short[10]; // Need something to start with
+            }
+            progSize = 0;
+        } else {
+            progSize = prog[currentProg].length;
+        }
+        progStepAddr = new short[progSize+1]; // Will be enough
+        numProgSteps = 0;
+        for (int i=0; i<progSize; i++, numProgSteps++) {
+            progStepAddr[numProgSteps] = (short)i;
+            if ((prog[currentProg][i] & 0x8000) != 0) 
+                i += 5;
+        }
+        progStepAddr[numProgSteps] = (short)progSize;
+        returnStack = new short[STACK_SIZE];
+        returnStackDepth = 0;
+    }
+    
+    void exitProgState() {
+        currentProg = -1;
+        progStepAddr = null;
+        returnStack = null;
     }
 
     private void differentiateProgram() {
@@ -3599,7 +3789,7 @@ public final class CalcEngine
                 return;
 
             case MONITOR_PUSH:
-                if ( monitorMode == MONITOR_PROG ) {
+                if (monitorMode == MONITOR_PROG) {
                     command(MONITOR_EXIT,0);
                     return;
                 }
@@ -3622,10 +3812,11 @@ public final class CalcEngine
                         if (monitorY < maxMonitorSize-1) {
                             progRecording = false;
                             progRunning = true;
-                            singleStepProgram( monitorY );
+                            currentStep = monitorY;
+                            executeProgStep();
                             progRunning = false;
                             progRecording = true;
-                            setMonitorY(monitorY+1, false);
+                            setMonitorY(currentStep, false);
                         }
                         return;
                 }
@@ -3648,24 +3839,33 @@ public final class CalcEngine
                         break;
                     case MONITOR_PROG: // delete current line
                         // cannot delete end of program mark
-                        if (monitorY < maxMonitorSize-1) { 
-                            int a= progLineAddr[monitorY];
-                            int d= 1;
-                            if ( (prog[currentProg][a] & 0x8000) != 0)
-                                d = 6;
-                            progCounter -= d;
-                            System.arraycopy(prog[currentProg],a+d,
-                                             prog[currentProg],a,
-                                             progCounter-a);
-                            updateProgMonitor(false);
+                        if (monitorY < maxMonitorSize-1) {
+                            currentStep = monitorY;
+                            int addr = progStepAddr[currentStep];
+                            int stepSize = 1;
+                            if ((prog[currentProg][addr] & 0x8000) != 0)
+                                stepSize = 6;
+                            progSize -= stepSize;
+                            numProgSteps--;
+                            maxMonitorSize--;
+                            System.arraycopy(prog[currentProg],addr+stepSize,
+                                             prog[currentProg],addr,
+                                             progSize-addr);
+                            for (i=currentStep; i<numProgSteps+1; i++) {
+                                progStepAddr[i] = (short)(progStepAddr[i+1]-stepSize);
+                            }
+                            System.arraycopy(monitorStr,currentStep+1,
+                                             monitorStr,currentStep,
+                                             maxMonitorSize-currentStep);
+                            monitorSize = Math.min(initialMonitorSize,maxMonitorSize);
                             if (monitorYOff+Math.min(maxMonitorDisplaySize-1,
                                                      monitorSize)
-                                >maxMonitorSize) {
+                                > maxMonitorSize) {
                                 monitorYOff = maxMonitorSize-
                                     Math.min(maxMonitorDisplaySize-1,
                                              monitorSize);
-                                repaintAll();
                             }
+                            repaintAll();
                         }
                         return;
                 }
@@ -3773,10 +3973,19 @@ public final class CalcEngine
             case CONST_l_gal: push(0x40000001, 0x792217e4c58958fcL); break;
             case CONST_ml_floz:push(0x40000004,0x764b4b5568e820e6L); break;
             case CONST_K_C:   push(0x40000008, 0x444999999999999aL); break;
-            case PUSH_ZERO:   push(Real.ZERO,  null);                break;
-            case PUSH_ZERO_N: push(Real.ZERO_N,null);                break;
             case PUSH_INF:    push(Real.INF,   null);                break;
             case PUSH_INF_N:  push(Real.INF_N, null);                break;
+
+            case PUSH_INT:
+                rTmp.assign( param);
+                push(rTmp, null);
+                break;
+
+            case PUSH_INT_N:
+                rTmp.assign(param);
+                rTmp.neg();
+                push(rTmp, null);
+                break;
 
             case RANDOM:
                 rTmp.random();
@@ -3803,7 +4012,9 @@ public final class CalcEngine
             case GUESS:
                 push(stack[0],stackI[0]);
                 Guess g = new Guess();
-                setMessage("Guess", g.guess(stack[0],stackI[0]));
+                String guess = g.guess(stack[0],stackI[0]);
+                if (!progRunning) // No message while program is running
+                    setMessage("Guess", guess);
                 break;
 
             case IF_EQUAL:
@@ -3811,7 +4022,23 @@ public final class CalcEngine
             case IF_LESS:
             case IF_LEQUAL:
             case IF_GREATER:
+            case IF_EQUAL_Z:
+            case IF_NEQUAL_Z:
+            case IF_LESS_Z:
+            case IF_LEQUAL_Z:
+            case IF_GREATER_Z:
                 cond(cmd);
+                break;
+
+            case LBL:
+                break;
+            case GTO:
+            case GSB:
+            case RTN:
+            case STOP:
+            case DSE:
+            case ISG:
+                flow(cmd, param);
                 break;
 
             case SELECT:
@@ -4111,7 +4338,7 @@ public final class CalcEngine
                     break;            // what happened here? Should not happen!
                 progInitialMonitorSize = param; // also for size = 0
                 setMonitoring(MONITOR_PROG,param,0,null,null,null);
-                updateProgMonitor( true );
+                initProgMonitor(true);
                 break;
 
             case MATRIX_STO:
@@ -4303,21 +4530,18 @@ public final class CalcEngine
             case PROG_APPEND:
                 if ( prog[param] == null )
                     return; // cannot modify a nonexistent program
+                // fall-through to next case...
             case PROG_NEW:
                 progRecording = true;
-                currentProg = param;
                 matrixGC();
-                if (cmd == PROG_NEW || prog[currentProg] == null || 
-                    prog[currentProg].length == 0) {
-                    prog[currentProg] = new short[10];
-                    progCounter = 0;
-                } else {
-                    progCounter = prog[currentProg].length;
-                } 
+                if (cmd == PROG_NEW) {
+                    prog[param] = null;
+                }
+                enterProgState(param, true);
                 if (progInitialMonitorSize > 0) {
                     setMonitoring(MONITOR_PROG, progInitialMonitorSize, 0,
                                   null, null, null);
-                    updateProgMonitor(true);
+                    initProgMonitor(true);
                 }
                 break;
 
@@ -4326,42 +4550,44 @@ public final class CalcEngine
                 if (progRecording && prog[currentProg]!=null) {
                     progRecording = false;
                     matrixGC();
-                    short [] prog2 = new short[progCounter];
-                    System.arraycopy(prog[currentProg],0,prog2,0,progCounter);
+                    short [] prog2 = new short[progSize];
+                    System.arraycopy(prog[currentProg],0,prog2,0,progSize);
                     prog[currentProg] = prog2;
+                    exitProgState();
                     if (monitorMode == MONITOR_PROG) 
                         setMonitoring(MONITOR_NONE,0,0,null,null,null);
                 }
                 break;
 
             case PROG_RUN:
-                currentProg = param;
-                if (prog[currentProg] != null) {
+                if (prog[param] != null) {
                     progRunning = true;
-                    progCounter = 0;
+                    enterProgState(param, false);
                     executeProgram();
+                    exitProgState();
                     progRunning = false;
                 }
                 break;
 
             case PROG_PURGE:
-                progCounter = 0;                   // delete programm
-                updateProgMonitor( true );
+                progSize = 0;                   // delete programm
+                numProgSteps = 0;
+                initProgMonitor(true);
                 break;
 
             case PROG_CLEAR:
-                currentProg = param;
-                prog[currentProg] = null;
-                progLabels[currentProg] = emptyProg;
+                prog[param] = null;
+                progLabels[param] = emptyProg;
                 progRecording = false;
                 progRunning = false;
                 break;
 
             case PROG_DIFF:
-                currentProg = param;
-                if (prog[currentProg] != null) {
+                if (prog[param] != null) {
                     progRunning = true;
+                    enterProgState(param, false);
                     differentiateProgram();
+                    exitProgState();
                     progRunning = false;
                 }
                 break;
@@ -4403,7 +4629,8 @@ public final class CalcEngine
                 setMessage("Draw", "The selected program is empty");
                 return false;
             }
-            currentProg = param;
+            enterProgState(param, false);
+            // Warning, exitProgState not called when graph finished
         } else if (stat == null || statLogSize == 0) {
             setMessage("Draw", "The statistics are empty");
             return false;

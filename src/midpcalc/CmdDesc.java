@@ -213,11 +213,11 @@ public final class CmdDesc
             case CalcEngine.CONST_K_C:return brief ? "°K-°C" : "conv/temp/°K-°C";
             case CalcEngine.CONV_C_F:return brief ? "°C­°F" : "conv/temp/°C­°F";
             case CalcEngine.CONV_F_C:return brief ? "°F­°C" : "conv/temp/°F­°C";
-            case CalcEngine.IF_EQUAL:return brief ? "x=y?" : "prog/cond/x=y?";
-            case CalcEngine.IF_NEQUAL:return brief ? "x!=y?" : "prog/cond/x!=y?";
-            case CalcEngine.IF_LESS:return brief ? "x<y?" : "prog/cond/x<y?";
-            case CalcEngine.IF_LEQUAL:return brief ? "x<=y?" : "prog/cond/x<=y?";
-            case CalcEngine.IF_GREATER:return brief ? "x>y?" : "prog/cond/x>y?";
+            case CalcEngine.IF_EQUAL:return brief ? "x=y?" : "prog/flow/x=y?";
+            case CalcEngine.IF_NEQUAL:return brief ? "x!=y?" : "prog/flow/x!=y?";
+            case CalcEngine.IF_LESS:return brief ? "x<y?" : "prog/flow/x<y?";
+            case CalcEngine.IF_LEQUAL:return brief ? "x<=y?" : "prog/flow/x<=y?";
+            case CalcEngine.IF_GREATER:return brief ? "x>y?" : "prog/flow/x>y?";
             case CalcEngine.MIN:return brief ? "min" : "prog/util/min";
             case CalcEngine.MAX:return brief ? "max" : "prog/util/max";
             case CalcEngine.SELECT:return brief ? "select" : "prog/util/select";
@@ -232,10 +232,10 @@ public final class CmdDesc
             case CalcEngine.DHMS_TO_MJD:return brief ? "DH.MS­MJD" : "conv/time/MJD/DH.MS­MJD";
             case CalcEngine.MJD_TO_DHMS:return brief ? "MJD­DH.MS" : "conv/time/MJD/MJD­DH.MS";
             case CalcEngine.SGN:return brief ? "sgn" : "prog/util/sgn";
-            case CalcEngine.PUSH_ZERO:return "0";
-            case CalcEngine.PUSH_ZERO_N:return "-0";
-            case CalcEngine.PUSH_INF:return "Þ";
-            case CalcEngine.PUSH_INF_N:return "-Þ";
+            case CalcEngine.PUSH_INT:return "";
+            case CalcEngine.PUSH_INT_N:return "-";
+            case CalcEngine.PUSH_INF:return "inf";
+            case CalcEngine.PUSH_INF_N:return "-inf";
             case CalcEngine.PROG_NEW:return brief ? "new" : "prog/new";
             case CalcEngine.PROG_FINISH:return brief ? "finish" : "prog/finish";
             case CalcEngine.PROG_RUN:return brief ? "run" : "prog/run";
@@ -263,8 +263,8 @@ public final class CmdDesc
             case CalcEngine.MONITOR_PUSH:return brief ? "push" : "monitor push";
             case CalcEngine.MONITOR_PUT:return brief ? "put" : "monitor put";
             case CalcEngine.MONITOR_GET:return brief ? "get" : "monitor get";
-            case CalcEngine.STAT_RCL:return brief ? "RCL" : "stat RCL";
-            case CalcEngine.STAT_STO:return brief ? "STO" : "stat STO";
+            case CalcEngine.STAT_RCL:return "RCL";
+            case CalcEngine.STAT_STO:return "STO";
             case CalcEngine.MATRIX_SIZE:return brief ? "size" : "matrix/size";
             case CalcEngine.MATRIX_AIJ:return brief ? "a_ij" : "matrix/a_ij";
             case CalcEngine.TRANSP_CONJ:return brief ? "~A~^T" : "matrix/transp conj";
@@ -272,8 +272,8 @@ public final class CmdDesc
             case CalcEngine.INVERFC:return brief ? "erfc^-1" : "math/prob/erfc^-1";
             case CalcEngine.PHI:return brief ? "phi" : "math/prob/phi";
             case CalcEngine.INVPHI:return brief ? "phi^-1" : "math/prob/phi^-1";
-            case CalcEngine.MATRIX_STO: return brief ? "STO" : "matrix STO";
-            case CalcEngine.MATRIX_RCL: return brief ? "RCL" : "matrix RCL";
+            case CalcEngine.MATRIX_STO: return "STO";
+            case CalcEngine.MATRIX_RCL: return "RCL";
             case CalcEngine.AVG_DRAW:return brief ? "draw" : "stat/res/avg/draw";
             case CalcEngine.LIN_DRAW:return brief ? "draw" : "stat/ax+b/draw";
             case CalcEngine.LOG_DRAW:return brief ? "draw" : "stat/a£x+b/draw";
@@ -288,6 +288,18 @@ public final class CmdDesc
             case CalcEngine.PROG_MINMAX:return brief ? "min/max" : "prog/min/max";
             case CalcEngine.MONITOR_PROG:return brief ? "prog" : "monitor/prog";
             case CalcEngine.PROG_APPEND:return brief ? "append" : "prog/append";
+            case CalcEngine.IF_EQUAL_Z:return brief ? "x=0?" : "prog/flow/x=0?";
+            case CalcEngine.IF_NEQUAL_Z:return brief ? "x!=0?" : "prog/flow/x!=0?";
+            case CalcEngine.IF_LESS_Z:return brief ? "x<0?" : "prog/flow/x<0?";
+            case CalcEngine.IF_LEQUAL_Z:return brief ? "x<=0?" : "prog/flow/x<=0?";
+            case CalcEngine.IF_GREATER_Z:return brief ? "x>0?" : "prog/flow/x>0?";
+            case CalcEngine.LBL:return brief ? "LBL" : "prog/flow/LBL";
+            case CalcEngine.GTO:return brief ? "GTO" : "prog/flow/GTO";
+            case CalcEngine.GSB:return brief ? "GSB" : "prog/flow/GSB";
+            case CalcEngine.RTN:return brief ? "RTN" : "prog/flow/RTN";
+            case CalcEngine.STOP:return brief ? "STOP" : "prog/flow/STOP";
+            case CalcEngine.DSE:return brief ? "DSE" : "prog/flow/DSE";
+            case CalcEngine.ISG:return brief ? "ISG" : "prog/flow/ISG";
             default:
                 return "[nop]";
         }
@@ -350,6 +362,11 @@ public final class CmdDesc
             case CalcEngine.SCI:
             case CalcEngine.ENG:
             case CalcEngine.XCHGST:
+            case CalcEngine.LBL:
+            case CalcEngine.GTO:
+            case CalcEngine.GSB:
+            case CalcEngine.DSE:
+            case CalcEngine.ISG:
                 return NUMBER_REQUIRED;
 
             case CalcEngine.POINT_DOT:

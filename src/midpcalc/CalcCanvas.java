@@ -75,9 +75,13 @@ public final class CalcCanvas
 //                                 -> diff        -> #
 //                                 -> solve       -> #
 //                                 -> min/max     -> #
-//                                 -> clear        -> #
+//                                 -> clear       -> #
 //            -> prog[2] -> finish
-//                       -> cond   -> x=y? x!=y? x<y? x<=y? x>y?
+//                       -> flow   -> cmp-y -> x=y? x!=y? x<y? x<=y? x>y?
+//                                 -> cmp-x -> x=0? x!=0? x<0? x<=0? x>0?
+//                                 -> label -> LBL GTO GSB               -> #
+//                                             RTN STOP
+//                                 -> loop  -> ISG DSE                   -> #
 //                       -> util   -> abs max min sgn select
 //                       -> reset
 //                       -> mem    -> RCL[x] STO[x] STO+[x]
@@ -682,19 +686,41 @@ public final class CalcCanvas
 
     private Menu prog2 = new Menu("prog",new Menu[] {
         new Menu(CalcEngine.PROG_FINISH),
-        new Menu("cond",new Menu[] {
-            new Menu(CalcEngine.IF_EQUAL),
-            new Menu(CalcEngine.IF_NEQUAL),
-            new Menu(CalcEngine.IF_LESS),
-            new Menu(CalcEngine.IF_LEQUAL),
-            new Menu(CalcEngine.IF_GREATER),
+        new Menu("flow",new Menu[] {
+            new Menu("x?y",CmdDesc.TITLE_SKIP,new Menu[] {
+                new Menu(CalcEngine.IF_EQUAL),
+                new Menu(CalcEngine.IF_NEQUAL),
+                new Menu(CalcEngine.IF_LESS),
+                new Menu(CalcEngine.IF_LEQUAL),
+                new Menu(CalcEngine.IF_GREATER),
+            }),
+            new Menu("label",CmdDesc.TITLE_SKIP,new Menu[] {
+                new Menu(CalcEngine.LBL),
+                new Menu(CalcEngine.GTO),
+                new Menu(CalcEngine.GSB),
+                new Menu(CalcEngine.RTN),
+            }),
+            new Menu("loop",CmdDesc.TITLE_SKIP,new Menu[] {
+                new Menu(CalcEngine.ISG),
+                null,
+                null,
+                new Menu(CalcEngine.DSE),
+            }),
+            new Menu("x?0",CmdDesc.TITLE_SKIP,new Menu[] {
+                new Menu(CalcEngine.IF_EQUAL_Z),
+                new Menu(CalcEngine.IF_NEQUAL_Z),
+                new Menu(CalcEngine.IF_LESS_Z),
+                new Menu(CalcEngine.IF_LEQUAL_Z),
+                new Menu(CalcEngine.IF_GREATER_Z),
+            }),
+            new Menu(CalcEngine.STOP),
         }),
         new Menu("util",new Menu[] {
             new Menu(CalcEngine.ABS),
             new Menu(CalcEngine.MAX),
             new Menu(CalcEngine.MIN),
             new Menu(CalcEngine.SELECT),
-            new Menu("sgn",CalcEngine.SGN),
+            new Menu(CalcEngine.SGN),
         }),
         new Menu(CalcEngine.PROG_PURGE),
         new Menu("mem",new Menu[] {
@@ -721,7 +747,7 @@ public final class CalcCanvas
     });
 
     private static final int menuColor [] = {
-        0x00e0e0,0x00fc00,0xe0e000,0xfca800,0xfc5400,0xfc0000,
+        0x00e0e0,0x00fc00,0xe0e000,0xfca800,0xfc5400,0xfc0000,0xc00080
     };
 
     private Font menuFont;
@@ -798,7 +824,7 @@ public final class CalcCanvas
 
         setFullScreen(fullScreen);
 
-        menuStack = new Menu[6]; // One too many, I think
+        menuStack = new Menu[7]; // One too many, I think
         menuStackPtr = -1;
 
         numRepaintLines = 100;
