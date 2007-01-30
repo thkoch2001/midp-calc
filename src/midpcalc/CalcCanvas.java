@@ -786,7 +786,7 @@ public final class CalcCanvas
         canvas = this;
         midlet = m;
 
-        calc = new CalcEngine();
+        calc = new CalcEngine(this);
 
         numberFontStyle = (getWidth()>=320 ? GFont.XXXLARGE :
                            getWidth()>=256 ? GFont.XXLARGE :
@@ -1632,7 +1632,12 @@ public final class CalcCanvas
             }
         }
 
-        if (graph && calc.prepareGraph(menuCommand,graphParam)) {
+        if (graph)
+            prepareGraph(menuCommand, graphParam);
+    }
+    
+    public void prepareGraph(int graphCommand, int graphParam) {
+        if (calc.prepareGraph(graphCommand,graphParam)) {
             evenFrame = true;
             midlet.displayGraph(0,header-1,getWidth(),
                                 getHeight()-header+1);

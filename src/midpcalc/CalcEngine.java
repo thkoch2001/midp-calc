@@ -3,6 +3,7 @@ package midpcalc;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.util.Random;
 
 import javax.microedition.lcdui.Graphics;
 
@@ -318,6 +319,8 @@ public final class CalcEngine
     private static final int NUM_PROGS     = 9;
 
     private static final String empty = "";
+    
+    private CalcCanvas canvas;
 
     public Real [] stack;
     public Real [] stackI;
@@ -385,6 +388,7 @@ public final class CalcEngine
 
     public boolean progRecording;
     public boolean progRunning;
+    long progRunStart;
     public static final int PROGLABEL_SIZE = 5;
     public static final String emptyProg = "< >";
     public String[] progLabels;
@@ -394,6 +398,7 @@ public final class CalcEngine
     private int currentStep;
     private int numProgSteps;
     private boolean stopFlag;
+    private boolean yieldFlag;
     private short[] returnStack;
     private int returnStackDepth;
     int currentProg;
@@ -414,8 +419,9 @@ public final class CalcEngine
                 a[i] = null;
     }
 
-    public CalcEngine()
+    public CalcEngine(CalcCanvas canvas)
     {
+        this.canvas = canvas;
         format = new Real.NumberFormat();
         stack = allocRealArray(STACK_SIZE);
         stackI = allocRealArray(STACK_SIZE);
@@ -2733,6 +2739,8 @@ public final class CalcEngine
                 for (int i=currentStep-2; i>=0; i--) {
                     if (isLabel(i, param)) {
                         currentStep = i;
+                        // Consider yield when jumping backwards
+                        considerYield();
                         return;
                     }
                 }
@@ -2740,7 +2748,11 @@ public final class CalcEngine
                 break;
             case RTN:
                 if (returnStackDepth > 0) {
-                    currentStep = returnStack[--returnStackDepth];
+                    short newStep = returnStack[--returnStackDepth];
+                    // Consider yield when jumping backwards
+                    if (newStep < currentStep-1)
+                        considerYield();
+                    currentStep = newStep;
                 } else {
                     currentStep = 0;
                     stopFlag = true;
@@ -3601,14 +3613,31 @@ public final class CalcEngine
         command(cmd&0x3ff, cmd>>>10);
     }
 
-    void executeProgram() {
+    boolean executeProgram() {
         currentStep = 0;
         stopFlag = false;
-        while (currentStep < numProgSteps && !stopFlag) {
+        return continueProgram();
+    }
+    
+    boolean continueProgram() {
+        progRunStart = System.currentTimeMillis();
+        yieldFlag = false;
+        while (currentStep < numProgSteps && !stopFlag && !yieldFlag) {
             executeProgStep();
         }
-        if (inputInProgress) // From the program...
-            parseInput();
+        return currentStep < numProgSteps && !stopFlag;
+    }
+
+    void considerYield() {
+        if (graphCmd!=0 && graphCmd!=PROG_RUN) // what about PROG_DIFF???
+            return;
+        long timeUsed = System.currentTimeMillis()-progRunStart;
+        if (graphCmd==PROG_RUN && timeUsed>500) {
+            yieldFlag = true;
+        } else if (graphCmd==0 && timeUsed>1000) {
+            yieldFlag = true;
+            canvas.prepareGraph(PROG_RUN, currentProg);
+        }
     }
 
     void enterProgState(int progNo, boolean forEdit) {
@@ -4562,10 +4591,12 @@ public final class CalcEngine
             case PROG_RUN:
                 if (prog[param] != null) {
                     progRunning = true;
+                    graphCmd = 0;
                     enterProgState(param, false);
-                    executeProgram();
-                    exitProgState();
-                    progRunning = false;
+                    progRunning = executeProgram();
+                    if (!progRunning) {
+                        exitProgState();
+                    }
                 }
                 break;
 
@@ -4585,6 +4616,7 @@ public final class CalcEngine
             case PROG_DIFF:
                 if (prog[param] != null) {
                     progRunning = true;
+                    graphCmd = PROG_DIFF;
                     enterProgState(param, false);
                     differentiateProgram();
                     exitProgState();
@@ -4607,18 +4639,20 @@ public final class CalcEngine
         static final byte BIGTICK = 2;
     }
 
+    int graphCmd;
+
     // Create an inner class to limit each class size to 64kB
     // This is a temporary solution
     protected class CalcEngineInner {
 
 
-    int graphCmd;
     Real xMin,xMax,yMin,yMax,a,b,c,bi,x0,x0i,y0,y1,y2,y0i,y1i,y2i,total,totalI;
     long integralN,totalExtra,totalExtraI;
     int integralDepth;
     boolean integralFailed;
     boolean maximizing;
     int zzN, zzNbits;
+    Random random;
 
     public boolean prepareGraph(int cmd, int param) {
         graphCmd = cmd;
@@ -4631,6 +4665,10 @@ public final class CalcEngine
             }
             enterProgState(param, false);
             // Warning, exitProgState not called when graph finished
+        } else if (cmd == PROG_RUN) {
+            // enterProgState already done, everything should be ok
+            // Warning, exitProgState not called when graph finished
+            random = new Random();
         } else if (stat == null || statLogSize == 0) {
             setMessage("Draw", "The statistics are empty");
             return false;
@@ -4645,11 +4683,11 @@ public final class CalcEngine
         Real x = rTmp3;
         Real y = rTmp4;
         int i;
+        if (inputInProgress)
+            parseInput();
 
         // Find boundaries
         if (cmd >= PROG_DRAW && cmd <= PROG_DRAWZZ) {
-            if (inputInProgress)
-                parseInput();
             xMin.assign(stack[3]);
             xMax.assign(stack[2]);
             yMin.assign(stack[1]);
@@ -4907,6 +4945,10 @@ public final class CalcEngine
             stack[0].assign(b);
             Real.magicRounding = true;
         }
+        else if (cmd == PROG_RUN)
+        {
+            // Nothing to prepare
+        }
         else // Draw statistics
         {
             for (i=0; i<statLogSize; i++) {
@@ -5064,6 +5106,9 @@ public final class CalcEngine
 
     public void drawAxes(Graphics g, int gx, int gy, int gw, int gh,
                          boolean bgrDisplay, boolean sparse) {
+        if (graphCmd == PROG_RUN)
+            return; // No axis drawn in this case
+        
         int i,j,xi,yi,x0,y0,inc,lx,ly;
         GFont font =
             GFont.getFont(GFont.SMALL | (bgrDisplay ? GFont.BGR_ORDER : 0),
@@ -5218,7 +5263,7 @@ public final class CalcEngine
         gw -= 4;
         gh -= 4;
 
-        if (graphCmd >= PROG_SOLVE)
+        if (graphCmd == PROG_RUN || graphCmd >= PROG_SOLVE)
             return; // Return now to continue later
 
         if (graphCmd >= PROG_DRAW) {
@@ -5424,9 +5469,13 @@ public final class CalcEngine
         H.scalbn(depth); // Restore H
         HI.scalbn(depth);
     }
+    
+    int random(int max) {
+        return (random.nextInt()>>>1)%max;
+    }
 
     public void continueGraph(Graphics g, int gx, int gy, int gw, int gh) {
-        long start = System.currentTimeMillis();
+        progRunStart = System.currentTimeMillis();
         Real x = rTmp3;
         int i,xi=0,yi=0,size=0;
 
@@ -5662,6 +5711,21 @@ public final class CalcEngine
                     return;
                 }
             }
+            else if (graphCmd == PROG_RUN)
+            {
+                if (!continueProgram()) {
+                    progRunning = false;
+                } else {
+                    // Update "screen saver"
+                    int x1 = gx+random(gw);
+                    int x2 = gx+random(gw);
+                    int y1 = gy+random(gh);
+                    int y2 = gy+random(gh);
+                    g.setColor(random(0x1000000));
+                    g.drawLine(x1,y1,x2,y2);
+                }
+                return; // Return directly, since continueProgram runs for 500ms
+            }
             else // Must be min/max
             {
                 Real.magicRounding = false;
@@ -5739,7 +5803,7 @@ public final class CalcEngine
                 }
             }
         }
-        while (System.currentTimeMillis()-start < 500);
+        while (System.currentTimeMillis()-progRunStart < 500);
 
         if (graphCmd == PROG_SOLVE || graphCmd == PROG_MINMAX) {
             // Draw progress
