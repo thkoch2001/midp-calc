@@ -3620,7 +3620,6 @@ public final class CalcEngine
     }
     
     boolean continueProgram() {
-        progRunStart = System.currentTimeMillis();
         yieldFlag = false;
         while (currentStep < numProgSteps && !stopFlag && !yieldFlag) {
             executeProgStep();
@@ -4593,6 +4592,7 @@ public final class CalcEngine
                     progRunning = true;
                     graphCmd = 0;
                     enterProgState(param, false);
+                    progRunStart = System.currentTimeMillis();
                     progRunning = executeProgram();
                     if (!progRunning) {
                         exitProgState();
@@ -4618,6 +4618,7 @@ public final class CalcEngine
                     progRunning = true;
                     graphCmd = PROG_DIFF;
                     enterProgState(param, false);
+                    progRunStart = System.currentTimeMillis();
                     differentiateProgram();
                     exitProgState();
                     progRunning = false;
