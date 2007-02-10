@@ -12,6 +12,19 @@ MIDP devices</h1>
 
 <h2>Changelog:</h2>
 
+<h3><a href="Calc400.jar">Version 4.00</a>, 2007-02-10, (93kB)</h3>
+
+<ul>
+  <li>Added program flow operations LBL, GTO, GSB, RTN, STOP, ISG and DSE.
+  <li>Long-running programs get a "screen saver" view with the option to
+    halt execution.
+  <li>The old comparison operations x&lt;y?, x&lt;0?, etc. have been
+    reimplemented for more traditional usage. Instead of pushing 0 or 1 on the
+    stack, these operations now skip the next line if the result of the
+    comparison is false. Programs written for a previous verision of Calc that
+    use these operations will not work as intended in this version.
+</ul>
+
 <h3><a href="Calc303.jar">Version 3.03</a>, 2006-09-09, (91kB)</h3>
 
 <ul>

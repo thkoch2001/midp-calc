@@ -26,7 +26,7 @@
 </ul>
 </font></b>
 
-<p><b>Current version: 3.03</b>, <a
+<p><b>Current version: 4.00</b>, <a
 href="Calc-log.html">change-log</a><br>
 
 <script language="JavaScript">
@@ -180,7 +180,7 @@ The following MIDP phones/devices have been tested with Calc v3.0x:
   <li><b>Motorola Razr V3</b><sup>1</sup><b>,
   V180, V220, V547</b><sup>1</sup><b>, V557, C380, C390, C650</b>: Tested OK
   <li><b>Siemens A65</b><sup>1,S</sup><b>, C75</b><sup>1,S</sup><b>,
-  SX1</b><sup>1,N</sup><b>, AX72</b><sup>S</sup><b>, S65: Tested OK
+  SX1</b><sup>1,N</sup><b>, AX72</b><sup>S</sup><b>, S65</b>: Tested OK
   <li><b>BenQ-Siemens EF81</b>: Tested OK
   <li><b>Samsung Z500</b><sup>1,2</sup><b>, SGH-D407</b>: Tested OK
   <li><b>LG U880</b><sup>2</sup>: Tested OK
@@ -866,30 +866,31 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
       href="Calc.html#DateNote"><b>(*)</b></a>
     <ul>
       <li><b>&rarr;H</b>: Convert x, interpreted as date, hours, minutes and
-    seconds (format yyyymmddHH.MMSS) to hours. If year (yyyy) is zero,
-    the format is instead understood as ddddHH.MMSS, where dddd is
-    number of days.
+    seconds (format <tt>yyyymmddHH.MMSS</tt>) to hours. If year (<tt>yyyy</tt>)
+    is zero, the format is instead understood as <tt>ddddHH.MMSS</tt>, where
+    <tt>dddd</tt> is number of days.
       <li><b>&rarr;DH.MS</b>: Convert x from hours to date, hours, minutes and
     seconds. If x&nbsp;&#8804;&nbsp;8784 hours, it is instead converted
-    to the format ddddHH.MMSS, where dddd is the number of days. 
+    to the format <tt>ddddHH.MMSS</tt>, where <tt>dddd</tt> is the number of
+    days.
       <li><b>now</b>: Get current date and time in DH.MS
     format. Useful to remind yourself how this format is
       <li><b>time</b>: Get current time only in DH.MS format
       <li><b>date</b>: Get current date only in DH.MS format
       <li><b>DH.MS+</b>: Add x and y as date, hours, minutes and
     seconds
-      <li><b>DH.MS&rarr;unix</b>: Convert from yyyymmddHH.MMSS format
+      <li><b>DH.MS&rarr;unix</b>: Convert from <tt>yyyymmddHH.MMSS</tt> format
     to unix time
       <li><b>unix&rarr;DH.MS</b>: Convert from unix time to
-    yyyymmddHH.MMSS format
-      <li><b>DH.MS&rarr;JD</b>: Convert from yyyymmddHH.MMSS format
+    <tt>yyyymmddHH.MMSS</tt> format
+      <li><b>DH.MS&rarr;JD</b>: Convert from <tt>yyyymmddHH.MMSS</tt> format
     to Julian Day
       <li><b>JD&rarr;DH.MS</b>: Convert from Julian Day time to
-    yyyymmddHH.MMSS format
-      <li><b>DH.MS&rarr;MJD</b>: Convert from yyyymmddHH.MMSS format
+    <tt>yyyymmddHH.MMSS</tt> format
+      <li><b>DH.MS&rarr;MJD</b>: Convert from <tt>yyyymmddHH.MMSS</tt> format
     to Modified Julian Day
       <li><b>MJD&rarr;DH.MS</b>: Convert from Modified Julian Day time to
-    yyyymmddHH.MMSS format
+    <tt>yyyymmddHH.MMSS</tt> format
     </ul>
     <li><a id="Metric" name="Metric">Metric conversions</a> <a
       href="Calc.html#ConstNote"><b>(*)</b></a>
@@ -1107,14 +1108,79 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
   <li>Programming 2 (available while entering a new program)
   <ul>
     <li><b>finish</b>: Finish entering current program
-    <li><b>reset</b>: Reset the current program (purge and start from beginning)
-    <li>Conditionals for programming
+    <li><b>reset</b>: Reset the current program (purge and start from
+      beginning)
+    <li>Flow control (when recording a program, these operations will have no
+      effect whatsoever)
     <ul>
-      <li><b>x=y?</b>: Enter 1 on stack if x exactly equals y, otherwise 0
-      <li><b>x!=y?</b>: Enter 1 on stack if x does not equal y, otherwise 0
-      <li><b>x&lt;y?</b>: Enter 1 on stack if x is less than y, otherwise 0
-      <li><b>x&lt;=y?</b>: Enter 1 on stack if x is less than or equal to y, otherwise 0
-      <li><b>x&gt;y?</b>: Enter 1 on stack if x is greater than y, otherwise 0
+      <li>Label related operations
+      <ul>
+        <li><b>LBL</b>: Set label. The label, numbered 0-15, can used as a
+          destination for <b>GTO</b> or <b>GSB</b> from somewhere else in the
+          program.
+        <li><b>GTO</b>: Goto label. Program execution jumps to the specified
+          label and continues. In case of multiple matching labels, the
+          label to go to is first searched for forwards in the program. If the
+          label is not found, the program is searched backwards from the
+          <b>GTO</b> instruction until the label is found. If no label is
+          found, the program terminates with an error message.
+        <li><b>GSB</b>: Goto subroutine. This operation is similar to
+          <b>GTO</b>, except that the current position in the program is saved,
+          so that a subsequent <b>RTN</b> instruction will return the program
+          to the current position to continue execution. Recursive <b>GSB</b>
+          operations are permitted, up to 16 levels deep.
+        <li><b>RTN</b>: Return from subroutine. Continues execution from the
+          next operation following the last <b>GSB</b> operation. If there has
+          been no previous <b>GSB</b> operation executed, program execution
+          will instead stop.
+        <li><b>STOP</b>: Stop program execution. If the program is used e.g. in
+          an integration operation, the current value of x will be used as the
+          output of the program, and the integration itself will not stop.
+      </ul>
+      <li>Looping operations
+      <ul>
+        <li><b>ISG</b>: Increment, skip if greater. The specified memory
+          location is interpreted as a counter, according to the format
+          <tt>iiiii.fffcc</tt>, where <tt>iiiii</tt> is the current counter
+          value, <tt>fff</tt> is the final counter value, and <tt>cc</tt> is
+          the increment. When the operation is executed, the value of
+          <tt>iiiii</tt> is incremented by <tt>cc</tt>, and if <tt>iiiii</tt>
+          is then greater than <tt>fff</tt>, execution skips the next line of
+          the program and continues. If <tt>cc</tt> is 00, an increment of 01
+          will be used instead.
+        <li><b>DSE</b>: Decrement, skip if equal. The specified memory location
+          is interpreted as a counter as with <b>ISG</b>, but instead of
+          incrementing, <tt>iiiii</tt> is decremented by <tt>cc</tt>, and if
+          <tt>iiiii</tt> is then equal to (or less than) <tt>fff</tt>,
+          execution skips the next line of the program and continues.
+      </ul>
+      <li>Comparing x and y
+      <ul>
+        <li><b>x=y?</b>: Execute next program line only if x exactly equals y,
+          otherwise program execution skips the next line of the program and
+          continues.
+        <li><b>x!=y?</b>: Execute next line if x does not equal y,
+          otherwise skip
+        <li><b>x&lt;y?</b>: Execute next line if x is less than y,
+          otherwise skip
+        <li><b>x&lt;=y?</b>: Execute next line if x is less than or equal
+          to y, otherwise skip
+        <li><b>x&gt;y?</b>: Execute next line if x is greater than y,
+          otherwise skip
+      </ul>
+      <li>Comparing x and 0
+      <ul>
+        <li><b>x=0?</b>: Execute next line if x exactly equals 0,
+          otherwise skip
+        <li><b>x!=0?</b>: Execute next line if x does not equal 0,
+          otherwise skip
+        <li><b>x&lt;0?</b>: Execute next line if x is less than 0,
+          otherwise skip
+        <li><b>x&lt;=0?</b>: Execute next line if x is less than or equal
+          to 0, otherwise skip
+        <li><b>x&gt;0?</b>: Execute next line if x is greater than 0,
+          otherwise skip
+      </ul>
     </ul>
     <li>Utility operations for programming
     <ul>
@@ -1122,8 +1188,7 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
       <li><b>max</b>: Select maximum value of x and y
       <li><b>min</b>: Select minimum value of x and y
       <li><b>select</b>: Select y or z based on x, i.e. calculate
-  x·y+(1-x)·z. With this you can e.g. simulate "max" by pressing
-  "x&gt;y?", "select". When selection criterion x exactly equals 1 or
+  x·y+(1-x)·z. When selection criterion x exactly equals 1 or
   0, y or z is copied directly instead of calculating it. This enables
   selecting away <tt>inf</tt>'s and <tt>nan</tt>'s.
   If x contains a square matrix, X·Y+(I-X)·Z is calculated.
@@ -1389,15 +1454,16 @@ you can subtract dates by entering a negative date and using
 calendar to years BC.<br>
 
 <br>
-When converting from date-time format (yyyymmddHH.MMSS) to hours,
-several checks are performed. If year (yyyy) is zero (i.e. input is
+When converting from date-time format (<tt>yyyymmddHH.MMSS</tt>) to hours,
+several checks are performed. If year (<tt>yyyy</tt>) is zero (i.e. input is
 less than 1000000), the date-time format is instead interpreted as the
-days-time format ddddHH.MMSS, where dddd is the number of days. When
+days-time format <tt>ddddHH.MMSS</tt>, where <tt>dddd</tt> is the number of
+days. When
 you convert from hours back to date-time format, it is enough that the
 number of hours is greater than 8784 (i.e. 24 hours times 366, number
-of days in year 0) for the converter to switch back to yyyymmddHH.MMSS
-format. This means that for dddd between 366 and 9999, converting from
-ddddHH.MMSS to hours and back again will not yield the original
+of days in year 0) for the converter to switch back to <tt>yyyymmddHH.MMSS</tt>
+format. This means that for <tt>dddd</tt> between 366 and 9999, converting from
+<tt>ddddHH.MMSS</tt> to hours and back again will not yield the original
 input.<br>
 
 <br>
@@ -1409,8 +1475,8 @@ resulting from a DH.MS+ operation with one negative operand), but the
 result should be converted to hours or added to a proper date before
 it is meaningful. If an intermediate result like this represents a
 time interval less than one year, it will be converted to the form
-"ddddHH.MMSS", where "dddd" is the number of days. Do not worry, this
-form will interpreted unambiguously in further calculations with
+<tt>ddddHH.MMSS</tt>, where <tt>dddd</tt> is the number of days. Do not worry,
+this form will interpreted unambiguously in further calculations with
 DH.MS+.<br>
 
 <br>
@@ -1420,14 +1486,14 @@ DH.MS+.<br>
 year while the year 2000 <em>was</em>.]<br>
 
 <br>
-If year is nonzero, and month (mm) is zero, the month will be
-interpreted as 1 (January). If day (dd) is zero, it is interpreted as
-1 (the 1st of the month). If seconds (SS) is greater than 59, the
+If year is nonzero, and month (<tt>mm</tt>) is zero, the month will be
+interpreted as 1 (January). If day (<tt>dd</tt>) is zero, it is interpreted as
+1 (the 1st of the month). If seconds (<tt>SS</tt>) is greater than 59, the
 number is interpreted as that many seconds into the next minute. If
-minutes (MM) is greater than 59, the number is interpreted as that
-many minutes into the next hour. If hours (HH) is greater than 23, the
+minutes (<tt>MM</tt>) is greater than 59, the number is interpreted as that
+many minutes into the next hour. If hours (<tt>HH</tt>) is greater than 23, the
 number is interpreted as that many hours into the next day. If day
-(dd) is greater than the number of days in a month, the number is
+(<tt>dd</tt>) is greater than the number of days in a month, the number is
 interpreted as that many days into the next month (or the months
 after). If month is greater than 12, the number is interpreted as that
 many months into the next year(s) (unspecified how many days there are
@@ -1517,9 +1583,9 @@ I couldn't find a spot for it anywhere else. Despite this, not all
 operations reached from this menu are "mode-like".)<br>
 
 <br>
-The programming mode in Calc is basically a keyboard/command logging
-facility with playback. In programming mode (i.e. after executing
-"prog/new" or "prog/append"), all activity is stored in the current
+As of version 4.00, Calc is fully programmable with control flow and
+looping. When program recording has been activated (i.e. after
+executing "prog/new" or "prog/append"), all activity is recorded in the current
 program, but the calculator looks and behaves exactly as before except
 a "PRG" indicator to the upper right. There is no limit to the size of
 a program, but beware, do not leave Calc in programming mode (look for
@@ -1529,12 +1595,14 @@ memory, giving the "Out of memory error".<br>
 <br>
 Using the "undo" operation does not remove any
 statements from the program, it only adds the "undo" operation to the
-program as well. So use the program editing mode described below to 
+program as well. Instead, use the program editing mode described below to 
 remove an operation. Advice: If your program is complex, plan the steps
 beforehand on a piece of paper.</br>
+
 <br>
 Programs can be viewed or edited using the program editing monitor
 command: "monitor/prog":</br>
+
 <br>
 The program editing monitor can be used to view or edit programs. Note
 that the program editing monitor can only be accessed in the
@@ -1567,20 +1635,6 @@ deactivated and it is reactivated with the same number of lines next
 time the "new" or "append" commands are issued, even if a different
 monitor mode was active. 
 </br>
-
-<br>
-The programming mode offers no control flow (if-statements) or looping
-(repeat-statements). However, some conditional, utility and indirect
-memory operations have been added. These operations are not needed in
-normal, interactive mode since you can easily do them "manually", but
-in programming mode they can help accomplish complicated programs. For
-instance, programming <a
-href="http://mathworld.wolfram.com/CollatzProblem.html">Collatz
-Problem</a>; {If x is even, the next number in the sequence is x/2,
-otherwise it is 3x+1}. This program needs an if-statement, but you can
-get around this by calculating both values and selecting afterwards:
-"STO 0", "2", "/", "RCL 0", "3", "*", "1", "+", "RCL 0", "2", "mod",
-"select".<br>
 
 <br>
 A program is called a <b>function</b> if it uses the x on the stack as
@@ -1649,7 +1703,20 @@ for solving because of the flatness of a curve at a minima/maxima, in
 most cases only about 10 digits.<br>
 
 <br>
-Caveat: Since the calculator can represent very small numbers
+<b>Caveat I</b>: If you make a program that runs forever, e.g. a sequence of
+"LBL 0" followed by "GTO 0", when executing the program execution can be
+stopped by pressing "Break" as explained in <a href="Calc.html#GraphNote">Graph
+drawing</a> below. However, if you do anything else with the program,
+i.e. drawing, differentiating, itegrating, solving, maximizing or minimizing,
+execution can only be stopped between indivitual runs of the program, so it
+will not be possible to stop e.g. integration of a program that runs
+forever. <i>In the worst case you may have to turn off the entire device
+(i.e. phone) and lose everything that has changed in the last session.</i> If
+you are unsure whether your program runs forever or not, try it once using the
+plain "prog/run" command.<br>
+
+<br>
+<b>Caveat II</b>: Since the calculator can represent very small numbers
 (i.e. 2.383e-323228497), solving or min/max-ing trivial cases when the
 answer is exactly zero can take forever, since the result always
 approaches zero but never gets there. Examples are "solve" on the

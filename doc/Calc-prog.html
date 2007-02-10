@@ -19,8 +19,8 @@ the command name, such as "ENTER", "*", and numbers such as
 be written prefixed with <em>some parts</em> of the menu choices
 needed to get to the command. This is done to <em>remind</em> the user
 how to find the command, it is not meant as a complete description of
-how to find the command. For example, if I write "<tt><b>stack/RCL st#
-1</b></tt>", I actually mean
+how to find the command. For example, if the program listing contains
+"<tt><b>stack/RCL st# 1</b></tt>", what this actually means is
 "<tt>main/special/<b>stack</b>/more/<b>RCL&nbsp;st#</b>/&lt;0-3&gt;/&lt;<b>1</b>&gt;</tt>".<br>
 
 <br>
@@ -28,6 +28,104 @@ Programming hint: If a program needs parameters pushed onto the stack
 before running, it is useful to push some dummy arguments on the stack
 before starting to record the program, to be able to follow the
 programming with actual data.<br><br>
+
+<h2>Drawing a function</h2>
+
+Many people have requested a more thorough explanation of how to do such a
+simple thing as drawing a function. To recap the long and perhaps tedious
+documentation, a funtion is a program that uses the lowest element on the stack
+(x) as input, calculates the function value based on this input, and leaves the
+resulting function value in the lowest element on the stack as output.<br>
+
+<br>
+We will proceed to program and draw two different programs of different
+complexity. The first program represents one of the simplest functions
+possible:<br>
+
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;f(x)&nbsp;=&nbsp;x<br>
+
+<br>
+Let's see how we can make a program to calculate this function. When the
+program is called by the graph drawing operation, the input value x will be
+present as the lowest element on the stack. Since the input value of this
+particular function equals the output value, we don't have to do anything to it
+to it to calculate the function value. Also, since the output value of the
+function should be located in the lowest stack element when the program
+finishes, the program does not have to do anything either. Therefore, the
+operations you need to execute to program this function are as follows:<br>
+
+<pre>
+prog/new "f1"
+prog/finish
+</pre>
+
+<br>
+To draw the function, we first need the boundaries of the draw area pushed on
+the stack. We will use the area -10&lt;x&lt;10 and -10&lt;y&lt;10. After
+entering the limits, we may execute the draw operation:<br>
+
+<pre>
+-10
+10
+-10
+10
+prog/draw/y=f(x)/f1
+</pre>
+
+<br>
+This looks rather boring. However, the function is not completely useless. If
+we use other drawing modes (with the same limits as above), we get some nice
+results:<br>
+
+<pre>
+prog/draw/r=f(&theta;)/f1
+prog/draw/z=f(z)/f1
+</pre>
+
+<br>
+Now for a more complex example. The function we want to draw now is the
+following:<br>
+
+<br>
+&nbsp;&nbsp;&nbsp;&nbsp;f(x)&nbsp;=&nbsp;2x²&nbsp;-&nbsp;3x&nbsp;-&nbsp;1<br>
+
+<br>
+One of the first problems we have to deal with is that we need 'x' twice to
+calculate this function, and there is only one 'x' on the stack when the
+program starts. We could use "mem/STO" to store the x in a memory location, and
+"mem/RCL" to get it back whenever we need it, but a more common method is just
+to dupliacte the number on the stack, using ENTER. One possible solution to
+program the function follows. Before programming, clear the stack and enter a
+dummy input value on the stack, e.g. '1', to be able to follow the
+calculation:<br>
+
+<pre>
+stack/clear              ; clear the stack
+1                        ; enter dummy input value (be wild: try '2' instead)
+                         ; (text after the ';' is just comments)
+prog/new "f2"            ; now we start programming our new function
+ENTER                    ; copy x. Now there are two x'es on the stack
+math/simple/x²           ; calculate x², using one of the x'es
+2
+*                        ; now we have 2x²
+stack/x<->y              ; bring down the other x
+3
+*                        ; now we have 2x² and 3x on the stack
+-                        ; subtract the two, now we have 2x²-3x
+1
+-                        ; subtract 1, now the stack contains f(x)
+prog/finish              ; program finished
+</pre>
+
+<br>
+Let's see how the program works. Clear the stack, and enter the number 3. Then
+press "prog/run/f2". The '3' disappears and is replaced by '8'. We have now
+calculated f(3)=8.<br>
+
+<br>
+To draw the function, follow the steps above, but select program f2 instead of
+f1 for drawing.<br>
 
 <h2>Quadratic equation</h2>
 
@@ -185,7 +283,7 @@ the equation:<br>
 100
 0
 100
-prog/draw/y=f(x)
+prog/draw/y=f(x)/Speed
 </pre>
 
 <br>

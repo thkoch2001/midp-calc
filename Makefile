@@ -1,5 +1,5 @@
 SHELL = /bin/sh
-VERSION = 3.03
+VERSION = 4.00
 TARGETS = midp1/Calc.jad \
           midp1/target/Calc.jar \
           midp2/CalcMIDP2.jad \
