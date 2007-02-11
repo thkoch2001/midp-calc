@@ -34,7 +34,7 @@ public final class CalcCanvas
 //            -> arc     -> asin   acos   atan
 //            -> hyp     -> sinh   cosh   tanh
 //            -> archyp  -> asinh  acosh  atanh
-//            -> more    -> RAD/DEG ->RAD  ->DEG  pi
+//            -> more    -> RD/DG/GR   ->RAD  ->DEG  pi
 //                       -> coord   -> r->p   p->r   atan2   hypot   ->cplx
 //                       -> cplx*   -> split  abs    arg     conj
 //   bitop**  -> and     or     xor     bic
@@ -1005,6 +1005,8 @@ public final class CalcCanvas
     
         if (calc.degrees)
             g.drawString("DEG",x,0,TOP_LEFT);
+        else if (calc.grad)
+            g.drawString("GRAD",x,0,TOP_LEFT);
         else
             g.drawString("RAD",x,0,TOP_LEFT);
 

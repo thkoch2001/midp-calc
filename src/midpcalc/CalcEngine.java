@@ -342,7 +342,7 @@ public final class CalcEngine
     public boolean begin;
 
     public Real.NumberFormat format;
-    public boolean degrees;
+    public boolean degrees, grad;
     public StringBuffer inputBuf;
     public boolean inputInProgress;
     Real rTmp,rTmp2,rTmp3,rTmp4;
@@ -442,6 +442,7 @@ public final class CalcEngine
         rTmp4  = new Real();
         inputBuf = new StringBuffer(40);
         degrees = false;
+        grad = false;
         begin = false;
         clearStack();
         monitorMode = MONITOR_NONE;
@@ -670,7 +671,7 @@ public final class CalcEngine
         // Settings
         out.writeShort(10+8*2+12*2);
         out.writeByte(stackHeight);
-        out.writeByte((degrees ? 1 : 0) + (begin ? 2 : 0));
+        out.writeByte((degrees ? 1 : 0) + (begin ? 2 : 0) + (grad ? 4 : 0));
         out.writeByte(format.base);
         out.writeByte(format.maxwidth);
         out.writeByte(format.precision);
@@ -809,6 +810,7 @@ public final class CalcEngine
             int flags = in.readByte();
             degrees            = (flags&1) != 0;
             begin              = (flags&2) != 0;
+            grad               = (flags&4) != 0;
             format.base        = in.readByte();
             format.maxwidth    = in.readByte();
             format.precision   = in.readByte();
@@ -1565,16 +1567,16 @@ public final class CalcEngine
     }
 
     private void toRAD(Real x) {
-        if (degrees) {
+        if (degrees || grad) {
+            x.div(degrees ? 180 : 200);
             x.mul(Real.PI);
-            x.div(180);
         }
     }
 
     private void fromRAD(Real x) {
-        if (degrees) {
+        if (degrees || grad) {
             x.div(Real.PI);
-            x.mul(180);
+            x.mul(degrees ? 180 : 200);
         }
     }
 
@@ -1625,6 +1627,7 @@ public final class CalcEngine
         boolean matrixOk  = false;
 
         Complex.degrees = degrees;
+        Complex.grad = grad;
 
         lastx.assign(x);
         lasty.assign(y);
@@ -1939,6 +1942,7 @@ public final class CalcEngine
                 y.abs(); // Remove annoying "-"
         }
         degrees = Complex.degrees;
+        grad = Complex.grad;
 
         rollDown(true);
         stack[STACK_SIZE-1].makeZero();
@@ -1996,7 +2000,7 @@ public final class CalcEngine
             case INVERFC: x.inverfc(); break;
             case NOT:     x.xor(Real.ONE_N); break;
             case TO_DEG:  x.div(Real.PI); x.mul(180); break;
-            case TO_RAD:  x.mul(Real.PI); x.div(180); break;
+            case TO_RAD:  x.div(180); x.mul(Real.PI); break;
             case TO_DHMS: x.toDHMS(); break;
             case TO_H:    x.fromDHMS(); break;
 
@@ -2154,6 +2158,7 @@ public final class CalcEngine
         boolean matrixOk = false;
 
         Complex.degrees = degrees;
+        Complex.grad = grad;
 
         lastx.assign(x);
         lasty.makeZero(); // Clear this in case it is a Matrix reference
@@ -2261,6 +2266,7 @@ public final class CalcEngine
             case CPLX_ARG:
                 if (complex) {
                     Complex.degrees = false;
+                    Complex.grad = false;
                     xi.atan2(x);
                     x.assign(xi);
                     xi.makeZero();
@@ -2516,6 +2522,7 @@ public final class CalcEngine
                 x.abs(); // Remove annoying "-"
         }
         degrees = Complex.degrees;
+        grad = Complex.grad;
 
         stackStr[0] = null;
         repaint(1);
@@ -4540,7 +4547,16 @@ public final class CalcEngine
                 break;
 
             case TRIG_DEGRAD:
-                degrees = !degrees;
+                if (degrees) {
+                    degrees = false;
+                    grad = true;
+                } else if (grad) {
+                    degrees = false;
+                    grad = false;
+                } else {
+                    degrees = true;
+                    grad = false;
+                }
                 break;
 
             case FREE_MEM:
@@ -5544,6 +5560,8 @@ public final class CalcEngine
                     if (graphCmd == PROG_DRAWPOL) {
                         if (degrees)
                             x.mul(360);
+                        else if (grad)
+                            x.mul(400);
                         else
                             x.mul(Real.PI2);
                         x.mul(Real.TEN); // 10 "rounds"

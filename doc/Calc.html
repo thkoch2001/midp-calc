@@ -697,7 +697,8 @@ href="Calc.html#Notes">notes</a> section.
   </ul>
   <li>More
   <ul>
-    <li><b>RAD/DEG</b>: Switch between radians and degrees as measure of angles
+    <li><b>R&rarr;D&rarr;G</b>: Rotate between radians, degrees and grads as
+      measure of angles. 2&pi; radians = 360 degrees = 400 grads.
     <li><b>&rarr;RAD</b>: Convert from degrees to radians
     <li><b>&rarr;DEG</b>: Convert from radians to degrees
     <li><b>&pi;</b>: Enter the number &pi;
@@ -708,7 +709,8 @@ href="Calc.html#Notes">notes</a> section.
       <li><b>p&rarr;r</b>: Convert polar coordinates (x=radius, y=angle) to
       rectangular (x,y)
       <li><b>atan<sub>2</sub></b>: Calculate the arctangent of y/x, in
-      the range -&pi; to &pi; (or -180 to 180 in DEG mode)
+      the range -&pi; to &pi; (or -180 to 180 in DEG mode, -200 to 200 in
+      GRAD mode)
       <li><b>hypot</b>: Calculate &#8730;<span
       style="text-decoration: overline;">x²+y²</span>
       <li><b>r&rarr;cplx</b>: Convert rectangular coordinates
@@ -722,7 +724,8 @@ href="Calc.html#Notes">notes</a> section.
       <li><b>abs</b>: Calculate absolute value (complex modulus) of
       complex number
       <li><b>arg</b>: Calculate angle (complex argument) of complex
-      number in the range -&pi; to &pi; (or -180 to 180 in DEG mode)
+      number in the range -&pi; to &pi; (or -180 to 180 in DEG mode,
+      -200 to 200 in GRAD mode)
       <li><b>conj</b>: Calculate complex conjugate
     </ul>
   </ul>
@@ -1141,17 +1144,17 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
       <ul>
         <li><b>ISG</b>: Increment, skip if greater. The specified memory
           location is interpreted as a counter, according to the format
-          <tt>iiiii.fffcc</tt>, where <tt>iiiii</tt> is the current counter
-          value, <tt>fff</tt> is the final counter value, and <tt>cc</tt> is
+          <tt>ccccc.fffii</tt>, where <tt>ccccc</tt> is the current counter
+          value, <tt>fff</tt> is the final counter value, and <tt>ii</tt> is
           the increment. When the operation is executed, the value of
-          <tt>iiiii</tt> is incremented by <tt>cc</tt>, and if <tt>iiiii</tt>
+          <tt>ccccc</tt> is incremented by <tt>ii</tt>, and if <tt>ccccc</tt>
           is then greater than <tt>fff</tt>, execution skips the next line of
-          the program and continues. If <tt>cc</tt> is 00, an increment of 01
+          the program and continues. If <tt>ii</tt> is 00, an increment of 01
           will be used instead.
         <li><b>DSE</b>: Decrement, skip if equal. The specified memory location
           is interpreted as a counter as with <b>ISG</b>, but instead of
-          incrementing, <tt>iiiii</tt> is decremented by <tt>cc</tt>, and if
-          <tt>iiiii</tt> is then equal to (or less than) <tt>fff</tt>,
+          incrementing, <tt>ccccc</tt> is decremented by <tt>ii</tt>, and if
+          <tt>ccccc</tt> is then equal to (or less than) <tt>fff</tt>,
           execution skips the next line of the program and continues.
       </ul>
       <li>Comparing x and y
@@ -1325,7 +1328,7 @@ Complex operations work strictly in radians, so when the input is
 complex (i.e. it has a non-zero imaginary part), operations involving
 the angle of the complex number (i.e. most trigonometric and
 power functions) will automatically cause a switch from degrees (DEG)
-to radians (RAD).<br>
+or grads (GRAD) to radians (RAD).<br>
 
 <br>
 Complex numbers are displayed on one line as e.g. 2+3i. Since two

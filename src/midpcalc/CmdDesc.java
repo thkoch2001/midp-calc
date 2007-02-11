@@ -143,7 +143,7 @@ public final class CmdDesc
             case CalcEngine.BASE_OCT:return brief ? "OCT" : "base/OCT";
             case CalcEngine.BASE_DEC:return brief ? "DEC" : "base/DEC";
             case CalcEngine.BASE_HEX:return brief ? "HEX" : "base/HEX";
-            case CalcEngine.TRIG_DEGRAD:return brief ? "RAD/DEG" : "trig/RAD«DEG";
+            case CalcEngine.TRIG_DEGRAD:return brief ? "R­D­G" : "trig/R­D­G";
             case CalcEngine.TO_DEG:return brief ? "­DEG" : "trig/­DEG";
             case CalcEngine.TO_RAD:return brief ? "­RAD" : "trig/­RAD";
             case CalcEngine.RANDOM:return brief ? "random" : "math/random";
