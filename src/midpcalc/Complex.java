@@ -82,7 +82,7 @@ public final class Complex
 
     public static void sinh(Real x, Real xi) {
         // "Alert" the user to the fact that we use strictly RAD
-        degrees = grads = false;
+        degrees = grad = false;
         tmp.assign(x);
         tmp2.assign(xi);
         x.sinh();
@@ -95,7 +95,7 @@ public final class Complex
 
     public static void cosh(Real x, Real xi) {
         // "Alert" the user to the fact that we use strictly RAD
-        degrees = grads = false;
+        degrees = grad = false;
         tmp.assign(x);
         tmp2.assign(xi);
         x.cosh();
@@ -157,7 +157,7 @@ public final class Complex
 
     public static void exp(Real x, Real xi) {
         // "Alert" the user to the fact that we use strictly RAD
-        degrees = grads = false;
+        degrees = grad = false;
         x.exp();
         tmp.assign(xi);
         xi.sin();
@@ -168,7 +168,7 @@ public final class Complex
   
     public static void ln(Real x, Real xi) {
         // "Alert" the user to the fact that we use strictly RAD
-        degrees = grads = false;
+        degrees = grad = false;
         tmp.assign(x);
         if (!xi.isZero())
             x.hypot(xi);
