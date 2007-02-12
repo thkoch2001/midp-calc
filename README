@@ -4,7 +4,7 @@ Setting up the Eclipse IDE build environment:
 Prerequisites:
 --------------
 
-Install Java J2SE JDK >= 1.5.0_07
+Install Java J2SE JDK >= 1.5.0
 Install WTK 1         >= 1.04           (for MIDP1 version)
 Install WTK 2         >= 2.2            (for MIDP2 version)
 Install WTK Nokia Series 40             (for Nokia version)
@@ -33,7 +33,7 @@ itself is located in, so that the extracted files end up in the correct
 subdirectories. In Windows, this can be achieved by running an archiving
 program such as WinZip. In Linux, you can use the following command:
 
-    $ tar zxf derived.tgz
+  $ tar zxf derived.tgz
 
 
 Starting Eclipse:
@@ -193,85 +193,44 @@ Setting up the Makefile build environment:
 Prerequisites:
 --------------
 
-TBD.
+Prerequisites for the Makefile build environment are more restrictive, if you
+expect things to work "out of the box" without any need to modify the
+Makefile, which contains many direct paths to where things are expected to be.
+It will probably only work in Linux.
+
+                                        Location:
+GNU bash                                /bin/sh
+GNU Make                                ${PATH}/make
+GCC                                     ${PATH}/gcc, ${PATH}/cpp
+Ant                                     ${PATH}/ant
+Java J2SE JDK         >= 1.5.0          ${PATH}/javac
+WTK 1                 == 1.04           ../../WTK104
+WTK 2                 == 2.2            ../../WTK2.2
+WTK Nokia Series 40   == 2.2            ../../WTK104/lib/classes.zip
+Antenna               == 0.9.14         ../../WTK104/lib/antenna-bin-0.9.14.jar
+Proguard              == 3.6            ../../WTK104/lib/proguard-3.6.jar
+Real.java             >= 1.09           ../real-java/Real.jpp
+
+It might work with earlier versions than those listed, but at least
+the listed versions worked for me.
+
+Locations where some of the specified software can be downloaded from:
+
+Java J2SE JDK         http://java.sun.com        (Java Development Kit)
+WTK 1                 http://java.sun.com        (J2ME Wireless Toolkit)
+WTK 2                 http://java.sun.com        (J2ME Wireless Toolkit)
+WTK Nokia             http://forum.nokia.com     (J2ME Wireless Toolkit)
+Ant                   http://ant.apache.org      (Java build tool)
+Proguard              http://proguard.sf.net     (Obfuscator)
+Antenna               http://antenna.sf.net      (MIDP Ant tasks)
+Real.java             http://real-java.sf.net    (Floatint point library)
 
 
 Building:
 ---------
 
-TBD.
-
-
-from old file:
-
-Building
-========
-
-Let me start by saying that one of the first tasks for those that don't fancy
-the Makefile approach should be to make a more general building process that
-enables building under IDE's and/or under other operating systems. The new
-building process should preferrably encompass all that is achieved in the
-current Makefile.
-
-The Makefile and build.xml Ant script enables compilation under Linux. To make
-this Makefile work without modification you need to set up your system
-accordingly:
-
-1) You need a GNU Compiler package containing make (or gmake), gcc, gcj and
-   cpp. You can use javac instead of gcj by modifying the Makefile, but it is
-   much slower.
-
-2) You need J2SE SDK from http://java.sun.com. $JAVA_HOME should should be set
-   to the location of the SDK, and $JAVA_HOME/bin should be added to the path.
-
-3) You need J2ME Wireless Toolkit version 1.04 from
-   http://java.sun.com, installed in ../../WTK104 relative to this file.
-
-3b) You need J2ME Wireless Toolkit version 2.2 from
-   http://java.sun.com, installed in ../../WTK2.2 relative to this file.
-
-3c) You need Nokia Wireless Toolkit version 2.2 (not 2.0) installed in
-   ../../Nokia/Devices/xxx relative to this file. Modify the WTK_N variable in
-   Makefile accordingly.
-
-4) You need Apache Ant installed, from http://ant.apache.org. $ANT_HOME should
-   be set to the location of Ant, and $ANT_HOME/bin should be added to the
-   path.
-
-5) You need the ProGuard obfuscator from http://proguard.sourceforge.net. The
-   library file proguardXXX/lib/proguard-X.X.jar must be available to Ant, and
-   could for convenience be placed in ../../WTK104/lib or $ANT_HOME/lib.
-
-6) You need the Antenna Ant task package from
-   http://antenna.sourceforge.net. The library file, antenna-bin-XXX.jar must
-   be available to Ant, and could for convenience be placed in
-   ../../WTK104/lib or $ANT_HOME/lib.
-
-
-7) The project depends on Real.jpp from
-   http://sourceforge.net/projects/real-java. If you simply want to download
-   the file, the file should be placed in a directory named "real-java" on the
-   same level as the midp-calc directory, i.e. ../real-java/Real.jpp relative
-   to this file.  Alternatively, to check out the real-java project with
-   anonymous CVS from sourceforge, do the following:
-
-     $ cd ..              # i.e. get to the directory containing midp-calc
-     $ cvs -d:pserver:anonymous@cvs.sf.net:/cvsroot/real-java co real-java
-
-At this point, you should be able to compile the project by executing the
-command:
-
-     $ make
-
-When all else fails -- you're not on Linux and you don't have access to a GNU
-compiler package, and there is no concievable way of generating the files
-Real.java, GFontBase.java and Calc.jad, there is a compressed tar file named
-"derived.tgz" containing these files. The contents of this archive may not be
-up to date, and you should of course not _modify_ these files and commit them
-back into CVS, unless you have changed the files that the archive depends on
-and are updating the archive. The files are included in the archive as a last
-resort or a temporary solution until you have things set up.
-
+  $ cd <this directory>
+  $ make
 
 
 Development Guidelines
@@ -284,34 +243,36 @@ following guidelines first:
    64kB for the jar file containing an application. (After version 3.00, 
    we don't care any more.)
 
-2) Make the least impact on the code: Unless there is a very good reason for
-   it, do not change or refactor large portions of the code simultaneously.
-   Exempt from this rule are large changes that actually decrease the size of
-   the application, and code changes that do not change the compiled result,
-   such as adding comments and renaming identifiers to increase clarity.
-
-3) Don't break compatibility: If you are making a fix to get the program
+2) Don't break compatibility: If you are making a fix to get the program
    running on a different hardware, make sure that the code still works on all
    the hardware that it is already working on, and not just the new hardware.
 
-4) Don't change indenting: I use a BSD-like brace style with 2 spaces of
-   indentation for subblocks. Under no circumstances change the indentation or
-   brace style of large portions of the code using your own prefferred
-   indentation. Under no circumstances insert TAB characters in the code or
-   replace all occurrances of X consecutive spaces with one TAB.
+3) To avoid conflicts arising from concurrent modification by two independent
+   developers, try to make the least impact on the code: Unless there is a
+   very good reason for it, do not change or refactor large portions of the
+   code simultaneously.  Exempt from this rule are large changes that actually
+   decrease the size of the application, and code changes that do not change
+   the compiled result, such as adding comments and renaming identifiers to
+   increase clarity.
 
-5) LEARN CVS. CVS is a useful tool that enables several people to develop on
+3b) Don't change indenting: The current code uses a BSD-like brace style with 4
+   spaces of indentation for subblocks. Under no circumstances change the
+   indentation or brace style of large portions of the code using your own
+   prefferred indentation. Under no circumstances insert TAB characters in the
+   code or replace all occurrances of X consecutive spaces with one TAB.
+
+3c) Always do "cvs diff <file>" before committing. You need to see what you
+   have done to be able to make a good commit comment. If you accidently
+   changed indentation, inserted TAB's or switched CR/LF mode on the entire
+   file it will show in the diff and you may be able to save face in time.
+   The smaller the diff, the better.
+
+4) LEARN CVS. CVS is a useful tool that enables several people to develop on
    the same project simultaneously. If you are a member of the delveoper team,
    your contribution will only be accepted in the form of CVS commits, so
    learn how to use it. The most important rule to avoid confusion: Only
    modify files in a CVS controlled directory, never take files out of the CVS
    directory to modify them.
-
-6) Always do "cvs diff <file>" before committing. You need to see what you
-   have done to be able to make a good commit comment. If you accidently
-   changed indentation, inserted TAB's or switched CR/LF mode on the entire
-   file it will show in the diff and you may be able to save face in time.
-   The goal should be to make as small a diff as possible.
 
 
 Regards,
