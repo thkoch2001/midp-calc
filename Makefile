@@ -166,7 +166,8 @@ applet/target/CalcApplet.jar: applet/src/midpcalc/CalcApplet.java $(JAVAFILES) m
 	cd applet && ant -buildfile build.xml
 
 clean:
-	rm -rf $(TARGETS) midp1/target midp2/target nokia/target applet/target src/midpcalc/Real.java src/midpcalc/GFontBase.java fonts/pgm2java resources/*.dat *~ .\#* midp/*~ midp/.\#* midp-*.tgz
+	rm -rf $(TARGETS) midp1/target midp2/target nokia/target applet/target src/midpcalc/Real.java src/midpcalc/GFontBase.java fonts/pgm2java resources/*.dat midp-*.tgz
+	find . -name \*~ -delete
 
 derived.tgz: src/midpcalc/Real.java src/midpcalc/GFontBase.java midp1/Calc.jad midp2/CalcMIDP2.jad nokia/CalcNokia.jad
 	tar czf $@ $^ resources/[a-d].dat
