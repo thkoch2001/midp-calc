@@ -1,5 +1,6 @@
 SHELL = /bin/sh
 VERSION = 4.00
+SHORTVERSION = $(subst .,,$(VERSION))
 TARGETS = midp1/Calc.jad \
           midp1/target/Calc.jar \
           midp2/CalcMIDP2.jad \
@@ -98,7 +99,7 @@ midp1/Calc.jad: Makefile
 	echo "MIDlet-Vendor: Roar Lauritzsen"                    >> $@
 	echo "MIDlet-Version: $(VERSION)"                        >> $@
 	echo "MIDlet-Description: Scientific RPN Calculator"     >> $@
-	echo "MIDlet-Icon: /Calc.png"                            >> $@
+	echo "MIDlet-Icon: /resources/Calc.png"                  >> $@
 	echo "MIDlet-Info-URL: $(BASEURL)/Calc.html"             >> $@
 	echo "MIDlet-Data-Size: 2048"                            >> $@
 	echo "MIDlet-Jar-URL: $(BASEURL)/Calc.jar"               >> $@
@@ -106,14 +107,14 @@ midp1/Calc.jad: Makefile
 	echo "MIDletX-LG-Contents: G7100"                        >> $@
 	echo "MicroEdition-Profile: MIDP-1.0"                    >> $@
 	echo "MicroEdition-Configuration: CLDC-1.0"              >> $@
-	echo "MIDlet-1: Calc, /Calc.png, midpcalc.Calc"          >> $@
+	echo "MIDlet-1: Calc, /resources/Calc.png, midpcalc.Calc" >> $@
 
 midp2/CalcMIDP2.jad: Makefile
 	echo "MIDlet-Name: Calc"                                 >  $@
 	echo "MIDlet-Vendor: Roar Lauritzsen"                    >> $@
 	echo "MIDlet-Version: $(VERSION)"                        >> $@
 	echo "MIDlet-Description: Scientific RPN Calculator"     >> $@
-	echo "MIDlet-Icon: /Calc.png"                            >> $@
+	echo "MIDlet-Icon: /resources/Calc.png"                  >> $@
 	echo "MIDlet-Info-URL: $(BASEURL)/Calc.html"             >> $@
 	echo "MIDlet-Data-Size: 2048"                            >> $@
 	echo "MIDlet-Jar-URL: $(BASEURL)/CalcMIDP2.jar"          >> $@
@@ -121,14 +122,14 @@ midp2/CalcMIDP2.jad: Makefile
 	echo "MIDletX-LG-Contents: G7100"                        >> $@
 	echo "MicroEdition-Profile: MIDP-2.0"                    >> $@
 	echo "MicroEdition-Configuration: CLDC-1.0"              >> $@
-	echo "MIDlet-1: Calc, /Calc.png, midpcalc.Calc"          >> $@
+	echo "MIDlet-1: Calc, /resources/Calc.png, midpcalc.Calc" >> $@
 
 nokia/CalcNokia.jad: Makefile
 	echo "MIDlet-Name: Calc"                                 >  $@
 	echo "MIDlet-Vendor: Roar Lauritzsen"                    >> $@
 	echo "MIDlet-Version: $(VERSION)"                        >> $@
 	echo "MIDlet-Description: Scientific RPN Calculator"     >> $@
-	echo "MIDlet-Icon: /Calc.png"                            >> $@
+	echo "MIDlet-Icon: /resources/Calc.png"                  >> $@
 	echo "MIDlet-Info-URL: $(BASEURL)/Calc.html"             >> $@
 	echo "MIDlet-Data-Size: 2048"                            >> $@
 	echo "MIDlet-Jar-URL: $(BASEURL)/CalcNokia.jar"          >> $@
@@ -136,7 +137,7 @@ nokia/CalcNokia.jad: Makefile
 	echo "MIDletX-LG-Contents: G7100"                        >> $@
 	echo "MicroEdition-Profile: MIDP-1.0"                    >> $@
 	echo "MicroEdition-Configuration: CLDC-1.0"              >> $@
-	echo "MIDlet-1: Calc, /Calc.png, midpcalc.Calc"          >> $@
+	echo "MIDlet-1: Calc, /resources/Calc.png, midpcalc.Calc" >> $@
 
 midp1/target/Calc.jar: $(JAVAFILES) midp1/src/midpcalc/MyCanvas.java midp1/Calc.jad resources/Calc.png
 	rm -rf midp1/target
@@ -175,13 +176,15 @@ derived.tgz: src/midpcalc/Real.java src/midpcalc/GFontBase.java midp1/Calc.jad m
 midp-calc-$(VERSION)-src.tgz: $(JAVAFILES) $(MIDPFILES) $(FONTS) README Makefile midp1/src/midpcalc/MyCanvas.java midp1/build.xml midp1/.project midp1/.classpath midp1/.settings/org.eclipse.* midp2/src/midpcalc/MyCanvas.java midp2/build.xml midp2/.project midp2/.classpath midp2/.settings/org.eclipse.* nokia/src/midpcalc/MyCanvas.java nokia/build.xml nokia/.project nokia/.classpath nokia/.settings/org.eclipse.* applet/src/midpcalc/CalcApplet.java applet/build.xml applet/JSObject.jar applet/.project applet/.classpath applet/.settings/org.eclipse.* resources/Calc.png fonts/pgm2java.c derived.tgz
 	tar czf $@ $^
 
-publish: $(TARGETS) midp-calc-$(VERSION)-src.tgz
-	cp midp1/target/Calc.jar midp1/target/Calc$(subst .,,$(VERSION)).jar
-	cp midp2/target/CalcMIDP2.jar midp2/target/CalcMIDP2$(subst .,,$(VERSION)).jar
-	cp nokia/target/CalcNokia.jar nokia/target/CalcNokia$(subst .,,$(VERSION)).jar
-	scp $(TARGETS) midp1/target/Calc$(subst .,,$(VERSION)).jar midp2/target/CalcMIDP2$(subst .,,$(VERSION)).jar nokia/target/CalcNokia$(subst .,,$(VERSION)).jar $(HTMLFILES) doc/Calc.ico shell.sf.net:/home/groups/m/mi/midp-calc/htdocs
+midp-calc-$(VERSION).tgz: $(TARGETS) $(HTMLFILES) $(IMAGES)
+	tar czf $@ -C midp1 Calc.jad -C target Calc.jar -C ../../midp2 CalcMIDP2.jad -C target CalcMIDP2.jar -C ../../nokia CalcNokia.jad -C target CalcNokia.jar -C ../../applet CalcApplet.html -C target CalcApplet.jar -C ../../doc Calc.html Calc-log.html Calc-prog.html images/Calc.jpg images/Calc_menu0.gif images/Calc_menu1.gif images/Calc_menu2.gif images/Calc_menu3.gif images/Calc_menu4.gif images/Calc_menu5.gif images/Calc_menu6.gif images/Calc_menu7.gif
+
+publish: $(TARGETS) midp-calc-$(VERSION).tgz midp-calc-$(VERSION)-src.tgz
+	cp midp1/target/Calc.jar midp1/target/Calc$(SHORTVERSION).jar
+	cp midp2/target/CalcMIDP2.jar midp2/target/CalcMIDP2$(SHORTVERSION).jar
+	cp nokia/target/CalcNokia.jar nokia/target/CalcNokia$(SHORTVERSION).jar
+	scp $(TARGETS) midp1/target/Calc$(SHORTVERSION).jar midp2/target/CalcMIDP2$(SHORTVERSION).jar nokia/target/CalcNokia$(SHORTVERSION).jar $(HTMLFILES) doc/Calc.ico shell.sf.net:/home/groups/m/mi/midp-calc/htdocs
 	scp $(IMAGES) shell.sf.net:/home/groups/m/mi/midp-calc/htdocs/images
-	tar czf midp-calc-$(VERSION).tgz $(TARGETS) $(HTMLFILES) $(IMAGES)
 	@echo ""
 	@echo "***************************************************************"
 	@echo "To make the release available on SourceForge, do the following:"

@@ -12,19 +12,22 @@ MIDP devices</h1>
 
 <h2>Changelog:</h2>
 
-<h3><a href="Calc400.jar">Version 4.00</a>, 2007-02-10, (93kB)</h3>
+<h3><a href="Calc400.jar">Version 4.00</a>,
+<a href="CalcMIDP2400.jar">2</a>,
+<a href="CalcNokia400.jar">N</a>,
+ 2007-02-21, (93kB)</h3>
 
 <ul>
-  <li>Added grads as measure of angles, in addition to radians and degrees.
-  <li>Added program flow operations LBL, GTO, GSB, RTN, STOP, ISG and DSE.
+  <li>Added grads as measure of angles, in addition to radians and degrees
+  <li>Added program flow operations LBL, GTO, GSB, RTN, STOP, ISG and DSE
   <li>Long-running programs get a "screen saver" view with an option to
-    halt execution.
+    halt execution
   <li>The old comparison operations x&lt;y?, x&lt;0?, etc. have been
     reimplemented for more traditional usage. Instead of pushing 0 or 1 on the
     stack, these operations now skip the next line if the result of the
     comparison is false. Programs written for a previous verision of Calc that
-    use these operations will not work as intended in this version.
-  <li>The source code has been restructured into a directory structure more
+    use these operations <i>will not work as intended</i> in this version.
+  <li>The source code has been reorganized into a directory structure more
     suitable for a Java IDE. Project files for the Eclipse Java IDE have been
     added.
 </ul>
