@@ -207,3 +207,5 @@ publish: $(TARGETS) midp-calc-$(VERSION).tgz midp-calc-$(VERSION)-src.tgz
 	@echo "Add the files midp-calc-$(VERSION)*.tgz"
 	@echo "Set Processor: Platform-Independent, File Type Source .gz, .gz"
 	@echo ""
+	@echo "Update entry at http://www.getjar.com/products/6371/Calc"
+	@echo ""
