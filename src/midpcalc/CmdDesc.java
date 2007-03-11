@@ -266,7 +266,7 @@ public final class CmdDesc
             case CalcEngine.STAT_RCL:return "RCL";
             case CalcEngine.STAT_STO:return "STO";
             case CalcEngine.MATRIX_SIZE:return brief ? "size" : "matrix/size";
-            case CalcEngine.MATRIX_AIJ:return brief ? "a_ij" : "matrix/a_ij";
+            case CalcEngine.MATRIX_AIJ:return brief ? "a_yx" : "matrix/a_yx";
             case CalcEngine.TRANSP_CONJ:return brief ? "~A~^T" : "matrix/transp conj";
             case CalcEngine.GUESS:return brief ? "guess" : "conv/guess";
             case CalcEngine.INVERFC:return brief ? "erfc^-1" : "math/prob/erfc^-1";
@@ -300,6 +300,10 @@ public final class CmdDesc
             case CalcEngine.STOP:return brief ? "STOP" : "prog/flow/STOP";
             case CalcEngine.DSE:return brief ? "DSE" : "prog/flow/DSE";
             case CalcEngine.ISG:return brief ? "ISG" : "prog/flow/ISG";
+            case CalcEngine.MATRIX_ROW:return brief ? "row_x" : "matrix/row_x";
+            case CalcEngine.MATRIX_COL:return brief ? "col_x" : "matrix/col_x";
+            case CalcEngine.MATRIX_MAX:return brief ? "a_max" : "matrix/a_max";
+            case CalcEngine.MATRIX_MIN:return brief ? "a_min" : "matrix/a_min";
             default:
                 return "[nop]";
         }

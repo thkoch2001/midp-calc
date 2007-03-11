@@ -289,6 +289,10 @@ public final class CalcEngine
     public static final int STOP           = 277;
     public static final int DSE            = 278;
     public static final int ISG            = 279;
+    public static final int MATRIX_ROW     = 280;
+    public static final int MATRIX_COL     = 281;
+    public static final int MATRIX_MIN     = 282;
+    public static final int MATRIX_MAX     = 283;
 
     public static final int MATRIX_STO     = 512; // Special bit pattern
     public static final int MATRIX_RCL     = 768; // Special bit pattern
@@ -2504,6 +2508,31 @@ public final class CalcEngine
                     repaintAll();
                 }
                 break;
+
+            case MATRIX_ROW: {
+                Matrix M = getCurrentMatrix();
+                int row = x.toInteger()-1;
+                if (M == null || complex || matrix) {
+                    x.makeNan();
+                    matrixOk = false;
+                } else {
+                    matrix = matrixOk = true;
+                    X = M.subMatrix(row, 0, 1, M.cols);
+                }
+                break;
+            }
+            case MATRIX_COL: {
+                Matrix M = getCurrentMatrix();
+                int col = x.toInteger()-1;
+                if (M == null || complex || matrix) {
+                    x.makeNan();
+                    matrixOk = false;
+                } else {
+                    matrix = matrixOk = true;
+                    X = M.subMatrix(0, col, M.rows, 1);
+                }
+                break;
+            }
         }
 
         if (matrix) {
@@ -3951,6 +3980,7 @@ public final class CalcEngine
             case ASINH: case ACOSH: case ATANH:
             case ROUND: case CEIL:  case FLOOR: case TRUNC: case FRAC:
             case XCHGMEM:
+            case MATRIX_ROW: case MATRIX_COL:
                 unaryComplexMatrix(cmd,param);
                 break;
 
@@ -4418,6 +4448,20 @@ public final class CalcEngine
                     row = (param>>16)&0xffff;
                     M.getElement(row,col,rTmp,rTmp2);
                     push(rTmp,rTmp2);
+                }
+                break;
+
+            case MATRIX_MAX:
+            case MATRIX_MIN:
+                M = getCurrentMatrix();
+                if (M == null) {
+                    push(Real.NAN,null);
+                } else {
+                    if (cmd == MATRIX_MAX)
+                        M.max(rTmp);
+                    else
+                        M.min(rTmp);
+                    push(rTmp,null);
                 }
                 break;
 

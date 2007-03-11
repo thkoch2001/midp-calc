@@ -534,6 +534,42 @@ public final class Matrix
             Complex.sqrt(norm2,norm2I);
         }
     }
+    
+    public void max(Real max) {
+        if (isInvalid(this) || DI != null) {
+            max.makeNan();
+            return;
+        }
+        max.makeInfinity(1);
+        for (int c=0; c<cols; c++)
+            for (int r=0; r<rows; r++) {
+                if (D[c][r].isNan()) {
+                    max.makeNan();
+                    return;
+                }
+                if (D[c][r].greaterThan(max)) {
+                    max.assign(D[c][r]);
+                }
+            }
+    }
+
+    public void min(Real min) {
+        if (isInvalid(this) || DI != null) {
+            min.makeNan();
+            return;
+        }
+        min.makeInfinity(0);
+        for (int c=0; c<cols; c++)
+            for (int r=0; r<rows; r++) {
+                if (D[c][r].isNan()) {
+                    min.makeNan();
+                    return;
+                }
+                if (D[c][r].lessThan(min)) {
+                    min.assign(D[c][r]);
+                }
+            }
+    }
 
     public static Matrix concat(Matrix A, Matrix B) {
         if (isInvalid(A) || isInvalid(B) || A.rows != B.rows)

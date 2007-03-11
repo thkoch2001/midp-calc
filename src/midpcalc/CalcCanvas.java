@@ -589,7 +589,13 @@ public final class CalcCanvas
                 new Menu("more",CmdDesc.TITLE_SKIP,new Menu[] {
                     new Menu(CalcEngine.ABS),
                     new Menu(CalcEngine.MATRIX_SIZE),
-                    new Menu(CalcEngine.MATRIX_AIJ),
+                    new Menu(CalcEngine.MATRIX_ROW),
+                    new Menu(CalcEngine.MATRIX_COL),
+                    new Menu("more",CmdDesc.TITLE_SKIP,new Menu[] {
+                        new Menu(CalcEngine.MATRIX_AIJ),
+                        new Menu(CalcEngine.MATRIX_MAX),
+                        new Menu(CalcEngine.MATRIX_MIN),
+                    }),
                 }),
             }),
         }),
