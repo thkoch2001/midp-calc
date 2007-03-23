@@ -29,7 +29,24 @@ before running, it is useful to push some dummy arguments on the stack
 before starting to record the program, to be able to follow the
 programming with actual data.<br><br>
 
-<h2>Drawing a function</h2>
+<h2>Index of programming examples</h2>
+<ol>
+<li><a href="#fun">Drawing a function</a></li>
+<li><a href="#quadratic">Quadratic equation</a></li>
+<li><a href="#solver">Solving an equation for different variables</a></li>
+<li><a href="#dmsconv">DDD.MMSS conversions</a></li>
+<li><a href="#biorthm">Biorhythms</a></li>
+<li><a href="#curvefit">Advanced curve fitting example</a></li>
+<li><a href="#Spline">Spline drawing</a></li>
+<li><a href="#Circle">Plotting a circle</a></li>
+<li><a href="#Sphere">Plotting a sphere</a></li>
+<li><a href="#Mandelbrot">Mandelbrot fractals</a></li>
+<li><a href="#Simplex">Linear Programming</a></li>
+<li><a href="#curves">Plotting curves</a></li>
+</ol>
+
+
+<h2><a id="fun" name="fun">Drawing a function</a></h2>
 
 Many people have requested a more thorough explanation of how to do such a
 simple thing as drawing a function. To recap the long and perhaps tedious
@@ -127,7 +144,7 @@ calculated f(3)=8.<br>
 To draw the function, follow the steps above, but select program f2 instead of
 f1 for drawing.<br>
 
-<h2>Quadratic equation</h2>
+<h2><a id="quadratic" name="quadratic">Quadratic equation</a></h2>
 
 This program solves a second-order polynomial of the type<br>
 
@@ -172,7 +189,7 @@ prog/finish              ; program finished
 </pre><br>
 
 
-<h2>Solving an equation for different variables</h2>
+<h2><a id="solver" name="solver">Solving an equation for different variables</a></h2>
 
 Assume you have an equation having different variables, for example
 the equation describing an accelerated motion from a starting height
@@ -310,7 +327,7 @@ need a pice of paper here.<br>
 <i>Submitted by Goetz Schwandtner</i><br><br>
 
 
-<h2>DDD.MMSS conversions</h2>
+<h2><a id="dmsconv" name="dmsconv">DDD.MMSS conversions</a></h2>
 
 The built-in conversions to and from the DH.MS date-time
 representation is quite impractical if you are calculating map or
@@ -364,7 +381,7 @@ will magically turn into the sign "&rarr;" in the menu. In that case
 you should call your programs "»D.MS", "»D", and "D.MS+" for clarity.
 <br><br>
 
-<h2>Biorhythms</h2>
+<h2><a id="biorthm" name="biorthm">Biorhythms</a></h2>
 
 The theory of <a
 href="http://en.wikipedia.org/wiki/Biorhythms">biorhythms</a> is
@@ -430,7 +447,7 @@ your intellectual cycle, with zero on the x axis representing current
 time.<br><br>
 
 
-<h2>Advanced curve fitting example</h2>
+<h2><a id="curvefit" name="curvefit">Advanced curve fitting example</a></h2>
 
 Suppose we have a set of data observations and we want to find curve
 that fits the points:<br>
@@ -632,6 +649,353 @@ order continuous. A B-spline does not interpolate the control points
 continuous, and therefore often smoother.
 <br><br>
 
+<h2><a id="Circle" name="Circle">Plotting a circle</a></h2>
+
+There are several possibilites to plot a circle or ellipse, using 
+different plotting commands. 
+
+<ol>
+<li> Polar graph, circle centered at (0,0):
+<pre>
+prog/new/"a" 
+clear ; To remove input (phi) 
+1 ; Radius 
+prog/finish 
+ 
+-1 
+1 
+-1 
+1 
+prog/draw/r=f(phi)/"a" 
+</pre>
+</li>
+
+<li> Parametric curve, in this case an ellipse centered at (5,5):
+ 
+<pre>
+prog/new/"b" 
+2 
+trig/pi 
+* 
+* ; 2*pi*t 
+ENTER 
+trig/sin 
+3 ; y radius 
+* 
+5 ; y center 
++ 
+stack/x<>y 
+trig/cos 
+4 ; x radius 
+* 
+5 ; x center 
++ 
+trig/coord/r->cplx 
+prog/finish 
+ 
+0 
+10 
+0 
+10 
+prog/draw/z=f(t)/"b" 
+</pre> 
+</li>
+
+<li>  Positive and negative halves combined into one complex number. This
+exploits the fact that prog/draw/y=f(x) draws the imaginary part of a complex
+number in a different colour. 
+
+<pre>
+prog/new/"c" 
+math/x² 
++/- 
+1 
++ 
+math/sqrt(x) 
+ENTER 
++/- 
+trig/cord/r->cplx 
+prog/finish 
+ 
+-1 
+1 
+-1 
+1 
+prog/draw/y=f(x)/"c" 
+</pre> 
+</li>
+
+<li> Function result alternating between positive and negative halves. This
+exploits the fact that points on the graph appear semi-randomly, so you might
+draw any number of curves simultaneously by alternating between them. 
+<pre>
+0 
+mem/STO 0 
+ 
+prog/new/"d" 
+math/x² 
++/- 
+1 
++ 
+math/sqrt(x) 
+ENTER 
++/- 
+mem/RCL 0 
++/- 
+1 
++ 
+mem/STO 0 
+prog/util/select 
+prog/finish 
+ 
+-1 
+1 
+-1 
+1 
+prog/draw/y=f(x)/"d" 
+</pre>
+</li>
+
+<li><a href="#curves">Advanced example</a> using the f(z)=z plot.</li>
+
+
+<h2><a id="Sphere" name="Sphere">Plotting a sphere</a></h2>
+
+A simple example for demonstrating how to plot 3D graphs with the f(z)=z plot,
+i.e. functions with a tuple (x,y) as input and a real value f(x,y) as output, 
+is a unit sphere. In the f(z)=z plot, the angle of the complex number f(z)
+determines the color for each point, while abs(f(z)) determines the
+intensity. If the function f(z) has only real function values, then the
+positive values will be shades of green and the negative values shades of
+magenta. It is a good idea to reduce the values plotted to the interval [0,1], 
+since the colors in the intervals [j,j+1] for any natural number j are
+identical and it is not easy to determine the point with the maximal value
+then. So an appropriate scaling is necessary which depends on the problem.
+
+<br>We use the function f(z)=sqrt(max(0,(1-abs(z)²))), which displays a nice
+unit sphere:<br>
+
+<br><b>Program listing:</b>
+
+<pre>
+prog/new "Spher"
+trig/cplx/abs   ; be sure to have a complex number on stack
+                ; entry x before!
+math/simple/x^2
+1
+-
++/-
+0
+prog/util/max   
+math/simple/&#8730;<span style="text-decoration: overline;">x</span>
+prog/finish
+</pre>   
+
+Plot this with the following bounds and command: 
+
+<pre>
+-1 1 -1 1 prog/draw/f(z)=z/"Spher"
+</pre>
+
+<h2><a id="Mandelbrot" name="Mandelbrot">Mandelbrot fractals</a></h2>
+
+Another nice example for the f(z)=z plotting mode is plotting a Madelbrot
+fractal. It also demonstrates the simple usage of the <b>DSE</b> loop command.
+
+Remember to turn on mode/monitor/prog when programming this, it will make it
+easier to spot and fix programming errors. (Consult the manual to learn more)
+<br>
+
+<img src="images/Mandelbrot.gif" border=0 align=right alt="">
+ 
+<br><b>Program listing:</b>
+
+<pre> 
+prog/new/"mbrot" 
+15              ; number of loop iterations
+mem/STO 0       ; store in memory register 0
+clear 
+ENTER           ; create a value of parameter z
+prog/flow/LBL 0 ; beginning of repeated program part
+math/simple/x²
+stack/RCL st#/1 ; recall z
++
+prog/flow/DSE 0 ; exit loop after 15 iterations 
+prog/flow/GTO 0 ; jump to beginning of loop
++
+math/simple/x²
+trig/cplx/abs
+math/pow/log<sub>2</sub>
+math/pow/log<sub>2</sub>
+ENTER
+16
+/
+trig/tanh
+trig/coord/r->cplx
+prog/finish
+</pre>
+
+The calculations at the end of the program approximates the number of iterations from log(log(|z|)), then calculates a new complex number based on this, to give the resulting image some nice colors. 
+ 
+You can draw it using something like this: <br>
+ 
+<pre>
+-2 1 -1.5 1.5 prog/draw/z=f(z)/"mbrot"
+</pre> 
+
+<h2><a id="Simplex" name="Simplex">Linear Programming</a></h2>
+
+Assume you are given a system of linear inequalities in two variables,
+e.g. you have two kinds of resources at hand and want to produce some
+products from them, but you have to maintain the capacity constraints of
+your factory machinery. You want to know what the maximum profit is. I
+leave it to your imagination to come to this abstract form of the problem.
+
+<pre>
+Maximize x+y
+subject to inequalities: x+2y &le; 70, 2x+y &le; 50, x&ge;0, y&ge;0
+</pre>
+
+To solve this, we first transfer all inequalities to the form
+a1*x+a2*y&le;b, where we can change &ge; to &le; by multiplying with -1. We can
+then then collect all these inequalities into a matrix A, each line
+being one inequaliy: A*(x,y) &le; b
+
+This leads to the following standard form: max c*(x,y), s.t. A*(x,y)&le;b,
+with c and b vectors and A a matrix over the reals.
+
+<pre>
+    / 1  2 \       / 70 \
+A = | 2  1 | , b = | 50 | , c = ( 1, 1 )
+    | -1 0 |       |  0 |
+    \ 0 -1 /       \  0 /
+</pre>
+
+We will now plot the set of solutions to the inequalities using the
+f(z)=z plot function as a green area, where bright green stands for big
+values of x+y and dark green for small values of x+y, the function we
+want to maximize. First enter the matrixes above and store A in memory
+4, b in memory 5 and c in memory 6.<br>
+
+<img src="images/Simplex.gif" border=0 align=right alt="">
+
+<br><b>Program listing:</b>
+
+<pre>
+prog/new/"Simpl"                ; shorthand for "Simplex"  :) 
+trig/complex/cplx->r            ; split stack x+yi into x and y
+matrix/stack                    ; transform into vector [x,y]
+ENTER                           ; copy for later usage
+mem/RCL 4                       ; A
+stack/x<->y
+*                               ; A*[x,y] computed
+mem/RCL 5                       ; b
+-                               ; transform to A*[x,y]-b <= 0
+matrix/a_max                    ; check if all components/lines ...
+stack/x<->y
+clear
+prog/flow/x<=0                  ; ... satisfy <= 0
+prog/flow/GTO 1                 ; if yes, goto calculation of c*x
+clear                           ; case: some ineqality not satisfied
+clear
+0                               ; ... hence function result 0
+prog/flow/STOP
+prog/flow/LBL 1                 ; case: all ineq. satisfied
+clear
+mem/RCL 6                       ; c
+stack/x<->y
+*                               ; calculate c*x
+0.025
+*                               ; scale to 0.025*c*x    -> (1)
+prog/finish
+</pre>
+
+Then you may plot the simplex by 
+
+<pre>
+-5 40 -5 40 prog/plot/f(z)=z/"Simpl"
+</pre>
+
+Pick the corner of the green area which has the brightest color
+-- that will be your solution. More information about solving linear
+programs can be found in the literature, including algorithms for cases
+with more than 2 variables. <br>
+
+<br>
+<b>Note</b>: The scaling (1) is used to reduce the values plotted to the
+interval [0,1], since the colors in the intervals [j,j+1] for any
+natural number j are identical and it is not easy to determine the point
+with the maximal value then. So an appropriate scaling is necessary
+which depends on the problem.
+
+
+<h2><a id="curves" name="curves">Plotting curves</a></h2>
+
+Some curves are the a set of zeros of a two dimensional function, like
+x²+3y²-2x+3y-1=0. We show how to plot this equation using the f(z)=z plot. But
+instead of plotting f(x,y)=0, we use the following form for our example:
+
+<center><b>| x²+3y²-2x+3y-1 | &lt; &epsilon;</b></center>
+
+where we choose &epsilon; (epsilon) to be some suitable value. We will use &epsilon;=0.1 here.  
+ 
+Ok, first type in the function (it is useful to put something like 3+4i on the stack first, 
+so you can have a look at what happens if running the program for x=3 and y=4). <br>
+ 
+<br><b>Program listing:</b>
+
+<pre>
+prog/new "curve"  
+monitor/prog/4       ; not needed, but useful if you want to see what you typed :) 
+trig/complex/cplx->r ; transform x+iy input to x and y coords 
+ENTER                ; now we start to compute x^2+3y^2-2x+3y-1  
+2 
+* 
+stack/x<->y 
+x^2 
++                    ; we have x²+2x on stack 
+stack/x<->y          ; now the stuff involving y ... 
+ENTER 
+3 
+* 
+stack/x<->y 
+x^2 
+3 
+* 
++                    ; now we have 3y²+3y 
++ 
+-1 
++                    ; now we have x²+2x+3y²+3y-1 
+prog/util/abs 
+0.1                  ; epsilon 
+prog/flow/x>y?       ; compare if | ... | < 0.1 
+prog/flow/GTO 1      ; it WAS smaller 0.1 
+clear 
+clear 
+0                    ; in case | ... | &ge; 0.1, function output will be 0 
+prog/flow/STOP
+prog/flow/LBL 1  
+clear 
+clear 
+1                    ; in case | ... | < 0.1, function output will be 1 
+prog/finish
+</pre>
+ 
+Now we plot a nice curve (ellipse, that is) by  
+
+<pre> 
+-3 1 -2 1 prog/draw/z=f(z)/"curve" 
+</pre>
+
+Depending on your device's speed you will sooner or later see the curve, being  
+refined from a rather bulky version in the beginning. Remember that you can  
+redraw the coordinate system by pressing 0 in graph mode. 
+ 
+If you want to have a finer version, you may decrese epsilon to a smaller value. 
+The smaller the value of epsilon is, the better the curve looks and the more accurate 
+the plot is. But ... if it is too small, you will have to wait ages, before something  
+starts appearing, maybe forever. 
+  
 
 <h2>More</h2>
 
