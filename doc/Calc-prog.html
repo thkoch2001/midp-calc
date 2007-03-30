@@ -812,31 +812,37 @@ easier to spot and fix programming errors. (Consult the manual to learn more)
 
 <pre> 
 prog/new/"mbrot" 
-15              ; number of loop iterations
-mem/STO 0       ; store in memory register 0
+mem/STO 0 
+16 
+mem/STO 1 
 clear 
-ENTER           ; create a value of parameter z
-prog/flow/LBL 0 ; beginning of repeated program part
-math/simple/x²
-stack/RCL st#/1 ; recall z
-+
-prog/flow/DSE 0 ; exit loop after 15 iterations 
-prog/flow/GTO 0 ; jump to beginning of loop
-+
-math/simple/x²
-trig/cplx/abs
-math/pow/log<sub>2</sub>
-math/pow/log<sub>2</sub>
-ENTER
-16
-/
-trig/tanh
-trig/coord/r->cplx
+prog/flow/LBL 0 
+x²  
+mem/RCL 0  
++  
+prog/flow/DSE 1 
+prog/flow/GTO 0 
+prog/util/abs  
+math/pow/log_2  
+math/pow/log_2  
+ENTER  
+16  
+/  
+trig/tanh  
+trig/coord/p->r  
+trig/coord/r->cplx  
 prog/finish
 </pre>
 
-The calculations at the end of the program approximates the number of iterations from log(log(|z|)), then calculates a new complex number based on this, to give the resulting image some nice colors. 
- 
+The calculations at the end of the program approximates the number of
+iterations from log(log(|z|)), then calculates a new complex number based on
+this, to give the resulting image some nice colors.  One problem now is that
+the somewhat ad-hoc color calculation towards the end only works for around 
+16 iterations, so if you increase the number of iterations, it might not look
+as good. Of course, now that we have control flow, we can do more 
+sophisticated things such as actually setting the color to black (0) 
+when the mandelbrot loop has not diverged. I leave this as an exercise.
+
 You can draw it using something like this: <br>
  
 <pre>
