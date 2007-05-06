@@ -2,7 +2,6 @@ package midpcalc;
 
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
-import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 
 import com.nokia.mid.ui.FullCanvas;
@@ -37,29 +36,29 @@ public abstract class MyCanvas
     public void setCommandListener(CommandListener l) {
         // Not throwing exception
     }
-    protected void paintCommands(Graphics g, Font f, String middle, Font f2) {
+    protected void paintCommands(Graphics g, UniFont f, String middle) {
         g.setColor(0xffffff);
         g.fillRect(0,getHeight()-f.getHeight(),getWidth(),f.getHeight());
         g.setColor(0);
         g.fillRect(0,getHeight()-f.getHeight()-1,getWidth(),1);
-        g.setFont(f);
+        f.setColor(0, 0xffffff);
+        f.setEmphasized(true);
         if (a != null)
-            g.drawString(a.getLabel(), 5, getHeight()-f.getHeight(),
-                         Graphics.TOP|Graphics.LEFT);
+            f.drawString(g, 5, getHeight()-f.getHeight(), a.getLabel());
         if (b != null)
-            g.drawString(b.getLabel(),getWidth()-5,getHeight()-f.getHeight(),
-                         Graphics.TOP|Graphics.RIGHT);
-        if (middle != null && f2 != null &&
+            f.drawString(g, getWidth()-5-f.stringWidth(b.getLabel()),
+                    getHeight()-f.getHeight(), b.getLabel());
+        if (middle != null &&
             (a == null ||
              f.stringWidth(a.getLabel())+
-             f2.stringWidth(middle)*5/6<getWidth()/2)&&
+             f.stringWidth(middle)*5/6<getWidth()/2)&&
             (b == null ||
              f.stringWidth(b.getLabel())+
-             f2.stringWidth(middle)*5/6<getWidth()))
+             f.stringWidth(middle)*5/6<getWidth()))
         {
-            g.setFont(f2);
-            g.drawString(middle,getWidth()/2,getHeight()-f.getHeight(),
-                         Graphics.TOP|Graphics.HCENTER);
+            f.setEmphasized(false);
+            f.drawString(g, getWidth()/2-f.stringWidth(middle)/2,
+                    getHeight()-f.getHeight(), middle);
         }
     }
 }

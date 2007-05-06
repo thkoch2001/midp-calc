@@ -34,11 +34,16 @@ unsigned char* readImage(char* filename, int* iW, int* iH)
   return image;
 }
 
-void scan(unsigned char *image, int x, int y, int height, int width,
+void scan(unsigned char *image, char ch, int height, int width,
           unsigned char *bits)
 {
   int x2,y2,bitPos,b;
   int nBits,nBytes;
+  int x = (ch&0xff)%32;
+  int y = (ch&0xff)/32-1;
+  if (y>3) y--;
+  x *= width;
+  y *= height;
   nBits = height*width*2;
   nBytes = (nBits+7)/8;
   memset(bits,0,nBytes);
@@ -48,6 +53,100 @@ void scan(unsigned char *image, int x, int y, int height, int width,
       b = (image[(y+y2)*iW+x+x2]+85/2)/85;
       bits[bitPos/8] |= b<<(bitPos&7);
     }
+}
+
+void getBaselinePosition(unsigned char *image, char ch, int height, int width,
+                         int *baseline_position)
+{
+  int x2,y2,b;
+  int x = (ch&0xff)%32;
+  int y = (ch&0xff)/32-1;
+  if (y>3) y--;
+  x *= width;
+  y *= height;
+  x2 = width/2;
+  for (y2=0; y2<height; y2++) {
+    b = (image[(y+y2)*iW+x+x2]+85/2)/85;
+    if (b==3)
+      *baseline_position = y2+1;
+  }
+}
+
+void getOverline(unsigned char *image, char ch, int height, int width,
+                 int *overline_start, int *overline_end)
+{
+  int x2,y2,b;
+  int x = (ch&0xff)%32;
+  int y = (ch&0xff)/32-1;
+  if (y>3) y--;
+  x *= width;
+  y *= height;
+  *overline_start = -1;
+  x2 = width-1;
+  for (y2=0; y2<height; y2++) {
+    b = (image[(y+y2)*iW+x+x2]+85/2)/85;
+    if (b==3 && *overline_start == -1)
+      *overline_start = y2;
+    if (b==3)
+      *overline_end = y2;
+  }
+}
+
+int vLineSum(unsigned char *image, char ch, int height, int width, int x2)
+{
+  int y2,sum;
+  int x = (ch&0xff)%32;
+  int y = (ch&0xff)/32-1;
+  if (y>3) y--;
+  x *= width;
+  y *= height;
+  for (y2=0,sum=0; y2<height; y2++)
+    sum += (image[(y+y2)*iW+x+x2]+85/2)/85;
+  return sum;
+}
+
+void getSpace(unsigned char *image, char ch, int height, int width,
+              int *left, int *right)
+{
+  for (*left =0; vLineSum(image,ch,height,width,        *left )==0;(*left)++ );
+  for (*right=0; vLineSum(image,ch,height,width,width-1-*right)==0;(*right)++);
+}
+
+void getWidth(unsigned char *image, char ch, int height, int width,
+              int space_left, int space_right, unsigned char* xOff,
+              unsigned char* charWidth)
+{
+  int x, sum, sum2;
+  if (ch == ' ') ch = '.'; // Space should be as wide as a dot
+
+  *xOff = 0;
+  for (x=0,sum=0; x<space_left; x++)
+    sum += vLineSum(image,ch,height,width,x);
+  if (sum == 0) {
+    for (x=space_left; x<width; x+=2) {
+      sum  = vLineSum(image,ch,height,width,x);
+      sum2 = vLineSum(image,ch,height,width,x+1);
+      if (sum == 0 && sum2 < 6) {
+        *xOff = (x+2-space_left)/2;
+      } else {
+        break;
+      }
+    }
+  }
+  *charWidth = width/2 - *xOff;
+  for (x=0,sum=0; x<space_right; x++)
+    sum += vLineSum(image,ch,height,width,width-1-x);
+  if (sum == 0) {
+    for (x=space_right; x<width - *xOff*2; x+=2) {
+      sum  = vLineSum(image,ch,height,width,width-1-x);
+      sum2 = vLineSum(image,ch,height,width,width-1-(x+1));
+      if (sum == 0 && sum2 < 6) {
+        *charWidth = (width - (x+2-space_right))/2 - *xOff;
+      } else {
+        break;
+      }
+    }
+  }
 }
 
 int printStringChar(unsigned char b) 
@@ -75,24 +174,16 @@ int printStringChar(unsigned char b)
 int main(int argc, char *argv[])
 {
   unsigned char* image;
-  int c,i,j,nBytes;
-  unsigned char bits[100]; // Works for size up to 20x20
+  int c,nBytes;
+  unsigned char *bits;
   int char_height, char_width;
+  int baseline_position, overline_start, overline_end, space_left, space_right;
   char *prefix;
-  char *charSet = " !#%'()*+,-./0123456789:<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_" \
+  char *charSet = " !#%'()*+,-./0123456789:<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_"
     "abcdefghijklmnopqrstuvwxyz¡£«­°²µ¶»¿ÐÞßãë";
+  unsigned char *charXOff = (unsigned char*)malloc(strlen(charSet));
+  unsigned char *charWidth = (unsigned char*)malloc(strlen(charSet));
   FILE *f;
-  // Strings written with font
-  //
-  // 10000000_
-  // -1'234.5+6.78e9i
-  // /0A,BCDE,F000
-  // nan inf *****
-  // n= ßx= ßx²= ßy= ßy²= ßxy= ß£x= ß£²x= ß£y= ß£²y= ßx£y= ßy£x= ß£x£y=
-  // pv= fv= np= pmt= ir%=
-  // M0= M1=
-  // R0= R1» Col:1 M:[3x4] no matrix
-  // 0>math/x^2
 
   if (argc<4 || (image=readImage(argv[1],&iW,&iH))==0 || iW%32!=0 || iH%6!=0) {
     printf("Usage: %s image.pgm prefix out.dat > out.java\n",argv[0]);
@@ -102,26 +193,41 @@ int main(int argc, char *argv[])
   
   char_width = iW/32;
   char_height = iH/6;
+  getBaselinePosition(image,'E',char_height,char_width,&baseline_position);
+  getOverline(image,'¿',char_height,char_width,&overline_start,&overline_end);
+  getSpace(image,'H',char_height,char_width,&space_left,&space_right);
+
   nBytes = (char_height*char_width*2+7)/8;
+  bits = (unsigned char*)malloc(nBytes);
 
   f = fopen(argv[3],"w");
   for (c=0; c<(int)strlen(charSet); c++) {
-    i = (charSet[c]&0xff)/32-1;
-    if (i>3) i--;
-    j = (charSet[c]&0xff)%32;
-    scan(image,j*char_width,i*char_height,char_height,char_width,bits);
+    scan(image,charSet[c],char_height,char_width,bits);
+    getWidth(image,charSet[c],char_height,char_width,space_left,space_right,
+             charXOff+c,charWidth+c);
     fwrite(bits,1,nBytes,f);
     fflush(f);
   }
   fclose(f);
 
-  printf("    protected final String %schar_bits_resource = \"/%s\";\n",prefix,
+  printf("    static final String %sCharBitsResource = \"/%s\";\n",prefix,
          argv[3]);
-  printf("    protected final int %schar_width = %d;\n",prefix,char_width/2);
-  printf("    protected final int %schar_height = %d;\n",prefix,char_height);
-  printf("    protected final String %schar_set =\n        \"",prefix);
+  printf("    static final int %sCharMaxWidth = %d;\n",prefix,char_width/2);
+  printf("    static final int %sCharHeight = %d;\n",prefix,char_height);
+  printf("    static final int %sBaselinePosition = %d;\n",prefix,baseline_position);
+  printf("    static final int %sOverlineStart = %d;\n",prefix,overline_start);
+  printf("    static final int %sOverlineEnd = %d;\n",prefix,overline_end);
+  printf("    static final String %sCharSet =\n        \"",prefix);
   for (c=0; c<(int)strlen(charSet); c++)
     printStringChar(charSet[c]);
   printf("\";\n");
+  printf("    static final String %sCharXOff =\n        \"",prefix);
+  for (c=0; c<(int)strlen(charSet); c++)
+    printStringChar(charXOff[c]);
+  printf("\";\n");
+  printf("    static final String %sCharWidth =\n        \"",prefix);
+  for (c=0; c<(int)strlen(charSet); c++)
+    printStringChar(charWidth[c]);
+  printf("\";\n\n");
   return 0;
 }

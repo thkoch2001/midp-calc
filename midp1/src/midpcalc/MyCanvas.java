@@ -1,7 +1,6 @@
 package midpcalc;
 
 import javax.microedition.lcdui.Canvas;
-import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 
 public abstract class MyCanvas
@@ -28,6 +27,6 @@ public abstract class MyCanvas
     public boolean automaticCommands() {
         return true;
     }
-    protected void paintCommands(Graphics g, Font f, String middle, Font f2) {
+    protected void paintCommands(Graphics g, UniFont f, String middle) {
     }
 }

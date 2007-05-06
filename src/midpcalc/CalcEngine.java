@@ -359,6 +359,7 @@ public final class CalcEngine
     public int monitorMode;
     public int monitorSize,initialMonitorSize;
     public int maxMonitorSize,maxMonitorDisplaySize;
+    public int monitorMaxWidth;
     public int monitorX,monitorY;
     public int monitorYOff;
     public boolean isInsideMonitor;
@@ -463,10 +464,15 @@ public final class CalcEngine
     }
 
     private void clearStrings() {
+        clearStackStrings();
+        clearMonitorStrings();
+        repaintAll();
+    }
+    
+    private void clearStackStrings() {
         for (int i=0; i<STACK_SIZE; i++)
             if (stackStr[i] != empty)
                 stackStr[i] = null;
-        clearMonitorStrings();
         repaintAll();
     }
 
@@ -1012,12 +1018,7 @@ public final class CalcEngine
                 setMonitorY(monitorY+1,false);
         }
         monitorX = col;
-        StringBuffer caption = new StringBuffer("Col:");
-        caption.append(col+1);
-        int nSpaces = (format.maxwidth-caption.length())/2;
-        for (int i=0; i<nSpaces; i++)
-            caption.append(' ');
-        monitorCaption = caption.toString();
+        monitorCaption = "Col:"+(col+1);
         monitors = monitoredMatrix.D[col];
         imagMonitors = monitoredMatrix.DI != null ?
             monitoredMatrix.DI[col] : null;
@@ -1065,11 +1066,7 @@ public final class CalcEngine
     }
     
     private void initProgMonitor(boolean pointToEnd) {
-        StringBuffer caption = new StringBuffer("Prog: " + progLabels[currentProg]);
-        int nSpaces = (format.maxwidth-caption.length())/2;
-        for (int i=0; i<nSpaces; i++)
-            caption.append(' ');
-        monitorCaption = caption.toString();
+        monitorCaption = "Prog: " + progLabels[currentProg];
 
         maxMonitorSize = numProgSteps+1;
         if (monitorStr.length < maxMonitorSize)
@@ -1096,9 +1093,10 @@ public final class CalcEngine
         short cmd = prog[currentProg][addr];
         if ((cmd & 0x8000) != 0) {
             decodeProgReal(rTmp, addr);
-            format.maxwidth -= labelWidth;
+            int tmp = format.maxwidth;
+            format.maxwidth = monitorMaxWidth-labelWidth;
             monitorStr[n] = rTmp.toString(format);
-            format.maxwidth += labelWidth;
+            format.maxwidth = tmp;
         } else {
             String tmp;
             if ((cmd & MATRIX_STO) != 0) {
@@ -1122,8 +1120,7 @@ public final class CalcEngine
                     tmp += " "+progLabels[cmd]; // for future extensions
                 }
             }
-            monitorStr[n] = tmp.substring(
-                    Math.max(0,tmp.length()-format.maxwidth+labelWidth));
+            monitorStr[n] = tmp;
         }
     }
 
@@ -1212,7 +1209,8 @@ public final class CalcEngine
             if (monitorMode == MONITOR_PROG) 
                 makeProgMonitorString(n);
             else {
-                format.maxwidth -= monitorLabels[n].length()+1;
+                int tmp = format.maxwidth;
+                format.maxwidth = monitorMaxWidth-monitorLabels[n].length()-1;
                 if (monitors != null && monitors[n] != null) {
                     if (imagMonitors != null)
                         monitorStr[n] = makeString(monitors[n],
@@ -1222,10 +1220,28 @@ public final class CalcEngine
                 } else {
                     monitorStr[n] = Real.ZERO.toString(format);
                 }
-                format.maxwidth += monitorLabels[n].length()+1;
+                format.maxwidth = tmp;
             }
         }
         return monitorStr[n];
+    }
+    
+    public boolean isMonitorElementMonospaced(int n) {
+        if ((monitorMode == MONITOR_MATRIX || monitorMode == MONITOR_PROG) && n == 0)
+            return false;
+        if (monitorMode != MONITOR_PROG)
+            return true;
+        n--;
+        n += monitorYOff;
+        if (n == numProgSteps)
+            return false;
+        return ((prog[currentProg][progStepAddr[n]] & 0x8000) != 0);
+    }
+
+    public boolean isMonitorLabelMonospaced(int n) {
+        return monitorMode == MONITOR_MEM ||
+               monitorMode == MONITOR_MATRIX ||
+               monitorMode == MONITOR_PROG;
     }
 
     public String getMonitorLabel(int n) {
@@ -1296,8 +1312,14 @@ public final class CalcEngine
         format.maxwidth = max;
         if (inputInProgress)
             parseInput();
-        clearStrings();
-        setMonitorX(monitorX,false); // Possibly update monitorCaption
+        clearStackStrings();
+    }
+
+    public void setMaxMonitorWidth(int max) {
+        monitorMaxWidth = max;
+        if (inputInProgress)
+            parseInput();
+        clearMonitorStrings();
     }
 
     void setMessage(String mc, String m) {
@@ -5171,9 +5193,9 @@ public final class CalcEngine
             return; // No axis drawn in this case
         
         int i,j,xi,yi,x0,y0,inc,lx,ly;
-        GFont font =
-            GFont.getFont(GFont.SMALL | (bgrDisplay ? GFont.BGR_ORDER : 0),
-                          false, CalcCanvas.canvas);
+        UniFont font =
+            GFont.newFont(UniFont.SMALL | (bgrDisplay ? UniFont.BGR_ORDER : 0),
+                          false, false, CalcCanvas.canvas);
         int fh = font.getHeight()-1;
         int fw = font.charWidth();
         boolean skipYAxis = graphCmd>=PROG_SOLVE;

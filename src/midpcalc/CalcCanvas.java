@@ -7,7 +7,6 @@ import java.io.IOException;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Displayable;
-import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 
 public final class CalcCanvas
@@ -20,7 +19,7 @@ public final class CalcCanvas
 //               DEG/RAD   FIX/SCI/ENG   BIN/OCT/HEX   BGN   PRG/RUN
 // Menu:
 //   basic    -> -  *  /  +/-  (repeat)
-//   math     -> simple  -> 1/x    x^2    sqrt    %       %chg
+//   math     -> simple  -> 1/x    x²     sqrt    %       %chg
 //            -> pow     -> y^x    y^1/x  ln      e^x
 //                       -> pow10/2 -> log10 10^x log2 2^x
 //            -> prob    -> Py,x   Cy,x   x!      Gam(x)
@@ -213,29 +212,34 @@ public final class CalcCanvas
     private static final int EXIT = -999;
     private static final int RESET = -998;
     private static final int FULLSCREEN = -997;
-    private static final int FONT_SMALL  = -50+GFont.SMALL;
-    private static final int FONT_MEDIUM = -50+GFont.MEDIUM;
-    private static final int FONT_LARGE  = -50+GFont.LARGE;
-    private static final int FONT_XLARGE = -50+GFont.XLARGE;
-    private static final int FONT_XXLARGE= -50+GFont.XXLARGE;
-    private static final int FONT_XXXLARGE=-50+GFont.XXXLARGE;
-    private static final int FONT_SYSTEM = -50+GFont.SYSTEM;
-    private static final int NUMBER_0 = -20+0;
-    private static final int NUMBER_1 = -20+1;
-    private static final int NUMBER_2 = -20+2;
-    private static final int NUMBER_3 = -20+3;
-    private static final int NUMBER_4 = -20+4;
-    private static final int NUMBER_5 = -20+5;
-    private static final int NUMBER_6 = -20+6;
-    private static final int NUMBER_7 = -20+7;
-    private static final int NUMBER_8 = -20+8;
-    private static final int NUMBER_9 = -20+9;
-    private static final int NUMBER_10 = -20+10;
-    private static final int NUMBER_11 = -20+11;
-    private static final int NUMBER_12 = -20+12;
-    private static final int NUMBER_13 = -20+13;
-    private static final int NUMBER_14 = -20+14;
-    private static final int NUMBER_15 = -20+15;
+    private static final int NUMBER_0  = -50;
+    private static final int NUMBER_1  = NUMBER_0+1;
+    private static final int NUMBER_2  = NUMBER_0+2;
+    private static final int NUMBER_3  = NUMBER_0+3;
+    private static final int NUMBER_4  = NUMBER_0+4;
+    private static final int NUMBER_5  = NUMBER_0+5;
+    private static final int NUMBER_6  = NUMBER_0+6;
+    private static final int NUMBER_7  = NUMBER_0+7;
+    private static final int NUMBER_8  = NUMBER_0+8;
+    private static final int NUMBER_9  = NUMBER_0+9;
+    private static final int NUMBER_10 = NUMBER_0+10;
+    private static final int NUMBER_11 = NUMBER_0+11;
+    private static final int NUMBER_12 = NUMBER_0+12;
+    private static final int NUMBER_13 = NUMBER_0+13;
+    private static final int NUMBER_14 = NUMBER_0+14;
+    private static final int NUMBER_15 = NUMBER_0+15;
+    private static final int FONT_SMALL  = NUMBER_0+UniFont.SMALL;
+    private static final int FONT_MEDIUM = NUMBER_0+UniFont.MEDIUM;
+    private static final int FONT_LARGE  = NUMBER_0+UniFont.LARGE;
+    private static final int FONT_XLARGE = NUMBER_0+UniFont.XLARGE;
+    private static final int FONT_XXLARGE= NUMBER_0+UniFont.XXLARGE;
+    private static final int FONT_XXXLARGE=NUMBER_0+UniFont.XXXLARGE;
+    private static final int FONT_SYS_SML= NUMBER_0+(UniFont.SMALL  | UniFont.SYSTEM_FONT);
+    private static final int FONT_SYS_MED= NUMBER_0+(UniFont.MEDIUM | UniFont.SYSTEM_FONT);
+    private static final int FONT_SYS_LRG= NUMBER_0+(UniFont.LARGE  | UniFont.SYSTEM_FONT);
+    private static final int MENU_FONT = -100;
+    private static final int NUMBER_FONT = -101;
+    private static final int MONITOR_FONT = -102;
 
     private Menu basicMenu = new Menu("basic",new Menu[] {
         new Menu(CalcEngine.SUB),
@@ -250,16 +254,10 @@ public final class CalcCanvas
 
     private Menu systemMenu = new Menu("sys",new Menu[] {
         new Menu("font",new Menu[] {
-            new Menu("medium",FONT_MEDIUM,CmdDesc.REPEAT_PARENT),
-            new Menu("small",FONT_SMALL,CmdDesc.REPEAT_PARENT),
-            new Menu("large",FONT_LARGE,CmdDesc.REPEAT_PARENT),
-            new Menu("xlarge",FONT_XLARGE,CmdDesc.REPEAT_PARENT),
-            new Menu("more",CmdDesc.TITLE_SKIP,new Menu [] {
-                new Menu("xxlarge",FONT_XXLARGE,CmdDesc.REPEAT_PARENT),
-                new Menu("sys",FONT_SYSTEM,CmdDesc.REPEAT_PARENT),
-                null,
-                new Menu("xxxlarge",FONT_XXXLARGE,CmdDesc.REPEAT_PARENT),
-            }),
+            new Menu("number",NUMBER_FONT,CmdDesc.FONT_REQUIRED),
+            new Menu("menu",MENU_FONT,CmdDesc.FONT_REQUIRED),
+            null,
+            new Menu("monitor",MONITOR_FONT,CmdDesc.FONT_REQUIRED),
         }),
         new Menu("exit",EXIT,CmdDesc.NO_REPEAT),
         new Menu("reset",RESET,CmdDesc.NO_REPEAT),
@@ -309,7 +307,7 @@ public final class CalcCanvas
                         new Menu(CalcEngine.LIN_R),
                         new Menu(CalcEngine.LIN_DRAW),
                     }),
-                    new Menu("alnx+b",new Menu[] {
+                    new Menu("a£x+b",new Menu[] {
                         new Menu(CalcEngine.LOG_AB),
                         new Menu(CalcEngine.LOG_YEST),
                         new Menu(CalcEngine.LOG_XEST),
@@ -541,6 +539,26 @@ public final class CalcCanvas
         new Menu("ir%",NUMBER_4,CmdDesc.REPEAT_PARENT),
     });
 
+    private Menu fontMenu = new Menu(null,new Menu[] {
+        new Menu("medium",FONT_MEDIUM,CmdDesc.REPEAT_PARENT),
+        new Menu("small",FONT_SMALL,CmdDesc.REPEAT_PARENT),
+        new Menu("large",FONT_LARGE,CmdDesc.REPEAT_PARENT),
+        new Menu("xlarge",FONT_XLARGE,CmdDesc.REPEAT_PARENT),
+        new Menu("more",CmdDesc.TITLE_SKIP,new Menu [] {
+            new Menu("xxlarge",FONT_XXLARGE,CmdDesc.REPEAT_PARENT),
+            new Menu("sys.S",FONT_SYS_SML,CmdDesc.REPEAT_PARENT),
+            new Menu("sys.L",FONT_SYS_LRG,CmdDesc.REPEAT_PARENT),
+            new Menu("xxxlarge",FONT_XXXLARGE,CmdDesc.REPEAT_PARENT),
+            new Menu("sys.M",FONT_SYS_MED,CmdDesc.REPEAT_PARENT),
+        }),
+    });
+
+    private Menu sysFontMenu = new Menu(null,new Menu[] {
+        new Menu("medium",FONT_SYS_MED,CmdDesc.REPEAT_PARENT),
+        new Menu("small",FONT_SYS_SML,CmdDesc.REPEAT_PARENT),
+        new Menu("large",FONT_SYS_LRG,CmdDesc.REPEAT_PARENT),
+    });
+
     private Menu intMenu = new Menu("int",new Menu[] {
         new Menu(CalcEngine.ROUND),
         new Menu(CalcEngine.CEIL),
@@ -753,15 +771,16 @@ public final class CalcCanvas
     });
 
     private static final int menuColor [] = {
+        // All color components divisible by 4 for easy dimming
         0x00e0e0,0x00fc00,0xe0e000,0xfca800,0xfc5400,0xfc0000,0xc00080
     };
 
-    private Font menuFont;
-    private Font boldMenuFont;
-    private Font smallMenuFont;
-    private Font smallBoldMenuFont;
-    private GFont numberFont;
+    private UniFont menuFont;
+    private UniFont numberFont;
+    private UniFont monitorFont;
+    private int menuFontStyle;
     private int numberFontStyle;
+    private int monitorFontStyle;
     public boolean fullScreen;
     public CalcEngine calc;
     public static CalcCanvas canvas;
@@ -775,8 +794,8 @@ public final class CalcCanvas
     private boolean repeating = false;
     private boolean unknownKeyPressed = false;
     private boolean internalRepaint = false;
-    private int offX, offY, nDigits, nLines, numberWidth, numberHeight;
-    private int offY2, offYMonitor, nLinesMonitor;
+    private int offX, offY, offYMonitor, nDigits, maxLines, maxLinesMonitor, numberFontWidth, numberFontHeight;
+    private int monitorOffY, monitorOffX, nMonitorDigits, maxMonitorLines, monitorFontWidth, monitorFontHeight;
     private boolean evenFrame = true;
     private int menuX,menuY,menuW,menuH;
     private int header,footer;
@@ -794,19 +813,25 @@ public final class CalcCanvas
 
         calc = new CalcEngine(this);
 
-        numberFontStyle = (getWidth()>=320 ? GFont.XXXLARGE :
-                           getWidth()>=256 ? GFont.XXLARGE :
-                           getWidth()>=160 ? GFont.XLARGE :
-                           getWidth()>=128 ? GFont.LARGE :
-                           getWidth()>=96  ? GFont.MEDIUM : GFont.SMALL);
+        menuFontStyle = UniFont.MEDIUM | UniFont.SYSTEM_FONT; 
+        numberFontStyle = (getWidth()>=320 ? UniFont.XXXLARGE :
+                           getWidth()>=256 ? UniFont.XXLARGE :
+                           getWidth()>=160 ? UniFont.XLARGE :
+                           getWidth()>=128 ? UniFont.LARGE :
+                           getWidth()>=96  ? UniFont.MEDIUM :
+                                             UniFont.SMALL);
+        monitorFontStyle = numberFontStyle;
+
         if (in != null)
             restoreState(in);
         calc.initialized = true;
 
         if (!midlet.display.isColor()) {
-            numberFontStyle = GFont.SYSTEM;
-            // Now, remove the font menu.
-            systemMenu.subMenu[0] = null;
+            numberFontStyle = UniFont.MEDIUM | UniFont.SYSTEM_FONT;
+            menuFontStyle = numberFontStyle;
+            monitorFontStyle = numberFontStyle;
+            // Switch to system font menu
+            fontMenu = sysFontMenu;
         }
         if (!canToggleFullScreen()) {
             // Remove the fullscreen command.
@@ -816,17 +841,9 @@ public final class CalcCanvas
         setCommands("ENTER","+");
         setCommandListener(this);
 
-        menuFont = Font.getFont(
-            Font.FACE_PROPORTIONAL,Font.STYLE_PLAIN,Font.SIZE_MEDIUM);
-        boldMenuFont = Font.getFont(
-            Font.FACE_PROPORTIONAL,Font.STYLE_BOLD,Font.SIZE_MEDIUM);
-        smallMenuFont = Font.getFont(
-            Font.FACE_PROPORTIONAL,Font.STYLE_PLAIN,Font.SIZE_SMALL);
-        smallBoldMenuFont = Font.getFont(
-            Font.FACE_PROPORTIONAL,Font.STYLE_BOLD,Font.SIZE_SMALL);
-        header = smallMenuFont.getHeight();
-        footer = automaticCommands() ? 0 : boldMenuFont.getHeight()+1;
+        setMenuFont(menuFontStyle);
         setNumberFont(numberFontStyle);
+        setMonitorFont(monitorFontStyle);
 
         setFullScreen(fullScreen);
 
@@ -910,11 +927,16 @@ public final class CalcCanvas
     }
 
     protected void sizeChanged(int w, int h) {
+        if (menuFont==null || numberFont==null || monitorFont==null)
+            return;
+
         // Menu position
         menuW = 21+4*2;
-        if (menuW<boldMenuFont.stringWidth("m/ft")+3*2)
-            menuW = boldMenuFont.stringWidth("m/ft")+3*2;
-        menuW = boldMenuFont.stringWidth("acosh")*2+3*2+menuW;
+        menuFont.setEmphasized(true);
+        if (menuW<menuFont.stringWidth("m/ft")+3*2)
+            menuW = menuFont.stringWidth("m/ft")+3*2;
+        menuW = menuFont.stringWidth("acosh")*2+3*2+menuW;
+        menuFont.setEmphasized(false);
         if (menuW<(menuFont.stringWidth("thousand")+2*2)*2)
             menuW = (menuFont.stringWidth("thousand")+2*2)*2;
         if (menuW>w) menuW = w;
@@ -928,26 +950,40 @@ public final class CalcCanvas
             menuY = h-menuH;
 
         // Number font
-        nDigits = w/numberWidth;
-        offX = (w-nDigits*numberWidth)/2;
-        nLines = (h-header-footer)/numberHeight;
-        offY = (h-header-footer-nLines*numberHeight)/2 + header;
-        nLinesMonitor = (h-header-footer-4)/numberHeight;
-        offYMonitor = (h-header-footer-
-                       nLinesMonitor*numberHeight)/4+header;
-        offY2 = 3*(h-header-footer-
-                   nLinesMonitor*numberHeight)/4+header;
+        nDigits = w/numberFontWidth;
+        offX = (w-nDigits*numberFontWidth)/2;
+        maxLines = (h-header-footer)/numberFontHeight;
+        offY = header + (h-header-footer-maxLines*numberFontHeight)/2;
+        maxLinesMonitor = (h-header-footer-3-monitorFontHeight)/numberFontHeight;
+        nMonitorDigits = w/monitorFontWidth;
+        monitorOffX = (w-nMonitorDigits*monitorFontWidth)/2;
+        maxMonitorLines = (h-header-footer-3-numberFontHeight)/monitorFontHeight;
+        int minSpace = h;
+        for (int monitorLines=1; monitorLines<=maxLinesMonitor; monitorLines++) {
+            int numberLines = (h-header-footer-3-monitorLines*monitorFontHeight)/numberFontHeight;
+            int space = h-header-footer-3-monitorLines*monitorFontHeight-numberLines*numberFontHeight;
+            if (space < minSpace)
+                minSpace = space;
+        }
+        offYMonitor = h-footer - maxLinesMonitor*numberFontHeight - (minSpace+1)/3;
+        monitorOffY = header + minSpace/3;
+        calc.setMaxMonitorSize(maxMonitorLines);
         calc.setMaxWidth(nDigits);
-        calc.setMaxMonitorSize(nLinesMonitor-1);
+        calc.setMaxMonitorWidth(nMonitorDigits);
     }
 
     public void saveState(DataOutputStream out) {
         try {
-            numberFontStyle = numberFont.getStyle();
-            numberFont = null; // Free some memory before saveSqtate()
-            out.writeShort(1+1);
+            menuFont.close();
+            numberFont.close();
+            monitorFont.close();
+            menuFont = numberFont = monitorFont = null; // Free some memory before saveState()
+
+            out.writeShort(1+1+1+1);
             out.writeByte(numberFontStyle);
             out.writeBoolean(fullScreen);
+            out.writeByte(menuFontStyle);
+            out.writeByte(monitorFontStyle);
             calc.command(CalcEngine.FINALIZE,0);
             calc.saveState(out);
 
@@ -972,26 +1008,77 @@ public final class CalcCanvas
                 fullScreen = in.readBoolean();
                 length -= 1;
             }
+            if (length >= 1) {
+                menuFontStyle = in.readByte();
+                length -= 1;
+            }
+            if (length >= 1) {
+                monitorFontStyle = in.readByte();
+                length -= 1;
+            }
             in.skip(length);
             calc.restoreState(in);
         } catch (IOException ioe) {
         }
     }
-
-    private void setNumberFont(int size) {
-        numberFont = null;
+    
+    private void setMenuFont(int style) {
+        if (menuFont != null) {
+            menuFont.close();
+            menuFont = null;
+        }
         try {
-            numberFont = GFont.getFont(
-                size | (midlet.bgrDisplay ? GFont.BGR_ORDER : 0), true, this);
+            menuFont = GFont.newFont(
+                style | (midlet.bgrDisplay ? UniFont.BGR_ORDER : 0), true, true, this);
         } catch (OutOfMemoryError e) {
-            // Fallback to System font
-            numberFont = GFont.
-                getFont(GFont.SYSTEM | (midlet.bgrDisplay ? GFont.BGR_ORDER:0),
-                        true, this);
+            menuFont = GFont.newFont(UniFont.MEDIUM | UniFont.SYSTEM_FONT, true, true, this);
             midlet.outOfMemory();
         }
-        numberWidth = numberFont.charWidth();
-        numberHeight = numberFont.getHeight();
+        menuFontStyle = menuFont.getStyle();
+        header = menuFont.smallerFont.getHeight()+2;
+        footer = automaticCommands() ? 0 : menuFont.getHeight()+1;
+        sizeChanged(getWidth(),getHeight());
+    }
+
+    private void setNumberFont(int style) {
+        if (numberFont != null) {
+            numberFont.close();
+            numberFont = null;
+        }
+        try {
+            numberFont = GFont.newFont(
+                style | (midlet.bgrDisplay ? UniFont.BGR_ORDER : 0), false, false, this);
+        } catch (OutOfMemoryError e) {
+            // Fallback to System font
+            numberFont = GFont.newFont(UniFont.MEDIUM | UniFont.SYSTEM_FONT, false, false, this);
+            midlet.outOfMemory();
+        }
+        numberFontStyle = numberFont.getStyle();
+        numberFont.setColor(0xffffff, 0x0000ff);
+        numberFont.setMonospaced(true);
+        numberFontWidth = numberFont.charWidth();
+        numberFontHeight = numberFont.getHeight();
+        sizeChanged(getWidth(),getHeight());
+    }
+
+    private void setMonitorFont(int style) {
+        if (monitorFont != null) {
+            monitorFont.close();
+            monitorFont = null;
+        }
+        try {
+            monitorFont = GFont.newFont(
+                style | (midlet.bgrDisplay ? UniFont.BGR_ORDER : 0), true, true, this);
+        } catch (OutOfMemoryError e) {
+            // Fallback to System font
+            monitorFont = GFont.newFont(UniFont.MEDIUM | UniFont.SYSTEM_FONT, true, true, this);
+            midlet.outOfMemory();
+        }
+        monitorFontStyle = monitorFont.getStyle();
+        monitorFont.setColor(0xffffff, 0x00ff00);
+        monitorFont.setMonospaced(true);
+        monitorFontWidth = monitorFont.charWidth();
+        monitorFontHeight = monitorFont.getHeight();
         sizeChanged(getWidth(),getHeight());
     }
 
@@ -999,60 +1086,71 @@ public final class CalcCanvas
     {
         g.setColor(0xffffff);
         g.fillRect(0,0,getWidth(),header-1);
-        g.setColor(0);
-        g.setFont(smallMenuFont);
+        menuFont.setColor(0, 0xffffff);
+        menuFont.setEmphasized(false);
         int n = 4;
-        if (calc.begin && (calc.progRecording || calc.progRunning))
+        if (calc.begin && (calc.progRecording || calc.progRunning)) {
             n = 5;
+        }
 
-        int w = smallMenuFont.stringWidth("ENG");
+        UniFont font = menuFont.smallerFont;
+        int w = font.stringWidth("ENG");
         int x = getWidth()/(n*2)-w/2;
         if (x<0) x=0;
+        int y = 1;
     
-        if (calc.degrees)
-            g.drawString("DEG",x,0,TOP_LEFT);
-        else if (calc.grad)
-            g.drawString("GRAD",x,0,TOP_LEFT);
-        else
-            g.drawString("RAD",x,0,TOP_LEFT);
+        if (calc.degrees) {
+            font.drawString(g,x,y,"DEG");
+        } else if (calc.grad) {
+            font.drawString(g,x,y,"GRAD");
+        } else {
+            font.drawString(g,x,y,"RAD");
+        }
 
         x += Math.max(getWidth()/n,w+2);
       
-        if (calc.format.fse == Real.NumberFormat.FSE_FIX)
-            g.drawString("FIX",x,0,TOP_LEFT);
-        else if (calc.format.fse == Real.NumberFormat.FSE_SCI)
-            g.drawString("SCI",x,0,TOP_LEFT);
-        else if (calc.format.fse == Real.NumberFormat.FSE_ENG)
-            g.drawString("ENG",x,0,TOP_LEFT);
+        if (calc.format.fse == Real.NumberFormat.FSE_FIX) {
+            font.drawString(g,x,y,"FIX");
+        } else if (calc.format.fse == Real.NumberFormat.FSE_SCI) {
+            font.drawString(g,x,y,"SCI");
+        } else if (calc.format.fse == Real.NumberFormat.FSE_ENG) {
+            font.drawString(g,x,y,"ENG");
+        }
 
         x += Math.max(getWidth()/n,w+2);
 
-        if (calc.format.base == 2)
-            g.drawString("BIN",x,0,TOP_LEFT);
-        else if (calc.format.base == 8)
-            g.drawString("OCT",x,0,TOP_LEFT);
-        else if (calc.format.base == 16)
-            g.drawString("HEX",x,0,TOP_LEFT);
+        if (calc.format.base == 2) {
+            font.drawString(g,x,y,"BIN");
+        } else if (calc.format.base == 8) {
+            font.drawString(g,x,y,"OCT");
+        } else if (calc.format.base == 16) {
+            font.drawString(g,x,y,"HEX");
+        }
 
         x += Math.max(getWidth()/n,w+2);
 
-        if (calc.begin)
-            g.drawString("BGN",x,0,TOP_LEFT);
+        if (calc.begin) {
+            font.drawString(g,x,y,"BGN");
+        }
 
-        if (n == 5)
+        if (n == 5) {
             x += Math.max(getWidth()/n,w+2);
+        }
 
-        if (calc.progRecording)
-            g.drawString("PRG",x,0,TOP_LEFT);
-        else if (stop) {
-            w = smallMenuFont.stringWidth("STOP");
+        if (calc.progRecording) {
+            font.drawString(g,x,y,"PRG");
+        } else if (stop) {
+            w = font.stringWidth("STOP");
             if (x+w-1>getWidth())
                 x = getWidth()-w-1;
-            g.drawString("STOP",x,0,TOP_LEFT);      
-        } else if (calc.progRunning && (evenFrame || !toggleRun))
-            g.drawString("RUN",x,0,TOP_LEFT);
-        if (toggleRun)
+            font.drawString(g,x,y,"STOP");      
+        } else if (calc.progRunning && (evenFrame || !toggleRun)) {
+            font.drawString(g,x,y,"RUN");
+        }
+        
+        if (toggleRun) {
             evenFrame = !evenFrame;
+        }
     }
 
     private void clearScreen(Graphics g) {
@@ -1062,219 +1160,24 @@ public final class CalcCanvas
         g.fillRect(0,header-1,getWidth(),
                    getHeight()-header-footer+1);
         if (!automaticCommands())
-            paintCommands(g,boldMenuFont,calc.isInsideMonitor ? "move"
-                          : "menu", menuFont);
-    }
-
-    private boolean plainLabel(String label) {
-        for (int i=0; i<label.length(); i++)
-            if ("^~_­«¿ß¡¶ÞãëÐ".indexOf(label.charAt(i))>=0)
-                return false;
-        return true;
-    }
-
-    public static int getBaselinePosition(Font f) {
-        int b = f.getBaselinePosition();
-        if (b < f.getHeight()/2) // Obviously wrong
-            return f.getHeight()*19/22;
-        return b;
-    }
-
-    private int labelWidth(String label, boolean bold) {
-        Font normalFont = bold ? boldMenuFont : menuFont;
-        Font smallFont = bold ? smallBoldMenuFont : smallMenuFont;
-        if (plainLabel(label))
-            return normalFont.stringWidth(label);
-        int width = 0;
-        Font font = normalFont;
-        for (int i=0; i<label.length(); i++) {
-            char c = label.charAt(i);
-            if (c=='^' || c=='_')
-                font = font==normalFont ? smallFont : normalFont;
-            else if (c=='~')
-                ; // overline... no font change
-            else if ("­«¿ß¡¶Ð".indexOf(c)>=0)
-                width += font.charWidth('O');
-            else if (c=='Þ')
-                width += font.charWidth('o')*(6+4)/6;
-            else if (c=='ã') {
-                int h2 = (getBaselinePosition(font)*2/3+1)&~1;
-                width += h2/2+5+(h2<10?0:1);
-            } else if (c=='ë')
-                width += font.charWidth('e')*67/112 + 1;
-            else
-                width += font.charWidth(c);
-        }
-        return width;
-    }
-
-    private void drawLabel(Graphics g, String label, boolean bold, int x,int y)
-    {
-        Font normalFont = bold ? boldMenuFont : menuFont;
-        Font smallFont = bold ? smallBoldMenuFont : smallMenuFont;
-        Font font = normalFont;
-        g.setFont(font);
-        if (plainLabel(label)) {
-            g.drawString(label,x,y,TOP_LEFT);
-            return;
-        }
-        boolean sub=false,sup=false,overline=false;
-        for (int i=0; i<label.length(); i++) {
-            char c = label.charAt(i);
-            if (c=='^' || c=='_') {
-                font = font==normalFont ? smallFont : normalFont;
-                g.setFont(font);
-                sub = sup = false;
-                if (font == smallFont) {
-                    sub = c=='_';
-                    sup = c=='^';
-                }
-            } else if (c=='~') {
-                overline = !overline;
-            } else if ("­«¿ß¡¶ÞãëÐ".indexOf(c)>=0) {
-                int w = font.charWidth('O');
-                int h = getBaselinePosition(font);
-                switch (c) {
-                    case '­': // Arrow ->
-                        g.drawLine(x,y+h/2+1,x+w-2,y+h/2+1);
-                        g.drawLine(x,y+h/2+2,x+w-2,y+h/2+2);
-                        g.drawLine(x+w-2,y+h/2+1,x+w-2-2,y+h/2+1-2);
-                        g.drawLine(x+w-3,y+h/2+1,x+w-3-1,y+h/2+1-1);
-                        g.drawLine(x+w-2,y+h/2+2,x+w-2-2,y+h/2+2+2);
-                        g.drawLine(x+w-3,y+h/2+2,x+w-3-1,y+h/2+2+1);
-                        break;
-                    case '«': // Arrows <->
-                        g.drawLine(x,y+h/2,x+w-2,y+h/2);
-                        g.drawLine(x+w-2,y+h/2,x+w-2-2,y+h/2-2);
-                        g.drawLine(x,y+h/2+3,x+w-2,y+h/2+3);
-                        g.drawLine(x,y+h/2+3,x+2,y+h/2+3+2);
-                        if (bold) {
-                            g.drawLine(x,y+h/2-1,x+w-2,y+h/2-1);
-                            g.drawLine(x+w-2,y+h/2-1,x+w-2-2,y+h/2-1-2);
-                            g.drawLine(x,y+h/2+2,x+w-2,y+h/2+2);
-                            g.drawLine(x,y+h/2+2,x+2,y+h/2+2+2);
-                        }
-                        break;
-                    case '¿': // Sqrt
-                        g.drawLine(x,y+h-3,x+3,y+h);
-                        g.drawLine(x+1,y+h-3,x+4,y+h);
-                        g.drawLine(x+3,y,x+3,y+h);
-                        g.drawLine(x+4,y,x+4,y+h);
-                        g.drawLine(x+3,y,x+w,y);
-                        g.drawLine(x+3,y+1,x+w,y+1);
-                        overline = true;
-                        break;
-                    case 'ß': // Sum
-                        int b = (h&1)^1;
-                        int s = (h-b-4)/2;
-                        g.drawLine(x,y+b,x+w-2,y+b);
-                        g.drawLine(x,y+b+1,x+w-2,y+b+1);
-                        g.drawLine(x,y+b+2,x+s,y+b+2+s);
-                        g.drawLine(x+1,y+b+2,x+1+s,y+b+2+s);
-                        g.drawLine(x,y+h-3,x+s,y+b+2+s);
-                        g.drawLine(x+1,y+h-3,x+1+s,y+b+2+s);
-                        g.drawLine(x,y+h-1,x+w-2,y+h-1);
-                        g.drawLine(x,y+h-2,x+w-2,y+h-2);
-                        break;
-                    case '¡': // Gamma
-                        g.drawLine(x+1,y,x+1,y+h-1);
-                        g.drawLine(x+2,y,x+2,y+h-1);
-                        g.drawLine(x,y+h-1,x+3,y+h-1);
-                        g.drawLine(x,y,x+w-2,y);
-                        g.drawLine(x,y+1,x+w-2,y+1);
-                        g.drawLine(x+w-2,y,x+w-2,y+3);
-                        break;
-                    case '¶': // pi
-                        g.drawLine(x,y+h/3,x+7,y+h/3);
-                        g.drawLine(x+2,y+h/3,x+2,y+h-1);
-                        g.drawLine(x+3,y+h/3,x+3,y+h-1);
-                        g.drawLine(x,y+h/3,x,y+h/3+1);
-                        g.drawLine(x+5,y+h/3,x+5,y+h-1);
-                        g.drawLine(x+6,y+h/3,x+6,y+h-1);
-                        break;
-                    case 'Þ': // _infinity
-                        g.drawChar('o',x,y+normalFont.getHeight()-
-                                   getBaselinePosition(smallFont),TOP_LEFT);
-                        g.drawChar('o',x+font.charWidth('o')*4/6,
-                                   y+normalFont.getHeight()-
-                                   getBaselinePosition(smallFont),TOP_LEFT);
-                        w = font.charWidth('o')*(6+4)/6;
-                        break;
-                    case 'ã': // alpha
-                        int h2 = (h*2/3+1)&~1;
-                        w = h2/2+5+(h2<10?0:1);
-                        int x2 = x+w-h2/2;
-                        int y2 = y+h-h2;
-                        g.drawLine(x+w-2,y2,x2,y+h-3);
-                        g.drawLine(x+w-3,y2,x2-1,y+h-3);
-                        g.drawLine(x2-2,y+h-3,x2-1,y+h-2);
-                        g.fillRect(x2-4,y+h-2,3,2);
-                        g.drawLine(x2-5,y+h-2,x2-4,y+h-3);
-                        if (h2<10) {
-                            g.fillRect(x2-6,y2+2,2,y+h-y2-4);
-                        } else {
-                            int h3 = (h2-1)/4;
-                            g.fillRect(x2-6,y2+2,2,h3);
-                            g.fillRect(x2-7,y2+2+h3,2,y+h-y2-4-2*h3);
-                            g.fillRect(x2-6,y+h-2-h3,2,h3);
-                        }
-                        g.drawLine(x2-5,y2+1,x2-4,y2+2);
-                        g.fillRect(x2-4,y2,2,2);
-                        g.drawLine(x2-2,y2+2,x2-2,y2+1);
-                        g.drawLine(x2-1,y2+2,x+w-3,y+h-1);
-                        g.drawLine(x+w-2,y+h-1,x+w-2,y+h-2);
-                        g.drawLine(x+w-1,y+h-2,x+w-1,y+h-3);
-                        break;
-                    case 'ë': // epsilon
-                        g.drawChar('e',x,y,TOP_LEFT);
-                        x += font.charWidth('e')*67/112;
-                        g.setColor(menuColor[menuStackPtr]);
-                        g.fillRect(x,y,w,h);
-                        g.setColor(0);
-                        w = 1;
-                        break;
-                    case 'Ð': // theta
-                        g.drawChar('O',x,y,TOP_LEFT);
-                        g.drawChar('-',x,y-1,TOP_LEFT);
-                        g.drawChar(
-                            '-',x+font.charWidth('O')-font.charWidth('-'),y-1,
-                            TOP_LEFT);
-                        break;
-                }
-                x += w;
-            }
-            else {
-                if (sub)
-                    g.drawChar(c,x,y+normalFont.getHeight()-
-                               getBaselinePosition(smallFont),TOP_LEFT);
-                else if (sup)
-                    g.drawChar(c,x,y-1,TOP_LEFT);
-                else
-                    g.drawChar(c,x,y,TOP_LEFT);
-                if (overline) {
-                    g.drawLine(x-1,y,x+font.charWidth(c)-1,y);
-                    if (bold)
-                        g.drawLine(x-1,y+1,x+font.charWidth(c)-1,y+1);
-                }
-                x += font.charWidth(c);
-            }
-        }
+            paintCommands(g, menuFont, calc.isInsideMonitor ? "move" : "menu");
     }
 
     private void drawMenuItem(Graphics g, Menu menu, int x, int y, int anchor)
     {
         if (menu==null)
             return;
-        boolean bold = menu.subMenu==null &&
-            (menu.flags&CmdDesc.SUBMENU_REQUIRED)==0;
-        int width = labelWidth(menu.label,bold);
+        boolean emphasized = (menu.subMenu == null &&
+            (menu.flags & CmdDesc.SUBMENU_REQUIRED) == 0);
+        menuFont.setEmphasized(emphasized);
+        int width = menuFont.stringWidth(menu.label);
         if ((anchor & Graphics.RIGHT) != 0)
             x -= width;
         else if ((anchor & Graphics.HCENTER) != 0)
             x -= width/2;
         if ((anchor & Graphics.BOTTOM) != 0)
             y -= menuFont.getHeight();
-        drawLabel(g,menu.label,bold,x,y);
+        menuFont.drawString(g, x, y, menu.label);
     }
 
     private void drawMenu(Graphics g) {
@@ -1287,12 +1190,13 @@ public final class CalcCanvas
         g.setColor(menuColor[menuStackPtr]/4);
         g.fillRect(x,y-menuFont.getHeight()-1,w/2,menuFont.getHeight()+1);
         g.setColor(menuColor[menuStackPtr]);
-        g.setFont(menuFont);
+        menuFont.setColor(menuColor[menuStackPtr], menuColor[menuStackPtr]/4);
         int titleStackPtr = menuStackPtr;
         while ((menuStack[titleStackPtr].flags & CmdDesc.TITLE_SKIP)!=0)
             titleStackPtr--;
         String label = menuStack[titleStackPtr].label;
-        drawLabel(g,label,false,x+2,y-menuFont.getHeight());
+        menuFont.setEmphasized(false);
+        menuFont.drawString(g, x+2, y-menuFont.getHeight(), label);
         // Draw 3D menu background
         g.fillRect(x+2,y+2,w-4,h-4);
         g.setColor((menuColor[menuStackPtr]+0xfcfcfc)/2);
@@ -1307,20 +1211,25 @@ public final class CalcCanvas
         g.fillRect(x+1,y+h-1,w-2,1);
         // Draw menu items
         g.setColor(0);
+        menuFont.setColor(0, menuColor[menuStackPtr]);
         Menu [] subMenu = menuStack[menuStackPtr].subMenu;
-        if (subMenu.length>=1)
+        if (subMenu.length>=1) {
             drawMenuItem(g,subMenu[0],x+w/2,y+3,Graphics.TOP|Graphics.HCENTER);
-        if (subMenu.length>=2)
+        }
+        if (subMenu.length>=2) {
             drawMenuItem(g,subMenu[1],x+3,ym,TOP_LEFT);
-        if (subMenu.length>=3)
+        }
+        if (subMenu.length>=3) {
             drawMenuItem(g,subMenu[2],x+w-3,ym,Graphics.TOP|Graphics.RIGHT);
-        if (subMenu.length>=4)
+        }
+        if (subMenu.length>=4) {
             drawMenuItem(g,subMenu[3],x+w/2,y+h-3,
                          Graphics.BOTTOM|Graphics.HCENTER);
-        if (subMenu.length>=5 && subMenu[4]!=null)
+        }
+        if (subMenu.length>=5 && subMenu[4]!=null) {
             drawMenuItem(g,subMenu[4],x+w/2,ym,
                          Graphics.TOP|Graphics.HCENTER);
-        else {
+        } else {
             // Draw a small "joystick" in the center
             y += h/2;
             x += w/2;
@@ -1333,22 +1242,21 @@ public final class CalcCanvas
 
     private void drawNumber(Graphics g, int i, boolean cleared, int offY,
                             int nLines) {
-        numberFont.setMonospaced(true);
         if (i==0 && calc.inputInProgress) {
             StringBuffer tmp = calc.inputBuf;
             tmp.append('_');
             if (tmp.length()>nDigits)
-                numberFont.drawString(g,offX,offY+(nLines-1)*numberHeight,tmp,
+                numberFont.drawString(g,offX,offY+(nLines-1)*numberFontHeight,tmp,
                                       tmp.length()-nDigits);
             else {
                 numberFont.drawString(
-                    g,offX,offY+(nLines-1)*numberHeight,tmp,0);
+                    g,offX,offY+(nLines-1)*numberFontHeight,tmp,0);
                 if (!cleared) {
                     g.setColor(0);
-                    g.fillRect(offX+tmp.length()*numberWidth,
-                               offY+(nLines-1)*numberHeight,
-                               (nDigits-tmp.length())*numberWidth,
-                               numberHeight);
+                    g.fillRect(offX+tmp.length()*numberFontWidth,
+                               offY+(nLines-1)*numberFontHeight,
+                               (nDigits-tmp.length())*numberFontWidth,
+                               numberFontHeight);
                 }
             }
             tmp.setLength(tmp.length()-1);
@@ -1357,36 +1265,46 @@ public final class CalcCanvas
             if (tmp.length()>nDigits)
                 tmp = "*****";
             numberFont.drawString(
-                g,offX+(nDigits-tmp.length())*numberWidth,
-                offY+(nLines-1-i)*numberHeight,tmp);
+                g,offX+(nDigits-tmp.length())*numberFontWidth,
+                offY+(nLines-1-i)*numberFontHeight,tmp);
             if (!cleared) {
                 g.setColor(0);
-                g.fillRect(offX,offY+(nLines-1-i)*numberHeight,
-                           (nDigits-tmp.length())*numberWidth,numberHeight);
+                g.fillRect(offX,offY+(nLines-1-i)*numberFontHeight,
+                           (nDigits-tmp.length())*numberFontWidth,numberFontHeight);
             }
         }
     }
 
     private void drawMonitor(Graphics g, int i, boolean cleared) {
-        String label = calc.getMonitorLabel(i);
-        String lead = calc.getMonitorLead(i);
+        String label = calc.getMonitorLabel(i)+calc.getMonitorLead(i);
         String element = calc.getMonitorElement(i);
-        if (element.length()+label.length()+lead.length()>nDigits)
+        boolean monospaced = calc.isMonitorElementMonospaced(i);
+        boolean centered = label.length() == 0; // Assuming a centered caption
+        if (monospaced && element.length()+label.length()>nMonitorDigits)
             element = "*****";
-        numberFont.setMonospaced(true);
-        numberFont.drawString(
-            g,offX+(nDigits-element.length())*numberWidth,
-            offYMonitor+i*numberHeight,element);
-        numberFont.drawString(g,offX,offYMonitor+i*numberHeight,label);
-        numberFont.drawString(g,offX+numberFont.stringWidth(label),
-                              offYMonitor+i*numberHeight,lead);
+        monitorFont.setMonospaced(monospaced);
+        int width;
+        int start = 0, end = element.length();
+        if (monospaced) {
+            start = Math.max(0, end-(nMonitorDigits-label.length()));
+            width = (end-start)*monitorFontWidth;
+        } else {
+            int maxWidth = (nMonitorDigits-label.length())*monitorFontWidth;
+            width = monitorFont.substringWidth(element, start, end);
+            while (width > maxWidth && start < end) {
+                start += (width-maxWidth+monitorFontWidth-1)/monitorFontWidth;
+                width = monitorFont.substringWidth(element, start, end);
+            }                
+        }
         if (!cleared) {
             g.setColor(0);
-            g.fillRect(offX+(label.length()+lead.length())*numberWidth,
-                       offYMonitor+i*numberHeight,
-                       (nDigits-element.length()-label.length()-lead.length())*
-                       numberWidth, numberHeight);
+            g.fillRect(monitorOffX, monitorOffY+i*monitorFontHeight,
+                       nMonitorDigits*monitorFontWidth, monitorFontHeight);
         }
+        int x = monitorOffX + (nMonitorDigits*monitorFontWidth-width)/(centered ? 2 : 1);
+        monitorFont.drawSubstring(g, x, monitorOffY+i*monitorFontHeight, element, start, end);
+        monitorFont.setMonospaced(calc.isMonitorLabelMonospaced(i));
+        monitorFont.drawString(g,monitorOffX,monitorOffY+i*monitorFontHeight,label);
     }
 
     public void paint(Graphics g) {
@@ -1413,23 +1331,25 @@ public final class CalcCanvas
                     numRepaintLines = 16;
                 int monitorSize = calc.getMonitorSize();
                 if (monitorSize > 0) {
-                    if (numRepaintLines > nLinesMonitor-monitorSize)
-                        numRepaintLines = nLinesMonitor-monitorSize;
+                    int maxRepaintLines = (getHeight()-header-footer-3-
+                            monitorSize*monitorFontHeight)/numberFontHeight;
+                    if (numRepaintLines > maxRepaintLines)
+                        numRepaintLines = maxRepaintLines;
 
                     for (i=0; i<numRepaintLines && i<16; i++)
-                        drawNumber(g,i,cleared,offY2,nLinesMonitor);
+                        drawNumber(g,i,cleared,offYMonitor,maxLinesMonitor);
                     if (cleared)
                         for (i=0; i<monitorSize; i++)
                             drawMonitor(g,i,cleared);
                     g.setColor(255,255,255);
-                    g.drawLine(0,offYMonitor+monitorSize*numberHeight+1,
+                    g.drawLine(0,monitorOffY+monitorSize*monitorFontHeight+1,
                                getWidth(),
-                               offYMonitor+monitorSize*numberHeight+1);
+                               monitorOffY+monitorSize*monitorFontHeight+1);
                 } else {
-                    if (numRepaintLines > nLines)
-                        numRepaintLines = nLines;
+                    if (numRepaintLines > maxLines)
+                        numRepaintLines = maxLines;
                     for (i=0; i<numRepaintLines; i++)
-                        drawNumber(g,i,cleared,offY,nLines);
+                        drawNumber(g,i,cleared,offY,maxLines);
                 }
             }
             if (menuStackPtr >= 0)
@@ -1570,6 +1490,7 @@ public final class CalcCanvas
                 Menu sub =
                     (subItem.flags&CmdDesc.NUMBER_REQUIRED )!=0 ? numberMenu :
                     (subItem.flags&CmdDesc.FINANCE_REQUIRED)!=0 ? financeMenu :
+                    (subItem.flags&CmdDesc.FONT_REQUIRED)   !=0 ? fontMenu :
                     progMenu;
                 // Set correct labels
                 if (sub == progMenu)
@@ -1591,22 +1512,26 @@ public final class CalcCanvas
                     midlet.resetRequested();
                 } else if (command == FULLSCREEN) {
                     setFullScreen(!fullScreen);
-                } else if (command >= FONT_SMALL && command <= FONT_XXXLARGE) {
-                    // Internal font command
-                    setNumberFont(command-FONT_SMALL);
-                } else if (command >= NUMBER_0 && command <= NUMBER_15) {
+                } else if (command >= NUMBER_0 && command <= FONT_SYS_LRG) {
+                    int number = command-NUMBER_0;
                     // Number has been entered for previous command
                     if (menuCommand >= CalcEngine.PROG_DRAW &&
                         menuCommand <= CalcEngine.PROG_MINMAX) {
                         graph = true;
-                        graphParam = command-NUMBER_0;
+                        graphParam = number;
                     } if (menuCommand == CalcEngine.PROG_NEW) {
-                        int n = command-NUMBER_0;
+                        int n = number;
                         String name = calc.progLabels[n]==CalcEngine.emptyProg
                             ? "" : calc.progLabels[n];
                         midlet.askNewProgram(name,n);
+                    } else if (menuCommand == MENU_FONT) {
+                        setMenuFont(number);
+                    } else if (menuCommand == NUMBER_FONT) {
+                        setNumberFont(number);
+                    } else if (menuCommand == MONITOR_FONT) {
+                        setMonitorFont(number);
                     } else {
-                        calc.command(menuCommand,command-NUMBER_0);
+                        calc.command(menuCommand,number);
                     }
                 } else if (command >= CalcEngine.AVG_DRAW &&
                            command <= CalcEngine.POW_DRAW) {

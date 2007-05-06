@@ -3,7 +3,6 @@ package midpcalc;
 import javax.microedition.lcdui.Command;
 import javax.microedition.lcdui.CommandListener;
 import javax.microedition.lcdui.Displayable;
-import javax.microedition.lcdui.Font;
 import javax.microedition.lcdui.Graphics;
 
 public class SetupCanvas
@@ -48,8 +47,7 @@ public class SetupCanvas
     private static final int QUERY_FINISHED = 3;
     private int query;
 
-    private Font menuFont;
-    private Font boldMenuFont;
+    private UniFont menuFont;
     private boolean unknownKeyPressed = false;
 
     public static final int [] commandArrangement = {
@@ -72,10 +70,8 @@ public class SetupCanvas
         ok  = new Command("ok",  Command.OK, 1);
         setCommandListener(this);
 
-        menuFont = Font.getFont(
-            Font.FACE_PROPORTIONAL,Font.STYLE_PLAIN,Font.SIZE_MEDIUM);
-        boldMenuFont = Font.getFont(
-            Font.FACE_PROPORTIONAL,Font.STYLE_BOLD,Font.SIZE_MEDIUM);
+        menuFont = GFont.newFont(
+            UniFont.MEDIUM | UniFont.SYSTEM_FONT, true, true, this);
 
         query = COMMAND_QUERY;
         setupHeading = commandQueryHeading;
@@ -128,22 +124,20 @@ public class SetupCanvas
     private void drawWrapped(Graphics g, int x, int y, int w, String text) {
         int start = 0;
         int end;
-        Font f = g.getFont();
         while (start < text.length()) {
             end = text.length();
-            while (end>start && f.substringWidth(text,start,end-start)>w)
+            while (end > start && menuFont.substringWidth(text, start, end)>w)
                 end = text.lastIndexOf(' ',end-1);
             if (end <= start) {
                 // Must chop word
                 end = text.indexOf(' ',start);
                 if (end <= start)
                     end = text.length();
-                while (end>start && f.substringWidth(text,start,end-start)>w)
+                while (end > start && menuFont.substringWidth(text, start, end)>w)
                     end--;
             }
-            g.drawSubstring(text, start, end-start, x, y,
-                            Graphics.TOP|Graphics.LEFT);
-            y += f.getHeight();
+            menuFont.drawSubstring(g, x, y, text, start, end);
+            y += menuFont.getHeight();
             start = end;
             while (start < text.length() && text.charAt(start)==' ')
                 start++;
@@ -155,28 +149,30 @@ public class SetupCanvas
         int height = getHeight();
         if (alertText != null) {
             g.setColor(216,156,156);
+            menuFont.setColor(0, 0xd89c9c);
             text = alertText;
             heading = alertHeading;
         } else {
             g.setColor(156,216,216);
+            menuFont.setColor(0, 0x9cd8d8);
             text = setupText;
             heading = setupHeading;
         }
         g.fillRect(0,0,getWidth(),height);
         g.setColor(0);
-        g.setFont(boldMenuFont);
-        g.drawString(heading,2,0,Graphics.TOP|Graphics.LEFT);
-        g.setFont(menuFont);
-        drawWrapped(g,2,boldMenuFont.getHeight()+3,getWidth()-3,text);
+        menuFont.setEmphasized(true);
+        menuFont.drawString(g,2,0,heading);
+        menuFont.setEmphasized(false);
+        drawWrapped(g,2,menuFont.getHeight()+3,getWidth()-3,text);
         if (!automaticCommands()) {
-            paintCommands(g,boldMenuFont,null,null);
-            height -= boldMenuFont.getHeight()+1;
+            paintCommands(g,menuFont,null);
+            height -= menuFont.getHeight()+1;
         }
         if (alertText == null && query == BGR_QUERY) {
-            GFont font = GFont.getFont(GFont.MEDIUM, false, this);
+            UniFont font = GFont.newFont(UniFont.MEDIUM, false, false, this);
             font.drawString(g,2,height-font.getHeight()-2," 567 ");
             font.close();
-            font = GFont.getFont(GFont.MEDIUM|GFont.BGR_ORDER, false, this);
+            font = GFont.newFont(UniFont.MEDIUM|UniFont.BGR_ORDER, false, false, this);
             font.drawString(g,getWidth()-font.charWidth()*5-2,
                             height-font.getHeight()-2," 567 ");
             font.close();

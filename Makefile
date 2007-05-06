@@ -36,8 +36,11 @@ JAVAFILES =  src/midpcalc/Calc.java \
              src/midpcalc/Complex.java \
              src/midpcalc/Matrix.java \
              src/midpcalc/Guess.java \
-             src/midpcalc/GFont.java \
              src/midpcalc/GFontBase.java \
+             src/midpcalc/GFont.java \
+             src/midpcalc/GFontData.java \
+             src/midpcalc/UniFont.java \
+             src/midpcalc/SysFont.java \
              src/midpcalc/DataStore.java \
              src/midpcalc/SetupCanvas.java \
              src/midpcalc/CmdDesc.java
@@ -87,11 +90,11 @@ src/midpcalc/Real.java: ../real-java/Real.jpp Makefile
 
 src/midpcalc/GFontBase.java: fonts/pgm2java $(FONTS) Makefile
 	echo "package midpcalc;"                                 >  $@
-	echo "abstract class GFontBase {"                        >> $@
-	fonts/pgm2java fonts/small.pgm  small_  resources/a.dat  >> $@
-	fonts/pgm2java fonts/medium.pgm medium_ resources/b.dat  >> $@
-	fonts/pgm2java fonts/large.pgm  large_  resources/c.dat  >> $@
-	fonts/pgm2java fonts/xlarge.pgm xlarge_ resources/d.dat  >> $@
+	echo "final class GFontBase {"                           >> $@
+	fonts/pgm2java fonts/small.pgm  small  resources/a.dat   >> $@
+	fonts/pgm2java fonts/medium.pgm medium resources/b.dat   >> $@
+	fonts/pgm2java fonts/large.pgm  large  resources/c.dat   >> $@
+	fonts/pgm2java fonts/xlarge.pgm xlarge resources/d.dat   >> $@
 	echo "}"                                                 >> $@
 
 midp1/Calc.jad: Makefile
