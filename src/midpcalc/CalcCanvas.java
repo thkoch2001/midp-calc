@@ -959,7 +959,7 @@ public final class CalcCanvas
         monitorOffX = (w-nMonitorDigits*monitorFontWidth)/2;
         maxMonitorLines = (h-header-footer-3-numberFontHeight)/monitorFontHeight;
         int minSpace = h;
-        for (int monitorLines=1; monitorLines<=maxLinesMonitor; monitorLines++) {
+        for (int monitorLines=1; monitorLines<=maxMonitorLines; monitorLines++) {
             int numberLines = (h-header-footer-3-monitorLines*monitorFontHeight)/numberFontHeight;
             int space = h-header-footer-3-monitorLines*monitorFontHeight-numberLines*numberFontHeight;
             if (space < minSpace)
@@ -1054,7 +1054,7 @@ public final class CalcCanvas
             midlet.outOfMemory();
         }
         numberFontStyle = numberFont.getStyle();
-        numberFont.setColor(0xffffff, 0x0000ff);
+        numberFont.setColor(0xffD2ff, 0);
         numberFont.setMonospaced(true);
         numberFontWidth = numberFont.charWidth();
         numberFontHeight = numberFont.getHeight();
@@ -1075,7 +1075,7 @@ public final class CalcCanvas
             midlet.outOfMemory();
         }
         monitorFontStyle = monitorFont.getStyle();
-        monitorFont.setColor(0xffffff, 0x00ff00);
+        monitorFont.setColor(0xffD2ff, 0);
         monitorFont.setMonospaced(true);
         monitorFontWidth = monitorFont.charWidth();
         monitorFontHeight = monitorFont.getHeight();
