@@ -95,7 +95,7 @@ final class GFont extends UniFont {
             y += charHeight-smallerFont.baselinePosition;
         }
 
-        int fg_col = emphasized ? fg_em : fg;
+        int fg_col = emphasized ? fg_em : (ch == '»' ? fg & 0x00ff00 : fg);
         int w = gFont.data.drawGFontChar(g, x, y, ch, fg_col, bg, monospaced);
         if (overline) {
             g.setColor(fg_col);
