@@ -34,10 +34,10 @@ final class SysFont extends UniFont {
                 systemFontSize = Font.SIZE_LARGE;
                 break;
         }
-        systemFont = Font.getFont(Font.FACE_PROPORTIONAL, systemFontSize,
-                Font.STYLE_PLAIN);
-        systemEmFont = Font.getFont(Font.FACE_PROPORTIONAL, systemFontSize,
-                Font.STYLE_BOLD);
+        systemFont = Font.getFont(Font.FACE_PROPORTIONAL,
+                Font.STYLE_PLAIN, systemFontSize);
+        systemEmFont = Font.getFont(Font.FACE_PROPORTIONAL,
+                Font.STYLE_BOLD, systemFontSize);
         charMaxWidth = Math.max(systemFont.charWidth('8'), systemFont.charWidth('6'));
         charHeight = systemEmFont.getHeight();
         baselinePosition = systemFont.getBaselinePosition();
