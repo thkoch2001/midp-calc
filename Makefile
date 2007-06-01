@@ -36,6 +36,7 @@ JAVAFILES =  src/midpcalc/Calc.java \
              src/midpcalc/Complex.java \
              src/midpcalc/Matrix.java \
              src/midpcalc/Guess.java \
+             src/midpcalc/Colors.java \
              src/midpcalc/GFontBase.java \
              src/midpcalc/GFont.java \
              src/midpcalc/GFontData.java \

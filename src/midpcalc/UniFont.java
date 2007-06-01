@@ -59,8 +59,8 @@ public abstract class UniFont {
     public abstract void close();
 
     UniFont(int style) {
-        fg = 0xffffff; // 0xff8aff;
-        bg = 0x000000;
+        fg = Colors.NUMBER;
+        bg = Colors.BACKGROUND;
 
         size = style & SIZE_MASK;
     }

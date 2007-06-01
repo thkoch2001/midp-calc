@@ -148,18 +148,18 @@ public class SetupCanvas
         String text,heading;
         int height = getHeight();
         if (alertText != null) {
-            g.setColor(216,156,156);
-            menuFont.setColor(0, 0xd89c9c);
+            g.setColor(Colors.c[Colors.PINK]);
+            menuFont.setColor(Colors.BLACK, Colors.PINK);
             text = alertText;
             heading = alertHeading;
         } else {
-            g.setColor(156,216,216);
-            menuFont.setColor(0, 0x9cd8d8);
+            g.setColor(Colors.c[Colors.CYAN]);
+            menuFont.setColor(Colors.BLACK, Colors.CYAN);
             text = setupText;
             heading = setupHeading;
         }
         g.fillRect(0,0,getWidth(),height);
-        g.setColor(0);
+        g.setColor(Colors.c[Colors.BLACK]);
         menuFont.setEmphasized(true);
         menuFont.drawString(g,2,0,heading);
         menuFont.setEmphasized(false);

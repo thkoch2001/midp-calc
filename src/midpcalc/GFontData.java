@@ -244,7 +244,7 @@ class GFontData {
             time = 1;
         }
         // Calculated hashes are assumed distinct and nonzero
-        short hash = (short) (((ch * 131 + fg) * 137 + bg) % 65537 /* 129169 */);
+        short hash = (short) (((ch * 131 + fg) * 137 + bg) % 65537);
         int bucketStart = (hash & 0xffff) % cacheSize;
 
         // Search bucket for the correct hash
@@ -435,7 +435,7 @@ class GFontData {
             int resIndex = charSet.indexOf(ch);
             if (resIndex < 0)
                 resIndex = charSet.indexOf('?');
-            renderChar(cacheX, cacheY, resIndex, fg, bg);
+            renderChar(cacheX, cacheY, resIndex, Colors.c[fg], Colors.c[bg]);
         }
         int xOff = 0;
         int width = charMaxWidth;

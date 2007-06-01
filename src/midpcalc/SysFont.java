@@ -59,7 +59,7 @@ final class SysFont extends UniFont {
 
         Font font = emphasized ? gFont.systemEmFont : gFont.systemFont;
         g.setFont(font);
-        g.setColor(fg);
+        g.setColor(Colors.c[fg]);
 
         if (monospaced) {
             // NB! Assuming that special characters will not be drawn monospaced
@@ -160,9 +160,9 @@ final class SysFont extends UniFont {
                 case 'ë': // epsilon
                     g.drawChar('e',x,y,TOP_LEFT);
                     int w1 = font.charWidth('e')*67/112;
-                    g.setColor(bg);
+                    g.setColor(Colors.c[bg]);
                     g.fillRect(x+w1,y,w-w1,h);
-                    g.setColor(fg);
+                    g.setColor(Colors.c[fg]);
                     w = w1+1;
                     break;
                 case 'Ð': // theta
@@ -269,9 +269,9 @@ final class SysFont extends UniFont {
         if (!monospaced && plainString(string)) {
             Font font = emphasized ? systemEmFont : systemFont;
             g.setFont(font);
-            g.setColor(bg);
+            g.setColor(Colors.c[bg]);
             g.fillRect(x, y, substringWidth(string, start, end), charHeight);
-            g.setColor(fg);
+            g.setColor(Colors.c[fg]);
             g.drawSubstring(string, start, end-start, x, y, Graphics.TOP | Graphics.LEFT);
             return x + font.substringWidth(string, start, end-start);
         }
@@ -294,9 +294,9 @@ final class SysFont extends UniFont {
             String s = string.toString();
             Font font = emphasized ? systemEmFont : systemFont;
             g.setFont(font);
-            g.setColor(bg);
+            g.setColor(Colors.c[bg]);
             g.fillRect(x, y, substringWidth(s, start, end), charHeight);
-            g.setColor(fg);
+            g.setColor(Colors.c[fg]);
             g.drawSubstring(s, start, end - start, x, y, Graphics.TOP
                     | Graphics.LEFT);
             return x + font.substringWidth(s, start, end - start);

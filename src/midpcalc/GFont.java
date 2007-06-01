@@ -7,7 +7,6 @@ final class GFont extends UniFont {
 
     private final GFontData data;
     private final boolean needLargeCache;
-    private int fg_em; // Empashized foreground color, i.e. blue
     
     private int overlineStart, overlineEnd;
 
@@ -26,7 +25,6 @@ final class GFont extends UniFont {
         
         data = GFontData.getGFontData(style, needLargeCache, canvas);
         this.needLargeCache = needLargeCache;
-        fg_em = fg ^ 0x0000c0;
         
         switch (size) {
             case SMALL: default:
@@ -76,11 +74,6 @@ final class GFont extends UniFont {
         return charHeight;
     }
 
-    public void setColor(int fg, int bg) {
-        this.fg_em ^= this.fg ^ fg;
-        super.setColor(fg, bg);
-    }
-
     private int drawSpecialChar(Graphics g, int x, int y, char ch) {
         
         if (processChar(ch, false))
@@ -95,10 +88,10 @@ final class GFont extends UniFont {
             y += charHeight-smallerFont.baselinePosition;
         }
 
-        int fg_col = emphasized ? fg_em : (ch == '»' ? fg & 0x00ff00 : fg);
+        int fg_col = emphasized ? Colors.EMPHASIZED : (ch == '»' ? Colors.GREEN : fg);
         int w = gFont.data.drawGFontChar(g, x, y, ch, fg_col, bg, monospaced);
         if (overline) {
-            g.setColor(fg_col);
+            g.setColor(Colors.c[fg_col]);
             g.fillRect(x-1, y+overlineStart, w+1, overlineEnd-overlineStart+1);
         }
         if (ch == '¿')

@@ -117,11 +117,36 @@ public final class CalcCanvas
 // Not yet matrix:
 //   <int> select ->cplx cplx/split cplx/abs cplx/arg
 
+// Units:
+//   Length:             m    in ft yd mi n.m.
+//   Mass:               kg   g lb oz ton gr
+//   Time:               s    h
+//   Current:            A                          A = C/s
+//   Temperature:        K    °C °F
+//   Amount:             mol                        mol = 6.0221415e23
+// Derived units:
+//   Area:               
+//   Volume:             L gal pt cup fl.oz         L = m³ /1000
+//   Frequency:          Hz                         Hz = 1/s
+//   Force:              N                          N = kg·m/s²
+//   Pressure:           Pa                         Pa = N/m² = kg/m·s²
+//   Energy:             J    cal Btu eV            J = N·m = kg·m²/s²
+//   Effect:             W    hp                    W = J/s = kg·m²/s³
+// Electric derived units:
+//   Charge:             C    e                     C = A·s
+//   Potential:          V                          V = W/A = kg·m²/s³·A
+//   Capasitance:        F                          F = C/V = s^4·A²/kg·m²
+//   Resistance:         Ohm                        Ohm = V/A = kg·m²/s³·A²
+//   Conductance:        S                          S = 1/Ohm = s³·A²/kg·m²
+//   Flux:               Wb                         Wb = V·s = kg·m²/s²·A
+//   Flux density:       T                          T = Wb/m² = kg/s²·A
+//   Inductance:         H                          H = Wb/A = kg·m²/s²·A²
+
 // Physical constants:
 // Universal
 //   Speed of light in vacuum          c == 299792458 m/s
 //   Planck constant                   h = 6.6260693e-34 J·s
-//   Permeability of a vacuum          µ_0 == 4*pi*1e-7 N/A²
+//   Permeability of a vacuum          µ_0 == 4*pi*1e-7 N/A² = kg·m/C² = H/m
 //   Permittivity of a vacuum          eps_0 == 1/µ_0·c² F/m
 // Chemical
 //   Avogadro constant                 N_A = 6.0221415e23 mol^-1
@@ -132,7 +157,7 @@ public final class CalcCanvas
 //   Fine-structure constant           alpha = 7.297352568e-3
 //   Bohr radius                       a_0 = 5.291772108e-11 m
 //   Rydberg constant                  R_inf = 10973731.568525m^-1
-//   Bohr magneton                     µ_B = 9.27400949e-24 J/T
+//   Bohr magneton                     µ_B = 9.27400949e-24 J/T = m²·A
 // Atomic
 //   Elementary charge                 e = 1.60217653e-19 C
 //   Mass of electron                  m_e = 9.1093826e-31 kg
@@ -140,7 +165,7 @@ public final class CalcCanvas
 //   Mass of neutron                   m_n = 1.67492728e-27 kg
 //   Unified atomic mass unit          m_u = 1.66053886e-27 kg
 // Astronomical
-//   Newtonian constant of gravitation G = 6.6742e-11 N·m²/kg²
+//   Newtonian constant of gravitation G = 6.6742e-11 N·m²/kg² = m³/kg·s²
 //   Standard acceleration of gravity  g_n == 9.80665 m/s²
 //   Light year                        l.y. == 365.25*24*60*60 * c
 //   Astronomical unit                 A.U. == 149597870691 m
@@ -152,7 +177,7 @@ public final class CalcCanvas
 //   Foot in meters                    ft/m == 0.3048        (ft = 12 in)
 //   Yard in meters                    yd/m == 0.9144        (yd = 3 ft)
 //   Mile in kilometers                mi/km == 1.609344     (mi = 5280 ft)
-//   Nautical mile in kilometers       n.m./mk == 1.852      (def)
+//   Nautical mile in kilometers       n.m./km == 1.852      (def)
 // Weight
 //   U.S. pound in kilos               lb/kg == 0.45359237   (def)
 //   U.S. ounce in grams               oz/g == 28.349523125  (oz = 1/16 lb)
@@ -172,7 +197,8 @@ public final class CalcCanvas
 //   British thermal unit in Joules    Btu/J = 1055.06
 //   Horsepower in Watts               hp/W  = 745.7
 //
-// Sources: http://physics.nist.gov/cuu/Constants
+// Sources: http://physics.nist.gov/cuu/Units/units.html
+//          http://physics.nist.gov/cuu/Constants
 //          http://www.free-definition.com
 // (== means "equals exactly" or "equals by definition")
 
@@ -1054,7 +1080,7 @@ public final class CalcCanvas
             midlet.outOfMemory();
         }
         numberFontStyle = numberFont.getStyle();
-        numberFont.setColor(0xffD2ff, 0);
+        numberFont.setColor(Colors.NUMBER, Colors.BACKGROUND);
         numberFont.setMonospaced(true);
         numberFontWidth = numberFont.charWidth();
         numberFontHeight = numberFont.getHeight();
@@ -1075,7 +1101,7 @@ public final class CalcCanvas
             midlet.outOfMemory();
         }
         monitorFontStyle = monitorFont.getStyle();
-        monitorFont.setColor(0xffD2ff, 0);
+        monitorFont.setColor(Colors.NUMBER, Colors.BACKGROUND);
         monitorFont.setMonospaced(true);
         monitorFontWidth = monitorFont.charWidth();
         monitorFontHeight = monitorFont.getHeight();
@@ -1084,9 +1110,9 @@ public final class CalcCanvas
 
     public void drawModeIndicators(Graphics g, boolean toggleRun, boolean stop)
     {
-        g.setColor(0xffffff);
+        g.setColor(Colors.c[Colors.FOREGROUND]);
         g.fillRect(0,0,getWidth(),header-1);
-        menuFont.setColor(0, 0xffffff);
+        menuFont.setColor(Colors.BACKGROUND, Colors.FOREGROUND);
         menuFont.setEmphasized(false);
         int n = 4;
         if (calc.begin && (calc.progRecording || calc.progRunning)) {
@@ -1156,7 +1182,7 @@ public final class CalcCanvas
     private void clearScreen(Graphics g) {
         // Clear screen and draw mode indicators
         drawModeIndicators(g,false,false);
-        g.setColor(0);
+        g.setColor(Colors.c[Colors.BACKGROUND]);
         g.fillRect(0,header-1,getWidth(),
                    getHeight()-header-footer+1);
         if (!automaticCommands())
@@ -1187,10 +1213,11 @@ public final class CalcCanvas
         int y = menuY;
         int ym = ((y+h-3)-menuFont.getHeight()+(y+3))/2;
         // Draw menu title
-        g.setColor(menuColor[menuStackPtr]/4);
+        g.setColor(Colors.c[Colors.MENU_DARK+menuStackPtr]);
         g.fillRect(x,y-menuFont.getHeight()-1,w/2,menuFont.getHeight()+1);
-        g.setColor(menuColor[menuStackPtr]);
-        menuFont.setColor(menuColor[menuStackPtr], menuColor[menuStackPtr]/4);
+        int c = Colors.c[Colors.MENU+menuStackPtr];
+        g.setColor(c);
+        menuFont.setColor(Colors.MENU+menuStackPtr, Colors.MENU_DARK+menuStackPtr);
         int titleStackPtr = menuStackPtr;
         while ((menuStack[titleStackPtr].flags & CmdDesc.TITLE_SKIP)!=0)
             titleStackPtr--;
@@ -1199,19 +1226,19 @@ public final class CalcCanvas
         menuFont.drawString(g, x+2, y-menuFont.getHeight(), label);
         // Draw 3D menu background
         g.fillRect(x+2,y+2,w-4,h-4);
-        g.setColor((menuColor[menuStackPtr]+0xfcfcfc)/2);
+        g.setColor((c+0xfcfcfc)/2);
         g.fillRect(x,y+1,2,h-1);
-        g.setColor(menuColor[menuStackPtr]/2);
+        g.setColor(c/2);
         g.fillRect(x+w-2,y+1,2,h-1);
-        g.setColor((menuColor[menuStackPtr]+0xfcfcfc)/2);
+        g.setColor((c+0xfcfcfc)/2);
         g.fillRect(x,y,w,1);
         g.fillRect(x+1,y+1,w-2,1);
-        g.setColor(menuColor[menuStackPtr]/2);
+        g.setColor(c/2);
         g.fillRect(x+2,y+h-2,w-4,1);
         g.fillRect(x+1,y+h-1,w-2,1);
         // Draw menu items
-        g.setColor(0);
-        menuFont.setColor(0, menuColor[menuStackPtr]);
+        g.setColor(Colors.c[Colors.BLACK]);
+        menuFont.setColor(Colors.BLACK, Colors.MENU+menuStackPtr);
         Menu [] subMenu = menuStack[menuStackPtr].subMenu;
         if (subMenu.length>=1) {
             drawMenuItem(g,subMenu[0],x+w/2,y+3,Graphics.TOP|Graphics.HCENTER);
@@ -1252,7 +1279,7 @@ public final class CalcCanvas
                 numberFont.drawString(
                     g,offX,offY+(nLines-1)*numberFontHeight,tmp,0);
                 if (!cleared) {
-                    g.setColor(0);
+                    g.setColor(Colors.c[Colors.BACKGROUND]);
                     g.fillRect(offX+tmp.length()*numberFontWidth,
                                offY+(nLines-1)*numberFontHeight,
                                (nDigits-tmp.length())*numberFontWidth,
@@ -1268,7 +1295,7 @@ public final class CalcCanvas
                 g,offX+(nDigits-tmp.length())*numberFontWidth,
                 offY+(nLines-1-i)*numberFontHeight,tmp);
             if (!cleared) {
-                g.setColor(0);
+                g.setColor(Colors.c[Colors.BACKGROUND]);
                 g.fillRect(offX,offY+(nLines-1-i)*numberFontHeight,
                            (nDigits-tmp.length())*numberFontWidth,numberFontHeight);
             }
@@ -1297,7 +1324,7 @@ public final class CalcCanvas
             }                
         }
         if (!cleared) {
-            g.setColor(0);
+            g.setColor(Colors.c[Colors.BACKGROUND]);
             g.fillRect(monitorOffX, monitorOffY+i*monitorFontHeight,
                        nMonitorDigits*monitorFontWidth, monitorFontHeight);
         }
@@ -1341,7 +1368,7 @@ public final class CalcCanvas
                     if (cleared)
                         for (i=0; i<monitorSize; i++)
                             drawMonitor(g,i,cleared);
-                    g.setColor(255,255,255);
+                    g.setColor(Colors.c[Colors.FOREGROUND]);
                     g.drawLine(0,monitorOffY+monitorSize*monitorFontHeight+1,
                                getWidth(),
                                monitorOffY+monitorSize*monitorFontHeight+1);
