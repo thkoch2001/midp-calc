@@ -37,11 +37,11 @@ public abstract class MyCanvas
         // Not throwing exception
     }
     protected void paintCommands(Graphics g, UniFont f, String middle) {
-        g.setColor(0xffffff);
+        g.setColor(Colors.c[Colors.FOREGROUND]);
         g.fillRect(0,getHeight()-f.getHeight(),getWidth(),f.getHeight());
-        g.setColor(0);
+        g.setColor(Colors.c[Colors.BACKGROUND]);
         g.fillRect(0,getHeight()-f.getHeight()-1,getWidth(),1);
-        f.setColor(0, 0xffffff);
+        f.setColor(Colors.BACKGROUND, Colors.FOREGROUND);
         f.setEmphasized(true);
         if (a != null)
             f.drawString(g, 5, getHeight()-f.getHeight(), a.getLabel());
