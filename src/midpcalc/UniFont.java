@@ -23,6 +23,7 @@ public abstract class UniFont {
     protected int size;
     protected boolean monospaced;
     protected boolean emphasized;
+    protected boolean green;
     protected boolean subscript;
     protected boolean superscript;
     protected boolean overline;
@@ -75,6 +76,10 @@ public abstract class UniFont {
         if (smallerFont != null && smallerFont != this)
             smallerFont.setColor(fg, bg);
     }
+    
+    protected int green() {
+        return Colors.c[bg] == 0 ? Colors.GREEN : Colors.DARK_GREEN;
+    }
 
     public void setMonospaced(boolean monospaced) {
         this.monospaced = monospaced;
@@ -89,17 +94,22 @@ public abstract class UniFont {
     }
 
     protected boolean processChar(char ch, boolean skip) {
-        if (ch=='^' || ch=='_') {
+        if (ch=='^' || ch=='¸') {
             boolean prevSubscript = subscript;
             boolean prevSuperscript = superscript;
             subscript = superscript = false;
-            subscript   = ch=='_' && !prevSubscript;
+            subscript   = ch=='¸' && !prevSubscript;
             superscript = ch=='^' && !prevSuperscript;
             return true;
         }
         
         if (ch=='~') {
             overline = !overline;
+            return true;
+        }
+        
+        if (ch=='`') {
+            green = !green;
             return true;
         }
         

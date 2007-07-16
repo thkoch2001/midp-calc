@@ -59,7 +59,7 @@ final class SysFont extends UniFont {
 
         Font font = emphasized ? gFont.systemEmFont : gFont.systemFont;
         g.setFont(font);
-        g.setColor(Colors.c[fg]);
+        g.setColor(green ? Colors.c[green()] : Colors.c[fg]);
 
         if (monospaced) {
             // NB! Assuming that special characters will not be drawn monospaced
@@ -72,7 +72,7 @@ final class SysFont extends UniFont {
 // sqrt,monospaced,>>
 // Too bold: gamma,rarr,pi,sum,alpha
         
-        if ("­«¿ß¡¶ÞãëÐ£»".indexOf(ch)>=0) {
+        if ("­«¿ß¡¶ÞãëÐ£»¹¼Ø".indexOf(ch)>=0) {
             int w = font.charWidth('O');
             int h = gFont.baselinePosition;
             switch (ch) {
@@ -181,6 +181,25 @@ final class SysFont extends UniFont {
                         g.drawLine(x+i, y+h-1-i, x+i, y+h-1-(w-2)*2+i);
                     }
                     break;
+                case '¹':
+                    g.setFont(emphasized ? ((SysFont)smallerFont).systemEmFont :
+                                           ((SysFont)smallerFont).systemFont);
+                    g.drawString("-1", x, y-1, TOP_LEFT);
+                    g.setFont(font);
+                    break;
+                case '¼':
+                    g.setFont(emphasized ? ((SysFont)smallerFont).systemEmFont :
+                                           ((SysFont)smallerFont).systemFont);
+                    g.drawString("4", x, y-1, TOP_LEFT);
+                    g.setFont(font);
+                    break;
+                case 'Ø':
+                    g.drawChar('O',x,y,TOP_LEFT);
+                    g.drawLine(x,y+h-1,x+w-1,y+h-1);
+                    g.setColor(Colors.c[bg]);
+                    g.fillRect(x+font.charWidth('O')/2-1,y+h/2,2,charHeight-h/2);
+                    g.setColor(Colors.c[fg]);
+                    break;
             }
             return w;
         }
@@ -208,14 +227,14 @@ final class SysFont extends UniFont {
 
     private static boolean plainString(String string) {
         for (int i = 0; i < string.length(); i++)
-            if ("^~_­«¿ß¡¶ÞãëÐ£»".indexOf(string.charAt(i)) >= 0)
+            if ("^~¸`­«¿ß¡¶ÞãëÐ£¹¼Ø»".indexOf(string.charAt(i)) >= 0)
                 return false;
         return true;
     }
 
     private static boolean plainString(StringBuffer string, int start) {
         for (int i = start; i < string.length(); i++)
-            if ("^~_­«¿ß¡¶ÞãëÐ£»".indexOf(string.charAt(i)) >= 0)
+            if ("^~¸­`«¿ß¡¶ÞãëÐ£¹¼Ø»".indexOf(string.charAt(i)) >= 0)
                 return false;
         return true;
     }
@@ -238,11 +257,11 @@ final class SysFont extends UniFont {
         for (int i = 0; i < end && i < string.length(); i++) {
             char c = string.charAt(i);
             int charWidth = 0;
-            if (c == '^' || c == '_') {
+            if (c == '^' || c == '¸') {
                 font = (font == this) ? smallerFont : this;
-            } else if (c == '~') {
+            } else if (c == '~' || c == '`') {
                 ; // overline... no font change
-            } else if ("­«¿ß¡¶Ð»".indexOf(c) >= 0) {
+            } else if ("­«¿ß¡¶Ð»Ø".indexOf(c) >= 0) {
                 charWidth = font.charWidth('O');
             } else if (c == 'Þ') {
                 charWidth = font.charWidth('o') * (6 + 4) / 6;
@@ -253,6 +272,10 @@ final class SysFont extends UniFont {
                 charWidth = font.charWidth('e') * 67 / 112 + 1;
             } else if (c == '£') {
                 charWidth = font.stringWidth("ln");
+            } else if (c == '¹') {
+                charWidth = smallerFont.stringWidth("-1");
+            } else if (c == '¼') {
+                charWidth = smallerFont.stringWidth("4");
             } else {
                 charWidth = font.charWidth(c);
             }
@@ -302,7 +325,7 @@ final class SysFont extends UniFont {
             return x + font.substringWidth(s, start, end - start);
         }
         
-        subscript = superscript = overline = false;
+        green = subscript = superscript = overline = false;
         
         for (int i = 0; i < start; i++) {
             processChar(string.charAt(i), true);

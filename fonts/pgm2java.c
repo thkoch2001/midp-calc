@@ -180,7 +180,7 @@ int main(int argc, char *argv[])
   int baseline_position, overline_start, overline_end, space_left, space_right;
   char *prefix;
   char *charSet = " !#%'()*+,-./0123456789:<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_"
-    "abcdefghijklmnopqrstuvwxyz¡£«­°²µ¶»¿ÐÞßãë";
+    "abcdefghijklmnopqrstuvwxyz¡£«­°¹²³µ¶·»¼¿ÅÐØÞßãë";
   unsigned char *charXOff = (unsigned char*)malloc(strlen(charSet));
   unsigned char *charWidth = (unsigned char*)malloc(strlen(charSet));
   FILE *f;

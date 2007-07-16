@@ -44,9 +44,9 @@ public final class CmdDesc
             case CalcEngine.XRTY:return brief ? "^x^¿y": "math/pow/^x^¿y";
             case CalcEngine.LN:return brief ? "ln": "math/pow/ln";
             case CalcEngine.EXP:return brief ? "e^x": "math/pow/e^x";
-            case CalcEngine.LOG10:return brief ? "log_10": "math/pow/log_10";
+            case CalcEngine.LOG10:return brief ? "log¸10": "math/pow/log¸10";
             case CalcEngine.EXP10:return brief ? "10^x": "math/pow/10^x";
-            case CalcEngine.LOG2:return brief ? "log_2": "math/pow/log_2";
+            case CalcEngine.LOG2:return brief ? "log¸2": "math/pow/log¸2";
             case CalcEngine.EXP2:return brief ? "2^x": "math/pow/2^x";
             case CalcEngine.PYX:return brief ? "P y,x": "math/prob/P y,x";
             case CalcEngine.CYX:return brief ? "C y,x": "math/prob/C y,x";
@@ -54,7 +54,7 @@ public final class CmdDesc
             case CalcEngine.GAMMA:return brief ? "¡x": "math/prob/¡x";
             case CalcEngine.RP:return brief ? "r­p": "trig/coord/r­p";
             case CalcEngine.PR:return brief ? "p­r": "trig/coord/p­r";
-            case CalcEngine.ATAN2:return brief ? "atan_2": "trig/coord/atan_2";
+            case CalcEngine.ATAN2:return brief ? "atan¸2": "trig/coord/atan¸2";
             case CalcEngine.HYPOT:return brief ? "hypot": "trig/coord/hypot";
             case CalcEngine.SIN:return brief ? "sin": "trig/sin";
             case CalcEngine.COS:return brief ? "cos": "trig/cos";
@@ -96,8 +96,8 @@ public final class CmdDesc
             case CalcEngine.CLST:return brief ? "clear" : "stat/clear";
             case CalcEngine.AVG:return brief ? "~x~, ~y~" : "stat/res/avg/~x~,~y~";
             case CalcEngine.AVGXW:return brief ? "~x~w" : "stat/res/avg/~x~w";
-            case CalcEngine.STDEV:return brief ? "s_x_, s_y" : "stat/res/avg/s_x_,s_y";
-            case CalcEngine.PSTDEV:return brief ? "S_x_, S_y" : "stat/res/avg/S_x_,S_y";
+            case CalcEngine.STDEV:return brief ? "s¸x¸, s¸y" : "stat/res/avg/s¸x¸,s¸y";
+            case CalcEngine.PSTDEV:return brief ? "S¸x¸, S¸y" : "stat/res/avg/S¸x¸,S¸y";
             case CalcEngine.LIN_AB:return brief ? "a,b" : "stat/ax+b/a,b";
             case CalcEngine.LIN_YEST:return brief ? "y^*" : "stat/ax+b/y^*";
             case CalcEngine.LIN_XEST:return brief ? "x^*" : "stat/ax+b/x^*";
@@ -174,25 +174,25 @@ public final class CmdDesc
             case CalcEngine.ROLLUP:return brief ? "rollup" : "stack/rollup";
             case CalcEngine.CONST_c:return brief ? "c" : "const/univ/c";
             case CalcEngine.CONST_h:return brief ? "h" : "const/univ/h";
-            case CalcEngine.CONST_mu_0:return brief ? "µ_0" : "const/univ/µ_0";
-            case CalcEngine.CONST_eps_0:return brief ? "ë_0" : "const/univ/ë_0";
-            case CalcEngine.CONST_NA:return brief ? "N_A" : "const/chem/N_A";
+            case CalcEngine.CONST_mu_0:return brief ? "µ¸0" : "const/univ/µ¸0";
+            case CalcEngine.CONST_eps_0:return brief ? "ë¸0" : "const/univ/ë¸0";
+            case CalcEngine.CONST_NA:return brief ? "N¸A" : "const/chem/N¸A";
             case CalcEngine.CONST_R:return brief ? "R" : "const/chem/R";
             case CalcEngine.CONST_k:return brief ? "k" : "const/chem/k";
             case CalcEngine.CONST_F:return brief ? "F" : "const/chem/F";
             case CalcEngine.CONST_alpha:return brief ? "ã" : "const/phys/ã";
-            case CalcEngine.CONST_a_0:return brief ? "a_0" : "const/phys/a_0";
-            case CalcEngine.CONST_R_inf:return brief ? "R_Þ" : "const/phys/R_Þ";
-            case CalcEngine.CONST_mu_B:return brief ? "µ_B" : "const/phys/µ_B";
+            case CalcEngine.CONST_a_0:return brief ? "a¸0" : "const/phys/a¸0";
+            case CalcEngine.CONST_R_inf:return brief ? "R¸Þ" : "const/phys/R¸Þ";
+            case CalcEngine.CONST_mu_B:return brief ? "µ¸B" : "const/phys/µ¸B";
             case CalcEngine.CONST_e:return brief ? "e" : "const/atom/e";
-            case CalcEngine.CONST_m_e:return brief ? "m_e" : "const/atom/m_e";
-            case CalcEngine.CONST_m_p:return brief ? "m_p" : "const/atom/m_p";
-            case CalcEngine.CONST_m_n:return brief ? "m_n" : "const/atom/m_n";
-            case CalcEngine.CONST_m_u:return brief ? "m_u" : "const/atom/m_u";
+            case CalcEngine.CONST_m_e:return brief ? "m¸e" : "const/atom/m¸e";
+            case CalcEngine.CONST_m_p:return brief ? "m¸p" : "const/atom/m¸p";
+            case CalcEngine.CONST_m_n:return brief ? "m¸n" : "const/atom/m¸n";
+            case CalcEngine.CONST_m_u:return brief ? "m¸u" : "const/atom/m¸u";
             case CalcEngine.CONST_G:return brief ? "G" : "const/astro/G";
-            case CalcEngine.CONST_g_n:return brief ? "g_n" : "const/astro/g_n";
-            case CalcEngine.CONST_ly:return brief ? "l.y." : "const/astro/l.y.";
-            case CalcEngine.CONST_AU:return brief ? "A.U." : "const/astro/A.U.";
+            case CalcEngine.CONST_g_n:return brief ? "g¸n" : "const/astro/g¸n";
+            case CalcEngine.CONST_ly:return brief ? "ly" : "const/astro/ly";
+            case CalcEngine.CONST_AU:return brief ? "AU" : "const/astro/AU";
             case CalcEngine.CONST_pc:return brief ? "pc" : "const/astro/pc";
             case CalcEngine.CONST_km_mi:return brief ? "mi/km" : "conv/length/mi/km";
             case CalcEngine.CONST_m_ft:return brief ? "ft/m" : "conv/length/ft/m";
@@ -266,7 +266,7 @@ public final class CmdDesc
             case CalcEngine.STAT_RCL:return "RCL";
             case CalcEngine.STAT_STO:return "STO";
             case CalcEngine.MATRIX_SIZE:return brief ? "size" : "matrix/size";
-            case CalcEngine.MATRIX_AIJ:return brief ? "a_yx" : "matrix/a_yx";
+            case CalcEngine.MATRIX_AIJ:return brief ? "a¸yx" : "matrix/a¸yx";
             case CalcEngine.TRANSP_CONJ:return brief ? "~A~^T" : "matrix/transp conj";
             case CalcEngine.GUESS:return brief ? "guess" : "conv/guess";
             case CalcEngine.INVERFC:return brief ? "erfc^-1" : "math/prob/erfc^-1";
@@ -300,10 +300,15 @@ public final class CmdDesc
             case CalcEngine.STOP:return brief ? "STOP" : "prog/flow/STOP";
             case CalcEngine.DSE:return brief ? "DSE" : "prog/flow/DSE";
             case CalcEngine.ISG:return brief ? "ISG" : "prog/flow/ISG";
-            case CalcEngine.MATRIX_ROW:return brief ? "row_x" : "matrix/row_x";
-            case CalcEngine.MATRIX_COL:return brief ? "col_x" : "matrix/col_x";
-            case CalcEngine.MATRIX_MAX:return brief ? "a_max" : "matrix/a_max";
-            case CalcEngine.MATRIX_MIN:return brief ? "a_min" : "matrix/a_min";
+            case CalcEngine.MATRIX_ROW:return brief ? "row¸x" : "matrix/row¸x";
+            case CalcEngine.MATRIX_COL:return brief ? "col¸x" : "matrix/col¸x";
+            case CalcEngine.MATRIX_MAX:return brief ? "a¸max" : "matrix/a¸max";
+            case CalcEngine.MATRIX_MIN:return brief ? "a¸min" : "matrix/a¸min";
+            case CalcEngine.UNIT_SET:return "*unit";
+            case CalcEngine.UNIT_SET_INV:return "/unit";
+            case CalcEngine.UNIT_CONVERT:return "­unit";
+            case CalcEngine.UNIT_CLEAR:return brief ? "clear" : "unit/clear";
+            case CalcEngine.UNIT_DISPLAY:return brief ? "display" : "unit/display";
             default:
                 return "[nop]";
         }
@@ -311,18 +316,19 @@ public final class CmdDesc
   
     // Flags for menu entries, some are not commands
     // listed in this class but top menus etc.
-    public static final byte NUMBER_REQUIRED = 1;
-    public static final byte FINANCE_REQUIRED = 2;
-    public static final byte PROG_REQUIRED = 4;
-    public static final byte FONT_REQUIRED = 8;
-    public static final byte SUBMENU_REQUIRED = 15;
-    public static final byte TITLE_SKIP = 16;
-    public static final byte NO_REPEAT = 32;
-    public static final byte REPEAT_PARENT = 64;
-    public static final byte NO_PROG = (byte)128;
+    public static final short NUMBER_REQUIRED = 1;
+    public static final short FINANCE_REQUIRED = 2;
+    public static final short PROG_REQUIRED = 4;
+    public static final short FONT_REQUIRED = 8;
+    public static final short UNIT_REQUIRED = 16;
+    public static final short SUBMENU_REQUIRED = 31;
+    public static final short TITLE_SKIP = 32;
+    public static final short NO_REPEAT = 64;
+    public static final short REPEAT_PARENT = 128;
+    public static final short NO_PROG = 256;
   
 
-    public static byte getFlags( int id ) {
+    public static short getFlags( int id ) {
         switch (id) {
             case CalcEngine.DIGIT_0:
             case CalcEngine.DIGIT_1:
@@ -352,10 +358,12 @@ public final class CmdDesc
             case CalcEngine.CLS:
             case CalcEngine.CLMEM:
             case CalcEngine.CLST:
+            case CalcEngine.UNDO:
             case CalcEngine.FINANCE_CLEAR:
             case CalcEngine.PROG_FINISH:
             case CalcEngine.PROG_PURGE:
             case CalcEngine.MONITOR_ENTER:
+            case CalcEngine.UNIT_CLEAR:
                 return NO_REPEAT;
 
             case CalcEngine.RCLST:
@@ -420,6 +428,11 @@ public final class CmdDesc
             case CalcEngine.MONITOR_STAT:
             case CalcEngine.MONITOR_MATRIX:
                 return NUMBER_REQUIRED|REPEAT_PARENT;    
+ 
+            case CalcEngine.UNIT_SET:
+            case CalcEngine.UNIT_SET_INV:
+            case CalcEngine.UNIT_CONVERT:
+                return UNIT_REQUIRED;
  
             default:
                 return 0;

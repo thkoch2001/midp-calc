@@ -88,7 +88,7 @@ final class GFont extends UniFont {
             y += charHeight-smallerFont.baselinePosition;
         }
 
-        int fg_col = emphasized ? Colors.EMPHASIZED : (ch == '»' ? Colors.GREEN : fg);
+        int fg_col = emphasized ? Colors.EMPHASIZED : (green ? green() : fg);
         int w = gFont.data.drawGFontChar(g, x, y, ch, fg_col, bg, monospaced);
         if (overline) {
             g.setColor(Colors.c[fg_col]);
@@ -115,9 +115,9 @@ final class GFont extends UniFont {
         for (int i = 0; i < end && i < string.length(); i++) {
             char c = string.charAt(i);
             int charWidth = 0;
-            if (c == '^' || c == '_')
+            if (c == '^' || c == '¸')
                 font = font == this ? (GFont)smallerFont : this;
-            else if (c == '~')
+            else if (c == '~' || c == '`')
                 ; // overline... no font change
             else
                 charWidth = font.charWidth(c);
@@ -131,7 +131,7 @@ final class GFont extends UniFont {
         if (end > string.length())
             end = string.length();
 
-        subscript = superscript = overline = false;
+        green = subscript = superscript = overline = false;
         
         data.getClip(g);
         if (smallerFont != null && smallerFont != this) {

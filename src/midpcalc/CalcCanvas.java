@@ -117,31 +117,6 @@ public final class CalcCanvas
 // Not yet matrix:
 //   <int> select ->cplx cplx/split cplx/abs cplx/arg
 
-// Units:
-//   Length:             m    in ft yd mi n.m.
-//   Mass:               kg   g lb oz ton gr
-//   Time:               s    h
-//   Current:            A                          A = C/s
-//   Temperature:        K    °C °F
-//   Amount:             mol                        mol = 6.0221415e23
-// Derived units:
-//   Area:               
-//   Volume:             L gal pt cup fl.oz         L = m³ /1000
-//   Frequency:          Hz                         Hz = 1/s
-//   Force:              N                          N = kg·m/s²
-//   Pressure:           Pa                         Pa = N/m² = kg/m·s²
-//   Energy:             J    cal Btu eV            J = N·m = kg·m²/s²
-//   Effect:             W    hp                    W = J/s = kg·m²/s³
-// Electric derived units:
-//   Charge:             C    e                     C = A·s
-//   Potential:          V                          V = W/A = kg·m²/s³·A
-//   Capasitance:        F                          F = C/V = s^4·A²/kg·m²
-//   Resistance:         Ohm                        Ohm = V/A = kg·m²/s³·A²
-//   Conductance:        S                          S = 1/Ohm = s³·A²/kg·m²
-//   Flux:               Wb                         Wb = V·s = kg·m²/s²·A
-//   Flux density:       T                          T = Wb/m² = kg/s²·A
-//   Inductance:         H                          H = Wb/A = kg·m²/s²·A²
-
 // Physical constants:
 // Universal
 //   Speed of light in vacuum          c == 299792458 m/s
@@ -163,12 +138,12 @@ public final class CalcCanvas
 //   Mass of electron                  m_e = 9.1093826e-31 kg
 //   Mass of proton                    m_p = 1.67262171e-27 kg
 //   Mass of neutron                   m_n = 1.67492728e-27 kg
-//   Unified atomic mass unit          m_u = 1.66053886e-27 kg
+//   Unified atomic mass unit          u = 1.66053886e-27 kg
 // Astronomical
 //   Newtonian constant of gravitation G = 6.6742e-11 N·m²/kg² = m³/kg·s²
 //   Standard acceleration of gravity  g_n == 9.80665 m/s²
-//   Light year                        l.y. == 365.25*24*60*60 * c
-//   Astronomical unit                 A.U. == 149597870691 m
+//   Light year                        ly == 365.25*24*60*60 * c
+//   Astronomical unit                 AU == 149597870691 m
 //   Parsec                            pc == 360*60*60/2·pi * A.U.
 //
 // Metric conversions:
@@ -177,36 +152,43 @@ public final class CalcCanvas
 //   Foot in meters                    ft/m == 0.3048        (ft = 12 in)
 //   Yard in meters                    yd/m == 0.9144        (yd = 3 ft)
 //   Mile in kilometers                mi/km == 1.609344     (mi = 5280 ft)
-//   Nautical mile in kilometers       n.m./km == 1.852      (def)
+//*  Nautical mile in kilometers       NM/km == 1.852        (def)
 // Weight
-//   U.S. pound in kilos               lb/kg == 0.45359237   (def)
-//   U.S. ounce in grams               oz/g == 28.349523125  (oz = 1/16 lb)
-//   U.S. short ton in kilos           ton/kg == 907.18474   (ton = 2000 lb)
-//   U.S. grain in milligrams          gr/mg == 64.79891     (gr = 1/7000 lb)
+//   grain in milligrams               gr/mg == 64.79891     (gr = 1/7000 lb)
+//   ounce in grams                    oz/g == 28.349523125  (oz = 1/16 lb)
+//   pound in kilos                    lb/kg == 0.45359237   (def)
+//*  stone in kilos                    st/kg == 6.35029318   (st = 14 lb)
+//   short ton in kilos                ton/kg == 907.18474   (ton = 2000 lb)
+//*  long ton in kilos                 t/kg == 1016.0469088  (t = 2240 lb)
 // Volume
 //   U.S. gallon in litres             gal/l == 3.785411784  (gal = 231 in³)
 //   U.S. pint in litres               pt/l == 0.473176473   (pt = 1/8 gal)
 //   U.S. cup in litres                cup/l == 0.2365882365 (cup = 1/2 pt)
-//   U.S. fluid ounce in millilitres   fl.oz/ml==29.5735295625(fl.oz=gal/128)
+//   U.S. fluid ounce in millilitres   fl.oz/ml==29.5735295625(fl.oz = 1/16 pt)
+//*  Imperial gallon in litres         gal/l == 4.54609      (def)
+//*  Imperial pint in litres           pt/l == 0.56826125    (pt = 1/8 gal)
+//*  Canadian cup in litres            cup/l == 0.2273045    (cup = 8 fl.oz)
+//*  Imperial fluid ounce in ml        fl.oz/ml == 28.4130625(fl.oz = 1/20 pt)
 // Temperature
 //   Celsius to Fahrenheit             °C->°F == x*1.8+32    (def)
 //   Fahrenheit to Celsius             °F->°C == (x-32)/1.8  (def)
 //   Kelvin minus Celsius              °K-°C == 273.15       (def)
 // Energy
-//   International calorie in Joules   cal/J = 4.1868
-//   British thermal unit in Joules    Btu/J = 1055.06
-//   Horsepower in Watts               hp/W  = 745.7
+//   International calorie in Joules   cal/J == 4.1868
+//*  British thermal unit in Joules    Btu/J == 1055.05585262
+//*  Horsepower in Watts               hp/W  == 745.69987158227022 (550 ft·lbf/s)
 //
 // Sources: http://physics.nist.gov/cuu/Units/units.html
 //          http://physics.nist.gov/cuu/Constants
-//          http://www.free-definition.com
+//          http://en.wikipedia.org/wiki/Conversion_of_units
 // (== means "equals exactly" or "equals by definition")
 
     private static final class Menu
     {
         public String label;
         public int command;
-        public byte flags;
+        public short flags;
+        public int param;
         public Menu [] subMenu;
 
         // get Details from CmdStr class
@@ -222,7 +204,9 @@ public final class CalcCanvas
         Menu(String l, int c, int f) {
             label = l;
             command = c;
-            flags = (byte)f;
+            if (c == UNIT)
+                param = findUnit(l);
+            flags = (short)f;
         }
         Menu(String l, Menu [] m) {
             label = l;
@@ -230,7 +214,7 @@ public final class CalcCanvas
         }
         Menu(String l, int f, Menu [] m) {
             label = l;
-            flags = (byte)f;
+            flags = (short)f;
             subMenu = m;
         }
     }
@@ -266,6 +250,7 @@ public final class CalcCanvas
     private static final int MENU_FONT = -100;
     private static final int NUMBER_FONT = -101;
     private static final int MONITOR_FONT = -102;
+    private static final int UNIT = -200;
 
     private Menu basicMenu = new Menu("basic",new Menu[] {
         new Menu(CalcEngine.SUB),
@@ -276,7 +261,7 @@ public final class CalcCanvas
     });
 
     private Menu enterMonitor =
-    new Menu(CalcEngine.MONITOR_ENTER);
+        new Menu(CalcEngine.MONITOR_ENTER);
 
     private Menu systemMenu = new Menu("sys",new Menu[] {
         new Menu("font",new Menu[] {
@@ -418,36 +403,12 @@ public final class CalcCanvas
                         new Menu(CalcEngine.DATE),
                     }),
                 }),
-                new Menu("metric",new Menu [] {
-                    new Menu("length",new Menu [] {
-                        new Menu(CalcEngine.CONST_km_mi),
-                        new Menu(CalcEngine.CONST_cm_in),
-                        new Menu(CalcEngine.CONST_m_yd),
-                        new Menu(CalcEngine.CONST_km_nm),
-                        new Menu(CalcEngine.CONST_m_ft),
-                    }),
-                    new Menu("weight",new Menu [] {
-                        new Menu(CalcEngine.CONST_g_oz),
-                        new Menu(CalcEngine.CONST_kg_lb),
-                        new Menu(CalcEngine.CONST_mg_gr),
-                        new Menu(CalcEngine.CONST_kg_ton),
-                    }),
-                    new Menu("temp",new Menu [] {
-                        new Menu(CalcEngine.CONV_C_F),
-                        new Menu(CalcEngine.CONV_F_C),
-                        new Menu(CalcEngine.CONST_K_C),
-                    }),
-                    new Menu("energy",new Menu [] {
-                        new Menu(CalcEngine.CONST_J_cal),
-                        new Menu(CalcEngine.CONST_J_Btu),
-                        new Menu(CalcEngine.CONST_W_hp),
-                    }),
-                    new Menu("vol",new Menu [] {
-                        new Menu(CalcEngine.CONST_l_pt),
-                        new Menu(CalcEngine.CONST_l_cup),
-                        new Menu(CalcEngine.CONST_l_gal),
-                        new Menu(CalcEngine.CONST_ml_floz),
-                    }),
+                new Menu("unit",new Menu [] {
+                    new Menu(CalcEngine.UNIT_SET),
+                    new Menu(CalcEngine.UNIT_SET_INV),
+                    new Menu(CalcEngine.UNIT_CONVERT),
+                    new Menu(CalcEngine.UNIT_DISPLAY),
+                    new Menu(CalcEngine.UNIT_CLEAR),
                 }),
                 new Menu("const",new Menu [] {
                     new Menu("univ",new Menu [] {
@@ -606,7 +567,7 @@ public final class CalcCanvas
             new Menu(CalcEngine.YPOWX),
             new Menu(CalcEngine.LN),
             new Menu(CalcEngine.XRTY),
-            new Menu("pow_10,2",CmdDesc.TITLE_SKIP,new Menu[] {
+            new Menu("pow¸10,2",CmdDesc.TITLE_SKIP,new Menu[] {
                 new Menu(CalcEngine.EXP2),
                 new Menu(CalcEngine.EXP10),
                 new Menu(CalcEngine.LOG2),
@@ -796,10 +757,165 @@ public final class CalcCanvas
         }),
     });
 
-    private static final int menuColor [] = {
-        // All color components divisible by 4 for easy dimming
-        0x00e0e0,0x00fc00,0xe0e000,0xfca800,0xfc5400,0xfc0000,0xc00080
-    };
+    private Menu unitMenu = new Menu(null,new Menu[] {
+        new Menu("lengthy",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+            new Menu("length",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("m",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("metric",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                    new Menu("mm",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("cm",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("km",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("Å",UNIT,CmdDesc.REPEAT_PARENT),
+                }),
+                new Menu("US/Imp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                    new Menu("in",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("ft",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("yd",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("mi",UNIT,CmdDesc.REPEAT_PARENT),
+                }),
+                new Menu("other",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                    new Menu("NM",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("AU",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("ly",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("pc",UNIT,CmdDesc.REPEAT_PARENT),
+                }),
+            }),
+            new Menu("area",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("m²",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("a",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("da",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("ha",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("US/Imp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                    new Menu("acre",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("in²",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("ft²",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("yd²",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("mi²",UNIT,CmdDesc.REPEAT_PARENT),
+                }),
+            }),
+            new Menu("speed",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("m/s",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("km/h",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("mph",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("knot",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("c",UNIT,CmdDesc.REPEAT_PARENT),
+            }),
+            new Menu("volume",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("metric",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                    new Menu("ml",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("cl",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("dl",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("l",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("m³",UNIT,CmdDesc.REPEAT_PARENT),
+                }),
+                new Menu("U.S.",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                    new Menu("fl.oz",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("cup",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("pt",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("gal",UNIT,CmdDesc.REPEAT_PARENT),
+                }),
+                new Menu("Imp.",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                    new Menu("`fl.oz`",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("`cup`",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("`pt`",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("`gal`",UNIT,CmdDesc.REPEAT_PARENT),
+                }),
+            }),
+            new Menu("accel",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("m/s²",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("ips²",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("fps²",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("mps²",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("`g`",UNIT,CmdDesc.REPEAT_PARENT),
+            }),
+        }),
+        new Menu("mixed",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+            new Menu("weight",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("kg",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("metric",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                    new Menu("g",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("t",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("u",UNIT,CmdDesc.REPEAT_PARENT),
+                }),
+                new Menu("US/Imp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                    new Menu("gr",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("oz",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("lb",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("st",UNIT,CmdDesc.REPEAT_PARENT),
+                }),
+                new Menu("US/Imp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                    new Menu("ton",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("`t`",UNIT,CmdDesc.REPEAT_PARENT),
+                }),
+            }),
+            new Menu("time",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("s",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("min",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("h",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("d",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("y",UNIT,CmdDesc.REPEAT_PARENT),
+            }),
+            new Menu("temp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("K",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("°C",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("°F",UNIT,CmdDesc.REPEAT_PARENT),
+            }),
+            new Menu("electric",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("V",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("C",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("A",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("Ø",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("more",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                    new Menu("F",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("H",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("T",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("Wb",UNIT,CmdDesc.REPEAT_PARENT),
+                }),
+            }),
+            new Menu("chem",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("mol",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("e",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("eV",UNIT,CmdDesc.REPEAT_PARENT),
+            }),
+        }),
+        new Menu("firm",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+            new Menu("pressure",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("Pa",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("psi",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("bar",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("atm",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("mmHg",UNIT,CmdDesc.REPEAT_PARENT),
+            }),
+            new Menu("force",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("N",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("pdl",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("kgf",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("lbf",UNIT,CmdDesc.REPEAT_PARENT),
+            }),
+            new Menu("power",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("W",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("kW",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("MW",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("GW",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("hp",UNIT,CmdDesc.REPEAT_PARENT),
+            }),
+            new Menu("energy",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("J",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("kJ",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("cal",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("kcal",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("Btu",UNIT,CmdDesc.REPEAT_PARENT),
+            }),
+        }),
+    });
+    
+    static int findUnit(String name) {
+        for (int unitType=0; unitType<Unit.allUnits.length; unitType++)
+            for (int unit=0; unit<Unit.allUnits[unitType].length; unit++)
+                if (name.equals(Unit.allUnits[unitType][unit].name))
+                    return (unit<<16) + unitType;
+        throw new IllegalStateException("Could not find unit");
+    }
 
     private UniFont menuFont;
     private UniFont numberFont;
@@ -827,6 +943,7 @@ public final class CalcCanvas
     private int header,footer;
     private static final int TOP_LEFT = Graphics.TOP | Graphics.LEFT;
 
+    public static final int MENU_SIZE = 8;
     private Menu [] menuStack;
     private int menuStackPtr;
     private int menuCommand;
@@ -873,7 +990,7 @@ public final class CalcCanvas
 
         setFullScreen(fullScreen);
 
-        menuStack = new Menu[7]; // One too many, I think
+        menuStack = new Menu[MENU_SIZE];
         menuStackPtr = -1;
 
         numRepaintLines = 100;
@@ -1260,7 +1377,7 @@ public final class CalcCanvas
             // Draw a small "joystick" in the center
             y += h/2;
             x += w/2;
-            g.setColor(menuColor[menuStackPtr]/4*3);
+            g.setColor(Colors.c[Colors.MENU+menuStackPtr]/4*3);
             g.fillRect(x-1,y-10,3,21);
             g.fillRect(x-10,y-1,21,3);
             g.fillArc(x-5,y-5,11,11,0,360);
@@ -1288,16 +1405,33 @@ public final class CalcCanvas
             }
             tmp.setLength(tmp.length()-1);
         } else {
-            String tmp = calc.getStackElement(i);
-            if (tmp.length()>nDigits)
+            String unit = calc.getStackUnitStr(i);
+            int digits = nDigits;
+            int unitWidth = 0;
+            if (unit != null) {
+                numberFont.monospaced = false;
+                int w = numberFont.stringWidth(unit);
+                unitWidth = (w+numberFontWidth-1)/numberFontWidth;
+                digits -= unitWidth;
+                numberFont.drawString(g,offX+nDigits*numberFontWidth-w,
+                        offY+(nLines-1-i)*numberFontHeight, unit);
+                if (!cleared) {
+                    g.setColor(Colors.c[Colors.BACKGROUND]);
+                    g.fillRect(offX+digits*numberFontWidth,offY+(nLines-1-i)*numberFontHeight,
+                            unitWidth*numberFontWidth-w,numberFontHeight);
+                }
+                numberFont.monospaced = true;
+            }
+            String tmp = calc.getStackElement(i, unitWidth);
+            if (tmp.length()>digits)
                 tmp = "*****";
             numberFont.drawString(
-                g,offX+(nDigits-tmp.length())*numberFontWidth,
+                g,offX+(digits-tmp.length())*numberFontWidth,
                 offY+(nLines-1-i)*numberFontHeight,tmp);
             if (!cleared) {
                 g.setColor(Colors.c[Colors.BACKGROUND]);
                 g.fillRect(offX,offY+(nLines-1-i)*numberFontHeight,
-                           (nDigits-tmp.length())*numberFontWidth,numberFontHeight);
+                           (digits-tmp.length())*numberFontWidth,numberFontHeight);
             }
         }
     }
@@ -1518,7 +1652,8 @@ public final class CalcCanvas
                     (subItem.flags&CmdDesc.NUMBER_REQUIRED )!=0 ? numberMenu :
                     (subItem.flags&CmdDesc.FINANCE_REQUIRED)!=0 ? financeMenu :
                     (subItem.flags&CmdDesc.FONT_REQUIRED)   !=0 ? fontMenu :
-                    progMenu;
+                    (subItem.flags&CmdDesc.PROG_REQUIRED)   !=0 ? progMenu :
+                    unitMenu;
                 // Set correct labels
                 if (sub == progMenu)
                     for (int i=0; i<4; i++)
@@ -1560,6 +1695,8 @@ public final class CalcCanvas
                     } else {
                         calc.command(menuCommand,number);
                     }
+                } else if (command == UNIT) {
+                    calc.command(menuCommand, subItem.param);
                 } else if (command >= CalcEngine.AVG_DRAW &&
                            command <= CalcEngine.POW_DRAW) {
                     menuCommand = command;
