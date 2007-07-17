@@ -44,6 +44,7 @@ public final class Unit {
     
     static final class UnitDesc {
         final String name;
+        final String nameNormalText;
         final int system;
         final Real conversionFactor;
         Unit convertsTo;
@@ -56,7 +57,11 @@ public final class Unit {
             this(name, system, Real.ONE);
         }
         UnitDesc(String name, int system, Real conversionFactor) {
+            this(name, null, system, conversionFactor);
+        }
+        UnitDesc(String name, String nameNormalText, int system, Real conversionFactor) {
             this.name = name;
+            this.nameNormalText = nameNormalText;
             this.system = system;
             this.conversionFactor = conversionFactor;
             this.convertsTo = null;
@@ -223,7 +228,7 @@ public final class Unit {
         new UnitDesc("F").s(2).C(2).kg(-1).m(-2),
     };
     private static final UnitDesc[] derivedResistanceUnits = new UnitDesc[] {
-        new UnitDesc("Ø"/*Ohm*/).kg(1).m(2).s(-1).C(-2),
+        new UnitDesc("Ø", "Ohm", SI, Real.ONE).kg(1).m(2).s(-1).C(-2),
     };
     private static final UnitDesc[] derivedFluxUnits = new UnitDesc[] {
         new UnitDesc("Wb").kg(1).m(2).s(-1).C(-1),
@@ -234,6 +239,7 @@ public final class Unit {
     private static final UnitDesc[] derivedInductanceUnits = new UnitDesc[] {
         new UnitDesc("H").kg(1).m(2).C(-2),
     };
+    // Additional composite units used in menus
     private static final UnitDesc[] helperCompositeUnits = new UnitDesc[] {
         new UnitDesc("m²").m(2),
         new UnitDesc("m³").m(3),
@@ -245,7 +251,9 @@ public final class Unit {
         new UnitDesc("yd²").unit(1,7,2),
         new UnitDesc("mi²").unit(1,8,2),
     };
+
     static final UnitDesc[][] allUnits = new UnitDesc[][] {
+        // Primitive
         massUnits,                       // 0
         lengthUnits,                     // 1
         timeUnits,                       // 2
@@ -274,6 +282,7 @@ public final class Unit {
         derivedFluxUnits,                // 24
         derivedFluxDensityUnits,         // 25
         derivedInductanceUnits,          // 26
+        // Additional
         helperCompositeUnits  // Used only indirectly
     };
     static final int simplePrimitiveUnits[] = new int [] {
@@ -282,6 +291,8 @@ public final class Unit {
     static final int compositePrimitiveUnits[] = new int [] {
         6,7,8,9,10,11
     };
+    static final String overflowStr = "[ofl]";
+    static final String errorStr = "[err]";
     
     private static final class DerivedUnit {
         int[] power = new int[N_DERIVED_UNITS];
@@ -305,6 +316,9 @@ public final class Unit {
         };
         static final String powerStr[] = new String[] {
             "", "", "²", "³", "¼"/*^4*/
+        };
+        static final String powerStrNormalText[] = new String[] {
+            "", "", "²", "³", "^4", "^5", "^6", "^7", "^8"
         };
 
         DerivedUnit() {
@@ -390,6 +404,11 @@ public final class Unit {
         StringBuffer toStringBuf = new StringBuffer();
 
         public String toString() {
+            return toString(false);
+        }
+
+        public String toString(boolean normalText) {
+            String[] powerStr = normalText ? powerStrNormalText : DerivedUnit.powerStr;
             boolean allMinusOne = true;
             boolean someNegative = false;
             for (int i=0; i<N_DERIVED_UNITS; i++) {
@@ -399,13 +418,13 @@ public final class Unit {
                 if (power[unitType] < 0)
                     someNegative = true;
                 if (Math.abs(power[unitType]) >= powerStr.length) {
-                    return "[ofl]";
+                    return overflowStr;
                 }
             }
             
             toStringBuf.setLength(0);
             boolean started = false;
-            if (allMinusOne) {
+            if (allMinusOne && !normalText) {
                 for (int i=0; i<N_DERIVED_UNITS; i++) {
                     int unitType = unitTypeOrder[i];
                     if (power[unitType] == -1) {
@@ -430,8 +449,8 @@ public final class Unit {
                 }
             }
             if (someNegative) {
-                //if (!started)
-                //    toStringBuf.append("1");
+                if (!started && normalText)
+                    toStringBuf.append("1");
                 toStringBuf.append("/");
                 started = false;
                 for (int i=0; i<N_DERIVED_UNITS; i++) {
@@ -698,7 +717,7 @@ public final class Unit {
                 (power[unitType] != 0 && unit[unitType] != a.unit[unitType]))
                 return false;
         }
-        return false;
+        return true;
     }
     
     private boolean handleErrorUnary() {
@@ -965,30 +984,60 @@ public final class Unit {
     }
 
     public String toString() {
-        return toString(true);
+        return toString(true, false);
     }
 
-    public String toString(boolean reduce) {
+    public String toString(boolean reduce, boolean normalText) {
         if (overflow)
-            return "[ofl]";
+            return overflowStr;
         if (error)
-            return "[err]";
+            return errorStr;
         if (isUnity())
             return "";
         reducedUnit.init(this);
         bestReducedUnit.copy(reducedUnit);
         if (reduce)
             reduce();
-        return bestReducedUnit.toString();
+        return bestReducedUnit.toString(normalText);
     }
     
     public static String toString(long a) {
-        return toString(a,true);
+        return toString(a, true, false);
     }
 
-    public static String toString(long a, boolean reduce) {
+    public static String toString(long a, boolean reduce, boolean normalText) {
         uTmp1.unpack(a);
-        return uTmp1.toString(reduce);
+        return uTmp1.toString(reduce, normalText);
+    }
+    
+    public static String describe(long unit) {
+        String unitDesc;
+        if (unit == 0) {
+            unitDesc = "The number is a dimensionless quantity, " +
+                "without any physical units";
+        } else {
+            String u = Unit.toString(unit, false, true);
+            String u_r = Unit.toString(unit, true, true);
+            if (u.equals(Unit.overflowStr)) {
+                unitDesc = "The unit is the result of an operation that " +
+                    "overflowed, i.e. some physical quantity was raised to " +
+                    "a power that was too high or too low";
+            } else if (u.equals(Unit.errorStr)) {
+                unitDesc = "The unit is the result of an operation that is " +
+                    "not permitted for units";
+            } else if (u.equals(u_r)) {
+                unitDesc = "The unit shown is the simplest form of the unit: " + u;
+            } else if (u_r.equals(Unit.overflowStr)) {
+                unitDesc = "The unit contains some physical quantity that " +
+                    "cannot be displayed due to lack of symbols. The actual" +
+                    "unit represented is: " + u;
+            } else {
+                unitDesc = "The unit shown is a reduced form composed of " +
+                    "base units. The most primitive representation of this " +
+                    "unit is: " + u;
+            }
+        }
+        return unitDesc;
     }
     
     private static void check(Unit unit, String s) {
@@ -1012,7 +1061,7 @@ public final class Unit {
                     else
                         System.out.print(" (nonlinear conversion)");
                 } else if (allUnits[unitType][unit].convertsTo != null) {
-                    System.out.print(" = "+allUnits[unitType][unit].convertsTo.toString(false));
+                    System.out.print(" = "+allUnits[unitType][unit].convertsTo.toString(false, false));
                 } else {
                     System.out.print(" (base SI unit)");
                 }

@@ -294,7 +294,7 @@ public final class CalcEngine
     public static final int MATRIX_MIN     = 282;
     public static final int MATRIX_MAX     = 283;
     public static final int UNIT_CLEAR     = 284;
-    public static final int UNIT_DISPLAY   = 285;
+    public static final int UNIT_DESCRIBE   = 285;
 
     public static final int MATRIX_STO     = 512; // Special bit pattern
     public static final int MATRIX_RCL     = 768; // Special bit pattern
@@ -2793,8 +2793,6 @@ public final class CalcEngine
                     xunit = 0;
                 }
                 break;
-            case UNIT_DISPLAY:
-                break;
         }
 
         if (matrix) {
@@ -4437,6 +4435,12 @@ public final class CalcEngine
                 String guess = g.guess(stack[0],stackI[0]);
                 if (!progRunning) // No message while program is running
                     setMessage("Guess", guess);
+                break;
+
+            case UNIT_DESCRIBE:
+                String unitDesc = Unit.describe(stackUnit[0]);
+                if (!progRunning) // No message while program is running
+                    setMessage("Unit", unitDesc);
                 break;
 
             case IF_EQUAL:

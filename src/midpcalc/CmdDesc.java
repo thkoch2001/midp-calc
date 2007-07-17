@@ -308,7 +308,7 @@ public final class CmdDesc
             case CalcEngine.UNIT_SET_INV:return "/unit";
             case CalcEngine.UNIT_CONVERT:return "­unit";
             case CalcEngine.UNIT_CLEAR:return brief ? "clear" : "unit/clear";
-            case CalcEngine.UNIT_DISPLAY:return brief ? "display" : "unit/display";
+            case CalcEngine.UNIT_DESCRIBE:return brief ? "describe" : "unit/describe";
             default:
                 return "[nop]";
         }

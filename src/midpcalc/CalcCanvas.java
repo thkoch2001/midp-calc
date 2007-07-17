@@ -407,7 +407,7 @@ public final class CalcCanvas
                     new Menu(CalcEngine.UNIT_SET),
                     new Menu(CalcEngine.UNIT_SET_INV),
                     new Menu(CalcEngine.UNIT_CONVERT),
-                    new Menu(CalcEngine.UNIT_DISPLAY),
+                    new Menu(CalcEngine.UNIT_DESCRIBE),
                     new Menu(CalcEngine.UNIT_CLEAR),
                 }),
                 new Menu("const",new Menu [] {
