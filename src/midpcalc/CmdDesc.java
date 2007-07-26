@@ -39,7 +39,7 @@ public final class CmdDesc
             case CalcEngine.SQR:return "x²";
             case CalcEngine.SQRT:return "¿x";
             case CalcEngine.PERCENT:return "%";
-            case CalcEngine.PERCENT_CHG:return "%chg";
+            case CalcEngine.PERCENT_CHG:return "ð%";
             case CalcEngine.YPOWX:return brief ? "y^x": "math/pow/y^x";
             case CalcEngine.XRTY:return brief ? "^x^¿y": "math/pow/^x^¿y";
             case CalcEngine.LN:return brief ? "ln": "math/pow/ln";
@@ -267,7 +267,7 @@ public final class CmdDesc
             case CalcEngine.STAT_STO:return "STO";
             case CalcEngine.MATRIX_SIZE:return brief ? "size" : "matrix/size";
             case CalcEngine.MATRIX_AIJ:return brief ? "a¸yx" : "matrix/a¸yx";
-            case CalcEngine.TRANSP_CONJ:return brief ? "~A~^T" : "matrix/transp conj";
+            case CalcEngine.TRANSP_CONJ:return brief ? "~A~^T" : "matrix/~A~^T";
             case CalcEngine.GUESS:return brief ? "guess" : "conv/guess";
             case CalcEngine.INVERFC:return brief ? "erfc^-1" : "math/prob/erfc^-1";
             case CalcEngine.PHI:return brief ? "phi" : "math/prob/phi";

@@ -813,6 +813,7 @@ public final class CalcCanvas
                     new Menu("cup",UNIT,CmdDesc.REPEAT_PARENT),
                     new Menu("pt",UNIT,CmdDesc.REPEAT_PARENT),
                     new Menu("gal",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("in³",UNIT,CmdDesc.REPEAT_PARENT),
                 }),
                 new Menu("Imp.",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
                     new Menu("`fl.oz`",UNIT,CmdDesc.REPEAT_PARENT),
@@ -856,9 +857,11 @@ public final class CalcCanvas
                 new Menu("y",UNIT,CmdDesc.REPEAT_PARENT),
             }),
             new Menu("temp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                new Menu("K",UNIT,CmdDesc.REPEAT_PARENT),
                 new Menu("°C",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("ð°C",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("ð°F",UNIT,CmdDesc.REPEAT_PARENT),
                 new Menu("°F",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("K",UNIT,CmdDesc.REPEAT_PARENT),
             }),
             new Menu("electric",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
                 new Menu("V",UNIT,CmdDesc.REPEAT_PARENT),
@@ -896,7 +899,6 @@ public final class CalcCanvas
                 new Menu("W",UNIT,CmdDesc.REPEAT_PARENT),
                 new Menu("kW",UNIT,CmdDesc.REPEAT_PARENT),
                 new Menu("MW",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("GW",UNIT,CmdDesc.REPEAT_PARENT),
                 new Menu("hp",UNIT,CmdDesc.REPEAT_PARENT),
             }),
             new Menu("energy",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {

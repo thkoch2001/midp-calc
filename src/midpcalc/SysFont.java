@@ -72,7 +72,7 @@ final class SysFont extends UniFont {
 // sqrt,monospaced,>>
 // Too bold: gamma,rarr,pi,sum,alpha
         
-        if ("­«¿ß¡¶ÞãëÐ£»¹¼Ø".indexOf(ch)>=0) {
+        if ("­«¿ß¡¶ÞãëÐ£»¹¼Øð".indexOf(ch)>=0) {
             int w = font.charWidth('O');
             int h = gFont.baselinePosition;
             switch (ch) {
@@ -200,6 +200,13 @@ final class SysFont extends UniFont {
                     g.fillRect(x+font.charWidth('O')/2-1,y+h/2,2,charHeight-h/2);
                     g.setColor(Colors.c[fg]);
                     break;
+                case 'ð':
+                    int w2 = w & ~1;
+                    g.drawLine(x,y+h-1,x+w2/2-1,y+h-w2);
+                    g.drawLine(x+w2/2-1,y+h-w2,x+w2-2,y+h-1);
+                    g.drawLine(x+w2/2,y+h-w2,x+w2-1,y+h-1);
+                    g.drawLine(x,y+h-1,x+w2-1,y+h-1);
+                    break;
             }
             return w;
         }
@@ -227,14 +234,14 @@ final class SysFont extends UniFont {
 
     private static boolean plainString(String string) {
         for (int i = 0; i < string.length(); i++)
-            if ("^~¸`­«¿ß¡¶ÞãëÐ£¹¼Ø»".indexOf(string.charAt(i)) >= 0)
+            if ("^~¸`­«¿ß¡¶ÞãëÐ£¹¼Ø»ð".indexOf(string.charAt(i)) >= 0)
                 return false;
         return true;
     }
 
     private static boolean plainString(StringBuffer string, int start) {
         for (int i = start; i < string.length(); i++)
-            if ("^~¸­`«¿ß¡¶ÞãëÐ£¹¼Ø»".indexOf(string.charAt(i)) >= 0)
+            if ("^~¸­`«¿ß¡¶ÞãëÐ£¹¼Ø»ð".indexOf(string.charAt(i)) >= 0)
                 return false;
         return true;
     }
@@ -261,7 +268,7 @@ final class SysFont extends UniFont {
                 font = (font == this) ? smallerFont : this;
             } else if (c == '~' || c == '`') {
                 ; // overline... no font change
-            } else if ("­«¿ß¡¶Ð»Ø".indexOf(c) >= 0) {
+            } else if ("­«¿ß¡¶Ð»Øð".indexOf(c) >= 0) {
                 charWidth = font.charWidth('O');
             } else if (c == 'Þ') {
                 charWidth = font.charWidth('o') * (6 + 4) / 6;

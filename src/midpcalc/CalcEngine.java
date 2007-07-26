@@ -359,6 +359,7 @@ public final class CalcEngine
     public StringBuffer inputBuf;
     public boolean inputInProgress;
     Real rTmp,rTmp2,rTmp3,rTmp4;
+    Unit uTmp;
     private int repaintLines;
     public boolean initialized = false;
     private String message, messageCaption;
@@ -386,7 +387,6 @@ public final class CalcEngine
     private static final String [] financeLabels =
     { "pv","fv","np","pmt","ir%" };
     private String [] memLabels;
-    private String [] memUnitStr;
     private String [] matrixLabels;
 
     private static final int UNDO_NONE   = 0;
@@ -460,6 +460,7 @@ public final class CalcEngine
         rTmp2  = new Real();
         rTmp3  = new Real();
         rTmp4  = new Real();
+        uTmp   = new Unit();
         inputBuf = new StringBuffer(40);
         degrees = false;
         grad = false;
@@ -469,7 +470,6 @@ public final class CalcEngine
         monitorSize = 0;
         clearMonitorStrings();
         memLabels = new String[MEM_SIZE];
-        memUnitStr = new String[MEM_SIZE];
 
         prog = new short[NUM_PROGS][];
         progLabels = new String[NUM_PROGS];
@@ -884,15 +884,15 @@ public final class CalcEngine
             monitorSize = monitor&0x1f;
             if (monitorMode == MONITOR_MEM)
                 setMonitoring(monitorMode, monitorSize, MEM_SIZE, mem, memI,
-                              memUnit, memLabels, memUnitStr);
+                              memUnit, memLabels);
             else if (monitorMode == MONITOR_STAT)
                 setMonitoring(monitorMode, monitorSize, STAT_SIZE, stat, null,
-                              null, statLabels, null);
+                              null, statLabels);
             else if (monitorMode == MONITOR_FINANCE)
                 setMonitoring(monitorMode, FINANCE_SIZE, FINANCE_SIZE, finance,
-                              null, null, financeLabels, null);
+                              null, null, financeLabels);
             else if (monitorMode == MONITOR_MATRIX) {
-                setMonitoring(monitorMode,monitorSize,0,null,null,null,null,null);
+                setMonitoring(monitorMode,monitorSize,0,null,null,null,null);
                 monitoredMatrix = null;
                 // updateMatrixMonitor() will be run later
             }
@@ -1195,7 +1195,7 @@ public final class CalcEngine
 
     private void setMonitoring(int mode, int size, int maxSize,
                                Real[] m, Real [] mi, long [] mu,
-                               String[] labels, String[] unitStr) {
+                               String[] labels) {
         if (size == 0)
             mode = MONITOR_NONE;
 
@@ -1207,7 +1207,6 @@ public final class CalcEngine
         imagMonitors = mi;
         monitorUnits = mu;
         monitorLabels = labels;
-        monitorUnitStr = unitStr;
         setMonitorY(0,false);
         clearMonitorStrings();
     }
@@ -1309,7 +1308,7 @@ public final class CalcEngine
     }
 
     public String getMonitorUnitStr(int n) {
-        if (monitorMode != MONITOR_MEM)
+        if (monitorUnits == null)
             return null;
         n += monitorYOff;
         if (monitorUnits[n] == 0)
@@ -1795,8 +1794,9 @@ public final class CalcEngine
                 } else {
                     complexOk = unitOk = true;
                     if (unit) {
-                        yunit = Unit.add(yunit, xunit, rTmp);
+                        yunit = Unit.add(yunit, xunit, rTmp, rTmp2);
                         y.mul(rTmp);
+                        y.add(rTmp2);
                         if (complex) yi.mul(rTmp);
                     }
                     y.add(x);
@@ -1816,8 +1816,9 @@ public final class CalcEngine
                 } else {
                     complexOk = unitOk = true;
                     if (unit) {
-                        yunit = Unit.add(yunit, xunit, rTmp);
+                        yunit = Unit.sub(yunit, xunit, rTmp, rTmp2);
                         y.mul(rTmp);
+                        y.add(rTmp2);
                         if (complex) yi.mul(rTmp);
                     }
                     y.sub(x);
@@ -2463,7 +2464,7 @@ public final class CalcEngine
             case SQRT:
                 if (unit) {
                     unitOk = true;
-                    xunit = Unit.sqrt(xunit, rTmp);
+                    xunit = Unit.nroot(xunit, 2, rTmp);
                     x.mul(rTmp);
                     if (complex) xi.mul(rTmp);
                 }
@@ -2760,7 +2761,7 @@ public final class CalcEngine
                     unit = unitOk = true;
                     int unitType = param & 0xffff;
                     int unitNo = param >>> 16;
-                    xunit = Unit.mul(xunit, new Unit(unitType,unitNo).pack(), rTmp);
+                    xunit = Unit.mul(xunit, uTmp.setUnit(unitType,unitNo).pack(), rTmp);
                     x.mul(rTmp);
                     if (complex) xi.mul(rTmp);
                 }
@@ -2770,7 +2771,7 @@ public final class CalcEngine
                     unit = unitOk = true;
                     int unitType = param & 0xffff;
                     int unitNo = param >>> 16;
-                    Unit u = new Unit(unitType, unitNo);
+                    Unit u = uTmp.setUnit(unitType, unitNo);
                     u.recip();
                     xunit = Unit.mul(xunit, u.pack(), rTmp);
                     x.mul(rTmp);
@@ -2782,8 +2783,9 @@ public final class CalcEngine
                     unit = unitOk = true;
                     int unitType = param & 0xffff;
                     int unitNo = param >>> 16;
-                    xunit = Unit.convertTo(xunit, new Unit(unitType,unitNo).pack(), rTmp);
+                    xunit = Unit.convertTo(xunit, uTmp.setUnit(unitType,unitNo).pack(), rTmp, rTmp2);
                     x.mul(rTmp);
+                    x.add(rTmp2);
                     if (complex) xi.mul(rTmp);
                 }
                 break;
@@ -4354,28 +4356,28 @@ public final class CalcEngine
                 break;
 
             case PI:          push(Real.PI,    null);                break;
-            case CONST_c:     push(0x4000001c, 0x4779e12800000000L, new Unit().m(1).s(-1).pack()); break;
-            case CONST_h:     push(0x3fffff91, 0x6e182e8b16bd5f42L, new Unit().J(1).s(1).pack()); break;
-            case CONST_mu_0:  push(0x3fffffec, 0x5454dc3e67db2c21L, new Unit().kg(1).m(1).C(-2).pack()); break;
-            case CONST_eps_0: push(0x3fffffdb, 0x4de1dbc537b4c1b4L, new Unit().s(2).C(2).kg(-1).m(-3).pack()); break;
-            case CONST_NA:    push(0x4000004e, 0x7f86183045affe27L, new Unit().mol(-1).pack()); break;
-            case CONST_R:     push(0x40000003, 0x428409e55c0fcb4fL, new Unit().J(1).mol(-1).K(-1).pack()); break;
-            case CONST_k:     push(0x3fffffb4, 0x42c3a0166b61ae01L, new Unit().J(1).K(-1).pack()); break;
-            case CONST_F:     push(0x40000010, 0x5e3955a6b50b0f28L, new Unit().C(1).mol(-1).pack()); break;
+            case CONST_c:     push(0x4000001c, 0x4779e12800000000L, uTmp.unity().m(1).s(-1).pack()); break;
+            case CONST_h:     push(0x3fffff91, 0x6e182e8b16bd5f42L, uTmp.unity().J(1).s(1).pack()); break;
+            case CONST_mu_0:  push(0x3fffffec, 0x5454dc3e67db2c21L, uTmp.unity().kg(1).m(1).C(-2).pack()); break;
+            case CONST_eps_0: push(0x3fffffdb, 0x4de1dbc537b4c1b4L, uTmp.unity().s(2).C(2).kg(-1).m(-3).pack()); break;
+            case CONST_NA:    push(0x4000004e, 0x7f86183045affe27L, uTmp.unity().mol(-1).pack()); break;
+            case CONST_R:     push(0x40000003, 0x428409e55c0fcb4fL, uTmp.unity().J(1).mol(-1).K(-1).pack()); break;
+            case CONST_k:     push(0x3fffffb4, 0x42c3a0166b61ae01L, uTmp.unity().J(1).K(-1).pack()); break;
+            case CONST_F:     push(0x40000010, 0x5e3955a6b50b0f28L, uTmp.unity().C(1).mol(-1).pack()); break;
             case CONST_alpha: push(0x3ffffff8, 0x778f50a81fcfba71L); break;
-            case CONST_a_0:   push(0x3fffffdd, 0x745e07537412adf4L, new Unit().m(1).pack()); break;
-            case CONST_R_inf: push(0x40000017, 0x53b911c8c56d5cfbL, new Unit().m(-1).pack()); break;
-            case CONST_mu_B:  push(0x3fffffb3, 0x59b155d92797eb1eL, new Unit().m(2).C(1).s(-1).pack()); break;
-            case CONST_e:     push(0x3fffffc1, 0x5e93683d3137633fL, new Unit().C(1).pack()); break;
-            case CONST_m_e:   push(0x3fffff9c, 0x49e7728ced335c92L, new Unit().kg(1).pack()); break;
-            case CONST_m_p:   push(0x3fffffa7, 0x42426639a512e22fL, new Unit().kg(1).pack()); break;
-            case CONST_m_n:   push(0x3fffffa7, 0x4259c7d3bd6cba4fL, new Unit().kg(1).pack()); break;
-            case CONST_m_u:   push(0x3fffffa7, 0x41c7dd5a667f9950L, new Unit().kg(1).pack()); break;
-            case CONST_G:     push(0x3fffffde, 0x496233f0f7af9494L, new Unit().m(3).kg(-1).s(-2).pack()); break;
-            case CONST_g_n:   push(0x40000003, 0x4e7404ea4a8c154dL, new Unit().m(1).s(-2).pack()); break;
-            case CONST_ly:    push(0x40000035, 0x4338f7ee448d8000L, new Unit().m(1).pack()); break;
-            case CONST_AU:    push(0x40000025, 0x45a974b4c6000000L, new Unit().m(1).pack()); break;
-            case CONST_pc:    push(0x40000036, 0x6da012f9404b0988L, new Unit().m(1).pack()); break;
+            case CONST_a_0:   push(0x3fffffdd, 0x745e07537412adf4L, uTmp.unity().m(1).pack()); break;
+            case CONST_R_inf: push(0x40000017, 0x53b911c8c56d5cfbL, uTmp.unity().m(-1).pack()); break;
+            case CONST_mu_B:  push(0x3fffffb3, 0x59b155d92797eb1eL, uTmp.unity().m(2).C(1).s(-1).pack()); break;
+            case CONST_e:     push(0x3fffffc1, 0x5e93683d3137633fL, uTmp.unity().C(1).pack()); break;
+            case CONST_m_e:   push(0x3fffff9c, 0x49e7728ced335c92L, uTmp.unity().kg(1).pack()); break;
+            case CONST_m_p:   push(0x3fffffa7, 0x42426639a512e22fL, uTmp.unity().kg(1).pack()); break;
+            case CONST_m_n:   push(0x3fffffa7, 0x4259c7d3bd6cba4fL, uTmp.unity().kg(1).pack()); break;
+            case CONST_m_u:   push(0x3fffffa7, 0x41c7dd5a667f9950L, uTmp.unity().kg(1).pack()); break;
+            case CONST_G:     push(0x3fffffde, 0x496233f0f7af9494L, uTmp.unity().m(3).kg(-1).s(-2).pack()); break;
+            case CONST_g_n:   push(0x40000003, 0x4e7404ea4a8c154dL, uTmp.unity().m(1).s(-2).pack()); break;
+            case CONST_ly:    push(0x40000035, 0x4338f7ee448d8000L, uTmp.unity().m(1).pack()); break;
+            case CONST_AU:    push(0x40000025, 0x45a974b4c6000000L, uTmp.unity().m(1).pack()); break;
+            case CONST_pc:    push(0x40000036, 0x6da012f9404b0988L, uTmp.unity().m(1).pack()); break;
             case CONST_km_mi: push(0x40000000, 0x66ff7dfa00e27e0fL); break;
             case CONST_m_ft:  push(0x3ffffffe, 0x4e075f6fd21ff2e5L); break;
             case CONST_cm_in: push(0x40000001, 0x5147ae147ae147aeL); break;
@@ -4558,8 +4560,9 @@ public final class CalcEngine
                         memUnit[param] = 0;
                     }
                 } else {
-                    memUnit[param] = Unit.add(memUnit[param], stackUnit[i], rTmp);
+                    memUnit[param] = Unit.add(memUnit[param], stackUnit[i], rTmp, rTmp2);
                     mem[param].mul(rTmp);
+                    mem[param].add(rTmp2);
                     memI[param].mul(rTmp);
                     mem[param].add(stack[i]);
                     memI[param].add(stackI[i]);
@@ -4754,24 +4757,24 @@ public final class CalcEngine
                 break;
 
             case MONITOR_NONE:
-                setMonitoring(cmd,0,0,null,null,null,null,null);
+                setMonitoring(cmd,0,0,null,null,null,null);
                 break;
 
             case MONITOR_MEM:
-                setMonitoring(cmd,param,MEM_SIZE,mem,memI,memUnit,memLabels,memUnitStr);
+                setMonitoring(cmd,param,MEM_SIZE,mem,memI,memUnit,memLabels);
                 break;
 
             case MONITOR_STAT:
-                setMonitoring(cmd,param,STAT_SIZE,stat,null,null,statLabels,null);
+                setMonitoring(cmd,param,STAT_SIZE,stat,null,null,statLabels);
                 break;
 
             case MONITOR_FINANCE:
                 setMonitoring(cmd,FINANCE_SIZE,FINANCE_SIZE,finance,null,
-                              null,financeLabels,null);
+                              null,financeLabels);
                 break;
 
             case MONITOR_MATRIX:
-                setMonitoring(cmd,param,0,null,null,null,null,null);
+                setMonitoring(cmd,param,0,null,null,null,null);
                 monitoredMatrix = null;
                 // updateMatrixMonitor() will be run later
                 break;
@@ -4780,7 +4783,7 @@ public final class CalcEngine
                 if (!progRecording)
                     break;            // what happened here? Should not happen!
                 progInitialMonitorSize = param; // also for size = 0
-                setMonitoring(MONITOR_PROG,param,0,null,null,null,null,null);
+                setMonitoring(MONITOR_PROG,param,0,null,null,null,null);
                 initProgMonitor(true);
                 break;
 
@@ -5010,7 +5013,7 @@ public final class CalcEngine
                 enterProgState(param, true);
                 if (progInitialMonitorSize > 0) {
                     setMonitoring(MONITOR_PROG, progInitialMonitorSize, 0,
-                                  null, null, null, null, null);
+                                  null, null, null, null);
                     initProgMonitor(true);
                 }
                 break;
@@ -5025,7 +5028,7 @@ public final class CalcEngine
                     prog[currentProg] = prog2;
                     exitProgState();
                     if (monitorMode == MONITOR_PROG) 
-                        setMonitoring(MONITOR_NONE,0,0,null,null,null,null,null);
+                        setMonitoring(MONITOR_NONE,0,0,null,null,null,null);
                 }
                 break;
 
