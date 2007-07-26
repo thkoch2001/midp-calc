@@ -974,7 +974,10 @@ public final class Unit {
     }
 
     public static long sub(long a, long b, Real convertA, Real offsetA) {
-        return add(a, b, convertA, offsetA);
+        uTmp1.unpack(a);
+        uTmp2.unpack(b);
+        uTmp1.sub(uTmp2, convertA, offsetA);
+        return uTmp1.pack();
     }
     
     public void mul(Unit a, Real conversionFactor) {
@@ -1215,15 +1218,15 @@ public final class Unit {
         Real f = new Real();
         Real o = new Real();
         if (op.equals("+")) {
-            a.add(b, f, o);
+            a.unpack(add(a.pack(), b.pack(), f, o));
         } else if (op.equals("-")) {
-            a.sub(b, f, o);
+            a.unpack(sub(a.pack(), b.pack(), f, o));
         } else if (op.equals("·")) {
-            a.mul(b, f);
+            a.unpack(mul(a.pack(), b.pack(), f));
         } else if (op.equals("/")) {
-            a.div(b, f);
+            a.unpack(div(a.pack(), b.pack(), f));
         } else if (op.equals("->")) {
-            a.convertTo(b, f, o);
+            a.unpack(convertTo(a.pack(), b.pack(), f, o));
         }
         check(a,u);
         if (amount.indexOf('+') >= 0 || 
