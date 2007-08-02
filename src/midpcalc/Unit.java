@@ -824,11 +824,11 @@ public final class Unit {
 
         if (hasAbsoluteTemperature() || a.hasAbsoluteTemperature()) {
             // Can only convert between absolute temperature and other plain temperatures
-            if (!isPlainTemperature() || !a.isPlainTemperature()) {
+            if (!isPlainTemperature() || !a.isPlainTemperature() || conversionOffset == null) {
                 error = true;
                 return;
             }
-            if (unit[TEMP_TYPE] != a.unit[TEMP_TYPE] && conversionOffset != null) {
+            if (unit[TEMP_TYPE] != a.unit[TEMP_TYPE]) {
                 conversionFactor.assign(allUnits[TEMP_TYPE][unit[TEMP_TYPE]].conversionFactor);
                 conversionOffset.assign(allUnits[TEMP_TYPE][unit[TEMP_TYPE]].conversionOffset);
                 conversionFactor.div(allUnits[TEMP_TYPE][a.unit[TEMP_TYPE]].conversionFactor);
@@ -905,7 +905,8 @@ public final class Unit {
     
     public void add(Unit a, Real conversionFactor, Real conversionOffset) {
         conversionFactor.assign(Real.ONE);
-        conversionOffset.assign(Real.ZERO);
+        if (conversionOffset != null)
+            conversionOffset.assign(Real.ZERO);
         a = uTmp2.copy(a);
         if (handleErrorBinary(a))
             return;
@@ -929,7 +930,8 @@ public final class Unit {
             convertTo(a, conversionFactor, conversionOffset);
             if (!isSameUnit(a)) {
                 conversionFactor.assign(Real.ONE);
-                conversionOffset.assign(Real.ZERO);
+                if (conversionOffset != null)
+                    conversionOffset.assign(Real.ZERO);
                 error = true;
             }
         }
@@ -944,7 +946,8 @@ public final class Unit {
     
     public void sub(Unit a, Real conversionFactor, Real conversionOffset) {
         conversionFactor.assign(Real.ONE);
-        conversionOffset.assign(Real.ZERO);
+        if (conversionOffset != null)
+            conversionOffset.assign(Real.ZERO);
         a = uTmp2.copy(a);
         if (handleErrorBinary(a))
             return;
@@ -967,7 +970,8 @@ public final class Unit {
             convertTo(a, conversionFactor, conversionOffset);
             if (!isSameUnit(a)) {
                 conversionFactor.assign(Real.ONE);
-                conversionOffset.assign(Real.ZERO);
+                if (conversionOffset != null)
+                    conversionOffset.assign(Real.ZERO);
                 error = true;
             }
         }
@@ -1546,5 +1550,6 @@ public final class Unit {
         check("a","->","m","100","m²");
         check("a","/","m²","100","");
         check("a","+","m²","100","m²");
+        check("e","·","V","eV");
     }
 }

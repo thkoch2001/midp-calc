@@ -1352,7 +1352,7 @@ public final class CalcEngine
         }
         n += monitorYOff;
         if (isInsideMonitor && n == monitorY)
-            return "`»`";
+            return "»";
         else if (monitorMode == MONITOR_PROG && n == monitorY)
             return ">";
         else
@@ -1877,6 +1877,14 @@ public final class CalcEngine
                 break;
 
             case PERCENT_CHG:
+                if (unit) {
+                    unitOk = true;
+                    yunit = Unit.add(yunit, xunit, rTmp, null);
+                    if ((yunit & Unit.unitError) == 0) {
+                        y.mul(rTmp);
+                        yunit = 0;
+                    }
+                }
                 x.sub(y);
                 x.div(y);
                 x.mul(Real.HUNDRED);
@@ -1986,8 +1994,29 @@ public final class CalcEngine
                 }
                 break;
 
-            case ATAN2: y.atan2(x); fromRAD(y);  break;
-            case HYPOT: y.hypot(x);              break;
+            case ATAN2:
+                if (unit) {
+                    unitOk = true;
+                    yunit = Unit.div(yunit, xunit, rTmp);
+                    if (yunit == 0) {
+                        y.mul(rTmp);
+                    } else {
+                        yunit = Unit.unitError;
+                    }
+                }
+                y.atan2(x);
+                fromRAD(y);
+                break;
+
+            case HYPOT:
+                if (unit) {
+                    unitOk = true;
+                    yunit = Unit.add(yunit, xunit, rTmp, null);
+                    y.mul(rTmp);
+                }
+                y.hypot(x);
+                break;
+
             case AND:   y.and(x);                break;
             case OR:    y.or(x);                 break;
             case XOR:   y.xor(x);                break;
