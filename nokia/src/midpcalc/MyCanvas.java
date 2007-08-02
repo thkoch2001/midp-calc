@@ -42,7 +42,7 @@ public abstract class MyCanvas
         g.setColor(Colors.c[Colors.BACKGROUND]);
         g.fillRect(0,getHeight()-f.getHeight()-1,getWidth(),1);
         f.setColor(Colors.BACKGROUND, Colors.FOREGROUND);
-        f.setEmphasized(true);
+        f.setBold(true);
         if (a != null)
             f.drawString(g, 5, getHeight()-f.getHeight(), a.getLabel());
         if (b != null)
@@ -56,7 +56,7 @@ public abstract class MyCanvas
              f.stringWidth(b.getLabel())+
              f.stringWidth(middle)*5/6<getWidth()))
         {
-            f.setEmphasized(false);
+            f.setBold(false);
             f.drawString(g, getWidth()/2-f.stringWidth(middle)/2,
                     getHeight()-f.getHeight(), middle);
         }

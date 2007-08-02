@@ -8,7 +8,7 @@ final class GFont extends UniFont {
     private final GFontData data;
     private final boolean needLargeCache;
     
-    private int overlineStart, overlineEnd;
+    private int overlineThickness;
 
     public void close() {
         data.close(needLargeCache);
@@ -31,30 +31,26 @@ final class GFont extends UniFont {
                 charMaxWidth = GFontBase.smallCharMaxWidth;
                 charHeight = GFontBase.smallCharHeight;
                 baselinePosition = GFontBase.smallBaselinePosition;
-                overlineStart = GFontBase.smallOverlineStart;
-                overlineEnd = GFontBase.smallOverlineEnd;
+                overlineThickness = GFontBase.smallOverlineThickness;
                 break;
             case MEDIUM:
                 charMaxWidth = GFontBase.mediumCharMaxWidth;
                 charHeight = GFontBase.mediumCharHeight;
                 baselinePosition = GFontBase.mediumBaselinePosition;
-                overlineStart = GFontBase.mediumOverlineStart;
-                overlineEnd = GFontBase.mediumOverlineEnd;
+                overlineThickness = GFontBase.mediumOverlineThickness;
                 break;
             case LARGE: case XXLARGE:
                 charMaxWidth = GFontBase.largeCharMaxWidth;
                 charHeight = GFontBase.largeCharHeight;
                 baselinePosition = GFontBase.largeBaselinePosition;
-                overlineStart = GFontBase.largeOverlineStart;
-                overlineEnd = GFontBase.largeOverlineEnd;
+                overlineThickness = GFontBase.largeOverlineThickness;
                 sizeX2 = size==XXLARGE;
                 break;
             case XLARGE: case XXXLARGE:
                 charMaxWidth = GFontBase.xlargeCharMaxWidth;
                 charHeight = GFontBase.xlargeCharHeight;
                 baselinePosition = GFontBase.xlargeBaselinePosition;
-                overlineStart = GFontBase.xlargeOverlineStart;
-                overlineEnd = GFontBase.xlargeOverlineEnd;
+                overlineThickness = GFontBase.xlargeOverlineThickness;
                 sizeX2 = size==XXXLARGE;
                 break;
         }
@@ -62,8 +58,7 @@ final class GFont extends UniFont {
             charMaxWidth *= 2;
             charHeight *= 2;
             baselinePosition = baselinePosition*2;
-            overlineStart = overlineStart*2              -1 /*??*/;
-            overlineEnd = overlineEnd*2+1                -1 /*??*/;
+            overlineThickness = overlineThickness*2;
         }
     }
 
@@ -88,11 +83,11 @@ final class GFont extends UniFont {
             y += charHeight-smallerFont.baselinePosition;
         }
 
-        int fg_col = emphasized ? Colors.EMPHASIZED : (green ? green() : fg);
-        int w = gFont.data.drawGFontChar(g, x, y, ch, fg_col, bg, monospaced);
+        int fg_col = ch=='»' ? Colors.GREEN : (bold ? Colors.EMPHASIZED : fg);
+        int w = gFont.data.drawGFontChar(g, x, y, ch, fg_col, bg, monospaced, bold, italic);
         if (overline) {
             g.setColor(Colors.c[fg_col]);
-            g.fillRect(x-1, y+overlineStart, w+1, overlineEnd-overlineStart+1);
+            g.fillRect(x-1, y, w+1, overlineThickness);
         }
         if (ch == '¿')
             overline = true;
@@ -131,7 +126,7 @@ final class GFont extends UniFont {
         if (end > string.length())
             end = string.length();
 
-        green = subscript = superscript = overline = false;
+        italic = subscript = superscript = overline = false;
         
         data.getClip(g);
         if (smallerFont != null && smallerFont != this) {

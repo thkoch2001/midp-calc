@@ -6,11 +6,15 @@ import javax.microedition.lcdui.Graphics;
 final class SysFont extends UniFont {
 
     private Font systemFont;
-    private Font systemEmFont; // Emphasized, i.e. bold
+    private Font systemBoldFont;
+    private Font systemItalicFont;
+    private Font systemBoldItalicFont;
 
     public void close() {
         systemFont = null;
-        systemEmFont = null;
+        systemBoldFont = null;
+        systemItalicFont = null;
+        systemBoldItalicFont = null;
         if (smallerFont != null) {
             UniFont f = smallerFont;
             smallerFont = null;
@@ -36,10 +40,14 @@ final class SysFont extends UniFont {
         }
         systemFont = Font.getFont(Font.FACE_PROPORTIONAL,
                 Font.STYLE_PLAIN, systemFontSize);
-        systemEmFont = Font.getFont(Font.FACE_PROPORTIONAL,
+        systemBoldFont = Font.getFont(Font.FACE_PROPORTIONAL,
                 Font.STYLE_BOLD, systemFontSize);
+        systemItalicFont = Font.getFont(Font.FACE_PROPORTIONAL,
+                Font.STYLE_ITALIC, systemFontSize);
+        systemBoldItalicFont = Font.getFont(Font.FACE_PROPORTIONAL,
+                Font.STYLE_BOLD|Font.STYLE_ITALIC, systemFontSize);
         charMaxWidth = Math.max(systemFont.charWidth('8'), systemFont.charWidth('6'));
-        charHeight = systemEmFont.getHeight();
+        charHeight = systemBoldFont.getHeight();
         baselinePosition = systemFont.getBaselinePosition();
         if (baselinePosition < systemFont.getHeight() / 2) // Obviously wrong
             baselinePosition = systemFont.getHeight() * 19 / 22;
@@ -49,7 +57,11 @@ final class SysFont extends UniFont {
         return size + SYSTEM_FONT;
     }
 
-
+    private Font currentFont() {
+        return bold ? (italic ? systemBoldItalicFont : systemBoldFont) :
+                      (italic ? systemItalicFont : systemFont);
+    }
+    
     private int drawSpecialChar(Graphics g, int x, int y, char ch) {
         
         if (processChar(ch, false))
@@ -57,9 +69,8 @@ final class SysFont extends UniFont {
 
         SysFont gFont = (subscript || superscript) ? (SysFont)smallerFont : this;
 
-        Font font = emphasized ? gFont.systemEmFont : gFont.systemFont;
+        Font font = gFont.currentFont();
         g.setFont(font);
-        g.setColor(green ? Colors.c[green()] : Colors.c[fg]);
 
         if (monospaced) {
             // NB! Assuming that special characters will not be drawn monospaced
@@ -88,7 +99,7 @@ final class SysFont extends UniFont {
                     g.drawLine(x+w-2,y+h/2,x+w-2-2,y+h/2-2);
                     g.drawLine(x,y+h/2+3,x+w-2,y+h/2+3);
                     g.drawLine(x,y+h/2+3,x+2,y+h/2+3+2);
-                    if (emphasized) {
+                    if (bold) {
                         g.drawLine(x,y+h/2-1,x+w-2,y+h/2-1);
                         g.drawLine(x+w-2,y+h/2-1,x+w-2-2,y+h/2-1-2);
                         g.drawLine(x,y+h/2+2,x+w-2,y+h/2+2);
@@ -177,19 +188,19 @@ final class SysFont extends UniFont {
                     w = font.stringWidth("ln");
                     break;
                 case '»': // >
+                    g.setColor(Colors.c[Colors.GREEN]);
                     for (int i=0; i<w-1; i++) {
                         g.drawLine(x+i, y+h-1-i, x+i, y+h-1-(w-2)*2+i);
                     }
+                    g.setColor(Colors.c[fg]);
                     break;
                 case '¹':
-                    g.setFont(emphasized ? ((SysFont)smallerFont).systemEmFont :
-                                           ((SysFont)smallerFont).systemFont);
+                    g.setFont(((SysFont)smallerFont).currentFont());
                     g.drawString("-1", x, y-1, TOP_LEFT);
                     g.setFont(font);
                     break;
                 case '¼':
-                    g.setFont(emphasized ? ((SysFont)smallerFont).systemEmFont :
-                                           ((SysFont)smallerFont).systemFont);
+                    g.setFont(((SysFont)smallerFont).currentFont());
                     g.drawString("4", x, y-1, TOP_LEFT);
                     g.setFont(font);
                     break;
@@ -220,7 +231,7 @@ final class SysFont extends UniFont {
             g.drawChar(ch,x,y,TOP_LEFT);
             if (overline) {
                 g.drawLine(x-1,y,x+font.charWidth(ch)-1,y);
-                if (emphasized)
+                if (bold)
                     g.drawLine(x-1,y+1,x+font.charWidth(ch)-1,y+1);
             }
         }
@@ -228,8 +239,7 @@ final class SysFont extends UniFont {
     }
 
     public int charWidth(char ch) {
-        return monospaced ? charMaxWidth :
-               emphasized ? systemEmFont.charWidth(ch) : systemFont.charWidth(ch);
+        return monospaced ? charMaxWidth : currentFont().charWidth(ch);
     }
 
     private static boolean plainString(String string) {
@@ -255,10 +265,7 @@ final class SysFont extends UniFont {
         UniFont font = this;
 
         if (plainString(string)) {
-            if (emphasized) {
-                return systemEmFont.substringWidth(string, start, end-start);
-            }
-            return systemFont.substringWidth(string, start, end-start);
+            return currentFont().substringWidth(string, start, end-start);
         }
         int width = 0;
         for (int i = 0; i < end && i < string.length(); i++) {
@@ -297,7 +304,7 @@ final class SysFont extends UniFont {
             end = string.length();
 
         if (!monospaced && plainString(string)) {
-            Font font = emphasized ? systemEmFont : systemFont;
+            Font font = currentFont();
             g.setFont(font);
             g.setColor(Colors.c[bg]);
             g.fillRect(x, y, substringWidth(string, start, end), charHeight);
@@ -322,7 +329,7 @@ final class SysFont extends UniFont {
         
         if (!monospaced && plainString(string,start)) {
             String s = string.toString();
-            Font font = emphasized ? systemEmFont : systemFont;
+            Font font = currentFont();
             g.setFont(font);
             g.setColor(Colors.c[bg]);
             g.fillRect(x, y, substringWidth(s, start, end), charHeight);
@@ -332,7 +339,7 @@ final class SysFont extends UniFont {
             return x + font.substringWidth(s, start, end - start);
         }
         
-        green = subscript = superscript = overline = false;
+        italic = subscript = superscript = overline = false;
         
         for (int i = 0; i < start; i++) {
             processChar(string.charAt(i), true);

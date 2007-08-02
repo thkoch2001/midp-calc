@@ -160,9 +160,9 @@ public class SetupCanvas
         }
         g.fillRect(0,0,getWidth(),height);
         g.setColor(Colors.c[Colors.BLACK]);
-        menuFont.setEmphasized(true);
+        menuFont.setBold(true);
         menuFont.drawString(g,2,0,heading);
-        menuFont.setEmphasized(false);
+        menuFont.setBold(false);
         drawWrapped(g,2,menuFont.getHeight()+3,getWidth()-3,text);
         if (!automaticCommands()) {
             paintCommands(g,menuFont,null);

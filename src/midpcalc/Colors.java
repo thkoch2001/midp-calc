@@ -1,18 +1,18 @@
 package midpcalc;
 
 public final class Colors {
-    private static final int NUM_COLORS = 9+CalcCanvas.MENU_SIZE*2;
+    public static final int NUM_COLORS = 8+CalcCanvas.MENU_SIZE*2;
+    public static int colorBits;
 
     public static final int NUMBER = 0;
     public static final int BACKGROUND = 1;
     public static final int FOREGROUND = 2;
     public static final int EMPHASIZED = 3;
     public static final int BLACK = 4;
-    public static final int DARK_GREEN = 5;
-    public static final int GREEN = 6;
-    public static final int PINK = 7;
-    public static final int CYAN = 8;
-    public static final int MENU = 9;
+    public static final int GREEN = 5;
+    public static final int PINK = 6;
+    public static final int CYAN = 7;
+    public static final int MENU = 8;
     public static final int MENU_DARK = MENU+CalcCanvas.MENU_SIZE;
     
     public static final int[] c = new int[NUM_COLORS];
@@ -22,7 +22,6 @@ public final class Colors {
         c[FOREGROUND] = 0xffffff;
         c[EMPHASIZED] = 0x0000c0;
         c[BLACK]      = 0;
-        c[DARK_GREEN] = 0x008000;
         c[GREEN]      = 0x60ff60;
         c[PINK]       = 0xd89c9c;
         c[CYAN]       = 0x9cd8d8;
@@ -38,5 +37,6 @@ public final class Colors {
         for (int i=0; i<CalcCanvas.MENU_SIZE; i++) {
             c[MENU_DARK+i] = c[MENU+i]/4;
         }
+        for (colorBits=0; (1<<colorBits) < NUM_COLORS; colorBits++);
     }
 }

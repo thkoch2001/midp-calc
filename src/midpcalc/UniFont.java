@@ -22,8 +22,8 @@ public abstract class UniFont {
     protected int baselinePosition;
     protected int size;
     protected boolean monospaced;
-    protected boolean emphasized;
-    protected boolean green;
+    protected boolean bold;
+    protected boolean italic;
     protected boolean subscript;
     protected boolean superscript;
     protected boolean overline;
@@ -77,20 +77,16 @@ public abstract class UniFont {
             smallerFont.setColor(fg, bg);
     }
     
-    protected int green() {
-        return Colors.c[bg] == 0 ? Colors.GREEN : Colors.DARK_GREEN;
-    }
-
     public void setMonospaced(boolean monospaced) {
         this.monospaced = monospaced;
         if (smallerFont != null && smallerFont != this)
             smallerFont.setMonospaced(monospaced);
     }
 
-    public void setEmphasized(boolean emphasized) {
-        this.emphasized = emphasized;
+    public void setBold(boolean emphasized) {
+        this.bold = emphasized;
         if (smallerFont != null && smallerFont != this)
-            smallerFont.setEmphasized(emphasized);
+            smallerFont.setBold(emphasized);
     }
 
     protected boolean processChar(char ch, boolean skip) {
@@ -109,7 +105,7 @@ public abstract class UniFont {
         }
         
         if (ch=='`') {
-            green = !green;
+            italic = !italic;
             return true;
         }
         

@@ -1077,11 +1077,11 @@ public final class CalcCanvas
 
         // Menu position
         menuW = 21+4*2;
-        menuFont.setEmphasized(true);
+        menuFont.setBold(true);
         if (menuW<menuFont.stringWidth("m/ft")+3*2)
             menuW = menuFont.stringWidth("m/ft")+3*2;
         menuW = menuFont.stringWidth("acosh")*2+3*2+menuW;
-        menuFont.setEmphasized(false);
+        menuFont.setBold(false);
         if (menuW<(menuFont.stringWidth("thousand")+2*2)*2)
             menuW = (menuFont.stringWidth("thousand")+2*2)*2;
         if (menuW>w) menuW = w;
@@ -1232,7 +1232,7 @@ public final class CalcCanvas
         g.setColor(Colors.c[Colors.FOREGROUND]);
         g.fillRect(0,0,getWidth(),header-1);
         menuFont.setColor(Colors.BACKGROUND, Colors.FOREGROUND);
-        menuFont.setEmphasized(false);
+        menuFont.setBold(false);
         int n = 4;
         if (calc.begin && (calc.progRecording || calc.progRunning)) {
             n = 5;
@@ -1312,9 +1312,9 @@ public final class CalcCanvas
     {
         if (menu==null)
             return;
-        boolean emphasized = (menu.subMenu == null &&
+        boolean bold = (menu.subMenu == null &&
             (menu.flags & CmdDesc.SUBMENU_REQUIRED) == 0);
-        menuFont.setEmphasized(emphasized);
+        menuFont.setBold(bold);
         int width = menuFont.stringWidth(menu.label);
         if ((anchor & Graphics.RIGHT) != 0)
             x -= width;
@@ -1341,7 +1341,7 @@ public final class CalcCanvas
         while ((menuStack[titleStackPtr].flags & CmdDesc.TITLE_SKIP)!=0)
             titleStackPtr--;
         String label = menuStack[titleStackPtr].label;
-        menuFont.setEmphasized(false);
+        menuFont.setBold(false);
         menuFont.drawString(g, x+2, y-menuFont.getHeight(), label);
         // Draw 3D menu background
         g.fillRect(x+2,y+2,w-4,h-4);

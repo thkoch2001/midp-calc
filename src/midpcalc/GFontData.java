@@ -17,6 +17,7 @@ class GFontData {
 
     byte[] charWidth;
     byte[] charXOff;
+    byte[] charItalicOffset;
 
     private boolean bgr;
 
@@ -34,7 +35,7 @@ class GFontData {
 
     private int bucketSize;
 
-    private short[] cacheHash;
+    private int[] cacheHash;
 
     private short[] cacheTime;
 
@@ -42,6 +43,12 @@ class GFontData {
     
     private int refCount;
     private int largeCacheRefCount;
+    
+    private int[] lineBuf1;
+    private int[] lineBuf2;
+
+    private static final int BOLD = 1;
+    private static final int ITALIC = 2;
 
     private static GFontData smallFontData;
     private static GFontData mediumFontData;
@@ -135,7 +142,7 @@ class GFontData {
 
     private GFontData(int style, boolean largeCache, Canvas canvas) throws IOException {
         String charBitsResource = null;
-        String charXOffStr, charWidthStr;
+        String charXOffStr, charWidthStr, charItalicOffsetStr;
 
         canvasWidth = canvas.getWidth();
         canvasHeight = canvas.getHeight();
@@ -151,6 +158,7 @@ class GFontData {
                 charSet = GFontBase.smallCharSet;
                 charXOffStr = GFontBase.smallCharXOff;
                 charWidthStr = GFontBase.smallCharWidth;
+                charItalicOffsetStr = GFontBase.smallCharItalicOffset;
                 break;
             case UniFont.MEDIUM:
                 charMaxWidth = GFontBase.mediumCharMaxWidth;
@@ -159,6 +167,7 @@ class GFontData {
                 charSet = GFontBase.mediumCharSet;
                 charXOffStr = GFontBase.mediumCharXOff;
                 charWidthStr = GFontBase.mediumCharWidth;
+                charItalicOffsetStr = GFontBase.mediumCharItalicOffset;
                 break;
             case UniFont.LARGE: case UniFont.XXLARGE:
                 charMaxWidth = GFontBase.largeCharMaxWidth;
@@ -167,6 +176,7 @@ class GFontData {
                 charSet = GFontBase.largeCharSet;
                 charXOffStr = GFontBase.largeCharXOff;
                 charWidthStr = GFontBase.largeCharWidth;
+                charItalicOffsetStr = GFontBase.largeCharItalicOffset;
                 sizeX2 = size==UniFont.XXLARGE;
                 break;
             case UniFont.XLARGE: case UniFont.XXXLARGE:
@@ -176,6 +186,7 @@ class GFontData {
                 charSet = GFontBase.xlargeCharSet;
                 charXOffStr = GFontBase.xlargeCharXOff;
                 charWidthStr = GFontBase.xlargeCharWidth;
+                charItalicOffsetStr = GFontBase.xlargeCharItalicOffset;
                 sizeX2 = size==UniFont.XXXLARGE;
                 break;
         }
@@ -188,6 +199,7 @@ class GFontData {
         in.close();
         charXOff = new byte[256];
         charWidth = new byte[256];
+        charItalicOffset = new byte[256];
         for (int i=0; i<256; i++) {
             int pos = charSet.indexOf(i);
             if (pos<0) {
@@ -195,8 +207,11 @@ class GFontData {
             }
             charXOff[i] = (byte)charXOffStr.charAt(pos);
             charWidth[i] = (byte)charWidthStr.charAt(pos);
+            charItalicOffset[i] = (byte)charItalicOffsetStr.charAt(pos);
         }
+        lineBuf1 = new int[charMaxWidth*2];
         if (sizeX2) {
+            lineBuf2 = new int[charMaxWidth*2];
             charMaxWidth *= 2;
             charHeight *= 2;
             for (int i=0; i<256; i++) {
@@ -228,7 +243,7 @@ class GFontData {
         }
         cacheSize = cacheWidth * cacheHeight;
         bucketSize = 4;
-        cacheHash = new short[cacheSize];
+        cacheHash = new int[cacheSize];
         cacheTime = new short[cacheSize];
         time = 0;
         charCache = Image.createImage(charMaxWidth * cacheWidth, charHeight
@@ -236,7 +251,7 @@ class GFontData {
         charCacheGraphics = charCache.getGraphics();
     }
 
-    int getIndex(char ch, int fg, int bg) {
+    int getIndex(char ch, int fg, int bg, int flags) {
         int i, i2, j;
         if (++time < 0) { // Ooops, wraparound after 32768 gets
             for (i = 0; i < cacheSize; i++)
@@ -244,8 +259,8 @@ class GFontData {
             time = 1;
         }
         // Calculated hashes are assumed distinct and nonzero
-        short hash = (short) (((ch * 131 + fg) * 137 + bg) % 65537);
-        int bucketStart = (hash & 0xffff) % cacheSize;
+        int hash = (ch + (flags<<8) + (fg << 10) + (bg << (10+Colors.colorBits))) * 239;
+        int bucketStart = hash % cacheSize;
 
         // Search bucket for the correct hash
         for (i = i2 = bucketStart; i < bucketStart + bucketSize; i++, i2++) {
@@ -275,8 +290,44 @@ class GFontData {
         cacheTime[j] = time;
         return -j - 1; // Signaling cache miss
     }
+    
+    void unpackLine(int[] lineBuf, int resIndex, int ch, int y, int flags) {
+        int w = sizeX2 ? charMaxWidth/2 : charMaxWidth;
+        int h = sizeX2 ? charHeight/2 : charHeight;
+        int xOff = 0;
+        int xOff1 = 0;
+        if ((flags & ITALIC) != 0) {
+            xOff = -h/4+y/2+charItalicOffset[ch];
+            xOff1 = y&1;
+        }
+        if (y >= 0 && y < h) {
+            int bitPosBase = ((resIndex * h + y) * w) * 4;
+            for (int x = 0; x < w*2; x++) {
+                int x2 = x+xOff;
+                int a = 0;
+                if (x2>=0 && x2 < w*2) {
+                    int bitPos = bitPosBase+x2*2;
+                    a = ((charBits[bitPos / 8] >> (bitPos & 7)) & 3) * 85;
+                }
+                if (xOff1 != 0) {
+                    int b = 0;
+                    x2++;
+                    if (x2>=0 && x2 < w*2) {
+                        int bitPos = bitPosBase+x2*2;
+                        b = ((charBits[bitPos / 8] >> (bitPos & 7)) & 3) * 85;
+                    }
+                    a = (a+b)/2;
+                }
+                lineBuf[x] = a;
+            }
+        } else {
+            for (int x = 0; x < w*2; x++) {
+                lineBuf[x] = 0;
+            }
+        }
+    }
 
-    void renderChar(int cacheX, int cacheY, int resIndex, int fg, int bg) {
+    void renderChar(int cacheX, int cacheY, int resIndex, int ch, int fg, int bg, int flags) {
         int fg_r = (fg>>16) & 0xff; fg_r+=(fg_r>>7); // fg_r*256/255+0.5
         int fg_g = (fg>> 8) & 0xff; fg_g+=(fg_g>>7);
         int fg_b =  fg      & 0xff; fg_b+=(fg_b>>7);
@@ -288,36 +339,24 @@ class GFontData {
         g.setColor(bg);
         g.fillRect(cacheX, cacheY, charMaxWidth, charHeight);
         if (sizeX2) {
-            for (int y2 = 0; y2 < charHeight; y2 += 2) {
-                int bitPos1, bitPos2;
-                bitPos1 = (resIndex * charHeight + y2) * charMaxWidth - 2;
-                bitPos2 = (resIndex * charHeight + y2 + 2) * charMaxWidth - 2;
+            unpackLine(lineBuf2, resIndex, ch, -1, flags);
+            for (int y2 = -2; y2 < charHeight; y2 += 2) {
+                int[] lbTmp = lineBuf1; lineBuf1 = lineBuf2; lineBuf2 = lbTmp;
+                unpackLine(lineBuf2, resIndex, ch, y2/2+1, flags);
+
                 for (int x2 = 0; x2 < charMaxWidth; x2++) {
                     int gray1, gray2, gray3, gray4, gray5, gray6;
                     if (x2 > 0) {
-                        gray1 = ((charBits[bitPos1 / 8] >> (bitPos1 & 7)) & 3) * 85;
-                        if (y2 + 2 < charHeight)
-                            gray2 = ((charBits[bitPos2 / 8] >> (bitPos2 & 7)) & 3) * 85;
-                        else
-                            gray2 = 0;
+                        gray1 = lineBuf1[x2-1];
+                        gray2 = lineBuf2[x2-1];
                     } else {
                         gray1 = gray2 = 0;
                     }
-                    bitPos1 += 2;
-                    bitPos2 += 2;
-                    gray3 = ((charBits[bitPos1 / 8] >> (bitPos1 & 7)) & 3) * 85;
-                    if (y2 + 2 < charHeight)
-                        gray4 = ((charBits[bitPos2 / 8] >> (bitPos2 & 7)) & 3) * 85;
-                    else
-                        gray4 = 0;
+                    gray3 = lineBuf1[x2];
+                    gray4 = lineBuf2[x2];
                     if (x2 + 1 < charMaxWidth) {
-                        bitPos1 += 2;
-                        bitPos2 += 2;
-                        gray5 = ((charBits[bitPos1 / 8] >> (bitPos1 & 7)) & 3) * 85;
-                        if (y2 + 2 < charHeight)
-                            gray6 = ((charBits[bitPos2 / 8] >> (bitPos2 & 7)) & 3) * 85;
-                        else
-                            gray6 = 0;
+                        gray5 = lineBuf1[x2+1];
+                        gray6 = lineBuf2[x2+1];
                     } else {
                         gray5 = gray6 = 0;
                     }
@@ -332,69 +371,66 @@ class GFontData {
                         gray2 = gray2 * 3 + tmp;
                         gray6 = tmp * 3 + gray6;
 
-                        red = (gray1 * 3 + gray2) / 8 - 128;
-                        green = (gray3 * 3 + gray4) / 8 - 128;
-                        blue = (gray5 * 3 + gray6) / 8 - 128;
-                        if (red < 0)
-                            red = 0;
-                        if (red > 255)
-                            red = 255;
-                        if (green < 0)
-                            green = 0;
-                        if (green > 255)
-                            green = 255;
-                        if (blue < 0)
-                            blue = 0;
-                        if (blue > 255)
-                            blue = 255;
-                        if (bgr) {
-                            tmp = blue; blue = red; red = tmp;
+                        if (y2 + 1 >= 0) {
+                            red = (gray1 * 3 + gray2) / 8 - 128;
+                            green = (gray3 * 3 + gray4) / 8 - 128;
+                            blue = (gray5 * 3 + gray6) / 8 - 128;
+                            if (red < 0)
+                                red = 0;
+                            if (red > 255)
+                                red = 255;
+                            if (green < 0)
+                                green = 0;
+                            if (green > 255)
+                                green = 255;
+                            if (blue < 0)
+                                blue = 0;
+                            if (blue > 255)
+                                blue = 255;
+                            if (bgr) {
+                                tmp = blue; blue = red; red = tmp;
+                            }
+                            g.setColor((red  *fg_r+(255-red  )*bg_r)>>8,
+                                       (green*fg_g+(255-green)*bg_g)>>8,
+                                       (blue *fg_b+(255-blue )*bg_b)>>8);
+                            g.fillRect(cacheX + x2, cacheY + y2 + 1, 1, 1);
                         }
-                        g.setColor((red  *fg_r+(255-red  )*bg_r)>>8,
-                                   (green*fg_g+(255-green)*bg_g)>>8,
-                                   (blue *fg_b+(255-blue )*bg_b)>>8);
-                        g.fillRect(cacheX + x2, cacheY + y2, 1, 1);
 
-                        red = (gray1 + gray2 * 3) / 8 - 128;
-                        green = (gray3 + gray4 * 3) / 8 - 128;
-                        blue = (gray5 + gray6 * 3) / 8 - 128;
-                        if (red < 0)
-                            red = 0;
-                        if (red > 255)
-                            red = 255;
-                        if (green < 0)
-                            green = 0;
-                        if (green > 255)
-                            green = 255;
-                        if (blue < 0)
-                            blue = 0;
-                        if (blue > 255)
-                            blue = 255;
-                        if (bgr) {
-                            tmp = blue; blue = red; red = tmp;
+                        if (y2 + 2 < charHeight) {
+                            red = (gray1 + gray2 * 3) / 8 - 128;
+                            green = (gray3 + gray4 * 3) / 8 - 128;
+                            blue = (gray5 + gray6 * 3) / 8 - 128;
+                            if (red < 0)
+                                red = 0;
+                            if (red > 255)
+                                red = 255;
+                            if (green < 0)
+                                green = 0;
+                            if (green > 255)
+                                green = 255;
+                            if (blue < 0)
+                                blue = 0;
+                            if (blue > 255)
+                                blue = 255;
+                            if (bgr) {
+                                tmp = blue; blue = red; red = tmp;
+                            }
+                            g.setColor((red  *fg_r+(255-red  )*bg_r)>>8,
+                                       (green*fg_g+(255-green)*bg_g)>>8,
+                                       (blue *fg_b+(255-blue )*bg_b)>>8);
+                            g.fillRect(cacheX + x2, cacheY + y2 + 2, 1, 1);
                         }
-                        g.setColor((red  *fg_r+(255-red  )*bg_r)>>8,
-                                   (green*fg_g+(255-green)*bg_g)>>8,
-                                   (blue *fg_b+(255-blue )*bg_b)>>8);
-                        g.fillRect(cacheX + x2, cacheY + y2 + 1, 1, 1);
                     }
-                    bitPos1 -= 2;
-                    bitPos2 -= 2;
                 }
             }
         } else {
             for (int y2 = 0; y2 < charHeight; y2++) {
+                unpackLine(lineBuf1, resIndex, ch, y2, flags);
                 for (int x2 = 0; x2 < charMaxWidth; x2++) {
-                    int red, green, blue, bitPos;
-                    bitPos = ((resIndex * charHeight + y2) * charMaxWidth + x2) * 4 - 2;
-                    if (x2 > 0)
-                        red = ((charBits[bitPos / 8] >> (bitPos & 7)) & 3) * 85;
-                    else
-                        red = 0;
-                    bitPos += 2;
-                    green = ((charBits[bitPos / 8] >> (bitPos & 7)) & 3) * 85;
-                    bitPos += 2;
-                    blue = ((charBits[bitPos / 8] >> (bitPos & 7)) & 3) * 85;
+                    int red, green, blue;
+                    red = (x2 > 0) ? lineBuf1[x2*2-1] : 0;
+                    green = lineBuf1[x2*2];
+                    blue = lineBuf1[x2*2+1];
                     if (red + green + blue != 0) {
                         if (bgr) {
                             int tmp = blue; blue = red; red = tmp;
@@ -422,8 +458,10 @@ class GFontData {
         g.setClip(clipX1, clipY1, clipX2 - clipX1, clipY2 - clipY1);
     }
 
-    int drawGFontChar(Graphics g, int x, int y, char ch, int fg, int bg, boolean monospaced) {
-        int index = getIndex(ch, fg, bg);
+    int drawGFontChar(Graphics g, int x, int y, char ch, int fg, int bg,
+            boolean monospaced, boolean bold, boolean italic) {
+        int flags = (bold ? BOLD : 0) + (italic ? ITALIC : 0);
+        int index = getIndex(ch, fg, bg, flags);
         boolean cacheMiss = false;
         if (index < 0) {
             index = -index - 1;
@@ -435,7 +473,7 @@ class GFontData {
             int resIndex = charSet.indexOf(ch);
             if (resIndex < 0)
                 resIndex = charSet.indexOf('?');
-            renderChar(cacheX, cacheY, resIndex, Colors.c[fg], Colors.c[bg]);
+            renderChar(cacheX, cacheY, resIndex, ch, Colors.c[fg], Colors.c[bg], flags);
         }
         int xOff = 0;
         int width = charMaxWidth;
