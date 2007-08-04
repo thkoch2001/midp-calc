@@ -495,10 +495,10 @@ public final class CalcEngine
     }
 
     private void clearMonitorStrings() {
-        for (int i=0; i<monitorStr.length; i++) {
+        for (int i=0; i<monitorStr.length; i++)
             monitorStr[i] = null;
+        for (int i=0; i<monitorUnitStr.length; i++) // Can be of different length!
             monitorUnitStr[i] = null;
-        }
         repaintAll();
     }
 
@@ -981,20 +981,25 @@ public final class CalcEngine
     private void linkToMatrix(Real x, Real xi, Matrix M) {
         x.makeNan();
         xi.makeZero();
+        matrixGC();
         if (M == null || Matrix.isInvalid(M)) {
             // Invalid matrix == nan
-            matrixGC();
             return;
         }
         if (M.rows == 1 && M.cols == 1) {
             // 1x1 matrix == Real
             M.getElement(0,0,x,xi);
-            matrixGC();
             return;
         }
-        matrixGC();
+        for (int i=0; i<matrixCache.length; i++)
+            if (M == matrixCache[i]) {
+                // A reference to the matrix already exists
+                x.mantissa += i+1; // Create link from x to matrixCache[i]
+                return;
+            }
         for (int i=0; i<matrixCache.length; i++)
             if (matrixCache[i] == null) {
+                // Found a free spot
                 matrixCache[i] = M;
                 x.mantissa += i+1; // Create link from x to matrixCache[i]
                 return;
@@ -1006,11 +1011,11 @@ public final class CalcEngine
         if (!initialized)
             return; // Avoid premature GC before state has been fully restored
 
-        Matrix M;
         for (int i=0; i<matrixCache.length; i++)
             if (matrixCache[i] != null)
                 matrixCache[i].refCount = 0;
 
+        Matrix M;
         for (int i=0; i<STACK_SIZE; i++)
             if ((M = getMatrix(stack[i])) != null)
                 M.refCount++;
@@ -4262,6 +4267,7 @@ public final class CalcEngine
                             progRecording = false;
                             progRunning = true;
                             currentStep = monitorY;
+                            graphCmd = -1; // Prevent considerYield() from switching to GraphCanvas
                             executeProgStep();
                             progRunning = false;
                             progRecording = true;
