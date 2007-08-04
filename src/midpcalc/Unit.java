@@ -602,10 +602,10 @@ public final class Unit {
             if (power[unitType] != 0) {
                 int system = allUnits[unitType][unit[unitType]].system;
                 if ((system & SI) != 0 ) {
-                    nSI += power[unitType];
+                    nSI += Math.abs(power[unitType]);
                 } 
                 if ((system & IMP) != 0) {
-                    nIMP += power[unitType];
+                    nIMP += Math.abs(power[unitType]);
                 }
             }
         }
@@ -656,26 +656,31 @@ public final class Unit {
     }
     
     private boolean compose(int compositeType, int compositeUnit,
-                            Real conversionFactor) {
+                            Real conversionFactor, int requiredPower) {
         UnitDesc convertTo = allUnits[compositeType][compositeUnit];
-        int maxFactor = -100;
-        int minFactor = 100;
-        for (int unitType=0; unitType<N_PRIMITIVE_UNITS; unitType++) {
-            if (convertTo.convertsTo.power[unitType] != 0) {
-                int factor = power[unitType]/convertTo.convertsTo.power[unitType];
-                if (factor > maxFactor) maxFactor = factor;
-                if (factor < minFactor) minFactor = factor;
-            }
-        }
+        
         int factor = 0;
-        if (minFactor > 0)
-            factor = minFactor;
-        if (maxFactor < 0)
-            factor = maxFactor;
+        if (requiredPower != 0) {
+            factor = requiredPower - power[compositeType];
+        } else {
+            int maxFactor = -100;
+            int minFactor = 100;
+            for (int unitType=0; unitType<N_PRIMITIVE_UNITS; unitType++) {
+                if (convertTo.convertsTo.power[unitType] != 0) {
+                    int f = power[unitType]/convertTo.convertsTo.power[unitType];
+                    if (f > maxFactor) maxFactor = f;
+                    if (f < minFactor) minFactor = f;
+                }
+            }
+            if (minFactor > 0)
+                factor = minFactor;
+            if (maxFactor < 0)
+                factor = maxFactor;
+        }
         if (factor == 0)
             return false;
 
-        for (int unitType=0; unitType<N_PRIMITIVE_UNITS; unitType++) {
+        for (int unitType=0; unitType<N_SIMPLE_PRIMITIVE_UNITS; unitType++) {
             if (convertTo.convertsTo.power[unitType] != 0) {
                 int pInc = convertTo.convertsTo.power[unitType]*factor;
                 if (unit[unitType] != 0) {
@@ -712,6 +717,38 @@ public final class Unit {
                 return false;
         }
         return true;
+    }
+    
+    private int fractionForFullConversion(Unit a) {
+        int numerator = 0;
+        int denominator = 0;
+        for (int simple=0; simple<N_SIMPLE_PRIMITIVE_UNITS; simple++) {
+            int d = power[simple];
+            int n = a.power[simple];
+            for (int composite=N_SIMPLE_PRIMITIVE_UNITS; composite<N_PRIMITIVE_UNITS; composite++) {
+                d += allUnits[composite][0].convertsTo.power[simple] * power[composite];
+                n += allUnits[composite][0].convertsTo.power[simple] * a.power[composite];
+            }
+            if ((n == 0) ^ (d == 0))
+                return 0;
+            if (numerator == 0) {
+                numerator = n;
+                denominator = d;
+            } else {
+                if (numerator*d != denominator*n)
+                    return 0;
+            }
+        }
+        // Reduce to simplest form
+        if (numerator%2 == 0 && denominator%2 == 0) { numerator /= 2; denominator /= 2; }
+        if (numerator%3 == 0 && denominator%3 == 0) { numerator /= 3; denominator /= 3; }
+        if (numerator%5 == 0 && denominator%5 == 0) { numerator /= 5; denominator /= 5; }
+        if (denominator < 0)                        { numerator *=-1; denominator *=-1; }
+        for (int unitType=0; unitType<N_PRIMITIVE_UNITS; unitType++) {
+            if (a.power[unitType] % denominator != 0)
+                return 0;
+        }
+        return (numerator<<16)+denominator;
     }
 
     private boolean hasAbsoluteTemperature() {
@@ -814,6 +851,41 @@ public final class Unit {
     private static Unit uTmp2 = new Unit();
     private static Real rTmp = new Real();
     
+    private void fullyConvertTo(Unit a, int fraction, Real conversionFactor) {
+        int dominantSystem = a.dominantSystem();
+        int n = fraction >> 16;
+        int d = fraction & 0xffff;
+
+        // For all unit types present in both this and a, convert to a's unit
+        for (int unitType=0; unitType<N_PRIMITIVE_UNITS; unitType++) {
+            if (power[unitType] != 0 && a.power[unitType] != 0 && unit[unitType] != a.unit[unitType]) {
+                // Unit type present in both this and a, but not same unit
+                rTmp.assign(allUnits[unitType][unit[unitType]].conversionFactor);
+                rTmp.div(allUnits[unitType][a.unit[unitType]].conversionFactor);
+                if (power[unitType] != 1)
+                    rTmp.pow(power[unitType]);
+                conversionFactor.mul(rTmp);
+                unit[unitType] = a.unit[unitType];
+            }
+        }
+        
+        // Decompose all composites not present in a
+        for (int composite=N_SIMPLE_PRIMITIVE_UNITS; composite<N_PRIMITIVE_UNITS; composite++) {
+            if (power[composite] != 0 && a.power[composite] == 0) {
+                decompose(composite, dominantSystem, a, conversionFactor);
+            }
+        }
+
+        // Build up to exactly n/d of all composites present in a
+        for (int composite=N_SIMPLE_PRIMITIVE_UNITS; composite<N_PRIMITIVE_UNITS; composite++) {
+            if (a.power[composite] != 0) {
+                int requiredPower = a.power[composite]*n/d;
+                if (requiredPower != power[composite])
+                    compose(composite, a.unit[composite], conversionFactor, requiredPower);
+            }
+        }
+    }
+    
     public void convertTo(Unit a, Real conversionFactor, Real conversionOffset) {
         conversionFactor.assign(Real.ONE);
         if (conversionOffset != null)
@@ -836,6 +908,12 @@ public final class Unit {
                 conversionOffset.div(allUnits[TEMP_TYPE][a.unit[TEMP_TYPE]].conversionFactor);
                 unit[TEMP_TYPE] = a.unit[TEMP_TYPE];
             }
+            return;
+        }
+
+        int fraction = fractionForFullConversion(a);
+        if (fraction != 0) {
+            fullyConvertTo(a, fraction, conversionFactor);
             return;
         }
 
@@ -886,7 +964,7 @@ public final class Unit {
                     }
                 }
                 // Composite unit type only present in this
-                compose(composite, a.unit[composite], conversionFactor);
+                compose(composite, a.unit[composite], conversionFactor, 0);
             }
         }
         
@@ -994,8 +1072,15 @@ public final class Unit {
                 error = true;
                 return;
             }
-        } else if (!isCompatibleWith(a)) {
-            convertTo(a, conversionFactor, null);
+        } else {
+            int fraction = fractionForFullConversion(a);
+            if (fraction != 0) {
+                fullyConvertTo(a, fraction, conversionFactor);
+            } else {
+                if (!isCompatibleWith(a)) {
+                    convertTo(a, conversionFactor, null);
+                }
+            }
         }
         for (int unitType=0; unitType<N_PRIMITIVE_UNITS; unitType++) {
             if (a.power[unitType] != 0) {
@@ -1022,8 +1107,13 @@ public final class Unit {
                 error = true;
                 return;
             }
-        } else if (!isCompatibleWith(a)) {
-            convertTo(a, conversionFactor, null);
+        } else {
+            int fraction = fractionForFullConversion(a);
+            if (fraction != 0) {
+                fullyConvertTo(a, fraction, conversionFactor);
+            } else if (!isCompatibleWith(a)) {
+                convertTo(a, conversionFactor, null);
+            }
         }
         for (int unitType=0; unitType<N_PRIMITIVE_UNITS; unitType++) {
             if (a.power[unitType] != 0) {
@@ -1540,16 +1630,19 @@ public final class Unit {
         check("fps²","->","in","12","ips²");
         check("J","->","g","1000","g·m²/s²");
         check("W","->","kJ","0.001","kJ/s");
-        // Still needs work: ...
         check("psi","6894.757293168361","Pa");
-        check("Pa","0.000145037737730209","psi");
+        check("Pa","0.0001450377377302092","psi");
         check("psi","0.06894757293168361","bar");
-        check("bar","14.5037737730209","psi");
+        check("bar","14.50377377302092","psi");
         check("psi","/","bar","0.06894757293168361","");
-        check("bar","/","psi","14.5037737730209","");
+        check("bar","/","psi","14.50377377302092","");
+        check("bar","+","psi","14.50377377302092","psi");
         check("a","->","m","100","m²");
         check("a","/","m²","100","");
         check("a","+","m²","100","m²");
+        // Still needs work: ... (if at all possible?)
         check("e","·","V","eV");
+        check("eV","/","V","e");
+        check("eV","/","e","V");
     }
 }
