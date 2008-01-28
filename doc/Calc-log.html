@@ -15,13 +15,19 @@ MIDP devices</h1>
 <h3><a href="Calc401.jar">Version 4.01</a>,
 <a href="CalcMIDP2401.jar">2</a>,
 <a href="CalcNokia401.jar">N</a>,
-2007-XX-XX, (XXkB)</h3>
+2008-XX-XX, (119kB)</h3>
 
 <ul>
+  <li>Added units calculations
+  <li>Programs written for a previous version of Calc that directly
+     STO/RCL matrix rows above 64 will not work.
+     (They will appear to contain unit statements instead)
   <li>Added the matrix operations "row<sub>x</sub>", "col<sub>x</sub>",
      "a<sub>max</sub>" and "a<sub>min</sub>"
   <li>Fixed bug displaying numbers smaller than 1 in HEX mode with
-    thousands-separator enabled
+     thousands-separator enabled
+  <li>Fixed bug where a matrix in y became nan after "clear"
+  <li>Fixed crash when appending number (non-integer) to a short program
 </ul>
 
 <h3><a href="Calc400.jar">Version 4.00</a>,

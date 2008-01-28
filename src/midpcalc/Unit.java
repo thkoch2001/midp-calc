@@ -12,8 +12,8 @@ package midpcalc;
 //  Area:               m²   a da ha acre          acre = 43560 ft²
 //  Volume:             m³   l dl cl ml gal pt cup fl.oz (gal pt cup fl.oz)
 //  Speed:              m/s  km/h mph knot c       knot = NM/h, c = ly/y
-//  Acceleration:       m/s² ips² fps² mps² g_n
-//  Force:              N    pdl lbf kgf           N = kg·m/s², pdl = lb·fps², lbf = g_n·lb = 4.4 N
+//  Acceleration:       m/s² in/s² ft/s² mi/s² g_n
+//  Force:              N    pdl lbf kgf           N = kg·m/s², pdl = lb·ft/s², lbf = g_n·lb = 4.4 N
 //  Pressure:           Pa   bar atm psi mmHg pdl/ft²
 //                                                 Pa = N/m² = kg/m·s², bar = 100000 Pa, atm = 101325 Pa, psi = lbf/in²
 //  Energy:             J    kJ cal kcal Btu eV ft·lbf hp·h kW·h
@@ -31,7 +31,7 @@ public final class Unit {
 
     static final int N_SIMPLE_PRIMITIVE_UNITS = 6;
     static final int N_PRIMITIVE_UNITS = 12;
-    static final int N_DERIVED_UNITS = 27;
+    static final int N_DERIVED_UNITS = 26;
     static final int TEMP_TYPE = 5; // Temperature unit type index is 5
 
     int[] power = new int[N_PRIMITIVE_UNITS];
@@ -83,6 +83,7 @@ public final class Unit {
         }
     }
 
+    // Predefined units
     private static final Unit kg   = u().kg(1);
     private static final Unit m    = u().m(1);
     private static final Unit s    = u().s(1);
@@ -96,7 +97,7 @@ public final class Unit {
     private static final Unit J    = u().kg(1).m(2).s(-2);
     private static final Unit W    = u().kg(1).m(2).s(-3);
     
-    // NOTE! When re-ordering units, parameters to UnitDesc.unit() refer
+    // NOTE! When re-ordering units, parameters to Unit.set() refer
     // to the order specified here
     
     // Primitive, simple (non-composite) units
@@ -109,7 +110,7 @@ public final class Unit {
         new UnitDesc("lb",  IMP|BASE, kg, new Real(0, 0x3ffffffe, 0x741ea12add794261L /*0.45359237*/)),
         new UnitDesc("st",  IMP,      kg, new Real(0, 0x40000002, 0x659acd0581ca1a15L /*6.35029318*/)),
         new UnitDesc("ton", IMP,      kg, new Real(0, 0x40000009, 0x7165e963dc486ad3L /*907.18474*/)),
-        new UnitDesc("`t`", IMP,      kg, new Real(0, 0x40000009, 0x7f018046e23ca09aL /*1016.0469088*/)),
+        new UnitDesc("`ton`",IMP,     kg, new Real(0, 0x40000009, 0x7f018046e23ca09aL /*1016.0469088*/)),
         new UnitDesc("u",   SI,       kg, new Real(0, 0x3fffffa7, 0x41c7dd5a667f9950L /*1.66053886e-27*/)),
     };
     private static final UnitDesc[] lengthUnits = new UnitDesc[] {
@@ -195,11 +196,6 @@ public final class Unit {
         new UnitDesc("knot", u().set(1,9,1).set(2,2,-1)),                // NM/h
         new UnitDesc("c", u().set(1,11,1).set(2,4,-1)),                  // ly/y
     };
-    private static final UnitDesc[] derivedAccelerationUnits = new UnitDesc[] {
-        new UnitDesc("ips²", IMP, u().set(1,5,1).s(-2)),                 // in/s²
-        new UnitDesc("fps²", IMP, u().set(1,6,1).s(-2)),                 // ft/s²
-        new UnitDesc("mps²", IMP, u().set(1,8,1).s(-2)),                 // mi/s²
-    };
     private static final UnitDesc[] derivedForceUnits = new UnitDesc[] {
         new UnitDesc("N", N),
         new UnitDesc("pdl", IMP, u().set(0,5,1).set(1,6,1).s(-2)),       // lb·ft/s²
@@ -248,6 +244,9 @@ public final class Unit {
         new UnitDesc("m/s",  u().m(1).s(-1)),
         new UnitDesc("km/h", u().set(1,4,1).set(2,2,-1)),
         new UnitDesc("m/s²", m_s2),
+        new UnitDesc("in/s²",u().set(1,5,1).s(-2)),
+        new UnitDesc("ft/s²",u().set(1,6,1).s(-2)),
+        new UnitDesc("mi/s²",u().set(1,8,1).s(-2)),
         new UnitDesc("in²",  u().set(1,5,2)),
         new UnitDesc("in³",  u().set(1,5,3)),
         new UnitDesc("ft²",  u().set(1,6,2)),
@@ -273,45 +272,44 @@ public final class Unit {
         alternativePowerUnits,           // 11
         // Derived
         derivedSpeedUnits,               // 12
-        derivedAccelerationUnits,        // 13
-        derivedForceUnits,               // 14
-        derivedAlternativeForceUnits,    // 15
-        derivedPressureUnits,            // 16
-        derivedAlternativePressureUnits, // 17
-        derivedEnergyUnits,              // 18
-        derivedPowerUnits,               // 19
-        derivedCurrentUnits,             // 20
-        derivedPotentialUnits,           // 21
-        derivedCapasitanceUnits,         // 22
-        derivedResistanceUnits,          // 23
-        derivedFluxUnits,                // 24
-        derivedFluxDensityUnits,         // 25
-        derivedInductanceUnits,          // 26
+        derivedForceUnits,               // 13
+        derivedAlternativeForceUnits,    // 14
+        derivedPressureUnits,            // 15
+        derivedAlternativePressureUnits, // 16
+        derivedEnergyUnits,              // 17
+        derivedPowerUnits,               // 18
+        derivedCurrentUnits,             // 19
+        derivedPotentialUnits,           // 20
+        derivedCapasitanceUnits,         // 21
+        derivedResistanceUnits,          // 22
+        derivedFluxUnits,                // 23
+        derivedFluxDensityUnits,         // 24
+        derivedInductanceUnits,          // 25
         // Additional
         helperCompositeUnits  // Used only indirectly
     };
     static final String OFL = "[ofl]";
     static final String ERR = "[err]";
     
-    private static final class DerivedUnit {
+    static final class DerivedUnit {
         int[] power = new int[N_DERIVED_UNITS];
         int[] unit = new int[N_DERIVED_UNITS];
         int complexity;
         
         // Order in which units appear in the output string
         private static final int unitTypeOrder[] = new int[] {
-            //  N  N  A C  V  F Ohm Wb  H  J  J  W  W Pa Pa Pa kg m m² m³ m/s g  g s mol K  T
-               14,15,20,3,21,22, 23,24,26,18,10,19,11,16,17, 9, 0,1, 6, 7, 12,8,13,2,  4,5,25
+            //  N  N  A C  V  F Ohm Wb  H  J  J  W  W Pa Pa Pa kg m m² m³ m/s g s mol K  T
+               13,14,19,3,20,21, 22,23,25,17,10,18,11,15,16, 9, 0,1, 6, 7, 12,8,2,  4,5,24
         };
         // Relative penalty for making use of each unit
         private static final int oddness[] = new int[] {
-            // kg m s C mol K m² m³ g Pa J W m/s g N N Pa Pa J W A V F Ohm Wb T H
-                0,0,0,2,  0,0, 1, 1,2, 4,3,3,  2,2,3,3, 4, 4,3,3,1,3,4,  3, 4,3,4
+            // kg m s C mol K m² m³ g Pa J W m/s N N Pa Pa J W A V F Ohm Wb T H
+                0,0,0,2,  0,0, 1, 1,2, 4,3,3,  2,3,3, 4, 4,3,3,1,3,4,  3, 4,3,4
         };
         // Dimensionality limit for "natural use" of each unit
         private static final int dimensionLimit[] = new int[] {
-            // kg m s A mol K m² m³ g Pa J W m/s g N N Pa Pa J W C V F Ohm Wb T H
-                1,3,2,1,  1,1, 1, 1,1, 1,1,1,  1,1,1,1, 1, 1,1,1,1,1,1,  1, 1,1,1
+            // kg m s C mol K m² m³ g Pa J W m/s N N Pa Pa J W A V F Ohm Wb T H
+                1,3,2,2,  1,1, 1, 1,1, 1,1,1,  2,1,1, 1, 1,1,1,2,2,1,  1, 1,2,1
         };
         static final String powerStr[] = new String[] {
             "", "", "²", "³", "¼"/*^4*/
@@ -332,7 +330,7 @@ public final class Unit {
                 power[unitType] = unit[unitType] = 0;
             }
             calcComplexity();
-        }
+        }                                                                                                       
         
         void copy(DerivedUnit a) {
             for (int unitType=0; unitType<N_DERIVED_UNITS; unitType++) {
@@ -366,28 +364,39 @@ public final class Unit {
                 if (power[unitType] != 0 && reduceBy.power[unitType] != 0 && unit[unitType] != reduceBy.unit[unitType])
                     return 0;
             }
+            
+            int maxFactor = -100;
+            int minFactor = 100;
+            for (int unitType=0; unitType<N_PRIMITIVE_UNITS; unitType++) {
+                if (reduceBy.power[unitType] != 0) {
+                    int f = power[unitType]/reduceBy.power[unitType];
+                    if (f > maxFactor) maxFactor = f;
+                    if (f < minFactor) minFactor = f;
+                }
+            }
+            int factor = minFactor > 0 ? minFactor : maxFactor < 0 ? maxFactor : 1;
 
             for (int unitType=0; unitType<N_PRIMITIVE_UNITS; unitType++) {
-                power[unitType] -= reduceBy.power[unitType];
+                power[unitType] -= factor*reduceBy.power[unitType];
             }
-            power[reduceByUnitType] ++;
+            power[reduceByUnitType] += factor;
             unit[reduceByUnitType] = reduceByUnit;
             calcComplexity();
             if (complexity < oldComplexity)
-                return 1;
+                return factor;
 
             for (int unitType=0; unitType<N_PRIMITIVE_UNITS; unitType++) {
-                power[unitType] += 2*reduceBy.power[unitType];
+                power[unitType] += 2*factor*reduceBy.power[unitType];
             }
-            power[reduceByUnitType] -= 2;
+            power[reduceByUnitType] -= 2*factor;
             calcComplexity();
             if (complexity < oldComplexity)
-                return -1;
+                return -factor;
             
             for (int unitType=0; unitType<N_PRIMITIVE_UNITS; unitType++) {
-                power[unitType] -= reduceBy.power[unitType];
+                power[unitType] -= factor*reduceBy.power[unitType];
             }
-            power[reduceByUnitType] ++;
+            power[reduceByUnitType] += factor;
             complexity = oldComplexity;
             return 0;
         }
@@ -527,7 +536,7 @@ public final class Unit {
         return this;
     }
 
-    private static final int[] bitsPerPower = new int[] {
+    static final int[] bitsPerPower = new int[] {
         2,4,4,3,2,2,2,2,2,2,2,2
     };
     private static final int[] bitsPerUnit = new int[] {
@@ -720,6 +729,12 @@ public final class Unit {
     }
     
     private int fractionForFullConversion(Unit a) {
+        // A unit is fully convertible to another if:
+        // 1) Both units, when decomposed into simple primitive units, have all
+        //    units in a fixed ratio relative to each other
+        // 2) The all primitive units (simple and composite) in the unit converted to
+        //    must be divisible by the denominator of the ratio
+
         int numerator = 0;
         int denominator = 0;
         for (int simple=0; simple<N_SIMPLE_PRIMITIVE_UNITS; simple++) {
@@ -853,8 +868,8 @@ public final class Unit {
     
     private void fullyConvertTo(Unit a, int fraction, Real conversionFactor) {
         int dominantSystem = a.dominantSystem();
-        int n = fraction >> 16;
-        int d = fraction & 0xffff;
+        int numerator = fraction >> 16;
+        int denominator = fraction & 0xffff;
 
         // For all unit types present in both this and a, convert to a's unit
         for (int unitType=0; unitType<N_PRIMITIVE_UNITS; unitType++) {
@@ -876,10 +891,11 @@ public final class Unit {
             }
         }
 
-        // Build up to exactly n/d of all composites present in a
+        // Build up the specified fraction of all composites present in a
         for (int composite=N_SIMPLE_PRIMITIVE_UNITS; composite<N_PRIMITIVE_UNITS; composite++) {
             if (a.power[composite] != 0) {
-                int requiredPower = a.power[composite]*n/d;
+                // It is already assured that a.power[composite] is divisible by denominator
+                int requiredPower = a.power[composite]*numerator/denominator;
                 if (requiredPower != power[composite])
                     compose(composite, a.unit[composite], conversionFactor, requiredPower);
             }
@@ -894,6 +910,7 @@ public final class Unit {
         if (handleErrorBinary(a))
             return;
 
+        // Handle temperature specially
         if (hasAbsoluteTemperature() || a.hasAbsoluteTemperature()) {
             // Can only convert between absolute temperature and other plain temperatures
             if (!isPlainTemperature() || !a.isPlainTemperature() || conversionOffset == null) {
@@ -911,6 +928,7 @@ public final class Unit {
             return;
         }
 
+        // Special case for "fully convertible" units
         int fraction = fractionForFullConversion(a);
         if (fraction != 0) {
             fullyConvertTo(a, fraction, conversionFactor);
@@ -1272,377 +1290,5 @@ public final class Unit {
         }
         return unitDesc;
     }
-    
-    // Test methods. Will be stripped away by the obfuscator
-    // Run as "Java Application" to execute tests
 
-    private static Unit findUnit(String name) {
-        for (int unitType=0; unitType<allUnits.length; unitType++)
-            for (int unit=0; unit<allUnits[unitType].length; unit++)
-                if (name.equals(allUnits[unitType][unit].name))
-                    return u().setUnit(unitType, unit);
-        throw new IllegalStateException("Could not find unit "+name);
-    }
-
-    private static void check(Unit unit, String s) {
-        Unit u = new Unit();
-        u.unpack(unit.pack());
-        String us = u.toString(); 
-        if (!us.equals(s))
-            throw new IllegalStateException("Unit "+unit+" toString="+us+", expected="+s);
-    }
-
-    private static void check(String a, String op, String b, String u) {
-        check(a,op,b,"1",u);
-    }
-
-    private static void check(String u1, String amount, String u) {
-        check(u1, "->", u, amount, u);
-    }
-
-    private static void check(String u1, String op, String u2, String amount, String u) {
-        String amountStr = (amount.equals("1") && u.length()!=0 ? "" : amount+" ");
-        if (op.equals("->") && u2.equals(u))
-            System.out.println(u1+" = "+amountStr+u);
-        else
-            System.out.println(u1+" "+op+" "+u2+" = "+amountStr+u);
-
-        Unit a = findUnit(u1);
-        Unit b = findUnit(u2);
-        Real f = new Real();
-        Real o = new Real();
-        if (op.equals("+")) {
-            a.unpack(add(a.pack(), b.pack(), f, o));
-        } else if (op.equals("-")) {
-            a.unpack(sub(a.pack(), b.pack(), f, o));
-        } else if (op.equals("·")) {
-            a.unpack(mul(a.pack(), b.pack(), f));
-        } else if (op.equals("/")) {
-            a.unpack(div(a.pack(), b.pack(), f));
-        } else if (op.equals("->")) {
-            a.unpack(convertTo(a.pack(), b.pack(), f, o));
-        }
-        check(a,u);
-        if (amount.indexOf('+') >= 0 || 
-            (amount.indexOf('-') >= 0 && amount.indexOf('-') != amount.indexOf('e')+1)) {
-            String aCheck = f.toString()+(o.isNegative() ? "" : "+")+o.toString();
-            if (!aCheck.equals(amount))
-                throw new IllegalStateException("Got "+aCheck+" "+u+", expected "+amount+" "+u);
-        } else {
-            Real f2 = new Real(amount);
-            f2.sub(f);
-            if (!o.isZero())
-                throw new IllegalStateException("Got "+f+(o.isNegative() ? "" : "+")+o+" "+u+", expected "+amount+" "+u);
-            if (!f2.isZero() && !f.toString().equals(amount))
-                throw new IllegalStateException("Got "+f+" "+u+", expected "+amount+" "+u);
-        }
-    }
-
-    public static void main(String[] args) {
-        for (int unitType=0; unitType<N_DERIVED_UNITS; unitType++) {
-            for (int unit=0; unit<allUnits[unitType].length; unit++) {
-                Unit aUnit = u().setUnit(unitType, unit);
-                check(aUnit, allUnits[unitType][unit].name);
-                System.out.print(toString(aUnit.pack()));
-                if (!allUnits[unitType][unit].conversionFactor.equalTo(Real.ONE)) {
-                    if (!allUnits[unitType][unit].conversionFactor.isNan())
-                        System.out.print(" = "+allUnits[unitType][unit].conversionFactor+" "+
-                                allUnits[unitType][unit].convertsTo);
-                    else
-                        System.out.print(" (nonlinear conversion)");
-                } else if (allUnits[unitType][unit].convertsTo != null) {
-                    System.out.print(" = "+allUnits[unitType][unit].convertsTo.toString(false, false));
-                } else {
-                    System.out.print(" (base SI unit)");
-                }
-                System.out.println();
-            }
-            System.out.println();
-        }
-        for (int unitType=0; unitType<N_PRIMITIVE_UNITS; unitType++) {
-            int power = Math.min(1<<(bitsPerPower[unitType]-1),4);
-            check(u().set(unitType,0,power), allUnits[unitType][0].name+DerivedUnit.powerStr[power]);
-            check(u().set(unitType,0,-1), allUnits[unitType][0].name+"¹");
-            check(u().set(unitType,0,-power), "/"+allUnits[unitType][0].name+DerivedUnit.powerStr[power]);
-        }
-        
-        // Listing all relationships between units
-
-        check("kg",/* = */ "1000","g");
-        check("t","1000","kg");
-        check("lb","7000","gr");
-        check("lb","16","oz");
-        check("lb","0.45359237","kg");
-        check("st","14","lb");
-        check("ton","2000","lb");
-        check("`t`","2240","lb");
-        check("u","1.66053886e-27","kg");
-        
-        check("m","10000000000","Å");
-        check("m","1000","mm");
-        check("m","100","cm");
-        check("km","1000","m");
-        check("in","2.54","cm");
-        check("ft","12","in");
-        check("yd","3","ft");
-        check("mi","1760","yd");
-        check("NM","1852","m");
-        check("AU","149597870691","m");
-        check("ly","9460730472580800","m");
-        check("pc","3.085677581305729e16","m");
-
-        check("min","60","s");
-        check("h","60","min");
-        check("d","24","h");
-        check("y","365.25","d");
-
-        check("e","1.60217653e-19","C");
-
-        check("K","1","ð°C");
-        check("K","1.8","ð°F");
-        check("ð°C","1.8","ð°F");
-
-        check("a","100","m²");
-        check("da","1000","m²");
-        check("ha","10000","m²");
-        check("acre","4840","yd²");
-
-        check("m³","1000","l");
-        check("l","1000","ml");
-        check("l","100","cl");
-        check("l","10","dl");
-        check("gal","231","in³");
-        check("gal","8","pt");
-        check("pt","2","cup");
-        check("pt","16","fl.oz");
-        check("`gal`","4.54609","l");
-        check("`gal`","8","`pt`");
-        check("`cup`","8","`fl.oz`");
-        check("`pt`","20","`fl.oz`");
-        
-        check("`g`","9.80665","m/s²");
-        
-        check("bar","100000","Pa");
-        check("atm","101325","Pa");
-        check("mmHg","133.322387415","Pa");
-
-        check("kJ","1000","J");
-        check("cal","4.1868","J");
-        check("kcal","4186.8","J");
-        check("Btu","1055.05585262","J");
-        check("eV","1.60217653e-19","J");
-
-        check("kW","1000","W");
-        check("MW","1000000","W");
-        check("hp","745.69987158227022","W");
-
-        check("mi","/","h",/* = */ "mph");
-        check("NM","/","h","knot");
-        check("ly","/","y","c");
-        check("in","/","s²","ips²");
-        check("ft","/","s²","fps²");
-        check("mi","/","s²","mps²");
-        check("kg","·","m/s²","N");
-        check("lb","·","fps²","pdl");
-        check("`g`","·","kg","kgf");
-        check("`g`","·","lb","lbf");
-        check("N","/","m²","Pa");
-        check("lbf","/","in²","psi");
-        check("N","·","m","J");
-        check("J","/","s","W");
-        check("C","/","s","A");
-        check("W","/","A","V");
-        check("C","/","V","F");
-        check("V","/","A","Ø");
-        check("V","·","s","Wb");
-        check("Wb","/","m²","T");
-        check("Wb","/","A","H");
-        
-        // Special temperature calculations
-
-        check("°C","·","m",ERR);
-        check("°C","+","m",ERR);
-        check("°F","/","m",ERR);
-        check("°C","->","m",ERR);
-        check("ð°C","·","m","m·ð°C");
-        check("ð°F","/","m","ð°F/m");
-        check("","·","°C","°C");
-        check("","·","°F","°F");
-        check("","/","°C","°C¹");
-        check("","/","°F","°F¹");
-
-        check("°C","+","°C",ERR);
-        check("°C","+","°F",ERR);
-        check("°C","+","ð°C","°C");
-        check("°C","+","ð°F","1.8+32","°F");
-        check("°C","+","K","1+273.15","K");
-        
-        check("°C","-","°C","ð°C");
-        check("°C","-","°F","1.8+32","ð°F");
-        check("°C","-","ð°C","°C");
-        check("°C","-","ð°F","1.8+32","°F");
-        check("°C","-","K","1+273.15","K");
-        
-        check("°C","·","°C",ERR);
-        check("°C","·","°F",ERR);
-        check("°C","·","ð°C",ERR);
-        check("°C","·","ð°F",ERR);
-        check("°C","·","K",ERR);
-        
-        check("°C","/","°C",ERR);
-        check("°C","/","°F",ERR);
-        check("°C","/","ð°C",ERR);
-        check("°C","/","ð°F",ERR);
-        check("°C","/","K",ERR);
-        
-        check("°C","->","°C","°C");
-        check("°C","->","°F","1.8+32","°F");
-        check("°C","->","ð°C","1+273.15","ð°C");
-        check("°C","->","ð°F","1.8+491.67","ð°F");
-        check("°C","->","K","1+273.15","K");
-        
-        check("°F","+","°C",ERR);
-        check("°F","+","°F",ERR);
-        check("°F","+","ð°C","0.5555555555555556-17.77777777777778","°C");
-        check("°F","+","ð°F","°F");
-        check("°F","+","K","0.5555555555555556+255.3722222222222","K");
-        
-        check("°F","-","°C","0.5555555555555556-17.77777777777778","ð°C");
-        check("°F","-","°F","ð°F");
-        check("°F","-","ð°C","0.5555555555555556-17.77777777777778","°C");
-        check("°F","-","ð°F","°F");
-        check("°F","-","K","0.5555555555555556+255.3722222222222","K");
-
-        check("°F","·","°C",ERR);
-        check("°F","·","°F",ERR);
-        check("°F","·","ð°C",ERR);
-        check("°F","·","ð°F",ERR);
-        check("°F","·","K",ERR);
-
-        check("°F","/","°C",ERR);
-        check("°F","/","°F",ERR);
-        check("°F","/","ð°C",ERR);
-        check("°F","/","ð°F",ERR);
-        check("°F","/","K",ERR);
-
-        check("°F","->","°C","0.5555555555555556-17.77777777777778","°C");
-        check("°F","->","°F","°F");
-        check("°F","->","ð°C","0.5555555555555556+255.3722222222222","ð°C");
-        check("°F","->","ð°F","1+459.67","ð°F");
-        check("°F","->","K","0.5555555555555556+255.3722222222222","K");
-
-        check("ð°C","+","°C","°C");
-        check("ð°C","+","°F","1.8","°F");
-        check("ð°C","+","ð°C","ð°C");
-        check("ð°C","+","ð°F","1.8","ð°F");
-        check("ð°C","+","K","K");
-        
-        check("ð°C","-","°C",ERR);
-        check("ð°C","-","°F",ERR);
-        check("ð°C","-","ð°C","ð°C");
-        check("ð°C","-","ð°F","1.8","ð°F");
-        check("ð°C","-","K","K");
-        
-        check("ð°C","·","°C",ERR);
-        check("ð°C","·","°F",ERR);
-        check("ð°C","·","ð°C","ð°C²");
-        check("ð°C","·","ð°F","1.8","ð°F²");
-        check("ð°C","·","K","K²");
-        
-        check("ð°C","/","°C",ERR);
-        check("ð°C","/","°F",ERR);
-        check("ð°C","/","ð°C","");
-        check("ð°C","/","ð°F","1.8","");
-        check("ð°C","/","K","");
-        
-        check("ð°C","->","°C","1-273.15","°C");
-        check("ð°C","->","°F","1.8-459.67","°F");
-        check("ð°C","->","ð°C","ð°C");
-        check("ð°C","->","ð°F","1.8","ð°F");
-        check("ð°C","->","K","K");
-        
-        check("ð°F","+","°C","0.5555555555555556","°C");
-        check("ð°F","+","°F","°F");
-        check("ð°F","+","ð°F","ð°F");
-        check("ð°F","+","ð°C","0.5555555555555556","ð°C");
-        check("ð°F","+","K","0.5555555555555556","K");
-
-        check("ð°F","-","°C",ERR);
-        check("ð°F","-","°F",ERR);
-        check("ð°F","-","ð°F","ð°F");
-        check("ð°F","-","ð°C","0.5555555555555556","ð°C");
-        check("ð°F","-","K","0.5555555555555556","K");
-
-        check("ð°F","·","°C",ERR);
-        check("ð°F","·","°F",ERR);
-        check("ð°F","·","ð°F","ð°F²");
-        check("ð°F","·","ð°C","0.5555555555555556","ð°C²");
-        check("ð°F","·","K","0.5555555555555556","K²");
-
-        check("ð°F","/","°C",ERR);
-        check("ð°F","/","°F",ERR);
-        check("ð°F","/","ð°F","");
-        check("ð°F","/","ð°C","0.5555555555555556","");
-        check("ð°F","/","K","0.5555555555555556","");
-
-        check("ð°F","->","°C","0.5555555555555556-273.15","°C");
-        check("ð°F","->","°F","1-459.67","°F");
-        check("ð°F","->","ð°F","ð°F");
-        check("ð°F","->","ð°C","0.5555555555555556","ð°C");
-        check("ð°F","->","K","0.5555555555555556","K");
-
-        check("K","+","°C","°C");
-        check("K","+","°F","1.8","°F");
-        check("K","+","ð°C","ð°C");
-        check("K","+","ð°F","1.8","ð°F");
-        check("K","+","K","K");
-
-        check("K","-","°C","1-273.15","ð°C");
-        check("K","-","°F","1.8-459.67","ð°F");
-        check("K","-","ð°C","ð°C");
-        check("K","-","ð°F","1.8","ð°F");
-        check("K","-","K","K");
-
-        check("K","·","°C",ERR);
-        check("K","·","°F",ERR);
-        check("K","·","ð°C","ð°C²");
-        check("K","·","ð°F","1.8","ð°F²");
-        check("K","·","K","K²");
-
-        check("K","/","°C",ERR);
-        check("K","/","°F",ERR);
-        check("K","/","ð°C","");
-        check("K","/","ð°F","1.8","");
-        check("K","/","K","");
-
-        check("K","->","°C","1-273.15","°C");
-        check("K","->","°F","1.8-459.67","°F");
-        check("K","->","ð°C","ð°C");
-        check("K","->","ð°F","1.8","ð°F");
-        check("K","->","K","K");
-
-        // Testing unit calculations
-
-        check("W","/","m²","W/m²"); // Just checking that it does not come out kg/s³ 
-        check("km","/","m","1000","");
-        check("s","·","m","m·s");
-        check("s","+","m",ERR);
-        check("fps²","->","in","12","ips²");
-        check("J","->","g","1000","g·m²/s²");
-        check("W","->","kJ","0.001","kJ/s");
-        check("psi","6894.757293168361","Pa");
-        check("Pa","0.0001450377377302092","psi");
-        check("psi","0.06894757293168361","bar");
-        check("bar","14.50377377302092","psi");
-        check("psi","/","bar","0.06894757293168361","");
-        check("bar","/","psi","14.50377377302092","");
-        check("bar","+","psi","14.50377377302092","psi");
-        check("a","->","m","100","m²");
-        check("a","/","m²","100","");
-        check("a","+","m²","100","m²");
-        // Still needs work: ... (if at all possible?)
-        check("e","·","V","eV");
-        check("eV","/","V","e");
-        check("eV","/","e","V");
-    }
 }

@@ -11,7 +11,7 @@ import javax.microedition.lcdui.Graphics;
 
 public final class CalcCanvas
     extends MyCanvas
-    implements CommandListener
+    implements CommandListener, CanvasAccess
 {
 // Commands:
 //               ENTER  +  0-9a-f  .  -/E  clear  menu
@@ -669,7 +669,7 @@ public final class CalcCanvas
         new Menu(CalcEngine.BIC),
         new Menu(CalcEngine.XOR),
     });
-    private Menu bitMath = new Menu("bitop_2",new Menu[] {
+    private Menu bitMath = new Menu("bitop¸2",new Menu[] {
         new Menu(CalcEngine.NOT),
         new Menu(CalcEngine.YUPX),
         new Menu(CalcEngine.YDNX),
@@ -758,7 +758,7 @@ public final class CalcCanvas
     });
 
     private Menu unitMenu = new Menu(null,new Menu[] {
-        new Menu("lengthy",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+        new Menu("long",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
             new Menu("length",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
                 new Menu("m",UNIT,CmdDesc.REPEAT_PARENT),
                 new Menu("metric",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
@@ -824,31 +824,13 @@ public final class CalcCanvas
             }),
             new Menu("accel",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
                 new Menu("m/s²",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("ips²",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("fps²",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("mps²",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("in/s²",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("ft/s²",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("mi/s²",UNIT,CmdDesc.REPEAT_PARENT),
                 new Menu("`g`",UNIT,CmdDesc.REPEAT_PARENT),
             }),
         }),
         new Menu("mixed",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-            new Menu("weight",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                new Menu("kg",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("metric",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                    new Menu("g",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("t",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("u",UNIT,CmdDesc.REPEAT_PARENT),
-                }),
-                new Menu("US/Imp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                    new Menu("gr",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("oz",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("lb",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("st",UNIT,CmdDesc.REPEAT_PARENT),
-                }),
-                new Menu("US/Imp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                    new Menu("ton",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("`t`",UNIT,CmdDesc.REPEAT_PARENT),
-                }),
-            }),
             new Menu("time",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
                 new Menu("s",UNIT,CmdDesc.REPEAT_PARENT),
                 new Menu("min",UNIT,CmdDesc.REPEAT_PARENT),
@@ -882,12 +864,23 @@ public final class CalcCanvas
             }),
         }),
         new Menu("firm",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-            new Menu("pressure",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                new Menu("Pa",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("psi",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("bar",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("atm",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("mmHg",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("mass",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("kg",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("metric",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                    new Menu("g",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("t",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("u",UNIT,CmdDesc.REPEAT_PARENT),
+                }),
+                new Menu("US/Imp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                    new Menu("gr",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("oz",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("lb",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("st",UNIT,CmdDesc.REPEAT_PARENT),
+                }),
+                new Menu("US/Imp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                    new Menu("ton",UNIT,CmdDesc.REPEAT_PARENT),
+                    new Menu("`ton`",UNIT,CmdDesc.REPEAT_PARENT),
+                }),
             }),
             new Menu("force",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
                 new Menu("N",UNIT,CmdDesc.REPEAT_PARENT),
@@ -895,11 +888,18 @@ public final class CalcCanvas
                 new Menu("kgf",UNIT,CmdDesc.REPEAT_PARENT),
                 new Menu("lbf",UNIT,CmdDesc.REPEAT_PARENT),
             }),
-            new Menu("power",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+            new Menu("effect",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
                 new Menu("W",UNIT,CmdDesc.REPEAT_PARENT),
                 new Menu("kW",UNIT,CmdDesc.REPEAT_PARENT),
                 new Menu("MW",UNIT,CmdDesc.REPEAT_PARENT),
                 new Menu("hp",UNIT,CmdDesc.REPEAT_PARENT),
+            }),
+            new Menu("pressure",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("Pa",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("psi",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("bar",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("atm",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("mmHg",UNIT,CmdDesc.REPEAT_PARENT),
             }),
             new Menu("energy",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
                 new Menu("J",UNIT,CmdDesc.REPEAT_PARENT),
@@ -927,7 +927,6 @@ public final class CalcCanvas
     private int monitorFontStyle;
     public boolean fullScreen;
     public CalcEngine calc;
-    public static CalcCanvas canvas;
 
     private Command add;
     private Command enter;
@@ -953,7 +952,6 @@ public final class CalcCanvas
     private Menu repeatedMenuItem;
 
     public CalcCanvas(Calc m, DataInputStream in) {
-        canvas = this;
         midlet = m;
 
         calc = new CalcEngine(this);
@@ -1112,9 +1110,7 @@ public final class CalcCanvas
         }
         offYMonitor = h-footer - maxLinesMonitor*numberFontHeight - (minSpace+1)/3;
         monitorOffY = header + minSpace/3;
-        calc.setMaxMonitorSize(maxMonitorLines);
-        calc.setMaxWidth(nDigits);
-        calc.setMaxMonitorWidth(nMonitorDigits);
+        calc.setDisplayProperties(nDigits, maxMonitorLines);
     }
 
     public void saveState(DataOutputStream out) {
@@ -1385,94 +1381,153 @@ public final class CalcCanvas
             g.fillArc(x-5,y-5,11,11,0,360);
         }
     }
+    
+    private void drawLine(Graphics g, UniFont font, Monitorable data, int row,
+                          int col, int x, int y, int w, boolean cleared) {
+        int charWidth = font.charWidth();
+        int charHeight = font.getHeight();
+        int digits = w/charWidth;
+        x += (w-digits*charWidth)/2;
+        w = digits*charWidth;
 
-    private void drawNumber(Graphics g, int i, boolean cleared, int offY,
-                            int nLines) {
-        if (i==0 && calc.inputInProgress) {
-            StringBuffer tmp = calc.inputBuf;
-            tmp.append('_');
-            if (tmp.length()>nDigits)
-                numberFont.drawString(g,offX,offY+(nLines-1)*numberFontHeight,tmp,
-                                      tmp.length()-nDigits);
-            else {
-                numberFont.drawString(
-                    g,offX,offY+(nLines-1)*numberFontHeight,tmp,0);
-                if (!cleared) {
-                    g.setColor(Colors.c[Colors.BACKGROUND]);
-                    g.fillRect(offX+tmp.length()*numberFontWidth,
-                               offY+(nLines-1)*numberFontHeight,
-                               (nDigits-tmp.length())*numberFontWidth,
-                               numberFontHeight);
-                }
+        String label = data.label(row, col);
+        int labelWidth = 0;
+        int labelDigits = 0;
+        if (label != null) {
+            boolean currentPosition = row == calc.monitorRow && col == calc.monitorCol;
+            String lead = data.lead(row, col, currentPosition, calc.isInsideMonitor);
+            font.setMonospaced(data.isLabelMonospaced(row, col));
+            int w1 = font.stringWidth(label); 
+            labelWidth = w1 + font.stringWidth(lead);
+            labelDigits = (labelWidth+charWidth-1)/charWidth;
+            font.drawString(g, x, y, label);
+            font.drawString(g, x+w1, y, lead);
+        }
+
+        String suffix = data.elementSuffix(row, col);
+        int suffixWidth = 0;
+        int suffixDigits = 0;
+        int suffixStart = 0;
+        int suffixEnd = 0;
+        if (suffix != null) {
+            suffixEnd = suffix.length();
+            font.setMonospaced(false);
+            int maxWidth = w-labelWidth;
+            suffixWidth = font.substringWidth(suffix, suffixStart, suffixEnd);
+            while (suffixWidth > maxWidth && suffixStart < suffixEnd) {
+                suffixStart += (suffixWidth-maxWidth+charWidth-1)/charWidth;
+                suffixWidth = font.substringWidth(suffix, suffixStart, suffixEnd);
             }
-            tmp.setLength(tmp.length()-1);
-        } else {
-            String unit = calc.getStackUnitStr(i);
-            int digits = nDigits;
-            int unitWidth = 0;
-            if (unit != null) {
-                numberFont.monospaced = false;
-                int w = numberFont.stringWidth(unit);
-                unitWidth = (w+numberFontWidth-1)/numberFontWidth;
-                digits -= unitWidth;
-                numberFont.drawString(g,offX+nDigits*numberFontWidth-w,
-                        offY+(nLines-1-i)*numberFontHeight, unit);
-                if (!cleared) {
-                    g.setColor(Colors.c[Colors.BACKGROUND]);
-                    g.fillRect(offX+digits*numberFontWidth,offY+(nLines-1-i)*numberFontHeight,
-                            unitWidth*numberFontWidth-w,numberFontHeight);
-                }
-                numberFont.monospaced = true;
+            suffixDigits = (suffixWidth+charWidth-1)/charWidth;
+            suffixDigits = Math.min(suffixDigits, digits-labelDigits);
+        }
+
+        digits -= labelDigits + suffixDigits;
+        String element = data.element(row, col, digits);
+        int elementWidth = 0;
+        if (element != null) {
+            if (element.length()>digits || suffixStart != 0) {
+                element = "*****";
+                suffix = null;
+                digits += suffixDigits;
+                suffixDigits = 0;
             }
-            String tmp = calc.getStackElement(i, unitWidth);
-            if (tmp.length()>digits)
-                tmp = "*****";
-            numberFont.drawString(
-                g,offX+(digits-tmp.length())*numberFontWidth,
-                offY+(nLines-1-i)*numberFontHeight,tmp);
+            font.setMonospaced(true);
+            elementWidth = font.stringWidth(element);
+            font.drawString(g, x+(labelDigits+digits)*charWidth-elementWidth, y, element);
+        }
+
+        if (suffix != null) {
+            font.setMonospaced(false);
+            font.drawSubstring(g, x+w-suffixWidth, y, suffix, suffixStart, suffixEnd);
             if (!cleared) {
                 g.setColor(Colors.c[Colors.BACKGROUND]);
-                g.fillRect(offX,offY+(nLines-1-i)*numberFontHeight,
-                           (digits-tmp.length())*numberFontWidth,numberFontHeight);
+                g.fillRect(x+w-suffixWidth, y,
+                           suffixDigits*charWidth-suffixWidth,charHeight);
             }
         }
-    }
 
-    private void drawMonitor(Graphics g, int i, boolean cleared) {
-        String label = calc.getMonitorLabel(i)+calc.getMonitorLead(i);
-        String element = calc.getMonitorElement(i);
-        boolean monospaced = calc.isMonitorElementMonospaced(i);
-        boolean centered = label.length() == 0; // Assuming a centered caption
-        if (monospaced && element.length()+label.length()>nMonitorDigits)
-            element = "*****";
-        monitorFont.setMonospaced(monospaced);
-        int width;
-        int start = 0, end = element.length();
-        if (monospaced) {
-            start = Math.max(0, end-(nMonitorDigits-label.length()));
-            width = (end-start)*monitorFontWidth;
-        } else {
-            int maxWidth = (nMonitorDigits-label.length())*monitorFontWidth;
-            width = monitorFont.substringWidth(element, start, end);
-            while (width > maxWidth && start < end) {
-                start += (width-maxWidth+monitorFontWidth-1)/monitorFontWidth;
-                width = monitorFont.substringWidth(element, start, end);
-            }                
-        }
         if (!cleared) {
             g.setColor(Colors.c[Colors.BACKGROUND]);
-            g.fillRect(monitorOffX, monitorOffY+i*monitorFontHeight,
-                       nMonitorDigits*monitorFontWidth, monitorFontHeight);
+            g.fillRect(x+labelWidth, y,
+                       (labelDigits+digits)*charWidth-labelWidth-elementWidth,
+                       charHeight);
         }
-        int x = monitorOffX + (nMonitorDigits*monitorFontWidth-width)/(centered ? 2 : 1);
-        monitorFont.drawSubstring(g, x, monitorOffY+i*monitorFontHeight, element, start, end);
-        monitorFont.setMonospaced(calc.isMonitorLabelMonospaced(i));
-        monitorFont.drawString(g,monitorOffX,monitorOffY+i*monitorFontHeight,label);
+    }
+    
+    private void drawInputLine(Graphics g, int y, boolean cleared) {
+        StringBuffer tmp = calc.inputBuf;
+        tmp.append('_');
+        if (tmp.length()>nDigits)
+            numberFont.drawString(g,offX,y,tmp,tmp.length()-nDigits);
+        else {
+            numberFont.drawString(g,offX,y,tmp,0);
+            if (!cleared) {
+                g.setColor(Colors.c[Colors.BACKGROUND]);
+                g.fillRect(offX+tmp.length()*numberFontWidth,
+                           y,
+                           (nDigits-tmp.length())*numberFontWidth,
+                           numberFontHeight);
+            }
+        }
+        tmp.setLength(tmp.length()-1);
+    }
+    
+    private void drawStack(Graphics g, int offY, int nLines, boolean cleared) {
+        Monitorable stack = calc.getStack();
+        int w = nDigits*numberFontWidth;
+        for (int i=0; i<numRepaintLines && i<stack.rows(); i++) {
+            int y = offY+(nLines-1-i)*numberFontHeight;
+            if (i==0 && calc.inputInProgress)
+                drawInputLine(g, y, cleared);
+            else
+                drawLine(g, numberFont, stack, i, 0, offX, y, w, cleared);
+        }
+    }
+    
+    private int actualMonitorRows() {
+        Monitorable monitor = calc.getMonitor();
+        if (monitor == null)
+            return 0;
+        return Math.max(0, Math.min(
+                maxMonitorLines - (monitor.hasCaption() ? 1 : 0),
+                Math.min(calc.requestedMonitorSize, monitor.rows())));
+    }
+    
+    private int monitorSize() {
+        Monitorable monitor = calc.getMonitor();
+        if (monitor == null)
+            return 0;
+        return actualMonitorRows() + (monitor.hasCaption() ? 1 : 0); 
+    }
+    
+    private void drawMonitor(Graphics g, boolean cleared) {
+        Monitorable monitor = calc.getMonitor();
+        int actualMonitorRows = actualMonitorRows();
+        int actualMonitorCols = 1; //Math.min(1, monitor.cols());
+        if (monitor == null || (actualMonitorRows == 0 && !monitor.hasCaption()))
+            return;
+        calc.adjustMonitorOffsets(actualMonitorRows, actualMonitorCols);
+        monitor.setDisplayedSize(calc.requestedMonitorSize, 1 /*calc.requestedMonitorCols*/);
+        int w = nMonitorDigits*monitorFontWidth;
+        for (int col=0; col<actualMonitorCols; col++) {
+            if (monitor.hasCaption()) {
+                String caption = monitor.caption(calc.monitorColOffset);
+                monitorFont.setMonospaced(false);
+                int width = monitorFont.stringWidth(caption);
+                int x = monitorOffX + (w-width)/2;
+                monitorFont.drawString(g, x, monitorOffY, caption);
+            }
+            for (int row=0; row<actualMonitorRows; row++) {
+                int y = monitorOffY+(row+(monitor.hasCaption() ? 1 : 0))*monitorFontHeight;
+                drawLine(g, monitorFont, monitor, row+calc.monitorRowOffset,
+                         col+calc.monitorColOffset, monitorOffX, y, w, cleared);
+            }
+        }
     }
 
     public void paint(Graphics g) {
         boolean cleared = false;
-        int i;
         String message;
 
         message = calc.getMessage();
@@ -1492,18 +1547,16 @@ public final class CalcCanvas
             if (menuStackPtr < 0 || cleared) {
                 if (numRepaintLines > 16)
                     numRepaintLines = 16;
-                int monitorSize = calc.getMonitorSize();
+                int monitorSize = monitorSize();
                 if (monitorSize > 0) {
                     int maxRepaintLines = (getHeight()-header-footer-3-
                             monitorSize*monitorFontHeight)/numberFontHeight;
                     if (numRepaintLines > maxRepaintLines)
                         numRepaintLines = maxRepaintLines;
 
-                    for (i=0; i<numRepaintLines && i<16; i++)
-                        drawNumber(g,i,cleared,offYMonitor,maxLinesMonitor);
+                    drawStack(g,offYMonitor,maxLinesMonitor,cleared);
                     if (cleared)
-                        for (i=0; i<monitorSize; i++)
-                            drawMonitor(g,i,cleared);
+                        drawMonitor(g,cleared);
                     g.setColor(Colors.c[Colors.FOREGROUND]);
                     g.drawLine(0,monitorOffY+monitorSize*monitorFontHeight+1,
                                getWidth(),
@@ -1511,8 +1564,7 @@ public final class CalcCanvas
                 } else {
                     if (numRepaintLines > maxLines)
                         numRepaintLines = maxLines;
-                    for (i=0; i<numRepaintLines; i++)
-                        drawNumber(g,i,cleared,offY,maxLines);
+                    drawStack(g,offY,maxLines,cleared);
                 }
             }
             if (menuStackPtr >= 0)
@@ -1617,7 +1669,7 @@ public final class CalcCanvas
             }
             // Change basicMenu[4] to enterMonitor if monitoring or
             // repeated item
-            if (calc.getActualMonitorSize() > 0)
+            if (actualMonitorRows() > 0)
                 basicMenu.subMenu[4] = enterMonitor;
             else
                 basicMenu.subMenu[4] = repeatedMenuItem;
@@ -1646,7 +1698,7 @@ public final class CalcCanvas
                 if (subItem == progMenu.subMenu[4])
                     for (int i=0; i<5; i++)
                         progMenu.subMenu[4].subMenu[i].label =
-                            calc.progLabels[i+4];
+                            calc.progLabel(i+4);
                 numRepaintLines = 0; // Force repaint of menu
             } else if ((subItem.flags & CmdDesc.SUBMENU_REQUIRED)!=0) {
                 // Open number/finance/program submenu
@@ -1659,7 +1711,7 @@ public final class CalcCanvas
                 // Set correct labels
                 if (sub == progMenu)
                     for (int i=0; i<4; i++)
-                        progMenu.subMenu[i].label = calc.progLabels[i];
+                        progMenu.subMenu[i].label = calc.progLabel(i);
                 menuCommand = subItem.command; // Save current command
                 menuItem = subItem;
                 sub.label = subItem.label; // Set correct label
@@ -1685,8 +1737,8 @@ public final class CalcCanvas
                         graphParam = number;
                     } if (menuCommand == CalcEngine.PROG_NEW) {
                         int n = number;
-                        String name = calc.progLabels[n]==CalcEngine.emptyProg
-                            ? "" : calc.progLabels[n];
+                        String name = calc.progLabel(n)==Program.emptyProg
+                            ? "" : calc.progLabel(n);
                         midlet.askNewProgram(name,n);
                     } else if (menuCommand == MENU_FONT) {
                         setMenuFont(number);

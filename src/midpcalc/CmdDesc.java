@@ -7,7 +7,6 @@ package midpcalc;
 
 public final class CmdDesc
 {
-  
     public static String getStr( int id, boolean brief ) {
         switch( id ) {
             case CalcEngine.DIGIT_0: return "0";
@@ -304,11 +303,11 @@ public final class CmdDesc
             case CalcEngine.MATRIX_COL:return brief ? "col¸x" : "matrix/col¸x";
             case CalcEngine.MATRIX_MAX:return brief ? "a¸max" : "matrix/a¸max";
             case CalcEngine.MATRIX_MIN:return brief ? "a¸min" : "matrix/a¸min";
-            case CalcEngine.UNIT_SET:return "*unit";
-            case CalcEngine.UNIT_SET_INV:return "/unit";
-            case CalcEngine.UNIT_CONVERT:return "­unit";
-            case CalcEngine.UNIT_CLEAR:return brief ? "clear" : "unit/clear";
-            case CalcEngine.UNIT_DESCRIBE:return brief ? "describe" : "unit/describe";
+            case CalcEngine.UNIT_SET:return brief ? "unit*" : "conv/unit*";
+            case CalcEngine.UNIT_SET_INV:return brief ? "unit/" : "conv/unit/";
+            case CalcEngine.UNIT_CONVERT:return brief ? "­unit" : "conv/­unit";
+            case CalcEngine.UNIT_CLEAR:return brief ? "clear" : "conv/unit/clear";
+            case CalcEngine.UNIT_DESCRIBE:return brief ? "describe" : "conv/unit/describe";
             default:
                 return "[nop]";
         }
@@ -438,4 +437,5 @@ public final class CmdDesc
                 return 0;
         }
     }
+
 }

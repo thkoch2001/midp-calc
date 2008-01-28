@@ -1,5 +1,5 @@
 SHELL = /bin/sh
-VERSION = 4.00
+VERSION = 4.01
 SHORTVERSION = $(subst .,,$(VERSION))
 TARGETS = midp1/Calc.jad \
           midp1/target/Calc.jar \
@@ -19,7 +19,7 @@ BOOTCLASSPATH_2 = $(WTK_2)/lib/midpapi20.jar:$(WTK_2)/lib/cldcapi10.jar
 BOOTCLASSPATH_N = $(WTK_N)/lib/classes.zip:$(WTK_1)/lib/midpapi.zip
 # antenna and proguard must be installed in $(WTK_1)/lib
 # ANTENNA_PATH paths are relative to the midp1/midp2/nokia subdirectories
-ANTENNA_PATH= ../$(WTK_1)/lib/antenna-bin-0.9.14.jar:../$(WTK_1)/lib/proguard-3.6.jar
+ANTENNA_PATH= ../$(WTK_1)/lib/antenna-bin-0.9.14.jar:../$(WTK_1)/lib/proguard-4.1.jar
 
 JFLAGS = -encoding "ISO8859-1" -O
 JFLAGS_1 = -bootclasspath $(BOOTCLASSPATH_1) -d . $(JFLAGS)
@@ -30,7 +30,16 @@ JAVAC = javac -source 1.3 -target 1.3
 
 JAVAFILES =  src/midpcalc/Calc.java \
              src/midpcalc/CalcCanvas.java \
+             src/midpcalc/CanvasAccess.java \
              src/midpcalc/CalcEngine.java \
+             src/midpcalc/Element.java \
+             src/midpcalc/ComplexElement.java \
+             src/midpcalc/ComplexMatrixElement.java \
+             src/midpcalc/Monitorable.java \
+             src/midpcalc/MonitorableElements.java \
+             src/midpcalc/MonitorableMatrix.java \
+             src/midpcalc/MonitorCache.java \
+             src/midpcalc/Program.java \
              src/midpcalc/GraphCanvas.java \
              src/midpcalc/Real.java \
              src/midpcalc/Complex.java \
@@ -167,8 +176,8 @@ nokia/target/CalcNokia.jar: $(JAVAFILES) nokia/src/midpcalc/MyCanvas.java nokia/
 
 applet/target/CalcApplet.jar: applet/src/midpcalc/CalcApplet.java $(JAVAFILES) midp1/src/midpcalc/MyCanvas.java $(MIDPFILES)
 	rm -rf applet/target
-	mkdir applet/target
-	$(JAVAC) $(JFLAGS) -d applet/target -classpath applet/JSObject.jar applet/src/midpcalc/CalcApplet.java $(JAVAFILES) midp1/src/midpcalc/MyCanvas.java $(MIDPFILES)
+	mkdir -p applet/target/classes
+	$(JAVAC) $(JFLAGS) -d applet/target/classes -classpath applet/JSObject.jar applet/src/midpcalc/CalcApplet.java $(JAVAFILES) midp1/src/midpcalc/MyCanvas.java $(MIDPFILES)
 	cd applet && ant -buildfile build.xml
 
 clean:

@@ -3,7 +3,6 @@ package midpcalc;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Graphics;
 import javax.microedition.lcdui.Image;
 
@@ -57,7 +56,7 @@ class GFontData {
     private static GFontData xxlargeFontData;
     private static GFontData xxxlargeFontData;
     
-    public static GFontData getGFontData(int style, boolean largeCache, Canvas canvas) {
+    public static GFontData getGFontData(int style, boolean largeCache, CanvasAccess canvas) {
         GFontData data = null;
         int size = style & UniFont.SIZE_MASK;
         try {
@@ -140,7 +139,7 @@ class GFontData {
         }
     }
 
-    private GFontData(int style, boolean largeCache, Canvas canvas) throws IOException {
+    private GFontData(int style, boolean largeCache, CanvasAccess canvas) throws IOException {
         String charBitsResource = null;
         String charXOffStr, charWidthStr, charItalicOffsetStr;
 

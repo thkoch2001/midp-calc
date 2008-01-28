@@ -2,7 +2,7 @@
 <project name="CalcApplet" default="make-jar">
   <target name="make-jar">
     <jar destfile="target/CalcApplet.jar">
-      <fileset dir="target" includes="**/*.class"/>
+      <fileset dir="target/classes" includes="**/*.class"/>
       <fileset dir=".." includes="resources/*"/>
     </jar> 
   </target>

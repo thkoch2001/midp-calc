@@ -1,6 +1,5 @@
 package midpcalc;
 
-import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Graphics;
 
 public abstract class UniFont {
@@ -31,7 +30,7 @@ public abstract class UniFont {
     protected int bg;
     public UniFont smallerFont;
 
-    public static UniFont newFont(int style, boolean largeCache, boolean needSmallerFont, Canvas canvas) {
+    public static UniFont newFont(int style, boolean largeCache, boolean needSmallerFont, CanvasAccess canvas) {
         UniFont font = null;
         int smallerStyle = style & ~SIZE_MASK;
         switch (style & SIZE_MASK) {

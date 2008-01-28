@@ -25,5 +25,10 @@
 			<type>2</type>
 			<locationURI>MAIN/src</locationURI>
 		</link>
+		<link>
+			<name>test</name>
+			<type>2</type>
+			<locationURI>MAIN/test</locationURI>
+		</link>
 	</linkedResources>
 </projectDescription>

@@ -130,7 +130,7 @@ public final class Calc
     public void commandAction(Command c, Displayable d) {
         if (d == newProgram) {
             if (c == okCommand) {
-                screen.calc.progLabels[whichProgram] = newProgram.getString();
+                screen.calc.newProgramName = newProgram.getString();
                 screen.calc.command(CalcEngine.PROG_NEW, whichProgram);
             }
             displayScreen();

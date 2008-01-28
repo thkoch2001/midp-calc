@@ -7,7 +7,7 @@ import javax.microedition.lcdui.Graphics;
 
 public class SetupCanvas
     extends MyCanvas
-    implements CommandListener
+    implements CommandListener, CanvasAccess
 {
     private final Calc midlet;
 
@@ -405,6 +405,9 @@ public class SetupCanvas
             midlet.bgrDisplay = c == right;
         }
         doRepaint();
+    }
+
+    public void prepareGraph(int graphCommand, int graphParam) {
     }
 
 }

@@ -1,6 +1,5 @@
 package midpcalc;
 
-import javax.microedition.lcdui.Canvas;
 import javax.microedition.lcdui.Graphics;
 
 final class GFont extends UniFont {
@@ -19,7 +18,7 @@ final class GFont extends UniFont {
         }
     }
 
-    GFont(int style, boolean needLargeCache, Canvas canvas) {
+    GFont(int style, boolean needLargeCache, CanvasAccess canvas) {
         super(style);
         boolean sizeX2 = false;
         

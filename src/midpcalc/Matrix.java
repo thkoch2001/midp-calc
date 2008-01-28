@@ -5,20 +5,14 @@ public final class Matrix
     public Real[][] D;
     public Real[][] DI;
     public int rows,cols;
-    public int refCount; // Used for garbage collection
+    
+    private static final Matrix INVALID = new Matrix();
 
     public static boolean isInvalid(Matrix A) {
         return A == null || A.D == null || A.rows <= 0 || A.cols <= 0;
     }
 
-    private void makeInvalid() {
-        D = DI = null;
-        rows = cols = 0;
-        refCount = 0;
-    }
-
     private void alloc(int _rows, int _cols) {
-        makeInvalid();
         if (_rows <= 0 || _cols <= 0)
             return;
         D = new Real[_cols][_rows];
@@ -30,7 +24,7 @@ public final class Matrix
     }
 
     private void allocImag() {
-        if (DI != null)
+        if (isComplex())
             return;
         DI = new Real[cols][rows];
         for (int c=0; c<cols; c++)
@@ -38,8 +32,7 @@ public final class Matrix
                 DI[c][r] = new Real();
     }
 
-    public Matrix() {
-        makeInvalid();
+    private Matrix() {
     }
 
     public Matrix(int rows, int cols, boolean complex) {
@@ -58,21 +51,24 @@ public final class Matrix
 
     public Matrix(Matrix A) {
         if (isInvalid(A)) {
-            makeInvalid();
             return;
         }
         alloc(A.rows, A.cols);
-        if (A.DI!=null)
+        if (A.isComplex())
             allocImag();
         for (int c=0; c<cols; c++)
             for (int r=0; r<rows; r++) {
                 D[c][r].assign(A.D[c][r]);
-                if (A.DI != null)
+                if (A.isComplex())
                     DI[c][r].assign(A.DI[c][r]);
             }
     }
+    
+    public boolean isComplex() {
+        return DI != null;
+    }
 
-    void setElement(int row, int col, Real a, Real aI) {
+    public void setElement(int row, int col, Real a, Real aI) {
         if (row<0 || row>=rows || col<0 || col>=cols)
             return;
         if (a != null)
@@ -83,7 +79,7 @@ public final class Matrix
         }
     }
 
-    void getElement(int row, int col, Real a, Real aI) {
+    public void getElement(int row, int col, Real a, Real aI) {
         if (row<0 || row>=rows || col<0 || col>=cols) {
             if (a  != null) a.makeNan();
             if (aI != null) aI.makeZero();
@@ -92,34 +88,34 @@ public final class Matrix
         if (a != null)
             a.assign(D[col][row]);
         if (aI != null)
-            aI.assign(DI!=null ? DI[col][row] : Real.ZERO);
+            aI.assign(isComplex() ? DI[col][row] : Real.ZERO);
     }
 
-    void setSubMatrix(int row, int col, Matrix A) {
+    public void setSubMatrix(int row, int col, Matrix A) {
         if (isInvalid(A) || row<0 || col<0 ||
             rows < row+A.rows || cols < col+A.cols)
             return;
 
-        if (A.DI != null)
+        if (A.isComplex())
             allocImag();
         for (int c=0; c<A.cols; c++)
             for (int r=0; r<A.rows; r++) {
                 D[c+col][r+row].assign(A.D[c][r]);
-                if (A.DI != null)
+                if (A.isComplex())
                     DI[c+col][r+row].assign(A.DI[c][r]);
             }
     }
 
-    Matrix subMatrix(int row, int col, int nRows, int nCols) {
+    public Matrix subMatrix(int row, int col, int nRows, int nCols) {
         if (row<0 || col<0 || nRows<=0 || nCols<=0 ||
             rows < row+nRows || cols < col+nCols)
-            return null;
+            return INVALID;
 
-        Matrix M = new Matrix(nRows, nCols, DI!=null);
+        Matrix M = new Matrix(nRows, nCols, isComplex());
         for (int c=0; c<nCols; c++)
             for (int r=0; r<nRows; r++) {
                 M.D[c][r].assign(D[c+col][r+row]);
-                if (DI != null)
+                if (isComplex())
                     M.DI[c][r].assign(DI[c+col][r+row]);
             }
         return M;
@@ -128,7 +124,7 @@ public final class Matrix
     void normalize() {
         // Change results of type nan+2i, 2+nani, nan+nani to nan (+0i)
         // Change complex matrix to normal matrix if all imaginary parts are 0
-        if (DI == null)
+        if (!isComplex())
             return;
 
         boolean complex = false;
@@ -147,15 +143,15 @@ public final class Matrix
 
     public static Matrix add(Matrix A, Matrix B) {
         if (isInvalid(A) || isInvalid(B) || A.rows!=B.rows || A.cols!=B.cols)
-            return null;
+            return INVALID;
 
         Matrix M = new Matrix(A);
-        if (B.DI != null)
+        if (B.isComplex())
             M.allocImag();
         for (int c=0; c<M.cols; c++)
             for (int r=0; r<M.rows; r++) {
                 M.D[c][r].add(B.D[c][r]);
-                if (B.DI != null)
+                if (B.isComplex())
                     M.DI[c][r].add(B.DI[c][r]);
             }
         M.normalize();
@@ -164,15 +160,15 @@ public final class Matrix
 
     public static Matrix sub(Matrix A, Matrix B) {
         if (isInvalid(A) || isInvalid(B) || A.rows!=B.rows || A.cols!=B.cols)
-            return null;
+            return INVALID;
 
         Matrix M = new Matrix(A);
-        if (B.DI != null)
+        if (B.isComplex())
             M.allocImag();
         for (int c=0; c<M.cols; c++)
             for (int r=0; r<M.rows; r++) {
                 M.D[c][r].sub(B.D[c][r]);
-                if (B.DI != null)
+                if (B.isComplex())
                     M.DI[c][r].sub(B.DI[c][r]);
             }
         M.normalize();
@@ -181,11 +177,11 @@ public final class Matrix
 
     public static Matrix mul(Matrix A, Matrix B) {
         if (isInvalid(A) || isInvalid(B) || A.cols != B.rows)
-            return null;
+            return INVALID;
 
         Matrix M = new Matrix(A.rows, B.cols);
         Real tmp = new Real();
-        if (A.DI == null && B.DI == null) {
+        if (!A.isComplex() && !B.isComplex()) {
             for (int c=0; c<B.cols; c++)
                 for (int r=0; r<A.rows; r++)
                     for (int k=0; k<A.cols; k++) {
@@ -200,23 +196,23 @@ public final class Matrix
                 for (int r=0; r<A.rows; r++)
                     for (int k=0; k<A.cols; k++) {
                         tmp.assign(A.D[k][r]);
-                        tmpI.assign(A.DI!=null ? A.DI[k][r] : Real.ZERO);
+                        tmpI.assign(A.isComplex() ? A.DI[k][r] : Real.ZERO);
                         Complex.mul(tmp, tmpI, B.D[c][k],
-                                    B.DI!=null ? B.DI[c][k] : Real.ZERO);
+                                    B.isComplex() ? B.DI[c][k] : Real.ZERO);
                         M.D[c][r].add(tmp);
                         M.DI[c][r].add(tmpI);
                     }
+            M.normalize();
         }
-        M.normalize();
         return M;
     }
 
     public static Matrix mul(Matrix A, Real b, Real bI) {
         if (isInvalid(A) || !b.isFinite() || !bI.isFinite())
-            return null;
+            return INVALID;
 
         Matrix M = new Matrix(A);
-        if (M.DI == null && bI.isZero()) {
+        if (!M.isComplex() && bI.isZero()) {
             for (int c=0; c<M.cols; c++)
                 for (int r=0; r<M.rows; r++)
                     M.D[c][r].mul(b);
@@ -225,20 +221,20 @@ public final class Matrix
             for (int c=0; c<M.cols; c++)
                 for (int r=0; r<M.rows; r++)
                     Complex.mul(M.D[c][r],M.DI[c][r], b,bI);
+            M.normalize();
         }
-        M.normalize();
         return M;
     }
 
     public static Matrix div(Matrix A, Matrix B) {
         if (isInvalid(A) || isInvalid(B) || A.cols != B.cols)
-            return null;
+            return INVALID;
         return mul(A,invert(B));
     }
 
     public static Matrix div(Matrix A, Real b, Real bI) {
         if (isInvalid(A) || b.isNan() || (b.isZero() && bI.isZero()))
-            return null;
+            return INVALID;
         Real tmp = new Real(b);
         if (bI.isZero()) {
             tmp.recip();
@@ -251,14 +247,14 @@ public final class Matrix
 
     public static Matrix div(Real a, Real aI, Matrix B) {
         if (!a.isFinite() || !aI.isFinite() || isInvalid(B))
-            return null;
+            return INVALID;
         return mul(invert(B),a,aI);
     }
 
     public static Matrix pow(Matrix A, int power) {
         // Calculate power of integer by successive squaring
         if (isInvalid(A) || A.cols != A.rows)
-            return null;
+            return INVALID;
 
         boolean inv=false;
         if (power < 0) {
@@ -283,13 +279,13 @@ public final class Matrix
 
     public static Matrix neg(Matrix A) {
         if (isInvalid(A))
-            return null;
+            return INVALID;
 
         Matrix M = new Matrix(A);
         for (int c=0; c<M.cols; c++)
             for (int r=0; r<M.rows; r++) {
                 M.D[c][r].neg();
-                if (M.DI != null)
+                if (M.isComplex())
                     M.DI[c][r].neg();
             }
         return M;
@@ -302,10 +298,22 @@ public final class Matrix
         for (int c=0; c<A.cols; c++)
             for (int r=0; r<A.rows; r++)
                 if (!A.D[c][r].equalTo(B.D[c][r]) ||
-                    (A.DI!=null && B.DI==null && !A.DI[c][r].isZero()) ||
-                    (A.DI==null && B.DI!=null && !B.DI[c][r].isZero()) ||
-                    (A.DI!=null && B.DI!=null &&
+                    (A.isComplex() && !B.isComplex() && !A.DI[c][r].isZero()) ||
+                    (!A.isComplex() && B.isComplex() && !B.DI[c][r].isZero()) ||
+                    (A.isComplex() && B.isComplex() &&
                      !A.DI[c][r].equalTo(B.DI[c][r])))
+                    return false;
+        return true;
+    }
+
+    public static boolean equalsZero(Matrix A) {
+        if (isInvalid(A))
+            return false;
+
+        for (int c=0; c<A.cols; c++)
+            for (int r=0; r<A.rows; r++)
+                if (!A.D[c][r].isZero() ||
+                    (A.isComplex() && !A.DI[c][r].isZero()))
                     return false;
         return true;
     }
@@ -317,10 +325,17 @@ public final class Matrix
         return !equals(A,B);
     }
 
+    public static boolean notEqualsZero(Matrix A) {
+        if (isInvalid(A))
+            return false;
+
+        return !equalsZero(A);
+    }
+
     public static Matrix conj(Matrix A) {
         if (isInvalid(A))
-            return null;
-        if (A.DI == null)
+            return INVALID;
+        if (!A.isComplex())
             return A;
 
         Matrix M = new Matrix(A);
@@ -332,13 +347,13 @@ public final class Matrix
 
     public static Matrix transp(Matrix A, boolean conj) {
         if (isInvalid(A))
-            return null;
+            return INVALID;
 
-        Matrix M = new Matrix(A.cols, A.rows, A.DI!=null);
+        Matrix M = new Matrix(A.cols, A.rows, A.isComplex());
         for (int c=0; c<M.cols; c++)
             for (int r=0; r<M.rows; r++) {
                 M.D[c][r].assign(A.D[r][c]);
-                if (M.DI != null) {
+                if (M.isComplex()) {
                     M.DI[c][r].assign(A.DI[r][c]);
                     if (conj)
                         M.DI[c][r].neg();
@@ -353,7 +368,7 @@ public final class Matrix
 
     public static Matrix invert(Matrix A, Real det, Real detI) {
         if (isInvalid(A))
-            return null;
+            return INVALID;
 
         if (A.rows > A.cols)
         {
@@ -364,7 +379,7 @@ public final class Matrix
                 det.makeNan();
                 detI.makeZero();
                 // Assuming, if det!=null, you don't want the inverse
-                return null;
+                return INVALID;
             }
             Matrix T = transp(A,true);
             return mul(invert(mul(T,A)),T);
@@ -378,7 +393,7 @@ public final class Matrix
                 det.makeNan();
                 detI.makeZero();
                 // Assuming, if det!=null, you don't want the inverse
-                return null;
+                return INVALID;
             }
             Matrix T = transp(A,true);
             return mul(T,invert(mul(A,T)));
@@ -396,7 +411,7 @@ public final class Matrix
         for (i=0; i<M.rows; i++)
             M.D[i][i].assign(Real.ONE);
 
-        if (A.DI == null) {
+        if (!A.isComplex()) {
             for (i=0; i<M.rows; i++) {
                 for (k=i,j=i+1; j<M.rows; j++)
                     if (T.D[k][i].absLessThan(T.D[j][i]))
@@ -413,7 +428,7 @@ public final class Matrix
                 if (!T.D[i][i].isFinite()) {
                     if (det != null)
                         det.makeZero(); // Just in case
-                    return null;
+                    return INVALID;
                 }
                 for (j=0; j<M.rows; j++) {
                     M.D[i][j].mul(T.D[i][i]);
@@ -467,7 +482,7 @@ public final class Matrix
                         det.makeZero(); // Just in case
                         detI.makeZero();
                     }
-                    return null;
+                    return INVALID;
                 }
                 for (j=0; j<M.rows; j++) {
                     Complex.mul(M.D[i][j],M.DI[i][j], T.D[i][i],T.DI[i][i]);
@@ -504,7 +519,7 @@ public final class Matrix
         TrI.makeZero();
         for (int i=0; i<cols && i<rows; i++) {
             Tr.add(D[i][i]);
-            if (DI != null)
+            if (isComplex())
                 TrI.add(D[i][i]);
         }
     }
@@ -513,7 +528,7 @@ public final class Matrix
         Real tmp = new Real();
         norm2.makeZero();
         norm2I.makeZero();
-        if (DI == null) {
+        if (!isComplex()) {
             for (int c=0; c<cols; c++)
                 for (int r=0; r<rows; r++) {
                     tmp.assign(D[c][r]);
@@ -536,7 +551,7 @@ public final class Matrix
     }
     
     public void max(Real max) {
-        if (isInvalid(this) || DI != null) {
+        if (isInvalid(this) || isComplex()) {
             max.makeNan();
             return;
         }
@@ -554,7 +569,7 @@ public final class Matrix
     }
 
     public void min(Real min) {
-        if (isInvalid(this) || DI != null) {
+        if (isInvalid(this) || isComplex()) {
             min.makeNan();
             return;
         }
@@ -573,7 +588,7 @@ public final class Matrix
 
     public static Matrix concat(Matrix A, Matrix B) {
         if (isInvalid(A) || isInvalid(B) || A.rows != B.rows)
-            return null;
+            return INVALID;
         Matrix M = new Matrix(A.rows,A.cols+B.cols);
         M.setSubMatrix(0,0,A);
         M.setSubMatrix(0,A.cols,B);
@@ -582,7 +597,7 @@ public final class Matrix
 
     public static Matrix concat(Matrix A, Real b, Real bI) {
         if (isInvalid(A) || A.rows != 1)
-            return null;
+            return INVALID;
         Matrix M = new Matrix(1,A.cols+1);
         M.setSubMatrix(0,0,A);
         M.setElement(0,A.cols,b,bI);
@@ -591,7 +606,7 @@ public final class Matrix
 
     public static Matrix concat(Real a, Real aI, Matrix B) {
         if (isInvalid(B) || B.rows != 1)
-            return null;
+            return INVALID;
         Matrix M = new Matrix(1,B.cols+1);
         M.setElement(0,0,a,aI);
         M.setSubMatrix(0,1,B);
@@ -607,7 +622,7 @@ public final class Matrix
 
     public static Matrix stack(Matrix A, Matrix B) {
         if (isInvalid(A) || isInvalid(B) || A.cols != B.cols)
-            return null;
+            return INVALID;
         Matrix M = new Matrix(A.rows+B.rows,A.cols);
         M.setSubMatrix(0,0,A);
         M.setSubMatrix(A.rows,0,B);
@@ -616,7 +631,7 @@ public final class Matrix
 
     public static Matrix stack(Matrix A, Real b, Real bI) {
         if (isInvalid(A) || A.cols != 1)
-            return null;
+            return INVALID;
         Matrix M = new Matrix(A.rows+1,1);
         M.setSubMatrix(0,0,A);
         M.setElement(A.rows,0,b,bI);
@@ -625,7 +640,7 @@ public final class Matrix
 
     public static Matrix stack(Real a, Real aI, Matrix B) {
         if (isInvalid(B) || B.cols != 1)
-            return null;
+            return INVALID;
         Matrix M = new Matrix(B.rows+1,1);
         M.setElement(0,0,a,aI);
         M.setSubMatrix(1,0,B);
