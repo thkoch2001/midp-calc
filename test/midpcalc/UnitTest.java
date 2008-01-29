@@ -370,6 +370,9 @@ public class UnitTest extends TestCase {
         check("a","->","m","100","m²");
         check("a","/","m²","100","");
         check("a","+","m²","100","m²");
+        check("a","->","SI","100","m²");
+        check("psi","->","SI","6894.757293168361","Pa");
+        check("st","->","US/Imp","14","lb");
     }
     
     public void dont_testFurtherUnitCalculations() {

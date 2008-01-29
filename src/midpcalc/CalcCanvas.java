@@ -146,38 +146,6 @@ public final class CalcCanvas
 //   Astronomical unit                 AU == 149597870691 m
 //   Parsec                            pc == 360*60*60/2·pi * A.U.
 //
-// Metric conversions:
-// Length
-//   Inch in centimeters               in/cm == 2.54         (def)
-//   Foot in meters                    ft/m == 0.3048        (ft = 12 in)
-//   Yard in meters                    yd/m == 0.9144        (yd = 3 ft)
-//   Mile in kilometers                mi/km == 1.609344     (mi = 5280 ft)
-//*  Nautical mile in kilometers       NM/km == 1.852        (def)
-// Weight
-//   grain in milligrams               gr/mg == 64.79891     (gr = 1/7000 lb)
-//   ounce in grams                    oz/g == 28.349523125  (oz = 1/16 lb)
-//   pound in kilos                    lb/kg == 0.45359237   (def)
-//*  stone in kilos                    st/kg == 6.35029318   (st = 14 lb)
-//   short ton in kilos                ton/kg == 907.18474   (ton = 2000 lb)
-//*  long ton in kilos                 t/kg == 1016.0469088  (t = 2240 lb)
-// Volume
-//   U.S. gallon in litres             gal/l == 3.785411784  (gal = 231 in³)
-//   U.S. pint in litres               pt/l == 0.473176473   (pt = 1/8 gal)
-//   U.S. cup in litres                cup/l == 0.2365882365 (cup = 1/2 pt)
-//   U.S. fluid ounce in millilitres   fl.oz/ml==29.5735295625(fl.oz = 1/16 pt)
-//*  Imperial gallon in litres         gal/l == 4.54609      (def)
-//*  Imperial pint in litres           pt/l == 0.56826125    (pt = 1/8 gal)
-//*  Canadian cup in litres            cup/l == 0.2273045    (cup = 8 fl.oz)
-//*  Imperial fluid ounce in ml        fl.oz/ml == 28.4130625(fl.oz = 1/20 pt)
-// Temperature
-//   Celsius to Fahrenheit             °C->°F == x*1.8+32    (def)
-//   Fahrenheit to Celsius             °F->°C == (x-32)/1.8  (def)
-//   Kelvin minus Celsius              °K-°C == 273.15       (def)
-// Energy
-//   International calorie in Joules   cal/J == 4.1868
-//*  British thermal unit in Joules    Btu/J == 1055.05585262
-//*  Horsepower in Watts               hp/W  == 745.69987158227022 (550 ft·lbf/s)
-//
 // Sources: http://physics.nist.gov/cuu/Units/units.html
 //          http://physics.nist.gov/cuu/Constants
 //          http://en.wikipedia.org/wiki/Conversion_of_units
@@ -757,160 +725,174 @@ public final class CalcCanvas
         }),
     });
 
-    private Menu unitMenu = new Menu(null,new Menu[] {
-        new Menu("long",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-            new Menu("length",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                new Menu("m",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("metric",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                    new Menu("mm",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("cm",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("km",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("Å",UNIT,CmdDesc.REPEAT_PARENT),
-                }),
-                new Menu("US/Imp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                    new Menu("in",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("ft",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("yd",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("mi",UNIT,CmdDesc.REPEAT_PARENT),
-                }),
-                new Menu("other",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                    new Menu("NM",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("AU",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("ly",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("pc",UNIT,CmdDesc.REPEAT_PARENT),
-                }),
+    private Menu longUnitMenu = new Menu("long",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+        new Menu("length",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+            new Menu("m",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("metric",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("mm",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("cm",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("km",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("Å",UNIT,CmdDesc.REPEAT_PARENT),
             }),
-            new Menu("area",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                new Menu("m²",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("a",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("da",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("ha",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("US/Imp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                    new Menu("acre",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("in²",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("ft²",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("yd²",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("mi²",UNIT,CmdDesc.REPEAT_PARENT),
-                }),
+            new Menu("US/Imp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("in",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("ft",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("yd",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("mi",UNIT,CmdDesc.REPEAT_PARENT),
             }),
-            new Menu("speed",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                new Menu("m/s",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("km/h",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("mph",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("knot",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("c",UNIT,CmdDesc.REPEAT_PARENT),
-            }),
-            new Menu("volume",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                new Menu("metric",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                    new Menu("ml",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("cl",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("dl",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("l",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("m³",UNIT,CmdDesc.REPEAT_PARENT),
-                }),
-                new Menu("U.S.",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                    new Menu("fl.oz",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("cup",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("pt",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("gal",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("in³",UNIT,CmdDesc.REPEAT_PARENT),
-                }),
-                new Menu("Imp.",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                    new Menu("`fl.oz`",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("`cup`",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("`pt`",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("`gal`",UNIT,CmdDesc.REPEAT_PARENT),
-                }),
-            }),
-            new Menu("accel",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                new Menu("m/s²",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("in/s²",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("ft/s²",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("mi/s²",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("`g`",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("other",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("NM",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("AU",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("ly",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("pc",UNIT,CmdDesc.REPEAT_PARENT),
             }),
         }),
-        new Menu("mixed",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-            new Menu("time",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                new Menu("s",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("min",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("h",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("d",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("y",UNIT,CmdDesc.REPEAT_PARENT),
-            }),
-            new Menu("temp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                new Menu("°C",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("ð°C",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("ð°F",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("°F",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("K",UNIT,CmdDesc.REPEAT_PARENT),
-            }),
-            new Menu("electric",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                new Menu("V",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("C",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("A",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("Ø",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("more",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                    new Menu("F",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("H",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("T",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("Wb",UNIT,CmdDesc.REPEAT_PARENT),
-                }),
-            }),
-            new Menu("chem",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                new Menu("mol",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("e",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("eV",UNIT,CmdDesc.REPEAT_PARENT),
+        new Menu("area",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+            new Menu("m²",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("a",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("da",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("ha",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("US/Imp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("acre",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("in²",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("ft²",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("yd²",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("mi²",UNIT,CmdDesc.REPEAT_PARENT),
             }),
         }),
-        new Menu("firm",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-            new Menu("mass",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                new Menu("kg",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("metric",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                    new Menu("g",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("t",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("u",UNIT,CmdDesc.REPEAT_PARENT),
-                }),
-                new Menu("US/Imp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                    new Menu("gr",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("oz",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("lb",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("st",UNIT,CmdDesc.REPEAT_PARENT),
-                }),
-                new Menu("US/Imp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                    new Menu("ton",UNIT,CmdDesc.REPEAT_PARENT),
-                    new Menu("`ton`",UNIT,CmdDesc.REPEAT_PARENT),
-                }),
+        new Menu("speed",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+            new Menu("m/s",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("km/h",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("mph",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("knot",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("c",UNIT,CmdDesc.REPEAT_PARENT),
+        }),
+        new Menu("volume",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+            new Menu("metric",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("ml",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("cl",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("dl",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("l",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("m³",UNIT,CmdDesc.REPEAT_PARENT),
             }),
-            new Menu("force",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                new Menu("N",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("pdl",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("kgf",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("lbf",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("U.S.",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("fl.oz",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("cup",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("pt",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("gal",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("in³",UNIT,CmdDesc.REPEAT_PARENT),
             }),
-            new Menu("effect",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                new Menu("W",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("kW",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("MW",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("hp",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("Imp.",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("`fl.oz`",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("`cup`",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("`pt`",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("`gal`",UNIT,CmdDesc.REPEAT_PARENT),
             }),
-            new Menu("pressure",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                new Menu("Pa",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("psi",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("bar",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("atm",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("mmHg",UNIT,CmdDesc.REPEAT_PARENT),
-            }),
-            new Menu("energy",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
-                new Menu("J",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("kJ",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("cal",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("kcal",UNIT,CmdDesc.REPEAT_PARENT),
-                new Menu("Btu",UNIT,CmdDesc.REPEAT_PARENT),
+        }),
+        new Menu("accel",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+            new Menu("m/s²",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("in/s²",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("ft/s²",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("mi/s²",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("`g`",UNIT,CmdDesc.REPEAT_PARENT),
+        }),
+    });
+    
+    private Menu mixedUnitMenu = new Menu("mixed",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+        new Menu("time",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+            new Menu("s",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("min",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("h",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("d",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("y",UNIT,CmdDesc.REPEAT_PARENT),
+        }),
+        new Menu("temp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+            new Menu("°C",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("ð°C",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("ð°F",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("°F",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("K",UNIT,CmdDesc.REPEAT_PARENT),
+        }),
+        new Menu("chem",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+            new Menu("mol",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("e",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("eV",UNIT,CmdDesc.REPEAT_PARENT),
+        }),
+        new Menu("electric",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+            new Menu("V",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("C",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("A",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("Ø",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("more",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("F",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("H",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("T",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("Wb",UNIT,CmdDesc.REPEAT_PARENT),
             }),
         }),
     });
     
+    private Menu firmUnitMenu = new Menu("firm",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+        new Menu("mass",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+            new Menu("kg",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("metric",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("g",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("t",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("u",UNIT,CmdDesc.REPEAT_PARENT),
+            }),
+            new Menu("US/Imp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("gr",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("oz",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("lb",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("st",UNIT,CmdDesc.REPEAT_PARENT),
+            }),
+            new Menu("US/Imp",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+                new Menu("ton",UNIT,CmdDesc.REPEAT_PARENT),
+                new Menu("`ton`",UNIT,CmdDesc.REPEAT_PARENT),
+            }),
+        }),
+        new Menu("force",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+            new Menu("N",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("pdl",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("kgf",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("lbf",UNIT,CmdDesc.REPEAT_PARENT),
+        }),
+        new Menu("effect",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+            new Menu("W",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("kW",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("MW",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("hp",UNIT,CmdDesc.REPEAT_PARENT),
+        }),
+        new Menu("pressure",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+            new Menu("Pa",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("psi",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("bar",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("atm",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("mmHg",UNIT,CmdDesc.REPEAT_PARENT),
+        }),
+        new Menu("energy",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT, new Menu[] {
+            new Menu("J",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("kJ",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("cal",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("kcal",UNIT,CmdDesc.REPEAT_PARENT),
+            new Menu("Btu",UNIT,CmdDesc.REPEAT_PARENT),
+        }),
+    });
+    
+    private Menu unitMenu = new Menu(null,new Menu[] {
+        longUnitMenu,
+        mixedUnitMenu,
+        firmUnitMenu,
+    });
+
+    private Menu unitConvertMenu = new Menu(null,new Menu[] {
+        longUnitMenu,
+        mixedUnitMenu,
+        firmUnitMenu,
+        new Menu("US/Imp",UNIT,CmdDesc.REPEAT_PARENT),
+        new Menu("SI",UNIT,CmdDesc.REPEAT_PARENT),
+    });
+
     static int findUnit(String name) {
         for (int unitType=0; unitType<Unit.allUnits.length; unitType++)
             for (int unit=0; unit<Unit.allUnits[unitType].length; unit++)
@@ -1075,13 +1057,13 @@ public final class CalcCanvas
 
         // Menu position
         menuW = 21+4*2;
+        menuFont.setBold(false);
+        menuW = Math.max(21+4*2, menuFont.stringWidth("energy")+3*2);
         menuFont.setBold(true);
-        if (menuW<menuFont.stringWidth("m/ft")+3*2)
-            menuW = menuFont.stringWidth("m/ft")+3*2;
+        menuW = Math.max(menuW, menuFont.stringWidth("m/ft")+3*2);
         menuW = menuFont.stringWidth("acosh")*2+3*2+menuW;
         menuFont.setBold(false);
-        if (menuW<(menuFont.stringWidth("thousand")+2*2)*2)
-            menuW = (menuFont.stringWidth("thousand")+2*2)*2;
+        menuW = Math.max(menuW, (menuFont.stringWidth("thousand")+2*2)*2);
         if (menuW>w) menuW = w;
         menuH = menuFont.getHeight()*2+3*2+5*2+21;
         if (menuH>h) menuH = h;
@@ -1707,7 +1689,8 @@ public final class CalcCanvas
                     (subItem.flags&CmdDesc.FINANCE_REQUIRED)!=0 ? financeMenu :
                     (subItem.flags&CmdDesc.FONT_REQUIRED)   !=0 ? fontMenu :
                     (subItem.flags&CmdDesc.PROG_REQUIRED)   !=0 ? progMenu :
-                    unitMenu;
+                    (subItem.flags&CmdDesc.UNIT_REQUIRED)   !=0 ? unitMenu :
+                   /*subItem.flags&CmdDesc.UNIT_CONVERT_REQUIRED*/unitConvertMenu;
                 // Set correct labels
                 if (sub == progMenu)
                     for (int i=0; i<4; i++)

@@ -320,11 +320,12 @@ public final class CmdDesc
     public static final short PROG_REQUIRED = 4;
     public static final short FONT_REQUIRED = 8;
     public static final short UNIT_REQUIRED = 16;
-    public static final short SUBMENU_REQUIRED = 31;
-    public static final short TITLE_SKIP = 32;
-    public static final short NO_REPEAT = 64;
-    public static final short REPEAT_PARENT = 128;
-    public static final short NO_PROG = 256;
+    public static final short UNIT_CONVERT_REQUIRED = 32;
+    public static final short SUBMENU_REQUIRED = 63;
+    public static final short TITLE_SKIP = 64;
+    public static final short NO_REPEAT = 128;
+    public static final short REPEAT_PARENT = 256;
+    public static final short NO_PROG = 512;
   
 
     public static short getFlags( int id ) {
@@ -430,8 +431,10 @@ public final class CmdDesc
  
             case CalcEngine.UNIT_SET:
             case CalcEngine.UNIT_SET_INV:
-            case CalcEngine.UNIT_CONVERT:
                 return UNIT_REQUIRED;
+                
+            case CalcEngine.UNIT_CONVERT:
+                return UNIT_CONVERT_REQUIRED;
  
             default:
                 return 0;

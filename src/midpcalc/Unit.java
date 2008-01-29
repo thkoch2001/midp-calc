@@ -254,6 +254,8 @@ public final class Unit {
         new UnitDesc("mi²",  u().set(1,8,2)),
         new UnitDesc("s²",   u().s(2)),
         new UnitDesc("",     u()),
+        new UnitDesc("SI",   u().kg(1).m(1).s(1).C(1).K(1).mol(1)),
+        new UnitDesc("US/Imp",u().set(0,5,1).set(1,6,1).s(1).C(1).K(1).mol(1)),
     };
 
     static final UnitDesc[][] allUnits = new UnitDesc[][] {
