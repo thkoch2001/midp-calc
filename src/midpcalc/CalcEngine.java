@@ -2548,34 +2548,6 @@ public final class CalcEngine
         ComplexMatrixElement x = stack[0];
         ComplexMatrixElement y = stack[1];
 
-        if (x.isComplex() || y.isComplex()) {
-            switch (cmd) {
-                case IF_EQUAL:
-                    skipIf(!(x.r.equalTo(y.r) && x.i.equalTo(y.i)));
-                    break;
-                case IF_EQUAL_Z:
-                    skipIf(!(x.r.isZero() && x.i.isZero()));
-                    break;
-                case IF_NEQUAL:
-                    skipIf(!(x.r.notEqualTo(y.r) || x.i.notEqualTo(y.i)));
-                    break;
-                case IF_NEQUAL_Z:
-                    skipIf(!(!x.r.isZero() || !x.i.isZero()));
-                    break;
-                case IF_LESS:
-                case IF_LESS_Z:
-                case IF_LEQUAL:
-                case IF_LEQUAL_Z:
-                case IF_GREATER:
-                case IF_GREATER_Z:
-                    // Perhaps compare absolute values?
-                    setMessage(CmdDesc.getStr(cmd, true),
-                               "Magnitude comparison of complex numbers ignored");
-                    break;
-            }
-            return;
-        }
-
         if (x.isMatrix() || y.isMatrix()) {
             if (!x.isMatrix() || !y.isMatrix()) {
                 setMessage(CmdDesc.getStr(cmd, true),
@@ -2586,23 +2558,33 @@ public final class CalcEngine
                 case IF_EQUAL:
                     skipIf(!Matrix.equals(x.M,y.M));
                     break;
-                case IF_EQUAL_Z:
-                    skipIf(!Matrix.equalsZero(x.M));
-                    break;
                 case IF_NEQUAL:
                     skipIf(!Matrix.notEquals(x.M,y.M));
                     break;
-                case IF_NEQUAL_Z:
-                    skipIf(!Matrix.notEqualsZero(x.M));
-                    break;
                 case IF_LESS:
-                case IF_LESS_Z:
                 case IF_LEQUAL:
-                case IF_LEQUAL_Z:
                 case IF_GREATER:
-                case IF_GREATER_Z:
                     setMessage(CmdDesc.getStr(cmd, true),
                                "Magnitude comparison of matrices ignored");
+                    break;
+            }
+            return;
+        }
+
+        if (x.isComplex() || y.isComplex()) {
+            switch (cmd) {
+                case IF_EQUAL:
+                    skipIf(!(x.r.equalTo(y.r) && x.i.equalTo(y.i)));
+                    break;
+                case IF_NEQUAL:
+                    skipIf(!(x.r.notEqualTo(y.r) || x.i.notEqualTo(y.i)));
+                    break;
+                case IF_LESS:
+                case IF_LEQUAL:
+                case IF_GREATER:
+                    // Perhaps compare absolute values?
+                    setMessage(CmdDesc.getStr(cmd, true),
+                               "Magnitude comparison of complex numbers ignored");
                     break;
             }
             return;
@@ -2612,29 +2594,77 @@ public final class CalcEngine
             case IF_EQUAL:
                 skipIf(!x.r.equalTo(y.r));
                 break;
-            case IF_EQUAL_Z:
-                skipIf(!x.r.isZero());
-                break;
             case IF_NEQUAL:
                 skipIf(!x.r.notEqualTo(y.r));
-                break;
-            case IF_NEQUAL_Z:
-                skipIf(!!x.r.isZero());
                 break;
             case IF_LESS:
                 skipIf(!x.r.lessThan(y.r));
                 break;
-            case IF_LESS_Z:
-                skipIf(!x.r.lessThan(Real.ZERO));
-                break;
             case IF_LEQUAL:
                 skipIf(!x.r.lessEqual(y.r));
                 break;
-            case IF_LEQUAL_Z:
-                skipIf(!x.r.lessEqual(Real.ZERO));
-                break;
             case IF_GREATER:
                 skipIf(!x.r.greaterThan(y.r));
+                break;
+        }
+    }
+
+    private void cond_z(int cmd) {
+        if (!progRunning) {
+            return;
+        }
+
+        ComplexMatrixElement x = stack[0];
+
+        if (x.isMatrix()) {
+            switch (cmd) {
+                case IF_EQUAL_Z:
+                    skipIf(!Matrix.equalsZero(x.M));
+                    break;
+                case IF_NEQUAL_Z:
+                    skipIf(!Matrix.notEqualsZero(x.M));
+                    break;
+                case IF_LESS_Z:
+                case IF_LEQUAL_Z:
+                case IF_GREATER_Z:
+                    setMessage(CmdDesc.getStr(cmd, true),
+                               "Magnitude comparison of matrix ignored");
+                    break;
+            }
+            return;
+        }
+
+        if (x.isComplex()) {
+            switch (cmd) {
+                case IF_EQUAL_Z:
+                    skipIf(!(x.r.isZero() && x.i.isZero()));
+                    break;
+                case IF_NEQUAL_Z:
+                    skipIf(!(!x.r.isZero() || !x.i.isZero()));
+                    break;
+                case IF_LESS_Z:
+                case IF_LEQUAL_Z:
+                case IF_GREATER_Z:
+                    // Perhaps compare absolute values?
+                    setMessage(CmdDesc.getStr(cmd, true),
+                               "Magnitude comparison of complex number ignored");
+                    break;
+            }
+            return;
+        }
+
+        switch (cmd) {
+            case IF_EQUAL_Z:
+                skipIf(!x.r.isZero());
+                break;
+            case IF_NEQUAL_Z:
+                skipIf(!!x.r.isZero());
+                break;
+            case IF_LESS_Z:
+                skipIf(!x.r.lessThan(Real.ZERO));
+                break;
+            case IF_LEQUAL_Z:
+                skipIf(!x.r.lessEqual(Real.ZERO));
                 break;
             case IF_GREATER_Z:
                 skipIf(!x.r.greaterThan(Real.ZERO));
@@ -3778,12 +3808,14 @@ public final class CalcEngine
             case IF_LESS:
             case IF_LEQUAL:
             case IF_GREATER:
+                cond(cmd);
+                break;
             case IF_EQUAL_Z:
             case IF_NEQUAL_Z:
             case IF_LESS_Z:
             case IF_LEQUAL_Z:
             case IF_GREATER_Z:
-                cond(cmd);
+                cond_z(cmd);
                 break;
 
             case LBL:

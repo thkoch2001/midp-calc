@@ -3143,7 +3143,7 @@ public class CalcEngineTest extends TestCase {
         cmd(IF_LESS_Z);
         type(100);
         cmd(PROG_FINISH);
-        
+
         type(2);
         cmd(PROG_RUN, 0);
         assertX(2);
@@ -3152,11 +3152,12 @@ public class CalcEngineTest extends TestCase {
         cmd(PROG_RUN, 0);
         assertX(0);
         
+        enter(new double[][] {{2,3}}); // A matrix here should not matter
         type(-1);
         cmd(PROG_RUN, 0);
         assertX(100);
         
-        leftoverStackElements = 5;
+        leftoverStackElements = 6;
     }
 
     public void test_IF_LEQUAL_Z() {
