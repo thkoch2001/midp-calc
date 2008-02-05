@@ -318,20 +318,6 @@ public final class Matrix
         return true;
     }
 
-    public static boolean notEquals(Matrix A, Matrix B) {
-        if (isInvalid(A) || isInvalid(B) || A.rows!=B.rows || A.cols!=B.cols)
-            return false;
-
-        return !equals(A,B);
-    }
-
-    public static boolean notEqualsZero(Matrix A) {
-        if (isInvalid(A))
-            return false;
-
-        return !equalsZero(A);
-    }
-
     public static Matrix conj(Matrix A) {
         if (isInvalid(A))
             return INVALID;
@@ -587,27 +573,27 @@ public final class Matrix
     }
 
     public static Matrix concat(Matrix A, Matrix B) {
-        if (isInvalid(A) || isInvalid(B) || A.rows != B.rows)
+        if (isInvalid(A) || isInvalid(B))
             return INVALID;
-        Matrix M = new Matrix(A.rows,A.cols+B.cols);
+        Matrix M = new Matrix(Math.max(A.rows, B.rows), A.cols+B.cols);
         M.setSubMatrix(0,0,A);
         M.setSubMatrix(0,A.cols,B);
         return M;
     }
 
     public static Matrix concat(Matrix A, Real b, Real bI) {
-        if (isInvalid(A) || A.rows != 1)
+        if (isInvalid(A))
             return INVALID;
-        Matrix M = new Matrix(1,A.cols+1);
+        Matrix M = new Matrix(A.rows,A.cols+1);
         M.setSubMatrix(0,0,A);
         M.setElement(0,A.cols,b,bI);
         return M;
     }
 
     public static Matrix concat(Real a, Real aI, Matrix B) {
-        if (isInvalid(B) || B.rows != 1)
+        if (isInvalid(B))
             return INVALID;
-        Matrix M = new Matrix(1,B.cols+1);
+        Matrix M = new Matrix(B.rows,B.cols+1);
         M.setElement(0,0,a,aI);
         M.setSubMatrix(0,1,B);
         return M;
@@ -621,27 +607,27 @@ public final class Matrix
     }
 
     public static Matrix stack(Matrix A, Matrix B) {
-        if (isInvalid(A) || isInvalid(B) || A.cols != B.cols)
+        if (isInvalid(A) || isInvalid(B))
             return INVALID;
-        Matrix M = new Matrix(A.rows+B.rows,A.cols);
+        Matrix M = new Matrix(A.rows+B.rows, Math.max(A.cols, B.cols));
         M.setSubMatrix(0,0,A);
         M.setSubMatrix(A.rows,0,B);
         return M;
     }
 
     public static Matrix stack(Matrix A, Real b, Real bI) {
-        if (isInvalid(A) || A.cols != 1)
+        if (isInvalid(A))
             return INVALID;
-        Matrix M = new Matrix(A.rows+1,1);
+        Matrix M = new Matrix(A.rows+1,A.cols);
         M.setSubMatrix(0,0,A);
         M.setElement(A.rows,0,b,bI);
         return M;
     }
 
     public static Matrix stack(Real a, Real aI, Matrix B) {
-        if (isInvalid(B) || B.cols != 1)
+        if (isInvalid(B))
             return INVALID;
-        Matrix M = new Matrix(B.rows+1,1);
+        Matrix M = new Matrix(B.rows+1,B.cols);
         M.setElement(0,0,a,aI);
         M.setSubMatrix(1,0,B);
         return M;
