@@ -320,12 +320,12 @@ public final class CalcEngine
     public static final int FINALIZE       = 400;
     public static final int FREE_MEM       = 401;
 
-    public static final int STACK_SIZE    = 16;
-    private static final int MEM_SIZE      = 16;
-    private static final int STAT_SIZE     = 13;
-    private static final int STATLOG_SIZE  = 64;
-    private static final int FINANCE_SIZE  = 5;
-    private static final int NUM_PROGS     = 9;
+    public static final int STACK_SIZE     = 16;
+    public static final int MEM_SIZE       = 16;
+    public static final int STAT_SIZE      = 13;
+    public static final int STATLOG_SIZE   = 64;
+    public static final int FINANCE_SIZE   = 5;
+    public static final int NUM_PROGS      = 9;
     public static final int PROGLABEL_SIZE = 5;
 
     CanvasAccess canvas;
@@ -479,8 +479,11 @@ public final class CalcEngine
     private void clearMem() {
         clearElementArray(mem);
         mem = null;
-        if (monitorMode == MONITOR_MEM)
+        if (monitorMode == MONITOR_MEM) {
             allocMem();
+            clearMonitorStrings();
+            repaintAll();
+        }
     }
 
     private void clearStat() {
@@ -500,8 +503,11 @@ public final class CalcEngine
         clearElementArray(stat);
         stat      = null;
         statLog   = null;
-        if (monitorMode == MONITOR_STAT)
+        if (monitorMode == MONITOR_STAT) {
             allocStat();
+            clearMonitorStrings();
+            repaintAll();
+        }
     }
 
     private void clearFinance() {
@@ -512,8 +518,11 @@ public final class CalcEngine
         IR  = null;
         clearElementArray(finance);
         finance = null;
-        if (monitorMode == MONITOR_FINANCE)
+        if (monitorMode == MONITOR_FINANCE) {
             allocFinance();
+            clearMonitorStrings();
+            repaintAll();
+        }
     }
 
     private void tryClearModules(boolean clearMem, boolean clearFinance) {
@@ -1290,9 +1299,6 @@ public final class CalcEngine
                     inputBuf.setLength(inputBuf.length()-1);
                 inputBuf.append((char)('A'+cmd-DIGIT_A));
                 break;
-
-            default:
-                return;
         }
         // If routine has not returned yet, we have new input data
         if (!inputInProgress) {
@@ -1419,6 +1425,62 @@ public final class CalcEngine
             s = x*x;
         } while (a>=s && x<46343);
         return a;
+    }
+
+    private void compare(Real result, ComplexMatrixElement x, ComplexMatrixElement y, boolean testEquality, int cmd) {
+        result.makeNan(); // Default "nan" return value specifies incomparable numbers
+
+        if (x.isMatrix() || (y!=null && y.isMatrix())) {
+            if (!x.isMatrix() || (y!=null && !y.isMatrix())) {
+                setMessage(CmdDesc.getStr(cmd, true), "Comparison of matrix and number ignored");
+                return;
+            }
+            if (!testEquality) {
+                setMessage(CmdDesc.getStr(cmd, true), "Magnitude comparison of matrices ignored");
+                return;
+            }
+            rTmp.assign((y==null ? Matrix.equalsZero(x.M) : Matrix.equals(x.M,y.M)) ? Real.ZERO : Real.ONE);
+            return;
+        }
+
+        boolean complex = x.isComplex() || (y!=null && y.isComplex());
+        if (complex && !testEquality) {
+            setMessage(CmdDesc.getStr(cmd, true), "Magnitude comparison of complex numbers ignored");
+            return;
+        }
+
+        if (x.r.isInfinity() && y!=null && y.r.isInfinity() && x.r.sign == y.r.sign && !complex && !testEquality) {
+            // Infinite return value specifies that both numbers are "the same infinity"
+            result.makeInfinity(0);
+            return;
+        }
+
+        result.assign(x.r);
+        if (complex)
+            rTmp4.assign(x.i);
+        
+        if (y!=null) {
+            if (x.hasUnit() || y.hasUnit()) {
+                long unit = Unit.convertTo(x.unit, y.unit, rTmp2, rTmp3);
+                if (unit != y.unit) {
+                    result.makeNan();
+                    return;
+                }
+                result.mul(rTmp2);
+                result.add(rTmp3);
+                if (complex)
+                    rTmp4.mul(rTmp2);
+            }
+            result.sub(y.r);
+            if (complex)
+                rTmp4.sub(y.i);
+        }
+
+        if (!result.isZero() || (complex && !rTmp4.isZero())) {
+            rTmp2.assign(Real.ONE);
+            rTmp2.copysign(result);
+            result.assign(rTmp2);
+        }
     }
 
     void binary(int cmd) {
@@ -1706,17 +1768,21 @@ public final class CalcEngine
                 break;
 
             case MIN:
-                if (x.r.isNan() || y.r.isNan())
+                unitOk = true;
+                compare(rTmp, x, y, false, cmd);
+                if (rTmp.isNan())
                     y.makeNan();
-                else if (x.r.lessThan(y.r))
-                    y.r.assign(x.r);
+                else if (rTmp.isInfinity() || rTmp.isNegative())
+                    y.copy(x);
                 break;
 
             case MAX:
-                if (x.r.isNan() || y.r.isNan())
+                unitOk = true;
+                compare(rTmp, x, y, false, cmd);
+                if (rTmp.isNan())
                     y.makeNan();
-                else if (x.r.greaterThan(y.r))
-                    y.r.assign(x.r);
+                else if (rTmp.isInfinity() || !rTmp.isNegative())
+                    y.copy(x);
                 break;
 
             case MATRIX_NEW:
@@ -2519,7 +2585,7 @@ public final class CalcEngine
 
     private void push(int e, long m, long unit) {
         rTmp.assign(0,e,m);
-        push(rTmp);
+        push(rTmp, null, unit);
     }
     
     void push(Matrix M) {
@@ -2545,129 +2611,36 @@ public final class CalcEngine
             return;
         }
 
+        boolean compareToZero = (cmd==IF_EQUAL_Z || cmd==IF_NEQUAL_Z || cmd==IF_LESS_Z || cmd==IF_LEQUAL_Z || cmd==IF_GREATER_Z);
+        boolean testEquality = (cmd==IF_EQUAL || cmd==IF_NEQUAL || cmd==IF_EQUAL_Z || cmd==IF_NEQUAL_Z);
         ComplexMatrixElement x = stack[0];
-        ComplexMatrixElement y = stack[1];
+        ComplexMatrixElement y = compareToZero ? null : stack[1];
 
-        if (x.isMatrix() || y.isMatrix()) {
-            if (!x.isMatrix() || !y.isMatrix()) {
-                setMessage(CmdDesc.getStr(cmd, true),
-                           "Comparison of matrix and number ignored");
-                return;
-            }
-            switch (cmd) {
-                case IF_EQUAL:
-                    skipIf(!Matrix.equals(x.M,y.M));
-                    break;
-                case IF_NEQUAL:
-                    skipIf(!Matrix.notEquals(x.M,y.M));
-                    break;
-                case IF_LESS:
-                case IF_LEQUAL:
-                case IF_GREATER:
-                    setMessage(CmdDesc.getStr(cmd, true),
-                               "Magnitude comparison of matrices ignored");
-                    break;
-            }
+        compare(rTmp, x, y, testEquality, cmd);
+        if (!rTmp.isFinite()) {
+            skipIf(true);
             return;
         }
-
-        if (x.isComplex() || y.isComplex()) {
-            switch (cmd) {
-                case IF_EQUAL:
-                    skipIf(!(x.r.equalTo(y.r) && x.i.equalTo(y.i)));
-                    break;
-                case IF_NEQUAL:
-                    skipIf(!(x.r.notEqualTo(y.r) || x.i.notEqualTo(y.i)));
-                    break;
-                case IF_LESS:
-                case IF_LEQUAL:
-                case IF_GREATER:
-                    // Perhaps compare absolute values?
-                    setMessage(CmdDesc.getStr(cmd, true),
-                               "Magnitude comparison of complex numbers ignored");
-                    break;
-            }
-            return;
-        }
-
         switch (cmd) {
             case IF_EQUAL:
-                skipIf(!x.r.equalTo(y.r));
+            case IF_EQUAL_Z:
+                skipIf(!rTmp.isZero());
                 break;
             case IF_NEQUAL:
-                skipIf(!x.r.notEqualTo(y.r));
+            case IF_NEQUAL_Z:
+                skipIf(rTmp.isZero());
                 break;
             case IF_LESS:
-                skipIf(!x.r.lessThan(y.r));
+            case IF_LESS_Z:
+                skipIf(!rTmp.isNegative() || rTmp.isZero());
                 break;
             case IF_LEQUAL:
-                skipIf(!x.r.lessEqual(y.r));
+            case IF_LEQUAL_Z:
+                skipIf(!rTmp.isNegative() && !rTmp.isZero());
                 break;
             case IF_GREATER:
-                skipIf(!x.r.greaterThan(y.r));
-                break;
-        }
-    }
-
-    private void cond_z(int cmd) {
-        if (!progRunning) {
-            return;
-        }
-
-        ComplexMatrixElement x = stack[0];
-
-        if (x.isMatrix()) {
-            switch (cmd) {
-                case IF_EQUAL_Z:
-                    skipIf(!Matrix.equalsZero(x.M));
-                    break;
-                case IF_NEQUAL_Z:
-                    skipIf(!Matrix.notEqualsZero(x.M));
-                    break;
-                case IF_LESS_Z:
-                case IF_LEQUAL_Z:
-                case IF_GREATER_Z:
-                    setMessage(CmdDesc.getStr(cmd, true),
-                               "Magnitude comparison of matrix ignored");
-                    break;
-            }
-            return;
-        }
-
-        if (x.isComplex()) {
-            switch (cmd) {
-                case IF_EQUAL_Z:
-                    skipIf(!(x.r.isZero() && x.i.isZero()));
-                    break;
-                case IF_NEQUAL_Z:
-                    skipIf(!(!x.r.isZero() || !x.i.isZero()));
-                    break;
-                case IF_LESS_Z:
-                case IF_LEQUAL_Z:
-                case IF_GREATER_Z:
-                    // Perhaps compare absolute values?
-                    setMessage(CmdDesc.getStr(cmd, true),
-                               "Magnitude comparison of complex number ignored");
-                    break;
-            }
-            return;
-        }
-
-        switch (cmd) {
-            case IF_EQUAL_Z:
-                skipIf(!x.r.isZero());
-                break;
-            case IF_NEQUAL_Z:
-                skipIf(!!x.r.isZero());
-                break;
-            case IF_LESS_Z:
-                skipIf(!x.r.lessThan(Real.ZERO));
-                break;
-            case IF_LEQUAL_Z:
-                skipIf(!x.r.lessEqual(Real.ZERO));
-                break;
             case IF_GREATER_Z:
-                skipIf(!x.r.greaterThan(Real.ZERO));
+                skipIf(rTmp.isNegative() || rTmp.isZero());
                 break;
         }
     }
@@ -3808,14 +3781,12 @@ public final class CalcEngine
             case IF_LESS:
             case IF_LEQUAL:
             case IF_GREATER:
-                cond(cmd);
-                break;
             case IF_EQUAL_Z:
             case IF_NEQUAL_Z:
             case IF_LESS_Z:
             case IF_LEQUAL_Z:
             case IF_GREATER_Z:
-                cond_z(cmd);
+                cond(cmd);
                 break;
 
             case LBL:
@@ -3920,8 +3891,10 @@ public final class CalcEngine
                 rTmp.assign(stack[0].r);
                 rTmp.round();
                 param = stack[0].r.toInteger();
-                if (param<0 || param>15)
+                if (param<0 || param>15) {
+                    push(Real.NAN);
                     break;
+                }
                 // fall-through to next case...
             case RCL:
                 if (mem != null)
@@ -3932,10 +3905,6 @@ public final class CalcEngine
 
             case CLMEM:
                 clearMem();
-                if (monitorMode == MONITOR_MEM) {
-                    clearMonitorStrings();
-                    repaintAll();
-                }
                 break;
 
             case SUMPL:
@@ -3945,10 +3914,6 @@ public final class CalcEngine
 
             case CLST:
                 clearStat();
-                if (monitorMode == MONITOR_STAT) {
-                    clearMonitorStrings();
-                    repaintAll();
-                }
                 break;
 
             case AVG:
@@ -4071,10 +4036,6 @@ public final class CalcEngine
 
             case FINANCE_CLEAR:
                 clearFinance();
-                if (monitorMode == MONITOR_FINANCE) {
-                    clearMonitorStrings();
-                    repaintAll();
-                }
                 break;
 
             case FINANCE_BGNEND:
