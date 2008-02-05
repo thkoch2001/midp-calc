@@ -130,9 +130,8 @@ final class ComplexMatrixElement extends ComplexElement {
                 makeNan();
             if (r.isZero() && !i.isZero())
                 r.abs(); // Remove annoying "-"
-        }
-        if (hasUnit && !unitOk) {
-            unit = Unit.undefinedBinaryOperation(unit, unit2);
+            if (hasUnit && !unitOk)
+                unit = Unit.undefinedBinaryOperation(unit, unit2);
         }
         clearStrings();
     }
