@@ -45,7 +45,7 @@ public abstract class UniFont {
                 smallerStyle |= SYSTEM_FONT;
                 break;
         }
-        if ((style & SYSTEM_FONT) != 0 || (style & SIZE_MASK) == SYSTEM) {
+        if (isSystemFontStyle(style)) {
             font = new SysFont(style);
         } else {
             font = new GFont(style, largeCache, canvas);
@@ -54,6 +54,10 @@ public abstract class UniFont {
             font.smallerFont = newFont(smallerStyle, false, false, canvas);
         }
         return font;
+    }
+
+    public static boolean isSystemFontStyle(int style) {
+        return (style & SYSTEM_FONT) != 0 || (style & SIZE_MASK) == SYSTEM;
     }
 
     public abstract void close();

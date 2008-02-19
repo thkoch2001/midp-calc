@@ -79,20 +79,19 @@ final class SysFont extends UniFont {
             return charMaxWidth;
         }
 
-// Looks bad in monitor:
-// sqrt,monospaced,>>
-// Too bold: gamma,rarr,pi,sum,alpha
-        
         if ("­«¿ß¡¶ÞãëÐ£»¹¼Øð".indexOf(ch)>=0) {
             int w = font.charWidth('O');
             int h = gFont.baselinePosition;
             switch (ch) {
                 case '­': // Arrow ->
-                    g.fillRect(x,y+h/2+1,w-1,2);
+                    g.drawLine(x,y+h/2+1,x+w-2,y+h/2+1);
                     g.drawLine(x+w-2,y+h/2+1,x+w-2-2,y+h/2+1-2);
-                    g.drawLine(x+w-3,y+h/2+1,x+w-3-1,y+h/2+1-1);
-                    g.drawLine(x+w-2,y+h/2+2,x+w-2-2,y+h/2+2+2);
-                    g.drawLine(x+w-3,y+h/2+2,x+w-3-1,y+h/2+2+1);
+                    g.drawLine(x+w-2,y+h/2+1,x+w-2-2,y+h/2+1+2);
+                    if (bold) {
+                        g.drawLine(x,y+h/2+2,x+w-2,y+h/2+2);
+                        g.drawLine(x+w-2,y+h/2+2,x+w-2-2,y+h/2+2-2);
+                        g.drawLine(x+w-2,y+h/2+2,x+w-2-2,y+h/2+2+2);
+                    }
                     break;
                 case '«': // Arrows <->
                     g.drawLine(x,y+h/2,x+w-2,y+h/2);
@@ -108,32 +107,43 @@ final class SysFont extends UniFont {
                     break;
                 case '¿': // Sqrt
                     g.drawLine(x,y+h-3,x+3,y+h);
-                    g.drawLine(x+1,y+h-3,x+4,y+h);
-                    g.fillRect(x+3,y,2,h+1);
-                    g.fillRect(x+5,y,w-4,2);
+                    g.drawLine(x+3,y+h,x+3,y);
+                    g.drawLine(x+3,y,x+w,y);
+                    if (bold) {
+                        g.drawLine(x+1,y+h-3,x+4,y+h);
+                        g.drawLine(x+4,y+h,x+4,y+1);
+                        g.drawLine(x+4,y+1,x+w,y+1);
+                    }
                     overline = true;
                     break;
                 case 'ß': // Sum
                     int b = (h&1)^1;
                     int s = (h-b-4)/2;
-                    g.fillRect(x,y+b,w-1,2);
+                    g.drawLine(x,y+b,x+w-2,y+b);
+                    g.drawLine(x,y+b,x,y+b+2);
                     g.drawLine(x,y+b+2,x+s,y+b+2+s);
-                    g.drawLine(x+1,y+b+2,x+1+s,y+b+2+s);
                     g.drawLine(x,y+h-3,x+s,y+b+2+s);
-                    g.drawLine(x+1,y+h-3,x+1+s,y+b+2+s);
-                    g.fillRect(x,y+h-2,w-1,2);
+                    g.drawLine(x,y+h-3,x,y+h-1);
+                    g.drawLine(x,y+h-1,x+w-2,y+h-1);
+                    if (bold) {
+                        g.drawLine(x+1,y+b+1,x+w-2,y+b+1);
+                        g.drawLine(x+1,y+b+2,x+1+s,y+b+2+s);
+                        g.drawLine(x+1,y+h-3,x+1+s,y+b+2+s);
+                        g.drawLine(x+1,y+h-2,x+w-2,y+h-2);
+                    }
                     break;
                 case '¡': // Gamma
-                    g.fillRect(x+1,y+2,2,h-3);
-                    g.drawLine(x,y+h-1,x+3,y+h-1);
-                    g.fillRect(x,y,w-1,2);
-                    g.drawLine(x+w-2,y+2,x+w-2,y+3);
+                    g.fillRect(x+1,y+1,bold ? 2 : 1,h-2);
+                    g.fillRect(x,y+h-1,bold ? 4 : 3,1);
+                    g.fillRect(x,y,w-1,bold ? 2 : 1);
+                    g.fillRect(x+w-2,y+1,1,bold ? 3 : 2);
                     break;
                 case '¶': // pi
                     g.drawLine(x,y+h/3,x+7,y+h/3);
-                    g.fillRect(x+2,y+h/3,2,h-h/3);
+                    g.fillRect(x+2,y+h/3,bold ? 2 : 1,h-h/3);
                     g.drawLine(x,y+h/3,x,y+h/3+1);
-                    g.fillRect(x+5,y+h/3,2,h-h/3);
+                    g.fillRect(x+5,y+h/3,bold ? 2 : 1,h-h/3);
+                    w = 8;
                     break;
                 case 'Þ': // _infinity
                     g.drawChar('o',x,y+charHeight-
@@ -145,28 +155,30 @@ final class SysFont extends UniFont {
                     break;
                 case 'ã': // alpha
                     int h2 = (h*2/3+1)&~1;
-                    w = h2/2+5+(h2<10?0:1);
+                    w = h2/2+6+(h2<10?0:1);
                     int x2 = x+w-h2/2;
                     int y2 = y+h-h2;
                     g.drawLine(x+w-2,y2,x2,y+h-3);
-                    g.drawLine(x+w-3,y2,x2-1,y+h-3);
-                    g.drawLine(x2-2,y+h-3,x2-1,y+h-2);
-                    g.fillRect(x2-4,y+h-2,3,2);
-                    g.drawLine(x2-5,y+h-2,x2-4,y+h-3);
-                    if (h2<10) {
-                        g.fillRect(x2-6,y2+2,2,y+h-y2-4);
-                    } else {
-                        int h3 = (h2-1)/4;
-                        g.fillRect(x2-6,y2+2,2,h3);
-                        g.fillRect(x2-7,y2+2+h3,2,y+h-y2-4-2*h3);
-                        g.fillRect(x2-6,y+h-2-h3,2,h3);
-                    }
-                    g.drawLine(x2-5,y2+1,x2-4,y2+2);
-                    g.fillRect(x2-4,y2,2,2);
-                    g.drawLine(x2-2,y2+2,x2-2,y2+1);
+                    g.fillRect(x2-1,y+h-2,1,1);
+                    g.drawLine(x2-4,y+h-1,x2-2,y+h-1);
+                    g.fillRect(x2-5,y+h-2,1,1);
+                    g.drawLine(x,y+h2,x2-6,y2+2);
+                    g.drawLine(x,y+h2-1,x2-6,y+h-3);
+                    g.drawLine(x2-5,y2+1,x2-4,y2);
+                    g.drawLine(x2-3,y2,x2-2,y2+1);
                     g.drawLine(x2-1,y2+2,x+w-3,y+h-1);
-                    g.drawLine(x+w-2,y+h-1,x+w-2,y+h-2);
-                    g.drawLine(x+w-1,y+h-2,x+w-1,y+h-3);
+                    g.drawLine(x+w-2,y+h-1,x+w-1,y+h-2);
+                    if (bold) {
+                        g.drawLine(x+w-3,y2,x2-1,y+h-3);
+                        g.fillRect(x2-2,y+h-3,1,1);
+                        g.drawLine(x2-4,y+h-2,x2-2,y+h-2);
+                        g.fillRect(x2-4,y+h-3,1,1);
+                        g.drawLine(x+1,y+h2,x2-5,y2+2);
+                        g.drawLine(x+1,y+h2-1,x2-5,y+h-3);
+                        g.drawLine(x2-4,y2+1,x2-4,y2+2);
+                        g.drawLine(x2-3,y2+1,x2-2,y2+2);
+                        g.drawLine(x+w-2,y+h-2,x+w-1,y+h-3);
+                    }
                     break;
                 case 'ë': // epsilon
                     g.drawChar('e',x,y,TOP_LEFT);
@@ -189,8 +201,11 @@ final class SysFont extends UniFont {
                     break;
                 case '»': // >
                     g.setColor(Colors.c[Colors.GREEN]);
-                    for (int i=0; i<w-1; i++) {
-                        g.drawLine(x+i, y+h-1-i, x+i, y+h-1-(w-2)*2+i);
+                    int n=w-2;
+                    if ((n-1)*2 > h-1)
+                        n = (h-1)/2+1;
+                    for (int i=0; i<n; i++) {
+                        g.drawLine(x+i+1, y+h-1-i, x+i+1, y+h-1-(n-1)*2+i);
                     }
                     g.setColor(Colors.c[fg]);
                     break;
@@ -198,11 +213,13 @@ final class SysFont extends UniFont {
                     g.setFont(((SysFont)smallerFont).currentFont());
                     g.drawString("-1", x, y-1, TOP_LEFT);
                     g.setFont(font);
+                    w = smallerFont.stringWidth("-1");
                     break;
                 case '¼':
                     g.setFont(((SysFont)smallerFont).currentFont());
                     g.drawString("4", x, y-1, TOP_LEFT);
                     g.setFont(font);
+                    w = smallerFont.stringWidth("4");
                     break;
                 case 'Ø':
                     g.drawChar('O',x,y,TOP_LEFT);
@@ -275,8 +292,10 @@ final class SysFont extends UniFont {
                 font = (font == this) ? smallerFont : this;
             } else if (c == '~' || c == '`') {
                 ; // overline... no font change
-            } else if ("­«¿ß¡¶Ð»Øð".indexOf(c) >= 0) {
+            } else if ("­«¿ß¡Ð»Øð".indexOf(c) >= 0) {
                 charWidth = font.charWidth('O');
+            } else if (c == '¶') {
+                charWidth = 8;
             } else if (c == 'Þ') {
                 charWidth = font.charWidth('o') * (6 + 4) / 6;
             } else if (c == 'ã') {
@@ -303,12 +322,13 @@ final class SysFont extends UniFont {
         if (end > string.length())
             end = string.length();
 
+        g.setColor(Colors.c[bg]);
+        g.fillRect(x, y, substringWidth(string, start, end), charHeight);
+        g.setColor(Colors.c[fg]);
+
         if (!monospaced && plainString(string)) {
             Font font = currentFont();
             g.setFont(font);
-            g.setColor(Colors.c[bg]);
-            g.fillRect(x, y, substringWidth(string, start, end), charHeight);
-            g.setColor(Colors.c[fg]);
             g.drawSubstring(string, start, end-start, x, y, Graphics.TOP | Graphics.LEFT);
             return x + font.substringWidth(string, start, end-start);
         }
@@ -341,6 +361,7 @@ final class SysFont extends UniFont {
         
         italic = subscript = superscript = overline = false;
         
+        g.setColor(Colors.c[fg]);
         for (int i = 0; i < start; i++) {
             processChar(string.charAt(i), true);
         }

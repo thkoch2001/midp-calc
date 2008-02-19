@@ -499,7 +499,7 @@ public final class CalcCanvas
         new Menu("small",FONT_SMALL,CmdDesc.REPEAT_PARENT),
         new Menu("large",FONT_LARGE,CmdDesc.REPEAT_PARENT),
         new Menu("xlarge",FONT_XLARGE,CmdDesc.REPEAT_PARENT),
-        new Menu("more",CmdDesc.TITLE_SKIP,new Menu [] {
+        new Menu("more",CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,new Menu [] {
             new Menu("xxlarge",FONT_XXLARGE,CmdDesc.REPEAT_PARENT),
             new Menu("sys.S",FONT_SYS_SML,CmdDesc.REPEAT_PARENT),
             new Menu("sys.L",FONT_SYS_LRG,CmdDesc.REPEAT_PARENT),
@@ -1154,7 +1154,8 @@ public final class CalcCanvas
             menuFont = GFont.newFont(
                 style | (midlet.bgrDisplay ? UniFont.BGR_ORDER : 0), true, true, this);
         } catch (OutOfMemoryError e) {
-            menuFont = GFont.newFont(UniFont.MEDIUM | UniFont.SYSTEM_FONT, true, true, this);
+            // Fallback to System font
+            menuFont = GFont.newFont(style | UniFont.SYSTEM_FONT, true, true, this);
             midlet.outOfMemory();
         }
         menuFontStyle = menuFont.getStyle();
@@ -1169,11 +1170,12 @@ public final class CalcCanvas
             numberFont = null;
         }
         try {
+            boolean needSmallerFont = UniFont.isSystemFontStyle(style);
             numberFont = GFont.newFont(
-                style | (midlet.bgrDisplay ? UniFont.BGR_ORDER : 0), false, false, this);
+                style | (midlet.bgrDisplay ? UniFont.BGR_ORDER : 0), false, needSmallerFont, this);
         } catch (OutOfMemoryError e) {
             // Fallback to System font
-            numberFont = GFont.newFont(UniFont.MEDIUM | UniFont.SYSTEM_FONT, false, false, this);
+            numberFont = GFont.newFont(style | UniFont.SYSTEM_FONT, false, true, this);
             midlet.outOfMemory();
         }
         numberFontStyle = numberFont.getStyle();
@@ -1194,7 +1196,7 @@ public final class CalcCanvas
                 style | (midlet.bgrDisplay ? UniFont.BGR_ORDER : 0), true, true, this);
         } catch (OutOfMemoryError e) {
             // Fallback to System font
-            monitorFont = GFont.newFont(UniFont.MEDIUM | UniFont.SYSTEM_FONT, true, true, this);
+            monitorFont = GFont.newFont(style | UniFont.SYSTEM_FONT, true, true, this);
             midlet.outOfMemory();
         }
         monitorFontStyle = monitorFont.getStyle();
@@ -1378,7 +1380,7 @@ public final class CalcCanvas
         if (label != null) {
             boolean currentPosition = row == calc.monitorRow && col == calc.monitorCol;
             String lead = data.lead(row, col, currentPosition, calc.isInsideMonitor);
-            font.setMonospaced(data.isLabelMonospaced(row, col));
+            font.setMonospaced(false);
             int w1 = font.stringWidth(label); 
             labelWidth = w1 + font.stringWidth(lead);
             labelDigits = (labelWidth+charWidth-1)/charWidth;
@@ -1440,6 +1442,7 @@ public final class CalcCanvas
     private void drawInputLine(Graphics g, int y, boolean cleared) {
         StringBuffer tmp = calc.inputBuf;
         tmp.append('_');
+        numberFont.setMonospaced(true);
         if (tmp.length()>nDigits)
             numberFont.drawString(g,offX,y,tmp,tmp.length()-nDigits);
         else {
