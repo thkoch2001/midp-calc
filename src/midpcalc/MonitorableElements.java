@@ -4,15 +4,13 @@ public final class MonitorableElements implements Monitorable {
     
     private Element[] elements;
     private Real.NumberFormat format;
-    private boolean monospacedLabel;
     
     public MonitorableElements(Real.NumberFormat format) {
         setFormat(format);
     }
     
-    public MonitorableElements withElements(Element[] elements, boolean monospacedLabel) {
+    public MonitorableElements withElements(Element[] elements) {
         this.elements = elements;
-        this.monospacedLabel = monospacedLabel;
         formatUpdated();
         return this;
     }
@@ -56,10 +54,6 @@ public final class MonitorableElements implements Monitorable {
 
     public String elementSuffix(int row, int col) {
         return elements[row].getUnitStr();
-    }
-
-    public boolean isLabelMonospaced(int row, int col) {
-        return monospacedLabel;
     }
 
     public boolean hasCaption() {

@@ -440,7 +440,7 @@ public final class CalcEngine
         monitorMode = MONITOR_NONE;
         clearMonitorStrings();
         
-        stackMonitor = new MonitorableElements(format).withElements(stack, false);
+        stackMonitor = new MonitorableElements(format).withElements(stack);
         elementMonitor = new MonitorableElements(format);
         matrixMonitor = new MonitorableMatrix(format);
         programs = new Program(NUM_PROGS, this, format);
@@ -551,7 +551,7 @@ public final class CalcEngine
             mem[i].label = "M"+i;
         }
         if (monitorMode == MONITOR_MEM) {
-            monitor = elementMonitor.withElements(mem, true);
+            monitor = elementMonitor.withElements(mem);
         }
     }
 
@@ -578,7 +578,7 @@ public final class CalcEngine
             stat[i].label = statLabels[i];
         }
         if (monitorMode == MONITOR_STAT) {
-            monitor = elementMonitor.withElements(stat, false);
+            monitor = elementMonitor.withElements(stat);
         }
     }
 
@@ -595,7 +595,7 @@ public final class CalcEngine
             finance[i].label = financeLabels[i];
         }
         if (monitorMode == MONITOR_FINANCE) {
-            monitor = elementMonitor.withElements(finance, false);
+            monitor = elementMonitor.withElements(finance);
         }
     }
 
@@ -911,11 +911,11 @@ public final class CalcEngine
             monitorMode = MONITOR_NONE+((monitor>>5)&7);
             int size = monitor&0x1f;
             if (monitorMode == MONITOR_MEM)
-                setMonitoring(monitorMode, size, elementMonitor.withElements(mem, true));
+                setMonitoring(monitorMode, size, elementMonitor.withElements(mem));
             else if (monitorMode == MONITOR_STAT)
-                setMonitoring(monitorMode, size, elementMonitor.withElements(stat, false));
+                setMonitoring(monitorMode, size, elementMonitor.withElements(stat));
             else if (monitorMode == MONITOR_FINANCE)
-                setMonitoring(monitorMode, size, elementMonitor.withElements(finance, false));
+                setMonitoring(monitorMode, size, elementMonitor.withElements(finance));
             else if (monitorMode == MONITOR_MATRIX) {
                 setMonitoring(monitorMode, size, matrixMonitor);
                 // updateMatrixMonitor() will be run later
@@ -1464,6 +1464,7 @@ public final class CalcEngine
                 long unit = Unit.convertTo(x.unit, y.unit, rTmp2, rTmp3);
                 if (unit != y.unit) {
                     result.makeNan();
+                    setMessage(CmdDesc.getStr(cmd, true), "Comparison of numbers with incompatible units ignored");
                     return;
                 }
                 result.mul(rTmp2);
@@ -4047,15 +4048,15 @@ public final class CalcEngine
                 break;
 
             case MONITOR_MEM:
-                setMonitoring(cmd,param,elementMonitor.withElements(mem, true));
+                setMonitoring(cmd,param,elementMonitor.withElements(mem));
                 break;
 
             case MONITOR_STAT:
-                setMonitoring(cmd,param,elementMonitor.withElements(stat, false));
+                setMonitoring(cmd,param,elementMonitor.withElements(stat));
                 break;
 
             case MONITOR_FINANCE:
-                setMonitoring(cmd,FINANCE_SIZE,elementMonitor.withElements(finance, false));
+                setMonitoring(cmd,FINANCE_SIZE,elementMonitor.withElements(finance));
                 break;
 
             case MONITOR_MATRIX:

@@ -390,10 +390,6 @@ public class Program implements Monitorable {
         return null;
     }
 
-    public boolean isLabelMonospaced(int row, int col) {
-        return true;
-    }
-
     public boolean hasCaption() {
         return true;
     }

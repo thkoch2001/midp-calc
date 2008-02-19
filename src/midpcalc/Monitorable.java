@@ -10,7 +10,6 @@ public interface Monitorable {
     String lead(int row, int col, boolean currentPosition, boolean isInside);
     String element(int row, int col, int maxWidth);
     String elementSuffix(int row, int col);
-    boolean isLabelMonospaced(int row, int col);
     boolean hasCaption();
     String caption(int col);
 }
