@@ -146,7 +146,13 @@ public class CalcEngineTest extends TestCase {
         cmd(TO_CPLX);
         assertX(re, im);
     }
-    
+
+    // Complex numbers with units exist (e.g. 2+3i V), so it must be tested
+    private void enter(double re, double im, String unit) {
+        enter(re, im);
+        cmd(UNIT_SET, CalcCanvas.findUnit(unit));
+    }
+
     private void enterRow(double [] row) {
         enter(row[0]);
         for (int col=1; col<row.length; col++) {
@@ -293,6 +299,10 @@ public class CalcEngineTest extends TestCase {
     
     private void assertZ(double n) {
         assertStackElement(2, n);
+    }
+    
+    private void assertZ(double [][] m) {
+        assertStackElement(2, m);
     }
     
     private void assertXLessThan(double n) {
@@ -1825,6 +1835,10 @@ public class CalcEngineTest extends TestCase {
     }
 
     public void test_MATRIX_STO() {
+        cmd(CLS);
+        type(7);
+        cmd(MATRIX_STO, 7, 7); // Should be ignored
+
         enter(new double[2][2]);
         enter();
         type(1);
@@ -1835,11 +1849,38 @@ public class CalcEngineTest extends TestCase {
         cmd(MATRIX_STO, 1, 0);
         type(4);
         cmd(MATRIX_STO, 1, 1);
+        cmd(MATRIX_STO, 7, 1); // Should be ignored
         clx(4);
         assertY(new double[2][2]);
         assertX(new double[][] {{1,2},{3,4}});
+        
+        // A somewhat contrived case to provide code coverage
+        enter();
+        type(0);
+        cmd(SELECT);
+        cmd(STO, 4);
+        cmd(MATRIX_STO, 0, 0); // Storing the matrix in itself; taken as nan
+        cmd(MONITOR_MATRIX, 5);
+        calc.getMonitor().setDisplayedSize(5, 1);
+        assertEquals("nan", calc.getMonitor().element(0, 0, numDigits));
+        // Matrixes in lasty and lastz should be unmodified
+        cmd(UNDO); // This undoes the SELECT; MATRIX_STO is like a no-op for UNDO
+        assertZ(new double[][] {{1,2},{3,4}});
+        assertY(new double[][] {{1,2},{3,4}});
+        assertX(0);
 
-        leftoverStackElements = 2;
+        // And another
+        clx(2);
+        enter();
+        clx();
+        cmd(MATRIX_STO, 1, 0); // Storing the matrix in itself; taken as nan
+        assertEquals("nan", calc.getMonitor().element(1, 0, numDigits));
+        // Matrixes in lastx and lasty should be unmodified
+        cmd(UNDO); // This undoes the CLX; MATRIX_STO is like a no-op for UNDO
+        assertY(new double[][] {{1,2},{3,4}});
+        assertX(new double[][] {{1,2},{3,4}});
+
+        stackPreserved = false;;
     }
 
     public void test_MATRIX_RCL() {
@@ -2983,6 +3024,7 @@ public class CalcEngineTest extends TestCase {
         enter(1000, "m");
         enter(2, "kg");
         cmd(MAX);
+        assertEquals("Comparison of numbers with incompatible units ignored", calc.getMessage());
         assertX("nan");
 
         enter(0);
@@ -3132,10 +3174,8 @@ public class CalcEngineTest extends TestCase {
         assertX(100);
         clx(3);
         
-        enter(4, 4);
-        cmd(UNIT_SET, CalcCanvas.findUnit("km"));
-        enter(4000, 4000);
-        cmd(UNIT_SET, CalcCanvas.findUnit("m"));
+        enter(4, 4, "km");
+        enter(4000, 4000, "m");
         cmd(PROG_RUN, 0);
         assertX(100);
         clx(3);
@@ -3837,8 +3877,7 @@ public class CalcEngineTest extends TestCase {
         type(6);
         cmd(PROG_FINISH);
 
-        enter(1.41, 3.14);
-        cmd(UNIT_SET, CalcCanvas.findUnit("kg"));
+        enter(1.41, 3.14, "V");
         clx(); // Sets LASTx
 
         cmd(FINANCE_BGNEND);
@@ -3870,7 +3909,7 @@ public class CalcEngineTest extends TestCase {
         clx();
 
         if (hasUnits)
-            assertX("1.41+3.14i kg");
+            assertX("1.41+3.14i V");
         else
             assertX(1.41, 3.14);
         clx();
@@ -3944,7 +3983,8 @@ public class CalcEngineTest extends TestCase {
         assertX(0);
         clx();
 
-        assertEquals("tst", calc.progLabel(6));
+        for (int i=0; i<NUM_PROGS; i++)
+            assertEquals(i == 6 ? "tst" : Program.emptyProg, calc.progLabel(i));
         cmd(PROG_APPEND, 6);
         cmd(MONITOR_PROG, 10);
         calc.getMonitor().setDisplayedSize(10, 1);
@@ -3994,7 +4034,30 @@ public class CalcEngineTest extends TestCase {
         stackPreserved = false;
     }
 
-    public void testSaveAndRestoreState() throws IOException {
+    public void testSaveAndRestoreState_defaults() throws IOException {
+        calc = new CalcEngine(new TestCanvas());
+        ByteArrayOutputStream s = new ByteArrayOutputStream();
+        calc.saveState(new DataOutputStream(s));
+        calc = new CalcEngine(new TestCanvas());
+        int defaultStateSize = s.size();
+        calc.restoreState(new DataInputStream(new ByteArrayInputStream(s.toByteArray())));
+        verifyDefaults();
+
+        calc = new CalcEngine(new TestCanvas());
+        // Allocate memory and finance module, verify that nothing is saved
+        cmd(STO, 0);
+        cmd(FINANCE_STO, 0);
+        s = new ByteArrayOutputStream();
+        calc.saveState(new DataOutputStream(s));
+        calc = new CalcEngine(new TestCanvas());
+        assertEquals(defaultStateSize, s.size());
+        calc.restoreState(new DataInputStream(new ByteArrayInputStream(s.toByteArray())));
+        verifyDefaults();
+
+        stackPreserved = false;
+    }
+    
+    public void testSaveAndRestoreState_full() throws IOException {
         fillState();
         ByteArrayOutputStream s = new ByteArrayOutputStream();
         calc.saveState(new DataOutputStream(s));
@@ -4002,12 +4065,48 @@ public class CalcEngineTest extends TestCase {
         calc.restoreState(new DataInputStream(new ByteArrayInputStream(s.toByteArray())));
         verifyState(true);
 
-        calc = new CalcEngine(new TestCanvas());
-        s = new ByteArrayOutputStream();
+        stackPreserved = false;
+    }
+    
+    public void testSaveAndRestoreState_monitors() throws IOException {
+        int[] monitorModes = new int[] {MONITOR_MEM, MONITOR_STAT, MONITOR_FINANCE, MONITOR_MATRIX};
+
+        for (int monitorMode: monitorModes) {
+            calc = new CalcEngine(new TestCanvas());
+            cmd(monitorMode, 5);
+
+            ByteArrayOutputStream s = new ByteArrayOutputStream();
+            calc.saveState(new DataOutputStream(s));
+            calc = new CalcEngine(new TestCanvas());
+            calc.restoreState(new DataInputStream(new ByteArrayInputStream(s.toByteArray())));
+
+            assertEquals(monitorMode, calc.monitorMode);
+            assertEquals(5, calc.requestedMonitorSize);
+            cmd(MONITOR_NONE); // "restore" to expected value
+            verifyDefaults();
+        }
+
+        stackPreserved = false;
+    }
+    
+    public void testSaveAndRestoreState_variant() throws IOException {
+        fillState();
+        cmd(TRIG_DEGRAD);
+        assertTrue(calc.grad);
+        cmd(PROG_APPEND, 6);
+        cmd(MONITOR_PROG, 10);
+
+        ByteArrayOutputStream s = new ByteArrayOutputStream();
         calc.saveState(new DataOutputStream(s));
         calc = new CalcEngine(new TestCanvas());
         calc.restoreState(new DataInputStream(new ByteArrayInputStream(s.toByteArray())));
-        verifyDefaults();
+
+        assertTrue(calc.grad);
+        cmd(TRIG_DEGRAD);
+        cmd(TRIG_DEGRAD); // "restore" to expected state
+        assertEquals(MONITOR_NONE, calc.monitorMode);
+        cmd(MONITOR_MEM, 5); // "restore" to expected value
+        verifyState(true);
 
         stackPreserved = false;
     }
