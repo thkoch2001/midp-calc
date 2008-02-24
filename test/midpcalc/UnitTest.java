@@ -124,7 +124,7 @@ public class UnitTest extends TestCase {
         check("d","24","h");
         check("y","365.25","d");
 
-        check("e","1.60217653e-19","C");
+        check("e","1.602176487e-19","C");
 
         check("K","1","ð°C");
         check("K","1.8","ð°F");
@@ -158,7 +158,7 @@ public class UnitTest extends TestCase {
         check("cal","4.1868","J");
         check("kcal","4186.8","J");
         check("Btu","1055.05585262","J");
-        check("eV","1.60217653e-19","J");
+        check("eV","1.602176487e-19","J");
 
         check("kW","1000","W");
         check("MW","1000000","W");

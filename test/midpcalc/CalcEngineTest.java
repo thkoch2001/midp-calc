@@ -2756,7 +2756,7 @@ public class CalcEngineTest extends TestCase {
 
     public void test_CONST_h() {
         cmd(CONST_h);
-        assertX("6.6260693e-34 J·s");
+        assertX("6.62606896e-34 J·s");
     }
 
     public void test_CONST_mu_0() {
@@ -2771,7 +2771,7 @@ public class CalcEngineTest extends TestCase {
 
     public void test_CONST_NA() {
         cmd(CONST_NA);
-        assertX("6.0221415e23 mol¹");
+        assertX("6.02214179e23 mol¹");
     }
 
     public void test_CONST_R() {
@@ -2782,67 +2782,67 @@ public class CalcEngineTest extends TestCase {
     public void test_CONST_k() {
         numDigits = 16;
         cmd(CONST_k);
-        assertX("1.3806505e-23 J/K");
+        assertX("1.3806504e-23 J/K");
     }
 
     public void test_CONST_F() {
         cmd(CONST_F);
-        assertX("96485.3383 C/mol");
+        assertX("96485.3399 C/mol");
     }
 
     public void test_CONST_alpha() {
         cmd(CONST_alpha);
-        assertX("0.007297352568");
+        assertX("0.0072973525376");
     }
 
     public void test_CONST_a_0() {
         cmd(CONST_a_0);
-        assertX("0.00000000005291772108 m");
+        assertX("0.000000000052917720859 m");
     }
 
     public void test_CONST_R_inf() {
         cmd(CONST_R_inf);
-        assertX("10973731.568525 m¹");
+        assertX("10973731.568527 m¹");
     }
 
     public void test_CONST_mu_B() {
         numDigits = 16;
         cmd(CONST_mu_B);
-        assertX("9.27400949e-24 A·m²");
+        assertX("9.27400915e-24 A·m²");
     }
 
     public void test_CONST_e() {
         numDigits = 16;
         cmd(CONST_e);
-        assertX("1.60217653e-19 C");
+        assertX("1.602176487e-19 C");
     }
 
     public void test_CONST_m_e() {
         cmd(CONST_m_e);
-        assertX("9.1093826e-31 kg");
+        assertX("9.10938215e-31 kg");
     }
 
     public void test_CONST_m_p() {
         numDigits = 16;
         cmd(CONST_m_p);
-        assertX("1.67262171e-27 kg");
+        assertX("1.672621637e-27 kg");
     }
 
     public void test_CONST_m_n() {
         numDigits = 16;
         cmd(CONST_m_n);
-        assertX("1.67492728e-27 kg");
+        assertX("1.674927211e-27 kg");
     }
 
     public void test_CONST_m_u() {
         numDigits = 16;
         cmd(CONST_m_u);
-        assertX("1.66053886e-27 kg");
+        assertX("1.660538782e-27 kg");
     }
 
     public void test_CONST_G() {
         cmd(CONST_G);
-        assertX("0.000000000066742 m³/kg·s²");
+        assertX("0.0000000000667428 m³/kg·s²");
     }
 
     public void test_CONST_g_n() {

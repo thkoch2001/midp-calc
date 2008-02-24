@@ -5,7 +5,7 @@ package midpcalc;
 //                                                 st = 14 lb
 //  Length:             m    Å mm cm km in ft yd mi NM AU ly pc
 //  Time:               s    h min d y             y = 365.25 d
-//  Charge:             C    e                     C = 6241509479607717888 e
+//  Charge:             C    e                     C = 6241509479607717888*** e
 //  Temperature:        K    °C °F
 //  Amount:             mol                        mol = 6.0221415e23
 //Derived units:
@@ -137,7 +137,7 @@ public final class Unit {
     };
     private static final UnitDesc[] chargeUnits = new UnitDesc[] {
         new UnitDesc("C",   SI|IMP|BASE),
-        new UnitDesc("e",   SI|IMP,   C, new Real(0, 0x3fffffc1, 0x5e93683d3137633fL /*1.60217653e-19*/)),
+        new UnitDesc("e",   SI|IMP,   C, new Real(0, 0x3fffffc1, 0x5e9368129b6bd383L /*1.602176487e-19*/)),
     };
     private static final UnitDesc[] amountUnits = new UnitDesc[] {
         new UnitDesc("mol", SI|IMP|BASE),
@@ -183,7 +183,7 @@ public final class Unit {
         new UnitDesc("cal",  SI,  J, new Real(0, 0x40000002, 0x42fd21ff2e48e8a7L /*4.1868*/)),
         new UnitDesc("kcal", SI,  J, new Real(0, 0x4000000c, 0x416b333333333333L /*4186.8*/)),
         new UnitDesc("Btu",  IMP, J, new Real(0, 0x4000000a, 0x41f0e4c5b784bc12L /*1055.05585262*/)),
-        new UnitDesc("eV",   SI,  J, new Real(0, 0x3fffffc1, 0x5e93683d3137633fL /*1.60217653e-19*/)),
+        new UnitDesc("eV",   SI,  J, new Real(0, 0x3fffffc1, 0x5e9368129b6bd383L /*1.602176487e-19*/)),
     };
     private static final UnitDesc[] alternativePowerUnits = new UnitDesc[] {
         new UnitDesc("kW", SI,  W, new Real(1000)),
