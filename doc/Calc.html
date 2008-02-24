@@ -285,7 +285,7 @@ compatibility issues.<br>
     constants</a></dt>
     <dd><dl>
       <dt><a href="Calc.html#Time">Time and date</a></dt>
-      <dt><a href="Calc.html#Metric">Metric conversions</a></dt>
+      <dt><a href="Calc.html#Units">Unit arithmetic and conversions</a></dt>
       <dt><a href="Calc.html#Const">Scientific constants</a></dt>
     </dl></dd>
   </dl></dd>
@@ -303,6 +303,7 @@ compatibility issues.<br>
   <dt><a href="Calc.html#AbnormalNote">Abnormal results</a></dt>
   <dt><a href="Calc.html#ComplexNote">Complex arithmetic</a></dt>
   <dt><a href="Calc.html#MatrixNote">Matrix arithmetic</a></dt>
+  <dt><a href="Calc.html#UnitNote">Unit arithmetic</a></dt>
   <dt><a href="Calc.html#FinancialNote">Financial calculation</a></dt>
   <dt><a href="Calc.html#DateNote">Date calculation</a></dt>
   <dt><a href="Calc.html#ConstNote">Constants</a></dt>
@@ -917,74 +918,41 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
       <li><b>MJD&rarr;DH.MS</b>: Convert from Modified Julian Day time to
     <tt>yyyymmddHH.MMSS</tt> format
     </ul>
-    <li><a id="Metric" name="Metric">Metric conversions</a> <a
-      href="Calc.html#ConstNote"><b>(*)</b></a>
+    <li><a id="Units" name="Units">Unit arithmetic and conversions</a> <a
+      href="Calc.html#UnitNote"><b>(*)</b></a>
     <ul>
-      <li>Length
+      <li><b>unit*</b>: Multiply x with a unit selected from one of the
+	submenus:
       <ul>
-        <li><b>in/cm</b>: Enter the length of one inch in centimeters
-          &equiv;&nbsp;2.54
-        <li><b>ft/m</b>: Enter the length of one foot in meters
-          &equiv;&nbsp;0.3048
-        <li><b>yd/m</b>: Enter the length of one yard in meters
-          &equiv;&nbsp;0.9144
-        <li><b>mi/km</b>: Enter the length of one mile in kilometers
-          &equiv;&nbsp;1.609344
-        <li><b>n.m./km</b>: Enter the length of one nautical mile in
-          kilometers &equiv;&nbsp;1.852
+        <li>long: Submenu containing units with <em>length</em> as the
+	  primary factor; length, area, volume, speed and acceleration.
+        <li>firm: Submenu containing units with <em>mass</em> as the
+	  primary factor; mass, force, energy, effect and pressure.
+        <li>mixed: Submenu containing mixed units; time, temperature, chemical
+          and electric.
       </ul>
-      <li>Weight
+      <li><b>unit/</b>: Divide x by a unit selected from a submenu.
+	The unit submenus are the same as for <b>unit*</b>.
+      <li><b>&rarr;unit</b>: Convert the unit of x (as far as possible) to the
+	unit selected from a submenu. The unit submenus are the same as
+	for <b>unit*</b>, with the following additions:
       <ul>
-        <li><b>oz/g</b>: Enter the weight of one U.S. ounce in grams
-          &equiv;&nbsp;28.349523125
-        <li><b>lb/kg</b>: Enter the weight of one U.S. pound in kilos
-          &equiv;&nbsp;0.45359237
-        <li><b>ton/kg</b>: Enter the weight of one U.S. short ton in
-          kilos &equiv;&nbsp;907.18474
-        <li><b>gr/mg</b>: Enter the weight of one U.S. grain in
-          milligrams &equiv;&nbsp;64.79891
+        <li><b>SI</b>: Convert to base SI units.
+        <li><b>US/Imp</b>: Convert to base US/Imperial units.
       </ul>
-      <li>Volume
-      <ul>
-        <li><b>cup/l</b>: Enter the volume of one U.S. cup in liters
-          &equiv;&nbsp;0.2365882365
-        <li><b>gal/l</b>: Enter the volume of one U.S. gallon in liters
-          &equiv;&nbsp;3.785411784
-        <li><b>pt/l</b>: Enter the volume of one U.S. pint in liters
-          &equiv;&nbsp;0.473176473
-        <li><b>fl.oz/ml</b>: Enter the volume of one U.S. fluid ounce in
-          milliliters &equiv;&nbsp;29.5735295625
-      </ul>
-      <li>Energy
-      <ul>
-        <li><b>cal/J</b>: Enter the energy of one international calorie in
-          Joules &asymp;&nbsp;4.1868
-        <li><b>Btu/J</b>: Enter the energy of one British thermal unit in
-          Joules &asymp;&nbsp;1055.06
-        <li><b>hp/W</b>: Enter the value of one horsepower in Watts
-          &asymp;&nbsp;745.7
-      </ul>
-      <li>Temperature
-      <ul>
-        <li><b>°C&rarr;°F</b>: Convert from degrees Celsius to degrees
-          Fahrenheit, i.e. calculate x*1.8+32. This operation and the
-          next are different from the others in the "metric
-          conversions" module because they work as a function changing
-          the x value instead of just entering a value on the stack.
-        <li><b>°F&rarr;°C</b>: Convert from degrees Fahrenheit to
-          degrees Celsius, i.e. calculate (x-32)/1.8
-        <li><b>°K-°C</b>: Enter the difference between degrees Kelvin and
-          degrees Celsius &equiv;&nbsp;273.15 
-      </ul>
+      <li><b>clear</b>: Clear the unit from the number in x
+      <li><b>describe</b>: Describe why the unit of the number in x shows as
+	"[err]" or describe if it is a composite built up from more basic units.
     </ul>
-    <li><a id="Const" name="Const">Scientific constants</a>
+    <li><a id="Const" name="Const">Scientific constants</a> <a
+      href="Calc.html#ConstNote"><b>(*)</b></a>
     <ul>
       <li>Universal
       <ul>
         <li><b>c</b>: Enter the speed of light in a vacuum
           &equiv;&nbsp;299792458&nbsp;m/s
         <li><b>h</b>: Enter the Planck constant
-          &asymp;&nbsp;6.6260693·10<sup>-34</sup>&nbsp;J&nbsp;s
+          &asymp;&nbsp;6.62606896·10<sup>-34</sup>&nbsp;J·s
         <li><b>µ<sub>0</sub></b>: Enter the permeability of a vacuum,
           &equiv;&nbsp;1.256637061435917...·10<sup>-6</sup>&nbsp;N/A²
         <li><b>&#949;<sub>0</sub></b>: Enter the permittivity of a vacuum
@@ -993,42 +961,42 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
       <li>Chemical
       <ul>
         <li><b>N<sub>A</sub></b>: Enter the Avogadro constant
-          &asymp;&nbsp;6.0221415·10<sup>23</sup>&nbsp;mol<sup>-1</sup>
+          &asymp;&nbsp;6.02214179·10<sup>23</sup>&nbsp;mol<sup>-1</sup>
         <li><b>R</b>: Enter the molar gas constant
-          &asymp;&nbsp;8.314472&nbsp;J/mol&nbsp;K
+          &asymp;&nbsp;8.314472&nbsp;J/mol·K
         <li><b>k</b>: Enter the Boltzmann constant
-          &asymp;&nbsp;1.3806505·10<sup>-23</sup>&nbsp;J/K
+          &asymp;&nbsp;1.3806504·10<sup>-23</sup>&nbsp;J/K
         <li><b>F</b>: Enter the Faraday constant
-          &asymp;&nbsp;96485.3383&nbsp;C/mol
+          &asymp;&nbsp;96485.3399&nbsp;C/mol
       </ul>
       <li>Physical and electromagnetic
       <ul>
         <li><b>&#945;</b>: Enter the fine-structure constant
-          &asymp;&nbsp;0.007297352568
+          &asymp;&nbsp;0.0072973525376
         <li><b>R<sub>&infin;</sub></b>: Enter the Rydberg constant
-          &asymp;&nbsp;10973731.568525&nbsp;m<sup>-1</sup>
+          &asymp;&nbsp;10973731.568527&nbsp;m<sup>-1</sup>
         <li><b>a<sub>0</sub></b>: Enter the Bohr radius
-          &asymp;&nbsp;5.291772108·10<sup>-11</sup>&nbsp;m
+          &asymp;&nbsp;5.2917720859·10<sup>-11</sup>&nbsp;m
         <li><b>µ<sub>B</sub></b>: Enter the Bohr magneton
-          &asymp;&nbsp;9.27400949·10<sup>-24</sup>&nbsp;J/T
+          &asymp;&nbsp;9.27400915·10<sup>-24</sup>&nbsp;J/T
       </ul>
       <li>Atomic
       <ul>
         <li><b>e</b>: Enter the elementary charge
-          &asymp;&nbsp;1.60217653·10<sup>-19</sup>&nbsp;C
+          &asymp;&nbsp;1.602176487·10<sup>-19</sup>&nbsp;C
         <li><b>m<sub>e</sub></b>: Enter the mass of an electron
-          &asymp;&nbsp;9.1093826·10<sup>-31</sup>&nbsp;kg
+          &asymp;&nbsp;9.10938215·10<sup>-31</sup>&nbsp;kg
         <li><b>m<sub>p</sub></b>: Enter the mass of a proton
-          &asymp;&nbsp;1.67262171·10<sup>-27</sup>&nbsp;kg
+          &asymp;&nbsp;1.672621637·10<sup>-27</sup>&nbsp;kg
         <li><b>m<sub>n</sub></b>: Enter the mass of a neutron
-          &asymp;&nbsp;1.67492728·10<sup>-27</sup>&nbsp;kg
+          &asymp;&nbsp;1.674927211·10<sup>-27</sup>&nbsp;kg
         <li><b>m<sub>u</sub></b>: Enter the unified atomic mass unit
-          &asymp;&nbsp;1.66053886·10<sup>-27</sup>&nbsp;kg
+          &asymp;&nbsp;1.660538782·10<sup>-27</sup>&nbsp;kg
       </ul>
       <li>Astronomical
       <ul>
         <li><b>G</b>: Enter the Newtonian constant of gravitation
-          &asymp;&nbsp;6.6742·10<sup>-11</sup>&nbsp;N&nbsp;m²/kg²
+          &asymp;&nbsp;6.67428·10<sup>-11</sup>&nbsp;m³/kg·s²
         <li><b>g<sub>n</sub></b>: Enter the standard acceleration of gravity
           &equiv;&nbsp;9.80665&nbsp;m/s²
         <li><b>A.U.</b>: Enter the length of one astronomical unit
@@ -1253,14 +1221,22 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
   </ul>
   <li><a id="System" name="System">System menu</a>
   <ul>
-    <li>Fonts (this menu is available if you have a color screen, otherwise system font is used)
+    <li>Fonts
     <ul>
-      <li><b>small</b>: Set small font
-      <li><b>medium</b>: Set medium font
-      <li><b>large</b>: Set large font
-      <li><b>xlarge</b>: Set extra large font
-      <li><b>system</b>: Set system font (should be mono-spaced, but
-  this is not the case on T610)
+      <li><b>number</b>: Select number font from the submenu:
+      <ul>
+	<li><b>small</b>: Small built-in font
+	<li><b>medium</b>: Medium built-in font
+	<li><b>large</b>: Large built-in font
+	<li><b>xlarge</b>: Extra large built-in font
+	<li><b>xxlarge</b>: Extra extra large built-in font
+	<li><b>xxxlarge</b>: Extra extra extra large built-in font
+	<li><b>sys.S</b>: Small system font
+	<li><b>sys.M</b>: Medium system font
+	<li><b>sys.L</b>: Large system font
+      </ul>
+      <li><b>menu</b>: Set menu font. Same submenu as for number font.
+      <li><b>monitor</b>: Set monitor font. Same submenu as for number font.
     </ul>
 <!--    <li><b>fullscreen</b>: Toggle full screen operation-->
     <li><b>exit</b>: Exit the application. The the stack, memory,
@@ -1348,7 +1324,7 @@ numbers.<br>
 <br>
 Complex numbers are (like the value <tt>nan</tt>) unordered, i.e. you cannot
 say in a general way that "this complex number is less than that complex
-number". Consequently, any comparison operations (e.g. "x<y?" when
+number". Consequently, any comparison operations (e.g. "x&lt;y?" when
 programming) behave as the condition does not hold if any of the arguments are
 complex. Similarly, "min" or "max" operations will return <tt>nan</tt>.<br>
 
@@ -1370,8 +1346,9 @@ number to view it.<br>
 
 <h3><a id="MatrixNote" name="MatrixNote">Matrix arithmetic</a></h3>
 
-The calculator creates matrices using the "matrix/new" operation or
-when you stack or concat two normal numbers.<br>
+Matrices can be created using the "matrix/new" operation or by using the
+operations "matrix/stack" and "matrix/concat" to combine two normal
+numbers.<br>
 
 <br>
 Most operations that logically extends to matrix arguments have been
@@ -1442,6 +1419,123 @@ reference. However, changing a matrix will create a new matrix, even
 for such a simple operation as "+/-". Since the old matrix is still
 backed up in "LAST x" you are temporarily using twice as much memory
 as with just the one matrix.<br>
+
+<h3><a id="UnitNote" name="UnitNote">Unit arithmetic</a></h3>
+
+Numbers with units can be created by entering a normal number and setting a
+unit using one of the operations "conv/unit*" or "conv/unit/"
+(i.e. unit-multiply and unit-divide respectively). Scientific constants will
+automatically appear with their proper SI unit.<br>
+
+<br>
+Unit arithmetic works for most operations that logically extend to arguments
+with units, i.e. all basic operations, simple operations, and y<sup>x</sup>
+and <sup>x</sup>&#8730;<span style="text-decoration: overline;">y</span> for
+integer x. Matrices can not have units, but complex numbers can (e.g. when
+calculating electric potential, V).<br>
+
+<br>
+All stack and memory operations handle units transparently. Financial and
+statistical modules cannot store units so with these modules the units are
+ignored. For operations that are undefined for units or that have not been
+implemented yet, the units are also ignored.<br>
+
+<br>
+The calclator supports many different units, also different units for the same
+physical property. For instance, there are 13 different units for length. All
+units are composed of, and can be reduced to 6 base units; length, mass, time,
+temperature, charge and the chemical unit "mol".<br>
+
+<br>
+A particular unit may contain several base units raised to varying powers (e.g
+"m/s²"), and for each base unit a particular unit variant (e.g. "kg" or "lb"
+for mass) will be in use. A unit may also contain powers of higher order
+units. A higher order unit is a unit that represents a composite of more than
+one base unit, but cannot be decomposed to the base units without a conversion
+factor. For instance, an "acre" represents "length" raised to the power of 2,
+but it is not composed of any particular "length" unit such as "m". As with
+the base units, there can be variants of a higher order unit as well, for
+instance there are 12 higher order units that all represent "volume". The
+calculator contains as many unit variants and higher order units as has been
+practically attainable.<br>
+
+<br>
+It is possible to do do arithmetic on numbers with different units, but it may
+be necessary to reconcile the units before the calculation can take place. If
+an operation takes two arguments and the units of x and y are different, the
+unit of y is first converted to the unit of x. Then the value of y is scaled
+according to the ratio of the unit conversion before the operation is
+executed.<br>
+
+<br>
+For operations that require the same type of unit in x and y, e.g. addition,
+the unit of y must be fully converted to the unit of x. If this is not
+possible, the operation takes place as if the units were not present, and the
+unit of the result is displayed as "[err]". For other operations,
+e.g. multiplication, only the parts of the units that represent the same
+physical property will be reconciled. For instance, "1&nbsp;m/s" in y,
+multiplied by "1&nbsp;h" in x, becomes "3600&nbsp;m", since y is first
+converted to "3600&nbsp;m/h".<br>
+
+<br>
+Units are displayed directly behind the numbers on the stack. For brevity, if
+a unit contains more than one base unit raised to a negative power, the units
+are joined by a "·" after the "/" without surronding parentheses, e.g
+"8.314472&nbsp;J/mol·K" (meaning "J/(mol·K)"). Additionally, when displayed,
+many common unit combinations will be reduced and replaced with a symbol
+representing a composite unit. For instance, the unit "kg·m²/s²" will be
+displayed as "J", without actually changing the existing unit into a "higher
+order" unit or anything. More complex units may be reduced several times
+before they are displayed. The logic behind this reduction tries to construct
+the most compact form while maximizing the meaning of the displayed form. For
+instance, the unit "kg/s³" is displayed as "W/m²", because square meters are
+more logical than cubic seconds. It is possible to see which base units a
+reduced unit represents by using the operation "conv/unit/describe".<br>
+
+<br>
+Imperial units that have the same spelling as an American unit are presented
+in the menus and displayed on screen in <i>italics</i>. These units
+are <i>ton</i> (long ton), <i>fl.oz</i>, <i>cup</i>, <i>pt</i>
+and <i>gal</i>. Similarly, the symbol for the standard gravity <i>g</i> is
+displayed in italics (as usual) to distingtuish it from the symbol for
+gram.<br>
+
+<br>
+<i>Limitations</i>: For each base unit and higher order unit, there is a limit
+to the power that a particular unit can be raised to. For instance, "length"
+can be raised to the power of ±8, since it commonly occurs at least as high as
+±3 in normal calculations. On the other hand, it makes less sense to raise
+"mol" to higher powers, so with this unit the limit is ±2. If a unit
+calculation results in a base unit raised a power that is too high, "[ofl]" is
+displayed. Additionally, no unit can be <i>displayed</i> with higher power
+than ±4, and will also be displayed as "[ofl]", although further calculations
+may bring the power down and make the unit displayable again.<br>
+
+<br>
+When a unit error or overflow has occurred, the unit is displayed as "[err]"
+or "[ofl]", respectively. If such a unit is used in combination with another
+unit, the result will also be "[err]". On the other hand, if an "[err]" or
+"[ofl]" unit is combined with another "[err]" or "[ofl]" unit, or is combined
+with a number without a unit, the unit will simply "evaporate" and
+disappear.<br>
+
+<br>
+SI prefixes such as "k" for "kilo-" and "m" for "milli-" are not generally
+supported for all units, just in some special cases due to common usage. It is
+worth noting that for instance "kW" is a "higher order" unit in the same
+manner as "hp", and will usually survive intact (i.e. not be decomposed) in
+calculations. For instance, "1&nbsp;kW" multiplied by "2&nbsp;h" becomes
+"2&nbsp;kW·h". On the other hand "W" is a "reduced" unit; simplay a shorter
+way of displaying the underlying unit "kg·m²/s³". When multiplying "1&nbsp;W"
+(in y) by "2&nbsp;h" (in x), the unit factor "s<sup>-3</sup>" of "W" is first
+converted to "h" before the multiplication takes place, resulting in the
+surprising value "93312000000&nbsp;kg·m²/h²". This may seem strange, but this
+is an unfortunate byproduct of how unit arithmetic has been implemented, and
+will often lead to unexpected results when calculating with non-SI units. Use
+"conv/&rarr;unit&nbsp;SI" to see the more familiar result "7200&nbsp;J". It is
+impossible to make the calculator show the result as "2 W·h", since it would
+require two conflicting time units, "s" and "h", being present in the unit at
+the same time.<br>
 
 <h3><a id="FinancialNote" name="FinancialNote">Financial calculation</a></h3>
 
@@ -1580,13 +1674,11 @@ JD or MJD time value.
 
 <h3><a id="ConstNote" name="ConstNote">Constants</a></h3>
 
-The constants were found at <a href="http://physics.nist.gov/cuu/Constants">http://physics.nist.gov/cuu/Constants</a>
-and the metric conversions at <a
-href="http://www.free-definition.com">http://www.free-definition.com</a>.
+The constants were found at <a href="http://physics.nist.gov/cuu/Constants">http://physics.nist.gov/cuu/Constants</a>.
 Constants given using "&equiv;" are as accurate as the internal precision
 of Calc. Constants given using "&asymp;" are not precisely known by
 science, but are as up-to-date as the CODATA internationally
-recommended values of 2002.
+recommended values of 2006.
 
 <h3><a id="MonitorNote" name="MonitorNote">Monitor editing mode</a></h3>
 
@@ -1641,7 +1733,7 @@ that the program editing monitor can only be accessed in the
 programming mode and as usual the number of lines to display have to
 be chosen. As the other monitor modes, it has a display mode and an
 editing mode (accessed by the <b>[&rarr;]</b> command). In the display
-mode, the active line is marked by an "&gt;" after the line number. In
+mode, the active line is marked by a green "&gt;" after the line number. In
 the display mode, all commands recorded will be inserted at this
 marked position. After activating the editing mode, the inseration
 mark is at the end of the program, so all new instructions will be
