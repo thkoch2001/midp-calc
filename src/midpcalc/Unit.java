@@ -111,7 +111,7 @@ public final class Unit {
         new UnitDesc("st",  IMP,      kg, new Real(0, 0x40000002, 0x659acd0581ca1a15L /*6.35029318*/)),
         new UnitDesc("ton", IMP,      kg, new Real(0, 0x40000009, 0x7165e963dc486ad3L /*907.18474*/)),
         new UnitDesc("`ton`",IMP,     kg, new Real(0, 0x40000009, 0x7f018046e23ca09aL /*1016.0469088*/)),
-        new UnitDesc("u",   SI,       kg, new Real(0, 0x3fffffa7, 0x41c7dd5a667f9950L /*1.66053886e-27*/)),
+        new UnitDesc("u",   SI,       kg, new Real(0, 0x3fffffa7, 0x41c7dd268f7c7292L /*1.660538782e-27*/)),
     };
     private static final UnitDesc[] lengthUnits = new UnitDesc[] {
         new UnitDesc("m",   SI|BASE),

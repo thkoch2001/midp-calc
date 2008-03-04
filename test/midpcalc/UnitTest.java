@@ -104,7 +104,7 @@ public class UnitTest extends TestCase {
         check("st","14","lb");
         check("ton","2000","lb");
         check("`ton`","2240","lb");
-        check("u","1.66053886e-27","kg");
+        check("u","1.660538782e-27","kg");
         
         check("m","10000000000","Å");
         check("m","1000","mm");
