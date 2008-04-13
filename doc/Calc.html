@@ -919,7 +919,7 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
     <tt>yyyymmddHH.MMSS</tt> format
     </ul>
     <li><a id="Units" name="Units">Unit arithmetic and conversions</a> <a
-      href="Calc.html#UnitNote"><b>(*)</b></a>
+      href="Calc.html#UnitNote"><b>(*)</b></a> <a href="Calc-units.html">(listing)</a>
     <ul>
       <li><b>unit*</b>: Multiply x with a unit selected from one of the
 	submenus:
@@ -928,7 +928,7 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
 	  primary factor; length, area, volume, speed and acceleration.
         <li>firm: Submenu containing units with <em>mass</em> as the
 	  primary factor; mass, force, energy, effect and pressure.
-        <li>mixed: Submenu containing mixed units; time, temperature, chemical
+        <li>other: Submenu containing other units; time, temperature, chemical
           and electric.
       </ul>
       <li><b>unit/</b>: Divide x by a unit selected from a submenu.
@@ -1522,20 +1522,24 @@ disappear.<br>
 <br>
 SI prefixes such as "k" for "kilo-" and "m" for "milli-" are not generally
 supported for all units, just in some special cases due to common usage. It is
-worth noting that for instance "kW" is a "higher order" unit in the same
-manner as "hp", and will usually survive intact (i.e. not be decomposed) in
-calculations. For instance, "1&nbsp;kW" multiplied by "2&nbsp;h" becomes
-"2&nbsp;kW·h". On the other hand "W" is a "reduced" unit; simplay a shorter
-way of displaying the underlying unit "kg·m²/s³". When multiplying "1&nbsp;W"
-(in y) by "2&nbsp;h" (in x), the unit factor "s<sup>-3</sup>" of "W" is first
-converted to "h" before the multiplication takes place, resulting in the
-surprising value "93312000000&nbsp;kg·m²/h²". This may seem strange, but this
-is an unfortunate byproduct of how unit arithmetic has been implemented, and
-will often lead to unexpected results when calculating with non-SI units. Use
+worth noting that most prefixed units, such as "kW", are "higher order" units
+in the same manner as "hp", and will usually survive intact (i.e. not be
+decomposed) in calculations. For instance, "1&nbsp;kW" multiplied by
+"2&nbsp;h" becomes "2&nbsp;kW·h". On the other hand "W" is a "reduced" unit;
+simply a shorter way of displaying the underlying unit "kg·m²/s³". When
+multiplying "1&nbsp;W" (in y) by "2&nbsp;h" (in x), the unit factor
+"s<sup>-3</sup>" of "W" is first converted to "h" before the multiplication
+takes place, resulting in the surprising value
+"93312000000&nbsp;kg·m²/h²". This may seem strange, but this is an unfortunate
+byproduct of how unit arithmetic has been implemented, and will often lead to
+unexpected results when calculating with non-SI units. Use
 "conv/&rarr;unit&nbsp;SI" to see the more familiar result "7200&nbsp;J". It is
 impossible to make the calculator show the result as "2 W·h", since it would
 require two conflicting time units, "s" and "h", being present in the unit at
 the same time.<br>
+
+<br>
+Here is a complete listing of all the <a href="Calc-units.html">units</a>.<br>
 
 <h3><a id="FinancialNote" name="FinancialNote">Financial calculation</a></h3>
 
