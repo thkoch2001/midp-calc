@@ -30,6 +30,7 @@ JAVAC = javac -source 1.3 -target 1.3
 
 JAVAFILES =  src/midpcalc/Calc.java \
              src/midpcalc/CalcCanvas.java \
+             src/midpcalc/Menu.java \
              src/midpcalc/CanvasAccess.java \
              src/midpcalc/CalcEngine.java \
              src/midpcalc/Element.java \
@@ -74,6 +75,7 @@ MIDPFILES =  applet/src/javax/microedition/midlet/MIDlet.java \
 HTMLFILES =  doc/Calc.html \
              doc/Calc-log.html \
              doc/Calc-prog.html \
+             doc/Calc-units.html \
              applet/CalcApplet.html
 
 IMAGES =     doc/images/Calc.jpg \

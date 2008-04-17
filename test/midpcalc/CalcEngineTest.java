@@ -136,8 +136,13 @@ public class CalcEngineTest extends TestCase {
 
     private void enter(double n, String unit) {
         type(n);
-        cmd(UNIT_SET, CalcCanvas.findUnit(unit));
+        cmd(UNIT_SET, findUnit(unit));
         assertX(n, unit);
+    }
+
+    private int findUnit(String unit) {
+        int tmp = Menu.findUnit(unit);
+        return ((tmp & 0xff00) << 8) + (tmp & 0xff);
     }
 
     private void enter(double re, double im) {
@@ -150,7 +155,7 @@ public class CalcEngineTest extends TestCase {
     // Complex numbers with units exist (e.g. 2+3i V), so it must be tested
     private void enter(double re, double im, String unit) {
         enter(re, im);
-        cmd(UNIT_SET, CalcCanvas.findUnit(unit));
+        cmd(UNIT_SET, findUnit(unit));
     }
 
     private void enterRow(double [] row) {
@@ -1979,15 +1984,15 @@ public class CalcEngineTest extends TestCase {
 
     public void test_UNIT_SET() {
         type(3);
-        cmd(UNIT_SET, CalcCanvas.findUnit("kg"));
+        cmd(UNIT_SET, findUnit("kg"));
         assertX(3, "kg");
 
         enter(3, 2);
-        cmd(UNIT_SET, CalcCanvas.findUnit("kg"));
+        cmd(UNIT_SET, findUnit("kg"));
         assertX("3+2i kg");
 
         enter(new double[][] {{1,2},{3,4}});
-        cmd(UNIT_SET, CalcCanvas.findUnit("kg"));
+        cmd(UNIT_SET, findUnit("kg"));
         assertX("nan");
 
         leftoverStackElements = 3;
@@ -1995,13 +2000,13 @@ public class CalcEngineTest extends TestCase {
 
     public void test_UNIT_SET_INV() {
         type(3);
-        cmd(UNIT_SET_INV, CalcCanvas.findUnit("kg"));
+        cmd(UNIT_SET_INV, findUnit("kg"));
         assertX(3, "kg¹"); // meaning: kg^-1
     }
 
     public void test_UNIT_CONVERT() {
         enter(3, "kg");
-        cmd(UNIT_CONVERT, CalcCanvas.findUnit("g"));
+        cmd(UNIT_CONVERT, findUnit("g"));
         assertX(3000, "g");
     }
 
@@ -2577,11 +2582,13 @@ public class CalcEngineTest extends TestCase {
     public void test_FIX() {
         cmd(PI);
         cmd(FIX, 4);
+        cmd(FIX, 4);
         assertX("3.1416");
     }
 
     public void test_SCI() {
         type(314159.265);
+        cmd(SCI, 4);
         cmd(SCI, 4);
         assertX("3.1416e5");
     }
@@ -2589,20 +2596,23 @@ public class CalcEngineTest extends TestCase {
     public void test_ENG() {
         type(314159.265);
         cmd(ENG, 4);
+        cmd(ENG, 4);
         assertX("314.1593e3");
     }
 
     public void test_POINT_DOT() {
-        cmd(PI);
+        type(314159.265);
+        cmd(THOUSAND_DOT);
         cmd(POINT_COMMA);
         cmd(POINT_DOT);
-        assertX("3.141592653589793");
+        assertX("314,159.265");
     }
 
     public void test_POINT_COMMA() {
-        cmd(PI);
+        type(314159.265);
+        cmd(THOUSAND_DOT);
         cmd(POINT_COMMA);
-        assertX("3,141592653589793");
+        assertX("314.159,265");
     }
 
     public void test_POINT_REMOVE() {
@@ -2622,6 +2632,11 @@ public class CalcEngineTest extends TestCase {
         type(2000);
         cmd(THOUSAND_DOT);
         assertX("2,000");
+
+        cmd(THOUSAND_NONE);
+        cmd(POINT_COMMA);
+        cmd(THOUSAND_DOT);
+        assertX("2.000");
     }
 
     public void test_THOUSAND_SPACE() {
@@ -2999,10 +3014,10 @@ public class CalcEngineTest extends TestCase {
 
         type(0);
         cmd(RECIP);
-        cmd(UNIT_SET, CalcCanvas.findUnit("g"));
+        cmd(UNIT_SET, findUnit("g"));
         type(0);
         cmd(RECIP);
-        cmd(UNIT_SET, CalcCanvas.findUnit("kg"));
+        cmd(UNIT_SET, findUnit("kg"));
         assertX("inf kg");
         cmd(MIN);
         assertX("inf kg");
@@ -3036,10 +3051,10 @@ public class CalcEngineTest extends TestCase {
 
         type(0);
         cmd(RECIP);
-        cmd(UNIT_SET, CalcCanvas.findUnit("g"));
+        cmd(UNIT_SET, findUnit("g"));
         type(0);
         cmd(RECIP);
-        cmd(UNIT_SET, CalcCanvas.findUnit("kg"));
+        cmd(UNIT_SET, findUnit("kg"));
         assertX("inf kg");
         cmd(MAX);
         assertX("inf kg");
@@ -4277,7 +4292,7 @@ public class CalcEngineTest extends TestCase {
 
         calc.newProgramName = "bug";
         cmd(PROG_NEW, 0);
-        cmd(UNIT_SET, CalcCanvas.findUnit("m"));
+        cmd(UNIT_SET, findUnit("m"));
         cmd(MONITOR_PROG, 10);
         calc.getMonitor().setDisplayedSize(10, 1);
         // Would look like "conv/unit* km"
