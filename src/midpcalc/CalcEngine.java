@@ -4586,7 +4586,7 @@ public final class CalcEngine
             b.add(c);
             b.scalbn(-1);
 
-            if (stack[0].isAbnormalOrComplex() || stack[1].isAbnormalOrComplex()) {
+            if (stack[1].isAbnormalOrComplex() || stack[2].isAbnormalOrComplex()) {
                 // Abnormal limits. (nan is already pushed)
                 Real.magicRounding = true;
                 setMessage("Min/max", "Abnormal or complex search bounds");
