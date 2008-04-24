@@ -2174,8 +2174,10 @@ public class CalcEngineTest extends TestCase {
         type(4);
         cmd(XCHGMEM, 5);
         assertX(-3.6);
+        assertNull(calc.getStack().label(0, 0));
         cmd(MONITOR_MEM, 10);
         assertEquals("4", calc.getMonitor().element(5, 0, numDigits));
+        assertEquals("M5", calc.getMonitor().label(5, 0));
     }
 
     public void test_RCL_X() {

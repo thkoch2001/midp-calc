@@ -117,6 +117,27 @@ final class ComplexMatrixElement extends ComplexElement {
         return !r.isFinite() || !i.isZero() || M != null;
     }
     
+    void xchg(ComplexMatrixElement e, boolean keepStrings) {
+        r.swap(e.r);
+        i.swap(e.i);
+        Matrix tmpM = M;
+        M = e.M;
+        e.M = tmpM;
+        long tmpU = unit;
+        unit = e.unit;
+        e.unit = tmpU;
+        String tmpS = unitStr;
+        unitStr = e.unitStr;
+        e.unitStr = tmpS;
+        if (keepStrings) {
+            tmpS = str;
+            str = e.str;
+            e.str = tmpS;
+        } else {
+            str = e.str = null;
+        }
+    }
+    
     void postProcess(boolean complex, boolean complexOk,
                      boolean matrix, boolean matrixOk,
                      boolean hasUnit, boolean unitOk, long unit2) {

@@ -1366,10 +1366,7 @@ public final class CalcEngine
     }
     
     private void xchgSt(int n) {
-        ComplexMatrixElement tmp = stack[0];
-        stack[0] = stack[n];
-        stack[n] = tmp;
-
+        stack[0].xchg(stack[n], true);
         repaint(n+1);
     }
 
@@ -2428,10 +2425,7 @@ public final class CalcEngine
             case XCHGMEM:
                 matrixOk = unitOk = true;
                 allocMem();
-                tmp = stack[0];
-                stack[0] = mem[param];
-                mem[param] = tmp;
-                mem[param].str = null;
+                stack[0].xchg(mem[param], false);
                 if (monitorMode == MONITOR_MEM) {
                     repaintAll();
                 }
