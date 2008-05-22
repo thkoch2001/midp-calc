@@ -124,6 +124,11 @@ midp1/Calc.jad: Makefile
 	echo "MicroEdition-Profile: MIDP-1.0"                    >> $@
 	echo "MicroEdition-Configuration: CLDC-1.0"              >> $@
 	echo "MIDlet-1: Calc, /resources/Calc.png, midpcalc.Calc" >> $@
+	echo "iDEN-MIDP-KEY-LEFT: -3"                            >> $@
+	echo "iDEN-MIDP-KEY-RIGHT: -4"                           >> $@
+	echo "iDEN-MIDP-KEY-UP: -1"                              >> $@
+	echo "iDEN-MIDP-KEY-DOWN: -2"                            >> $@
+	echo "iDEN-MIDP-KEY-OK: -5"                              >> $@
 
 midp2/CalcMIDP2.jad: Makefile
 	echo "MIDlet-Name: Calc"                                 >  $@
@@ -139,6 +144,11 @@ midp2/CalcMIDP2.jad: Makefile
 	echo "MicroEdition-Profile: MIDP-2.0"                    >> $@
 	echo "MicroEdition-Configuration: CLDC-1.0"              >> $@
 	echo "MIDlet-1: Calc, /resources/Calc.png, midpcalc.Calc" >> $@
+	echo "iDEN-MIDP-KEY-LEFT: -3"                            >> $@
+	echo "iDEN-MIDP-KEY-RIGHT: -4"                           >> $@
+	echo "iDEN-MIDP-KEY-UP: -1"                              >> $@
+	echo "iDEN-MIDP-KEY-DOWN: -2"                            >> $@
+	echo "iDEN-MIDP-KEY-OK: -5"                              >> $@
 
 nokia/CalcNokia.jad: Makefile
 	echo "MIDlet-Name: Calc"                                 >  $@
@@ -154,6 +164,11 @@ nokia/CalcNokia.jad: Makefile
 	echo "MicroEdition-Profile: MIDP-1.0"                    >> $@
 	echo "MicroEdition-Configuration: CLDC-1.0"              >> $@
 	echo "MIDlet-1: Calc, /resources/Calc.png, midpcalc.Calc" >> $@
+	echo "iDEN-MIDP-KEY-LEFT: -3"                            >> $@
+	echo "iDEN-MIDP-KEY-RIGHT: -4"                           >> $@
+	echo "iDEN-MIDP-KEY-UP: -1"                              >> $@
+	echo "iDEN-MIDP-KEY-DOWN: -2"                            >> $@
+	echo "iDEN-MIDP-KEY-OK: -5"                              >> $@
 
 midp1/target/Calc.jar: $(JAVAFILES) midp1/src/midpcalc/MyCanvas.java midp1/Calc.jad resources/Calc.png
 	rm -rf midp1/target
