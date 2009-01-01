@@ -373,6 +373,8 @@ public class UnitTest extends TestCase {
         check("a","->","SI","100","m²");
         check("psi","->","SI","6894.757293168361","Pa");
         check("st","->","US/Imp","14","lb");
+        check("l","/","km","0.000000000001","km²");
+        check("mi","/","gal","mi/gal");
     }
     
     public void dont_testFurtherUnitCalculations() {

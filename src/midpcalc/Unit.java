@@ -7,7 +7,7 @@ package midpcalc;
 //  Time:               s    h min d y             y = 365.25 d
 //  Charge:             C    e                     C = 6241509479607717888*** e
 //  Temperature:        K    °C °F
-//  Amount:             mol                        mol = 6.0221415e23
+//  Amount:             mol                        mol = 6.02214179e23
 //Derived units:
 //  Area:               m²   a da ha acre          acre = 43560 ft²
 //  Volume:             m³   l dl cl ml gal pt cup fl.oz (gal pt cup fl.oz)
@@ -34,8 +34,8 @@ public final class Unit {
     static final int N_DERIVED_UNITS = 26;
     static final int TEMP_TYPE = 5; // Temperature unit type index is 5
 
-    int[] power = new int[N_PRIMITIVE_UNITS];
-    int[] unit = new int[N_PRIMITIVE_UNITS];
+    byte[] power = new byte[N_PRIMITIVE_UNITS];
+    byte[] unit = new byte[N_PRIMITIVE_UNITS];
 
     boolean error;
     boolean overflow;
@@ -48,7 +48,7 @@ public final class Unit {
     static final class UnitDesc {
         final String name;
         final String nameNormalText;
-        final int system;
+        final byte system;
         final Real conversionFactor;
         final Real conversionOffset;
         final Unit convertsTo;
@@ -65,6 +65,12 @@ public final class Unit {
         UnitDesc(String name, String nameNormalText, int system, Unit convertsTo) {
             this(name, nameNormalText, system, convertsTo, Real.ONE, Real.ZERO);
         }
+        UnitDesc(String name, int system, Unit convertsTo, long conversionFactor) {
+            this(name, system, convertsTo, new Real(conversionFactor));
+        }
+        UnitDesc(String name, int system, Unit convertsTo, int convFacE, long convFacM) {
+            this(name, system, convertsTo, new Real(0, convFacE, convFacM));
+        }
         UnitDesc(String name, int system, Unit convertsTo, Real conversionFactor) {
             this(name, null, system, convertsTo, conversionFactor, Real.ZERO);
         }
@@ -76,7 +82,7 @@ public final class Unit {
                  Unit convertsTo, Real conversionFactor, Real conversionOffset) {
             this.name = name;
             this.nameNormalText = nameNormalText;
-            this.system = system;
+            this.system = (byte)system;
             this.conversionFactor = conversionFactor;
             this.conversionOffset = conversionOffset;
             this.convertsTo = convertsTo;
@@ -103,41 +109,41 @@ public final class Unit {
     // Primitive, simple (non-composite) units
     private static final UnitDesc[] massUnits = new UnitDesc[] {
         new UnitDesc("kg",  SI|BASE),
-        new UnitDesc("g",   SI,       kg, new Real(0, 0x3ffffff6, 0x4189374bc6a7ef9eL /*1e-3*/)),
-        new UnitDesc("t",   SI,       kg, new Real(1000)),
-        new UnitDesc("gr",  IMP,      kg, new Real(0, 0x3ffffff2, 0x43f253303203a99fL /*0.00006479891*/)),
-        new UnitDesc("oz",  IMP,      kg, new Real(0, 0x3ffffffa, 0x741ea12add794261L /*0.028349523125*/)),
-        new UnitDesc("lb",  IMP|BASE, kg, new Real(0, 0x3ffffffe, 0x741ea12add794261L /*0.45359237*/)),
-        new UnitDesc("st",  IMP,      kg, new Real(0, 0x40000002, 0x659acd0581ca1a15L /*6.35029318*/)),
-        new UnitDesc("ton", IMP,      kg, new Real(0, 0x40000009, 0x7165e963dc486ad3L /*907.18474*/)),
-        new UnitDesc("`ton`",IMP,     kg, new Real(0, 0x40000009, 0x7f018046e23ca09aL /*1016.0469088*/)),
-        new UnitDesc("u",   SI,       kg, new Real(0, 0x3fffffa7, 0x41c7dd268f7c7292L /*1.660538782e-27*/)),
+        new UnitDesc("g",   SI,       kg, 0x3ffffff6, 0x4189374bc6a7ef9eL /*1e-3*/),
+        new UnitDesc("t",   SI,       kg, 1000),
+        new UnitDesc("gr",  IMP,      kg, 0x3ffffff2, 0x43f253303203a99fL /*0.00006479891*/),
+        new UnitDesc("oz",  IMP,      kg, 0x3ffffffa, 0x741ea12add794261L /*0.028349523125*/),
+        new UnitDesc("lb",  IMP|BASE, kg, 0x3ffffffe, 0x741ea12add794261L /*0.45359237*/),
+        new UnitDesc("st",  IMP,      kg, 0x40000002, 0x659acd0581ca1a15L /*6.35029318*/),
+        new UnitDesc("ton", IMP,      kg, 0x40000009, 0x7165e963dc486ad3L /*907.18474*/),
+        new UnitDesc("`ton`",IMP,     kg, 0x40000009, 0x7f018046e23ca09aL /*1016.0469088*/),
+        new UnitDesc("u",   SI,       kg, 0x3fffffa7, 0x41c7dd268f7c7292L /*1.660538782e-27*/),
     };
     private static final UnitDesc[] lengthUnits = new UnitDesc[] {
         new UnitDesc("m",   SI|BASE),
-        new UnitDesc("Å",   SI,       m, new Real(0, 0x3fffffde, 0x6df37f675ef6eadfL /*1e-10*/)),
-        new UnitDesc("mm",  SI,       m, new Real(0, 0x3ffffff6, 0x4189374bc6a7ef9eL /*1e-3*/)),
+        new UnitDesc("Å",   SI,       m, 0x3fffffde, 0x6df37f675ef6eadfL /*1e-10*/),
+        new UnitDesc("mm",  SI,       m, 0x3ffffff6, 0x4189374bc6a7ef9eL /*1e-3*/),
         new UnitDesc("cm",  SI,       m, Real.PERCENT),
-        new UnitDesc("km",  SI,       m, new Real(1000)),
-        new UnitDesc("in",  IMP,      m, new Real(0, 0x3ffffffa, 0x6809d495182a9931L /*0.0254*/)),
-        new UnitDesc("ft",  IMP|BASE, m, new Real(0, 0x3ffffffe, 0x4e075f6fd21ff2e5L /*0.3048*/)),
-        new UnitDesc("yd",  IMP,      m, new Real(0, 0x3fffffff, 0x750b0f27bb2fec57L /*0.9144*/)),
-        new UnitDesc("mi",  IMP,      m, new Real(0, 0x4000000a, 0x6495810624dd2f1bL /*1609.344*/)),
-        new UnitDesc("NM",  SI,       m, new Real(1852)),
-        new UnitDesc("AU",  SI,       m, new Real(149597870691L)),
-        new UnitDesc("ly",  SI,       m, new Real(9460730472580800L)),
-        new UnitDesc("pc",  SI,       m, new Real(0, 0x40000036, 0x6da012f9404b0988L /*3.085677581305729e+16*/)),
+        new UnitDesc("km",  SI,       m, 1000),
+        new UnitDesc("in",  IMP,      m, 0x3ffffffa, 0x6809d495182a9931L /*0.0254*/),
+        new UnitDesc("ft",  IMP|BASE, m, 0x3ffffffe, 0x4e075f6fd21ff2e5L /*0.3048*/),
+        new UnitDesc("yd",  IMP,      m, 0x3fffffff, 0x750b0f27bb2fec57L /*0.9144*/),
+        new UnitDesc("mi",  IMP,      m, 0x4000000a, 0x6495810624dd2f1bL /*1609.344*/),
+        new UnitDesc("NM",  SI,       m, 1852),
+        new UnitDesc("AU",  SI,       m, 149597870691L),
+        new UnitDesc("ly",  SI,       m, 9460730472580800L),
+        new UnitDesc("pc",  SI,       m, 0x40000036, 0x6da012f9404b0988L /*3.085677581305729e+16*/),
     };
     private static final UnitDesc[] timeUnits = new UnitDesc[] {
         new UnitDesc("s",   SI|IMP|BASE),
-        new UnitDesc("min", SI|IMP,   s, new Real(60)),
-        new UnitDesc("h",   SI|IMP,   s, new Real(3600)),
-        new UnitDesc("d",   SI|IMP,   s, new Real(86400)),
-        new UnitDesc("y",   SI|IMP,   s, new Real(31557600)),
+        new UnitDesc("min", SI|IMP,   s, 60),
+        new UnitDesc("h",   SI|IMP,   s, 3600),
+        new UnitDesc("d",   SI|IMP,   s, 86400),
+        new UnitDesc("y",   SI|IMP,   s, 31557600),
     };
     private static final UnitDesc[] chargeUnits = new UnitDesc[] {
         new UnitDesc("C",   SI|IMP|BASE),
-        new UnitDesc("e",   SI|IMP,   C, new Real(0, 0x3fffffc1, 0x5e9368129b6bd383L /*1.602176487e-19*/)),
+        new UnitDesc("e",   SI|IMP,   C, 0x3fffffc1, 0x5e9368129b6bd383L /*1.602176487e-19*/),
     };
     private static final UnitDesc[] amountUnits = new UnitDesc[] {
         new UnitDesc("mol", SI|IMP|BASE),
@@ -152,43 +158,43 @@ public final class Unit {
     // Alternative primitive units (composite units with conversionFactor != 1)
     private static final UnitDesc[] alternativeAreaUnits = new UnitDesc[] {
         new UnitDesc("a",       SI,  m2, Real.HUNDRED),
-        new UnitDesc("da",      SI,  m2, new Real(1000)),
-        new UnitDesc("ha",      SI,  m2, new Real(10000)),
-        new UnitDesc("acre",    IMP, m2, new Real(0, 0x4000000b, 0x7e76d9f3fcbc7ea1L /*4046.8564224*/)),
+        new UnitDesc("da",      SI,  m2, 1000),
+        new UnitDesc("ha",      SI,  m2, 10000),
+        new UnitDesc("acre",    IMP, m2, 0x4000000b, 0x7e76d9f3fcbc7ea1L /*4046.8564224*/),
     };
     private static final UnitDesc[] alternativeVolumeUnits = new UnitDesc[] {
-        new UnitDesc("l",       SI,  m3, new Real(0, 0x3ffffff6, 0x4189374bc6a7ef9eL /*1e-3*/)),
-        new UnitDesc("ml",      SI,  m3, new Real(0, 0x3fffffec, 0x431bde82d7b634dbL /*1e-6*/)),
-        new UnitDesc("cl",      SI,  m3, new Real(0, 0x3fffffef, 0x53e2d6238da3c212L /*1e-5*/)),
-        new UnitDesc("dl",      SI,  m3, new Real(0, 0x3ffffff2, 0x68db8bac710cb296L /*1e-4*/)),
-        new UnitDesc("fl.oz",   IMP, m3, new Real(0, 0x3ffffff0, 0x7c0a55e836d246a4L /*0.0000295735295625*/)),
-        new UnitDesc("cup",     IMP, m3, new Real(0, 0x3ffffff3, 0x7c0a55e836d246a4L /*0.0002365882365*/)),
-        new UnitDesc("pt",      IMP, m3, new Real(0, 0x3ffffff4, 0x7c0a55e836d246a4L /*0.000473176473*/)),
-        new UnitDesc("gal",     IMP, m3, new Real(0, 0x3ffffff7, 0x7c0a55e836d246a4L /*0.003785411784*/)),
-        new UnitDesc("`fl.oz`", IMP, m3, new Real(0, 0x3ffffff0, 0x772c4b265dd18634L /*0.0000284130625*/)),
-        new UnitDesc("`cup`",   IMP, m3, new Real(0, 0x3ffffff3, 0x772c4b265dd18634L /*0.0002273045*/)),
-        new UnitDesc("`pt`",    IMP, m3, new Real(0, 0x3ffffff5, 0x4a7baef7faa2f3e0L /*0.00056826125*/)),
-        new UnitDesc("`gal`",   IMP, m3, new Real(0, 0x3ffffff8, 0x4a7baef7faa2f3e0L /*0.00454609*/)),
+        new UnitDesc("l",       SI,  m3, 0x3ffffff6, 0x4189374bc6a7ef9eL /*1e-3*/),
+        new UnitDesc("ml",      SI,  m3, 0x3fffffec, 0x431bde82d7b634dbL /*1e-6*/),
+        new UnitDesc("cl",      SI,  m3, 0x3fffffef, 0x53e2d6238da3c212L /*1e-5*/),
+        new UnitDesc("dl",      SI,  m3, 0x3ffffff2, 0x68db8bac710cb296L /*1e-4*/),
+        new UnitDesc("fl.oz",   IMP, m3, 0x3ffffff0, 0x7c0a55e836d246a4L /*0.0000295735295625*/),
+        new UnitDesc("cup",     IMP, m3, 0x3ffffff3, 0x7c0a55e836d246a4L /*0.0002365882365*/),
+        new UnitDesc("pt",      IMP, m3, 0x3ffffff4, 0x7c0a55e836d246a4L /*0.000473176473*/),
+        new UnitDesc("gal",     IMP, m3, 0x3ffffff7, 0x7c0a55e836d246a4L /*0.003785411784*/),
+        new UnitDesc("`fl.oz`", IMP, m3, 0x3ffffff0, 0x772c4b265dd18634L /*0.0000284130625*/),
+        new UnitDesc("`cup`",   IMP, m3, 0x3ffffff3, 0x772c4b265dd18634L /*0.0002273045*/),
+        new UnitDesc("`pt`",    IMP, m3, 0x3ffffff5, 0x4a7baef7faa2f3e0L /*0.00056826125*/),
+        new UnitDesc("`gal`",   IMP, m3, 0x3ffffff8, 0x4a7baef7faa2f3e0L /*0.00454609*/),
     };
     private static final UnitDesc[] alternativeAccelerationUnits = new UnitDesc[] {
-        new UnitDesc("`g`", NONE, m_s2, new Real(0, 0x40000003, 0x4e7404ea4a8c154dL /*9.80665*/)),
+        new UnitDesc("`g`", NONE, m_s2, 0x40000003, 0x4e7404ea4a8c154dL /*9.80665*/),
     };
     private static final UnitDesc[] alternativePressureUnits = new UnitDesc[] {
-        new UnitDesc("bar",  SI, Pa, new Real(100000)),
-        new UnitDesc("atm",  SI, Pa, new Real(101325)),
-        new UnitDesc("mmHg", SI, Pa, new Real(0, 0x40000007, 0x42a943fda60892ccL /*133.322387415*/)),
+        new UnitDesc("bar",  SI, Pa, 100000),
+        new UnitDesc("atm",  SI, Pa, 101325),
+        new UnitDesc("mmHg", SI, Pa, 0x40000007, 0x42a943fda60892ccL /*133.322387415*/),
     };
     private static final UnitDesc[] alternativeEnergyUnits = new UnitDesc[] {
-        new UnitDesc("kJ",   SI,  J, new Real(1000)),
-        new UnitDesc("cal",  SI,  J, new Real(0, 0x40000002, 0x42fd21ff2e48e8a7L /*4.1868*/)),
-        new UnitDesc("kcal", SI,  J, new Real(0, 0x4000000c, 0x416b333333333333L /*4186.8*/)),
-        new UnitDesc("Btu",  IMP, J, new Real(0, 0x4000000a, 0x41f0e4c5b784bc12L /*1055.05585262*/)),
-        new UnitDesc("eV",   SI,  J, new Real(0, 0x3fffffc1, 0x5e9368129b6bd383L /*1.602176487e-19*/)),
+        new UnitDesc("kJ",   SI,  J, 1000),
+        new UnitDesc("cal",  SI,  J, 0x40000002, 0x42fd21ff2e48e8a7L /*4.1868*/),
+        new UnitDesc("kcal", SI,  J, 0x4000000c, 0x416b333333333333L /*4186.8*/),
+        new UnitDesc("Btu",  IMP, J, 0x4000000a, 0x41f0e4c5b784bc12L /*1055.05585262*/),
+        new UnitDesc("eV",   SI,  J, 0x3fffffc1, 0x5e9368129b6bd383L /*1.602176487e-19*/),
     };
     private static final UnitDesc[] alternativePowerUnits = new UnitDesc[] {
-        new UnitDesc("kW", SI,  W, new Real(1000)),
-        new UnitDesc("MW", SI,  W, new Real(1000000)),
-        new UnitDesc("hp", IMP, W, new Real(0, 0x40000009, 0x5d36655916a80304L /*745.69987158227022*/)),
+        new UnitDesc("kW", SI,  W, 1000),
+        new UnitDesc("MW", SI,  W, 1000000),
+        new UnitDesc("hp", IMP, W, 0x40000009, 0x5d36655916a80304L /*745.69987158227022*/),
     };
     // Derived (non-primitive) units (composite units with conversionFactor == 1)
     private static final UnitDesc[] derivedSpeedUnits = new UnitDesc[] {
@@ -534,7 +540,7 @@ public final class Unit {
     }
     public Unit set(int unitType, int unit, int power) {
         this.power[unitType] += power;
-        this.unit[unitType] = unit;
+        this.unit[unitType] = (byte)unit;
         return this;
     }
 
@@ -559,11 +565,11 @@ public final class Unit {
             if (u == 0) {
                 power[unitType] = unit[unitType] = 0;
             } else {
-                unit[unitType] = u-1;
+                unit[unitType] = (byte)(u-1);
                 p = (p<<(32-pBits))>>(32-pBits);
                 if (p >= 0)
                     p++;
-                power[unitType] = p;
+                power[unitType] = (byte)p;
             }
         }
         error = (a & 1) != 0;
@@ -623,10 +629,10 @@ public final class Unit {
         return nSI >= nIMP ? SI : IMP;
     }
 
-    private int baseUnit(int unitType, int system) {
+    private byte baseUnit(int unitType, int system) {
         if (system != SI) {
             // Find imperial base unit
-            for (int unit=0; unit<allUnits[unitType].length; unit++) {
+            for (byte unit=0; unit<allUnits[unitType].length; unit++) {
                 if ((allUnits[unitType][unit].system & (IMP|BASE)) == (IMP|BASE))
                     return unit;
             }
@@ -670,30 +676,30 @@ public final class Unit {
                             Real conversionFactor, int requiredPower) {
         UnitDesc convertTo = allUnits[compositeType][compositeUnit];
         
-        int factor = 0;
+        int pow = 0;
         if (requiredPower != 0) {
-            factor = requiredPower - power[compositeType];
+            pow = requiredPower - power[compositeType];
         } else {
-            int maxFactor = -100;
-            int minFactor = 100;
+            int maxPow = -100;
+            int minPow = 100;
             for (int unitType=0; unitType<N_PRIMITIVE_UNITS; unitType++) {
                 if (convertTo.convertsTo.power[unitType] != 0) {
-                    int f = power[unitType]/convertTo.convertsTo.power[unitType];
-                    if (f > maxFactor) maxFactor = f;
-                    if (f < minFactor) minFactor = f;
+                    int p = power[unitType]/convertTo.convertsTo.power[unitType];
+                    if (p > maxPow) maxPow = p;
+                    if (p < minPow) minPow = p;
                 }
             }
-            if (minFactor > 0)
-                factor = minFactor;
-            if (maxFactor < 0)
-                factor = maxFactor;
+            if (minPow > 0)
+                pow = minPow;
+            if (maxPow < 0)
+                pow = maxPow;
         }
-        if (factor == 0)
+        if (pow == 0)
             return false;
 
         for (int unitType=0; unitType<N_SIMPLE_PRIMITIVE_UNITS; unitType++) {
             if (convertTo.convertsTo.power[unitType] != 0) {
-                int pInc = convertTo.convertsTo.power[unitType]*factor;
+                int pInc = convertTo.convertsTo.power[unitType]*pow;
                 if (unit[unitType] != 0) {
                     rTmp.assign(allUnits[unitType][unit[unitType]].conversionFactor);
                     if (pInc != 1)
@@ -705,11 +711,11 @@ public final class Unit {
         }
 
         rTmp.assign(convertTo.conversionFactor);
-        if (factor != 1)
-            rTmp.pow(factor);
+        if (pow != 1)
+            rTmp.pow(pow);
         conversionFactor.div(rTmp);
-        power[compositeType] += factor;
-        unit[compositeType] = compositeUnit;
+        power[compositeType] += pow;
+        unit[compositeType] = (byte)compositeUnit;
         return true;
     }
     
@@ -734,17 +740,17 @@ public final class Unit {
         // A unit is fully convertible to another if:
         // 1) Both units, when decomposed into simple primitive units, have all
         //    units in a fixed ratio relative to each other
-        // 2) The all primitive units (simple and composite) in the unit converted to
+        // 2) All primitive units (simple and composite) in the converted unit
         //    must be divisible by the denominator of the ratio
 
         int numerator = 0;
         int denominator = 0;
         for (int simple=0; simple<N_SIMPLE_PRIMITIVE_UNITS; simple++) {
-            int d = power[simple];
-            int n = a.power[simple];
+            int n = power[simple];
+            int d = a.power[simple];
             for (int composite=N_SIMPLE_PRIMITIVE_UNITS; composite<N_PRIMITIVE_UNITS; composite++) {
-                d += allUnits[composite][0].convertsTo.power[simple] * power[composite];
-                n += allUnits[composite][0].convertsTo.power[simple] * a.power[composite];
+                n += allUnits[composite][0].convertsTo.power[simple] * power[composite];
+                d += allUnits[composite][0].convertsTo.power[simple] * a.power[composite];
             }
             if ((n == 0) ^ (d == 0))
                 return 0;
@@ -762,7 +768,7 @@ public final class Unit {
         if (numerator%5 == 0 && denominator%5 == 0) { numerator /= 5; denominator /= 5; }
         if (denominator < 0)                        { numerator *=-1; denominator *=-1; }
         for (int unitType=0; unitType<N_PRIMITIVE_UNITS; unitType++) {
-            if (a.power[unitType] % denominator != 0)
+            if (power[unitType] % denominator != 0)
                 return 0;
         }
         return (numerator<<16)+denominator;
@@ -1158,7 +1164,7 @@ public final class Unit {
             return;
         }
         for (int unitType=0; unitType<N_PRIMITIVE_UNITS; unitType++) {
-            power[unitType] = -power[unitType];
+            power[unitType] = (byte)(-power[unitType]);
         }
     }
 
