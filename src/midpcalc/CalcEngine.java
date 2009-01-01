@@ -319,6 +319,7 @@ public final class CalcEngine
     // Special commands
     public static final int FINALIZE       = 400;
     public static final int FREE_MEM       = 401;
+    public static final int VERSION        = 402;
 
     public static final int STACK_SIZE     = 16;
     public static final int MEM_SIZE       = 16;
@@ -2052,7 +2053,6 @@ public final class CalcEngine
     }
 
     private void unaryComplexMatrix(int cmd, int param) {
-        ComplexMatrixElement tmp;
         ComplexMatrixElement x = stack[0];
         boolean complex  = x.isComplex();
         boolean matrix   = x.isMatrix();
@@ -4269,6 +4269,8 @@ public final class CalcEngine
                 stack[1].r.assign(Runtime.getRuntime().totalMemory());
                 break;
 	
+            case VERSION: push(0x40000002,0x4800000000000000L); break;
+
             case PROG_APPEND:
                 if (programs.isEmpty(param))
                     break; // cannot modify a nonexistent program
