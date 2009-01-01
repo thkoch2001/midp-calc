@@ -243,7 +243,7 @@ public final class CalcCanvas
         }
         if (!canToggleFullScreen()) {
             // Remove the fullscreen command.
-            Menu.systemMenu.subMenu[3] = null;
+            Menu.systemMenu.setSubMenu(3, null);
         }
 
         setCommands("ENTER","+");
@@ -575,17 +575,17 @@ public final class CalcCanvas
     {
         if (menu==null)
             return;
-        boolean bold = (menu.subMenu == null &&
-            (menu.flags & CmdDesc.SUBMENU_REQUIRED) == 0);
+        boolean bold = (!menu.hasSubMenu() &&
+            (menu.getFlags() & CmdDesc.SUBMENU_REQUIRED) == 0);
         menuFont.setBold(bold);
-        int width = menuFont.stringWidth(menu.label);
+        int width = menuFont.stringWidth(menu.getLabel());
         if ((anchor & Graphics.RIGHT) != 0)
             x -= width;
         else if ((anchor & Graphics.HCENTER) != 0)
             x -= width/2;
         if ((anchor & Graphics.BOTTOM) != 0)
             y -= menuFont.getHeight();
-        menuFont.drawString(g, x, y, menu.label);
+        menuFont.drawString(g, x, y, menu.getLabel());
     }
 
     private void drawMenu(Graphics g) {
@@ -601,9 +601,9 @@ public final class CalcCanvas
         g.setColor(c);
         menuFont.setColor(Colors.MENU+menuStackPtr, Colors.MENU_DARK+menuStackPtr);
         int titleStackPtr = menuStackPtr;
-        while ((menuStack[titleStackPtr].flags & CmdDesc.TITLE_SKIP)!=0)
+        while ((menuStack[titleStackPtr].getFlags() & CmdDesc.TITLE_SKIP)!=0)
             titleStackPtr--;
-        String label = menuStack[titleStackPtr].label;
+        String label = menuStack[titleStackPtr].getLabel();
         menuFont.setBold(false);
         menuFont.drawString(g, x+2, y-menuFont.getHeight(), label);
         // Draw 3D menu background
@@ -621,31 +621,29 @@ public final class CalcCanvas
         // Draw menu items
         g.setColor(Colors.c[Colors.BLACK]);
         menuFont.setColor(Colors.BLACK, Colors.MENU+menuStackPtr);
-        Menu [] subMenu = menuStack[menuStackPtr].subMenu;
-        if (subMenu.length>=1) {
-            drawMenuItem(g,subMenu[0],x+w/2,y+3,Graphics.TOP|Graphics.HCENTER);
+        Menu menu = menuStack[menuStackPtr];
+        if (menu.getSubMenu(0) != null) {
+            drawMenuItem(g,menu.getSubMenu(0),x+w/2,y+3,Graphics.TOP|Graphics.HCENTER);
         }
-        if (subMenu.length>=2) {
-            drawMenuItem(g,subMenu[1],x+3,ym,TOP_LEFT);
+        if (menu.getSubMenu(1) != null) {
+            drawMenuItem(g,menu.getSubMenu(1),x+3,ym,TOP_LEFT);
         }
-        if (subMenu.length>=3) {
-            drawMenuItem(g,subMenu[2],x+w-3,ym,Graphics.TOP|Graphics.RIGHT);
+        if (menu.getSubMenu(2) != null) {
+            drawMenuItem(g,menu.getSubMenu(2),x+w-3,ym,Graphics.TOP|Graphics.RIGHT);
         }
-        if (subMenu.length>=4) {
-            drawMenuItem(g,subMenu[3],x+w/2,y+h-3,
-                         Graphics.BOTTOM|Graphics.HCENTER);
-        }
-        if (subMenu.length>=5 && subMenu[4]!=null) {
-            drawMenuItem(g,subMenu[4],x+w/2,ym,
+        if (menu.getSubMenu(4) != null) {
+            drawMenuItem(g,menu.getSubMenu(4),x+w/2,ym,
                          Graphics.TOP|Graphics.HCENTER);
         } else {
             // Draw a small "joystick" in the center
-            y += h/2;
-            x += w/2;
             g.setColor(Colors.c[Colors.MENU+menuStackPtr]/4*3);
-            g.fillRect(x-1,y-10,3,21);
-            g.fillRect(x-10,y-1,21,3);
-            g.fillArc(x-5,y-5,11,11,0,360);
+            g.fillRect(x+w/2-1,y+h/2-10,3,21);
+            g.fillRect(x+w/2-10,y+h/2-1,21,3);
+            g.fillArc(x+w/2-5,y+h/2-5,11,11,0,360);
+        }
+        if (menu.getSubMenu(3) != null) {
+            drawMenuItem(g,menu.getSubMenu(3),x+w/2,y+h-3,
+                         Graphics.BOTTOM|Graphics.HCENTER);
         }
     }
     
@@ -910,43 +908,43 @@ public final class CalcCanvas
             // On entering the menu, switch math/trig menus with bit-op
             // menus if not base-10
             if (calc.format.base == 10) {
-                Menu.menu.subMenu[1] = Menu.math;
-                Menu.menu.subMenu[2] = Menu.trig;
+                Menu.menu.setSubMenu(1, Menu.math);
+                Menu.menu.setSubMenu(2, Menu.trig);
                 // Also switch coord menu with cplx menu if x or y are complex
                 if (calc.hasComplexArgs()) {
-                    Menu.trig.subMenu[4].subMenu[3] = Menu.cplxMenu;
+                    Menu.trig.getSubMenu(4).setSubMenu(3, Menu.cplxMenu);
                 } else {
-                    Menu.trig.subMenu[4].subMenu[3] = Menu.coordMenu;
+                    Menu.trig.getSubMenu(4).setSubMenu(3, Menu.coordMenu);
                 }
             } else {
-                Menu.menu.subMenu[1] = Menu.bitOp;
-                Menu.menu.subMenu[2] = Menu.bitMath;
+                Menu.menu.setSubMenu(1, Menu.bitOp);
+                Menu.menu.setSubMenu(2, Menu.bitMath);
             }
             // Switch between prog1 and prog2 if recording a program
             // and between monitor off and prog monitor
             if (calc.progRecording) {
-                Menu.menu.subMenu[4].subMenu[1] = Menu.prog2;
-                Menu.menu.subMenu[4].subMenu[3].subMenu[4] = Menu.monitorProgMenu;
+                Menu.menu.getSubMenu(4).setSubMenu(1, Menu.prog2);
+                Menu.menu.getSubMenu(4).getSubMenu(3).setSubMenu(4, Menu.monitorProgMenu);
                 // Cannot use NO_PROG commands during program recording
                 if (repeatedMenuItem!=null &&
-                    (repeatedMenuItem.flags & CmdDesc.NO_PROG)!=0)
+                    (repeatedMenuItem.getFlags() & CmdDesc.NO_PROG)!=0)
                     repeatedMenuItem = null;
             } else {
-                Menu.menu.subMenu[4].subMenu[1] = Menu.prog1;        
-                Menu.menu.subMenu[4].subMenu[3].subMenu[4] = Menu.monitorOffMenu;
+                Menu.menu.getSubMenu(4).setSubMenu(1, Menu.prog1);        
+                Menu.menu.getSubMenu(4).getSubMenu(3).setSubMenu(4, Menu.monitorOffMenu);
             }
             // Change basicMenu[4] to enterMonitor if monitoring or
             // repeated item
             if (actualMonitorRows() > 0)
-                Menu.basicMenu.subMenu[4] = Menu.enterMonitor;
+                Menu.basicMenu.setSubMenu(4, Menu.enterMonitor);
             else
-                Menu.basicMenu.subMenu[4] = repeatedMenuItem;
+                Menu.basicMenu.setSubMenu(4, repeatedMenuItem);
         }
 
         if (menuStackPtr < 0 && menuIndex < 4) {
             // Go directly to submenu
             menuStack[0] = Menu.menu;
-            menuStack[1] = Menu.menu.subMenu[menuIndex];
+            menuStack[1] = Menu.menu.getSubMenu(menuIndex);
             menuStackPtr = 1;
             numRepaintLines = 0; // Force repaint of menu
         } else if (menuStackPtr < 0) {
@@ -954,42 +952,39 @@ public final class CalcCanvas
             menuStack[0] = Menu.menu;
             menuStackPtr = 0;
             numRepaintLines = 0; // Force repaint of menu
-        } else if (menuIndex < menuStack[menuStackPtr].subMenu.length) {
-            Menu subItem = menuStack[menuStackPtr].subMenu[menuIndex];
-            if (subItem == null) {
-                ; // NOP
-            } else if (subItem.subMenu != null) {
+        } else if (menuStack[menuStackPtr].getSubMenu(menuIndex) != null) {
+            Menu subItem = menuStack[menuStackPtr].getSubMenu(menuIndex);
+            if (subItem.hasSubMenu()) {
                 // Open submenu
                 menuStackPtr++;
                 menuStack[menuStackPtr] = subItem;
                 // Set correct labels
-                if (subItem == Menu.progMenu.subMenu[4])
+                if (subItem == Menu.progMenu.getSubMenu(4))
                     for (int i=0; i<5; i++)
-                        Menu.progMenu.subMenu[4].subMenu[i].label =
-                            calc.progLabel(i+4);
+                        Menu.progMenu.getSubMenu(4).getSubMenu(i).setLabel(calc.progLabel(i+4));
                 numRepaintLines = 0; // Force repaint of menu
-            } else if ((subItem.flags & CmdDesc.SUBMENU_REQUIRED)!=0) {
+            } else if ((subItem.getFlags() & CmdDesc.SUBMENU_REQUIRED)!=0) {
                 // Open number/finance/program submenu
                 Menu sub =
-                    (subItem.flags&CmdDesc.NUMBER_REQUIRED )!=0 ? Menu.numberMenu :
-                    (subItem.flags&CmdDesc.FINANCE_REQUIRED)!=0 ? Menu.financeMenu :
-                    (subItem.flags&CmdDesc.FONT_REQUIRED)   !=0 ? Menu.fontMenu :
-                    (subItem.flags&CmdDesc.PROG_REQUIRED)   !=0 ? Menu.progMenu :
-                    (subItem.flags&CmdDesc.UNIT_REQUIRED)   !=0 ? Menu.unitMenu :
+                    (subItem.getFlags()&CmdDesc.NUMBER_REQUIRED )!=0 ? Menu.numberMenu :
+                    (subItem.getFlags()&CmdDesc.FINANCE_REQUIRED)!=0 ? Menu.financeMenu :
+                    (subItem.getFlags()&CmdDesc.FONT_REQUIRED)   !=0 ? Menu.fontMenu :
+                    (subItem.getFlags()&CmdDesc.PROG_REQUIRED)   !=0 ? Menu.progMenu :
+                    (subItem.getFlags()&CmdDesc.UNIT_REQUIRED)   !=0 ? Menu.unitMenu :
                    Menu.unitConvertMenu;
                 // Set correct labels
                 if (sub == Menu.progMenu)
                     for (int i=0; i<4; i++)
-                        Menu.progMenu.subMenu[i].label = calc.progLabel(i);
-                menuCommand = subItem.command; // Save current command
+                        Menu.progMenu.getSubMenu(i).setLabel(calc.progLabel(i));
+                menuCommand = subItem.getCommand(); // Save current command
                 menuItem = subItem;
-                sub.label = subItem.label; // Set correct label
-                sub.flags = subItem.flags; // Set correct flags
+                sub.setLabel(subItem.getLabel()); // Set correct label
+                sub.setFlags(subItem.getFlags()); // Set correct flags
                 menuStackPtr++;
                 menuStack[menuStackPtr] = sub;
                 numRepaintLines = 0; // Force repaint of menu
             } else {
-                int command = subItem.command;
+                int command = subItem.getCommand();
                 if (command == EXIT) {
                     // Internal exit command
                     midlet.exitRequested();
@@ -1019,7 +1014,7 @@ public final class CalcCanvas
                         calc.command(menuCommand,number);
                     }
                 } else if (command == UNIT) {
-                    calc.command(menuCommand, ((subItem.param & 0xff00) << 8) | (subItem.param & 0xff));
+                    calc.command(menuCommand, ((subItem.getParam() & 0xff00) << 8) | (subItem.getParam() & 0xff));
                 } else if (command >= CalcEngine.AVG_DRAW &&
                            command <= CalcEngine.POW_DRAW) {
                     menuCommand = command;
@@ -1035,15 +1030,15 @@ public final class CalcCanvas
                     calc.command(command,0);
                 }
 
-                if ((subItem.flags & CmdDesc.NO_REPEAT)==0) {
+                if ((subItem.getFlags() & CmdDesc.NO_REPEAT)==0) {
                     // Repeat this command or parent in basicMenu[4]
                     Menu item = subItem;
-                    while ((item.flags & CmdDesc.REPEAT_PARENT)!=0)
+                    while ((item.getFlags() & CmdDesc.REPEAT_PARENT)!=0)
                         item = menuStack[menuStackPtr--];
-                    if ((item.flags & CmdDesc.SUBMENU_REQUIRED)!=0)
+                    if ((item.getFlags() & CmdDesc.SUBMENU_REQUIRED)!=0)
                         // Switch from submenu to actual menu item
                         item = menuItem;
-                    if ((item.flags & CmdDesc.NO_REPEAT)==0)
+                    if ((item.getFlags() & CmdDesc.NO_REPEAT)==0)
                         repeatedMenuItem = item;
                 }
 
@@ -1091,12 +1086,12 @@ public final class CalcCanvas
 
                             // Repeat menu or parent in basicMenu[4]
                             Menu item = menuStack[menuStackPtr--];
-                            while ((item.flags & CmdDesc.REPEAT_PARENT)!=0)
+                            while ((item.getFlags() & CmdDesc.REPEAT_PARENT)!=0)
                                 item = menuStack[menuStackPtr--];
-                            if ((item.flags & CmdDesc.SUBMENU_REQUIRED)!=0)
+                            if ((item.getFlags() & CmdDesc.SUBMENU_REQUIRED)!=0)
                                 // Switch from submenu to actual menu item
                                 item = menuItem;
-                            if ((item.flags & CmdDesc.NO_REPEAT)==0)
+                            if ((item.getFlags() & CmdDesc.NO_REPEAT)==0)
                                 repeatedMenuItem = item;
 
                             menuStackPtr = -1;

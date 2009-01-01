@@ -1,5 +1,5 @@
 SHELL = /bin/sh
-VERSION = 4.01
+VERSION = 4.50
 SHORTVERSION = $(subst .,,$(VERSION))
 TARGETS = midp1/Calc.jad \
           midp1/target/Calc.jar \
@@ -31,6 +31,10 @@ JAVAC = javac -source 1.3 -target 1.3
 JAVAFILES =  src/midpcalc/Calc.java \
              src/midpcalc/CalcCanvas.java \
              src/midpcalc/Menu.java \
+             src/midpcalc/MenuCommand.java \
+             src/midpcalc/MenuUnitCmd.java \
+             src/midpcalc/MenuGeneralCmd.java \
+             src/midpcalc/SubMenu.java \
              src/midpcalc/CanvasAccess.java \
              src/midpcalc/CalcEngine.java \
              src/midpcalc/Element.java \
@@ -239,4 +243,5 @@ publish: $(TARGETS) midp-calc-$(VERSION).tgz midp-calc-$(VERSION)-src.tgz
 	@echo "Set Processor: Platform-Independent, File Type Source .gz, .gz"
 	@echo ""
 	@echo "Update entry at http://www.getjar.com/products/6371/Calc"
+	@echo "Update entry at http://www.heise.de/software/default.shtml?edit=51915&pswd=24b510f81414f2a8f9f6b9178729d612&lang=e"
 	@echo ""
