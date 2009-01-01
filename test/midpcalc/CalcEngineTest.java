@@ -141,7 +141,7 @@ public class CalcEngineTest extends TestCase {
     }
 
     private int findUnit(String unit) {
-        int tmp = Menu.findUnit(unit);
+        int tmp = MenuUnitCmd.findUnit(unit);
         return ((tmp & 0xff00) << 8) + (tmp & 0xff);
     }
 
@@ -212,6 +212,10 @@ public class CalcEngineTest extends TestCase {
         assertStackElement(i, doubleToString(n)+" "+unit);
     }
     
+    private void assertStackElement(int i, double re, double im, String unit) {
+        assertStackElement(i, complexToString(re,im)+" "+unit);
+    }
+    
     private void assertStackElement(int i, double [][] m) {
         for (int a=0; a<i; a++)
             cmd(ROLLDN);
@@ -272,6 +276,10 @@ public class CalcEngineTest extends TestCase {
     
     private void assertX(double n, String unit) {
         assertStackElement(0, n, unit);
+    }
+    
+    private void assertX(double re, double im, String unit) {
+        assertStackElement(0, re, im, unit);
     }
     
     private void assertX(double [][] m) {
@@ -628,6 +636,13 @@ public class CalcEngineTest extends TestCase {
         enter(1.5, "m");
         cmd(ADD);
         assertX(2.5+1.5, "m");
+        
+        enter(1, 2, "m");
+        enter(2.5, 1.5, "cm");
+        cmd(ADD);
+        assertX(1*100+2.5, 2*100+1.5, "cm");
+
+        leftoverStackElements = 2;
     }
 
     public void test_SUB() {
@@ -656,6 +671,13 @@ public class CalcEngineTest extends TestCase {
         enter(1.5, "m");
         cmd(SUB);
         assertX(2.5-1.5, "m");
+
+        enter(1, 2, "m");
+        enter(2.5, 2, "cm");
+        cmd(SUB);
+        assertX(1*100-2.5, 2*100-2, "cm");
+
+        leftoverStackElements = 2;
     }
 
     public void test_MUL() {
@@ -696,6 +718,13 @@ public class CalcEngineTest extends TestCase {
         enter(1.5, "m");
         cmd(MUL);
         assertX(2.5*1.5, "m²");
+
+        enter(1, 2, "m");
+        enter(2.5, 1.5, "cm");
+        cmd(MUL);
+        assertX(1*100*2.5-2*100*1.5, 1*100*1.5+2.5*2*100, "cm²");
+
+        leftoverStackElements = 2;
     }
 
     public void test_DIV() {
@@ -736,6 +765,13 @@ public class CalcEngineTest extends TestCase {
         enter(2, "m");
         cmd(DIV);
         assertX(2.5/2);
+
+        enter(1*100*2.5-2*100*1.5, 1*100*1.5+2.5*2*100, "cm");
+        enter(1, 2, "m");
+        cmd(DIV);
+        assertX(2.5, 1.5);
+
+        leftoverStackElements = 2;
     }
 
     public void test_NEG() {
@@ -832,6 +868,12 @@ public class CalcEngineTest extends TestCase {
         enter(4, "m²");
         cmd(SQRT);
         assertX(2, "m");
+
+        enter(2.5*2.5-1.5*1.5, 2*2.5*1.5, "m²");
+        cmd(SQRT);
+        assertX(2.5, 1.5, "m");
+
+        leftoverStackElements = 2;
     }
 
     public void test_PERCENT() {
@@ -910,7 +952,7 @@ public class CalcEngineTest extends TestCase {
         enter(5, "m");
         enter(10, "s");
         cmd(PERCENT_CHG);
-        assertX("100 "+Unit.ERR);
+        assertX(100, Unit.ERR);
 
         leftoverStackElements = 2;
     }
@@ -927,6 +969,13 @@ public class CalcEngineTest extends TestCase {
         type(4);
         cmd(YPOWX);
         assertX(-4, 0);
+
+        enter(-1);
+        enter(0.5);
+        cmd(YPOWX);
+        assertX(0, 1);
+
+        leftoverStackElements = 2;
     }
 
     public void test_YPOWX_matrix() {
@@ -987,6 +1036,13 @@ public class CalcEngineTest extends TestCase {
         type(3);
         cmd(XRTY);
         assertX(10, "m");
+
+        enter(-4, "m²");
+        type(2);
+        cmd(XRTY);
+        assertX(0, 2, "m");
+
+        leftoverStackElements = 2;
     }
 
     public void test_LN() {
@@ -1093,6 +1149,18 @@ public class CalcEngineTest extends TestCase {
         type(4);
         cmd(FACT);
         assertX(4*3*2*1);
+    }
+
+    public void test_FACT_complex() {
+        enter(0, 4);
+        cmd(FACT);
+        assertX("nan");
+    }
+
+    public void test_FACT_unit() {
+        enter(4, "m");
+        cmd(FACT);
+        assertX(4*3*2*1, Unit.ERR);
     }
 
     public void test_GAMMA() {
@@ -1222,11 +1290,32 @@ public class CalcEngineTest extends TestCase {
         assertX("0.7853981633974483");
     }
 
+    public void test_ATAN2_unit() {
+        enter(2, "m");
+        enter(200, "cm");
+        cmd(ATAN2);
+        assertX("0.7853981633974483");
+
+        enter(2, "m");
+        enter(2, "s");
+        cmd(ATAN2);
+        assertX("0.7853981633974483 "+Unit.ERR);
+
+        leftoverStackElements = 2;
+    }
+
     public void test_HYPOT() {
         enter(3);
         type(4);
         cmd(HYPOT);
         assertX(5);
+    }
+
+    public void test_HYPOT_unit() {
+        enter(300, "cm");
+        enter(4, "m");
+        cmd(HYPOT);
+        assertX(5, "m");
     }
 
     public void test_SIN() {
@@ -1670,6 +1759,24 @@ public class CalcEngineTest extends TestCase {
     }
 
     public void test_FACTORIZE() {
+        type(17);
+        cmd(FACTORIZE);
+        assertY(17);
+        assertX(1);
+        type(25);
+        cmd(FACTORIZE);
+        assertY(5);
+        assertX(5);
+        type(49);
+        cmd(FACTORIZE);
+        assertY(7);
+        assertX(7);
+        type(46349);
+        cmd(FACTORIZE);
+        assertY(46349);
+        assertX(1);
+        clx(8);
+
         type(-1110.1);
         cmd(FACTORIZE);
         assertY(37);
@@ -1718,17 +1825,35 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 2;
     }
 
+    public void test_ABS_matrix() {
+        enter(new double[][] {{3},{4}});
+        cmd(ABS);
+        assertX(5);
+    }
+
     public void test_CPLX_ARG() {
         cmd(TRIG_DEGRAD);
         enter(4, 4);
         cmd(CPLX_ARG);
         assertX(45);
+
+        enter(4);
+        cmd(CPLX_ARG);
+        assertX(0);
+
+        leftoverStackElements = 2;
     }
 
     public void test_CPLX_CONJ() {
         enter(4, 3);
         cmd(CPLX_CONJ);
         assertX(4, -3);
+    }
+
+    public void test_CPLX_CONJ_matrix() {
+        enter(new double[][][] {{{1,2},{3,4}}});
+        cmd(CPLX_CONJ);
+        assertX(new double[][][] {{{1,-2},{3,-4}}});
     }
 
     public void test_complex_matrix() {
@@ -1746,6 +1871,18 @@ public class CalcEngineTest extends TestCase {
         type(4);
         cmd(MATRIX_NEW);
         assertX(new double[4][4]);
+
+        enter(0,4);
+        type(4);
+        cmd(MATRIX_NEW);
+        assertX("nan");
+
+        enter(4);
+        type(-4);
+        cmd(MATRIX_NEW);
+        assertX("nan");
+
+        leftoverStackElements = 3;
     }
 
     public void test_MATRIX_CONCAT() {
@@ -1933,7 +2070,12 @@ public class CalcEngineTest extends TestCase {
         cmd(MATRIX_AIJ);
         assertX(4);
 
-        leftoverStackElements = 5;
+        enter(0, 2);
+        enter(2);
+        cmd(MATRIX_AIJ);
+        assertX("nan");
+
+        leftoverStackElements = 6;
     }
 
     public void test_TRANSP() {
