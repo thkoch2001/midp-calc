@@ -26,14 +26,14 @@ public final class Colors {
         c[PINK]       = 0xd89c9c;
         c[CYAN]       = 0x9cd8d8;
         // Menu color components divisible by 4 for easy dimming
-        c[MENU+0]     = 0x00e0e0;
-        c[MENU+1]     = 0x00fc00;
-        c[MENU+2]     = 0xe0e000;
-        c[MENU+3]     = 0xfca800;
-        c[MENU+4]     = 0xfc5400;
-        c[MENU+5]     = 0xfc0000;
-        c[MENU+6]     = 0xd00080;
-        c[MENU+7]     = 0x8000fc;
+        c[MENU+0]     = 0x40e0e0;
+        c[MENU+1]     = 0x40fc40;
+        c[MENU+2]     = 0xe0e040;
+        c[MENU+3]     = 0xfca840;
+        c[MENU+4]     = 0xfc7440;
+        c[MENU+5]     = 0xfc4040;
+        c[MENU+6]     = 0xd04080;
+        c[MENU+7]     = 0x8040fc;
         for (int i=0; i<CalcCanvas.MENU_SIZE; i++) {
             c[MENU_DARK+i] = c[MENU+i]/4;
         }
