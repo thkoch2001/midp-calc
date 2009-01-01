@@ -27,7 +27,7 @@
 </ul>
 </font></b>
 
-<p><b>Current version: 4.01</b>, <a
+<p><b>Current version: 4.50</b>, <a
 href="Calc-log.html">change-log</a><br>
 
 <script language="JavaScript">
@@ -159,37 +159,37 @@ source?". If I don't answer "yes", the program memory is cleared.<br>
 
 From version 3.00, the size of Calc exceeds 64kB. This means that on
 some old phones, Calc won't work. For those users, there is always
-version 2.08. Since I don't know what phones from the old
-compatibility list work after version 3.00, I have made a new list.
-I'll fill it up as I get feedback from you!<br>
+version 2.08. From version 4.50, the size of the data used by Calc exceeds
+128kB. Again, this means that some old phones don't work (among them the
+good old Sony Ericsson T610). Try version 4.00 on these phones.<br>
 
 <br>
 The following MIDP phones/devices have been tested with Calc v3.00 and later
 versions:
 
 <ul>
-  <li><b>Sony Ericsson T610</b><sup>1</sup><b>,
-  T630</b><sup>1</sup><b>, Z520i</b><sup>1,N</sup><b>,
+  <li><b>Sony Ericsson T630</b><sup>1</sup><b>, Z520i</b><sup>1,N</sup><b>,
   Z600</b><sup>1</sup><b>, Z800</b><sup>1,2,N</sup><b>, Z1010, W600i,
-  W800i</b><sup>1,2,N</sup><b>, W810, K300i</b><sup>1</sup><b>, K510i,
-  K700i</b><sup>1,2,N</sup><b>, K750i, K800i</b>: Tested OK
+  W800i</b><sup>1,2,N</sup><b>, W810, W810i, W850i, K300i</b><sup>1</sup><b>, K510i,
+  K550i, K610i</b><sup>1,2,N</sup><b>,
+  K700i</b><sup>1,2,N</sup><b>, K750i, K800i, P1i</b><sup>1,N</sup><b>, P990i</b><sup>1,2,N</sup>: Tested OK
   <li><b>Sony Ericsson M600i</b>: Tested OK. Awkward entering of
   numbers, ENTER and +, but the menu works fine using the touch-screen.
-  <li><b>Nokia 3230</b><sup>1,N</sup><b>, 5140i,
-  6020</b><sup>N</sup><b>, 6103,
-  6230i</b><sup>1,2,N</sup><b>, 6265</b><sup>1,N</sup><b>,
+  <li><b>Nokia 3220</b><sup>N</sup><b>, 3230</b><sup>1,N</sup><b>, 5140i, 5500</b><sup>N</sup><b>,
+  6020</b><sup>N</sup><b>, 6060</b><sup>N</sup><b>, 6103,
+  6230i</b><sup>1,2,N</sup><b>, 6233</b><sup>N</sup><b>, 6265</b><sup>1,N</sup><b>, 6300,
   6600</b><sup>1,N</sup><b>,
   6630</b><sup>1,N</sup><b>, 6670</b><sup>1,N</sup><b>,
   6680</b><sup>1,2,N</sup><b>, 6681</b><sup>1,N</sup><b>,
   E60</b><sup>1,2,N</sup><b>, N70</b><sup>1,2,N</sup><b>, N73,
-  N80</b><sup>1,2,N</sup>: Tested OK
+  N80</b><sup>1,2,N</sup><b>, N95</b><sup>N</sup>: Tested OK
   <li><b>Nokia N-gage</b>: Only showing half the screen
   <li><b>Motorola Razr V3</b><sup>1</sup><b>,
-  V180, V220, V547</b><sup>1</sup><b>, V557, C380, C390, C650</b>: Tested OK
+  V180, V195, V220, V547</b><sup>1</sup><b>, V557, C380, C390, C650</b>: Tested OK
   <li><b>Siemens A65</b><sup>1,S</sup><b>, C75</b><sup>2</sup><b>,
   SX1</b><sup>1,N</sup><b>, AX72</b><sup>S</sup><b>, S65</b>: Tested OK
   <li><b>BenQ-Siemens EF81</b>: Tested OK
-  <li><b>Samsung Z500</b><sup>1,2</sup><b>, SGH-D407, SGH-t519, SGH D600</b>:
+  <li><b>Samsung Z500</b><sup>1,2</sup><b>, SGH-D407, SGH-t519, SGH D600 SGH-X100</b><sup>1</sup><b>, X-820</b>:
   Tested OK
   <li><b>Samsung E900</b>: Tested almost OK. Problem with HEX input
   <li><b>LG U880</b><sup>2</sup>: Tested OK
@@ -261,6 +261,7 @@ compatibility issues.<br>
 <br>
 <br>
 
+<hr>
 <h1>User manual</h1>
 
 <dl>
@@ -314,6 +315,7 @@ compatibility issues.<br>
 </dl></dd>
 </dl>
 
+<hr>
 <h2><a id="Keys" name="Keys">Keys</a></h2>
 
 <em><span style="text-decoration: underline;">Read this section at
@@ -358,6 +360,7 @@ keys 1-6 until the digit changes.
   the next time.
 </ul>
 
+<hr>
 <h2><a id="Setup" name="Setup">Setup</a></h2>
 
 To be able to use Calc on devices with fewer keys than the T610 (most
@@ -421,6 +424,7 @@ that case, you can only hope that the menu will be activated by "dial"
 or some other button, otherwise you will be stuck.
 
 
+<hr>
 <h2><a id="RPN" name="RPN">RPN logic</a></h2>
 
 If you are familiar with RPN logic, e.g. from a HP calculator, skip
@@ -481,6 +485,7 @@ href="http://www.hpmuseum.org/rpn.htm">here</a>, except that the
 "ENTER" key works as in the HP <a
 href="http://www.hpmuseum.org/rpnvers.htm#rpl">RPL</a> system.<br>
 
+<hr>
 <h2><a id="Menu" name="Menu">Menu</a></h2>
 
 Pressing the middle of the joystick activates the menu. You select
@@ -513,7 +518,7 @@ more than 200 operations can be reached.<br>
     src="images/Calc_menu0.gif" alt="" width=114 height=83></td>
     <td align="center" valign="middle"><br>&rarr;</td>
     <td rowspan="1" colspan="2"
-    align="center" valign="middle"><img src="images/Calc_menu3.gif"
+    align="left" valign="middle"><img src="images/Calc_menu3.gif"
     alt="" width=114 height=83></td>
   </tr>
   <tr>
@@ -563,6 +568,7 @@ sub-menus on the middle button. Pressing "clear" (the button, not one
 of the menu entries) while navigating the menus backtracks up one
 level of menus.
 
+<hr>
 <h2><a id="Operations" name="Operations">Operations</a></h2>
 
 The following operations are available through the menu system. Some
@@ -919,12 +925,12 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
     <tt>yyyymmddHH.MMSS</tt> format
     </ul>
     <li><a id="Units" name="Units">Unit arithmetic and conversions</a> <a
-      href="Calc.html#UnitNote"><b>(*)</b></a> <a href="Calc-units.html">(listing)</a>
+      href="Calc.html#UnitNote"><b>(*)</b></a>
     <ul>
       <li><b>unit*</b>: Multiply x with a unit selected from one of the
-	submenus:
+	submenus <a href="Calc-units.html">(listing)</a>:
       <ul>
-        <li>long: Submenu containing units with <em>length</em> as the
+        <li>spatial: Submenu containing units with <em>length</em> as the
 	  primary factor; length, area, volume, speed and acceleration.
         <li>firm: Submenu containing units with <em>mass</em> as the
 	  primary factor; mass, force, energy, effect and pressure.
@@ -938,7 +944,8 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
 	for <b>unit*</b>, with the following additions:
       <ul>
         <li><b>SI</b>: Convert to base SI units.
-        <li><b>US/Imp</b>: Convert to base US/Imperial units.
+        <li><b>US/Imp</b>: Convert to base US/Imperial units, using lb and ft
+        for mass and length respectively.
       </ul>
       <li><b>clear</b>: Clear the unit from the number in x
       <li><b>describe</b>: Describe why the unit of the number in x shows as
@@ -1236,9 +1243,13 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
 	<li><b>sys.L</b>: Large system font
       </ul>
       <li><b>menu</b>: Set menu font. Same submenu as for number font.
-      <li><b>monitor</b>: Set monitor font. Same submenu as for number font.
+      (Although it is possible to select, the "small" font is not
+      suitable for use in menus.)
+      <li><b>monitor</b>: Set monitor font. Same submenu as for number font
     </ul>
-<!--    <li><b>fullscreen</b>: Toggle full screen operation-->
+    <li><b>fullscreen</b>: Toggle full screen operation (supported only by
+    MIDP 2.0 version)
+    <li><b>ver.</b>: Enter the current version number on the stack
     <li><b>exit</b>: Exit the application. The the stack, memory,
   statistics, finance and programs will be saved until next time
     <li><b>reset</b>: Reset the application and exit. All setup
@@ -1249,8 +1260,10 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
   </ul>
 </ul>
 
+<hr>
 <h2><a id="Notes" name="Notes">Notes</a></h2>
 
+<hr>
 <h3><a id="AbnormalNote" name="AbnormalNote">Abnormal results</a></h3>
 
 The calculator implements infinities and <tt>nan</tt> following the
@@ -1290,6 +1303,7 @@ Any operation involving <tt>nan</tt> produces <tt>nan</tt>, except
 0:<br>
 <tt>nan^0 = 1</tt><br>
 
+<hr>
 <h3><a id="ComplexNote" name="ComplexNote">Complex arithmetic</a></h3>
 
 The calculator creates complex numbers automatically when you try to
@@ -1344,6 +1358,7 @@ displayed. Don't worry, the number is still there, but you have to
 switch to a smaller font or perform a "cplx&rarr;r" operation on the complex
 number to view it.<br>
 
+<hr>
 <h3><a id="MatrixNote" name="MatrixNote">Matrix arithmetic</a></h3>
 
 Matrices can be created using the "matrix/new" operation or by using the
@@ -1420,6 +1435,7 @@ for such a simple operation as "+/-". Since the old matrix is still
 backed up in "LAST x" you are temporarily using twice as much memory
 as with just the one matrix.<br>
 
+<hr>
 <h3><a id="UnitNote" name="UnitNote">Unit arithmetic</a></h3>
 
 Numbers with units can be created by entering a normal number and setting a
@@ -1536,11 +1552,14 @@ unexpected results when calculating with non-SI units. Use
 "conv/&rarr;unit&nbsp;SI" to see the more familiar result "7200&nbsp;J". It is
 impossible to make the calculator show the result as "2 W·h", since it would
 require two conflicting time units, "s" and "h", being present in the unit at
-the same time.<br>
+the same time. For the same reason it is very confusing, but not impossible to
+find out how much one mile per gallon corresponds to in liters per
+kilometer.<br>
 
 <br>
 Here is a complete listing of all the <a href="Calc-units.html">units</a>.<br>
 
+<hr>
 <h3><a id="FinancialNote" name="FinancialNote">Financial calculation</a></h3>
 
 Remember to use negative values for owed balances and money paid to
@@ -1564,6 +1583,7 @@ If you solve repeatedly and successively for each of the financial
 registers, the values may start to drift away from the original values
 because of inaccuracies during the calculations.<br>
 
+<hr>
 <h3><a id="DateNote" name="DateNote">Date calculation</a></h3>
 
 The calendar implemented by the DH.MS operations is strictly
@@ -1676,6 +1696,7 @@ System.currentTimeMillis()). If you are in a different time zone than
 UTC, you may have to add or subtract some hours to get a perfect unix,
 JD or MJD time value.
 
+<hr>
 <h3><a id="ConstNote" name="ConstNote">Constants</a></h3>
 
 The constants were found at <a href="http://physics.nist.gov/cuu/Constants">http://physics.nist.gov/cuu/Constants</a>.
@@ -1684,6 +1705,7 @@ of Calc. Constants given using "&asymp;" are not precisely known by
 science, but are as up-to-date as the CODATA internationally
 recommended values of 2006.
 
+<hr>
 <h3><a id="MonitorNote" name="MonitorNote">Monitor editing mode</a></h3>
 
 When monitoring is active, the usual <i><b>repeat</b></i> operation in
@@ -1704,6 +1726,7 @@ effect of advancing to the next monitor element below (or in the next
 column if you are at the bottom). Pressing "clear" will exit the
 editing mode.<br>
 
+<hr>
 <h3><a id="ProgNote" name="ProgNote">Programming</a></h3>
 
 (Programming is found on the "mode" menu because it was added last and
@@ -1858,6 +1881,7 @@ commands on the "System menu".<br>
 <br>
 Here are some <a href="Calc-prog.html">programming examples</a>.<br>
 
+<hr>
 <h3><a id="GraphNote" name="GraphNote">Graph drawing</a></h3>
 
 While drawing a graph, as explained in the previous note, Calc will
@@ -1879,6 +1903,7 @@ can also be used when drawing statistics. After the zoom function has been
 used, the values x<sub>min</sub>, x<sub>max</sub>, y<sub>min</sub> and
   y<sub>max</sub> on the stack are changed accordingly. <br>
 
+<hr>
 <h3><a id="BinaryNote" name="BinaryNote">Binary representation</a></h3>
 
 In binary modes (HEX, OCT and BIN), fractional numbers are not
