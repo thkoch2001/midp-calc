@@ -38,7 +38,6 @@ JAVAFILES =  src/midpcalc/Calc.java \
              src/midpcalc/CanvasAccess.java \
              src/midpcalc/CalcEngine.java \
              src/midpcalc/Element.java \
-             src/midpcalc/ComplexElement.java \
              src/midpcalc/ComplexMatrixElement.java \
              src/midpcalc/Monitorable.java \
              src/midpcalc/MonitorableElements.java \

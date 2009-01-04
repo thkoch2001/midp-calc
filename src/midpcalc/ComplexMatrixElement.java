@@ -1,9 +1,10 @@
 package midpcalc;
 
-final class ComplexMatrixElement extends ComplexElement {
+final class ComplexMatrixElement extends Element {
     
     static final String empty = "";
-    
+
+    final Real i   = new Real();
     long unit      = 0;
     Matrix M       = null;
     String unitStr = null;
@@ -20,6 +21,7 @@ final class ComplexMatrixElement extends ComplexElement {
 
     void clear() {
         super.clear();
+        i.makeZero();
         unit = 0;
         M    = null;
     }
@@ -33,18 +35,27 @@ final class ComplexMatrixElement extends ComplexElement {
         super.copy(e);
         if (e instanceof ComplexMatrixElement) {
             ComplexMatrixElement cme = (ComplexMatrixElement)e;
+            i.assign(cme.i);
             unit    = cme.unit;
             M       = cme.M;
             unitStr = cme.unitStr;
         }
     }
 
-    void set(Real r, Real i, long unit) {
+    final void set(Real r, Real i) {
+        set(r);
+        if (i != null)
+            this.i.assign(i);
+        else
+            this.i.makeZero();
+    }
+    
+    final void set(Real r, Real i, long unit) {
         set(r, i);
         this.unit = unit;
     }
     
-    void set(Matrix M) {
+    final void set(Matrix M) {
         makeNan();
         if (Matrix.isInvalid(M)) {
             // Invalid matrix == nan
@@ -58,11 +69,15 @@ final class ComplexMatrixElement extends ComplexElement {
         this.M = M;
     }
 
-    Matrix getMatrix() {
+    final Real getImag() {
+        return i;
+    }
+    
+    final Matrix getMatrix() {
         return M;
     }
     
-    long getUnit() {
+    final long getUnit() {
         return unit;
     }
     
@@ -77,6 +92,20 @@ final class ComplexMatrixElement extends ComplexElement {
     String toString(Real.NumberFormat format) {
         if (isMatrix()) {
             return "M:["+M.rows+"x"+M.cols+"]";
+        }
+        if (isComplex()) {
+            int maxwidth = format.maxwidth;
+            int imagSign = i.isNegative() && format.base==10 ? 0 : 1;
+            format.maxwidth = maxwidth/2-imagSign;
+            String imag = i.toString(format);
+            format.maxwidth = maxwidth-1-imagSign-imag.length();
+            String real = r.toString(format);
+            if (real.length() < format.maxwidth) {
+                format.maxwidth = maxwidth-1-imagSign-real.length();
+                imag = i.toString(format);
+            }
+            format.maxwidth = maxwidth;
+            return real+(imagSign!=0?"+":"")+imag+'i';
         }
         return super.toString(format);
     }

@@ -5,7 +5,7 @@ public class MonitorableMatrix implements Monitorable {
     private Matrix M;
     private Real.NumberFormat format;
     private MonitorCache cache = new MonitorCache();
-    private ComplexElement tmpElement = new ComplexElement();
+    private ComplexMatrixElement tmpElement = new ComplexMatrixElement();
     private String[] captions;
     
     public MonitorableMatrix(Real.NumberFormat format) {
