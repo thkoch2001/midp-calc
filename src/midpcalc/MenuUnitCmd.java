@@ -6,7 +6,7 @@ public class MenuUnitCmd extends Menu {
 
     public MenuUnitCmd(String l) {
         label = l;
-        findUnit(label); // Fail early
+        //findUnit(label); // Fail early (when debugging)
     }
 
     public String getLabel() {
