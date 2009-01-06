@@ -1113,8 +1113,9 @@ public final class CalcEngine
         if (inputInProgress)
             parseInput();
         clearStackStrings();
+        clearMonitorStrings();
     }
-    
+
     public void adjustMonitorOffsets(int actualMonitorRows, int actualMonitorCols) {
         if (monitorRow < monitorRowOffset)
             monitorRowOffset = monitorRow;
@@ -2513,10 +2514,17 @@ public final class CalcEngine
         boolean complex = x.isComplex() || y.isComplex();
         boolean matrix = false;
         boolean unit = x.hasUnit() || y.hasUnit();
+        boolean unitOk = false;
 
         switch (cmd)
         {
             case RP:
+                if (unit) {
+                    unitOk = true;
+                    x.unit = Unit.add(y.unit, x.unit, rTmp, null);
+                    y.unit = 0;
+                    y.r.mul(rTmp);
+                }
                 rTmp.assign(y.r);
                 rTmp.atan2(x.r);
                 x.r.hypot(y.r);
@@ -2527,6 +2535,10 @@ public final class CalcEngine
                 break;
 
             case PR:
+                if (unit) {
+                    unitOk = !y.hasUnit();
+                    y.unit = x.unit;
+                }
                 toRAD(y.r);
                 rTmp.assign(y.r);
                 rTmp.cos();
@@ -2555,8 +2567,8 @@ public final class CalcEngine
                 } // else do nothing
                 break;
         }
-        x.postProcess(complex, false, matrix, true, unit, true, y.unit);
-        y.postProcess(complex, false, matrix, true, unit, true, x.unit);
+        x.postProcess(complex, false, matrix, true, unit, unitOk, y.unit);
+        y.postProcess(complex, false, matrix, true, unit, unitOk, x.unit);
         repaint(2);
     }
 
@@ -3981,7 +3993,8 @@ public final class CalcEngine
                     stack[1].r.assign(b);
                     stack[0].i.makeZero();
                     stack[1].i.makeZero();
-                    stack[0].unit = 0;
+                    stack[0].unit = stack[1].unit;
+                    stack[1].unit = 0;
                     stack[0].clearStrings();
                     stack[1].clearStrings();
                 }

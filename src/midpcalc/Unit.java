@@ -595,8 +595,7 @@ public final class Unit {
             pos += pBits + uBits;
         }
         return error ? 
-               ((error    ? 1L:0) << 62) +
-               ((overflow ? 1L:0) << 63) :
+               (1L << 62) + ((overflow ? 1L:0) << 63) :
                result;
     }
 
