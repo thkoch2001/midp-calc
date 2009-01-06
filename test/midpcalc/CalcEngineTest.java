@@ -156,6 +156,7 @@ public class CalcEngineTest extends TestCase {
     private void enter(double re, double im, String unit) {
         enter(re, im);
         cmd(UNIT_SET, findUnit(unit));
+        assertX(re, im, unit);
     }
 
     private void enterRow(double [] row) {
@@ -1057,6 +1058,18 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 2;
     }
 
+    public void test_LN_complex() {
+        type(-1);
+        cmd(LN);
+        assertX("0+3.141592653589793i");
+        
+        enter(1, 1);
+        cmd(LN);
+        assertX("0.34657359028+0.7853981633974i");
+
+        leftoverStackElements = 2;
+    }
+
     public void test_EXP() {
         type(0);
         cmd(EXP);
@@ -1069,6 +1082,12 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 2;
     }
 
+    public void test_EXP_complex() {
+        enter(1, 1);
+        cmd(EXP);
+        assertX("1.468693939916+2.287355287179i");
+    }
+
     public void test_LOG10() {
         type(1);
         cmd(LOG10);
@@ -1077,6 +1096,18 @@ public class CalcEngineTest extends TestCase {
         type(100);
         cmd(LOG10);
         assertX(2);
+
+        leftoverStackElements = 2;
+    }
+
+    public void test_LOG10_complex() {
+        type(-1);
+        cmd(LOG10);
+        assertX("0+1.364376353841841i");
+        
+        enter(1, 1);
+        cmd(LOG10);
+        assertX("0.150514997832+0.34109408846i");
 
         leftoverStackElements = 2;
     }
@@ -1093,6 +1124,12 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 2;
     }
 
+    public void test_EXP10_complex() {
+        enter(1, 1);
+        cmd(EXP10);
+        assertX("-6.6820151019+7.4398033695749i");
+    }
+
     public void test_LOG2() {
         type(1);
         cmd(LOG2);
@@ -1101,6 +1138,18 @@ public class CalcEngineTest extends TestCase {
         type(4);
         cmd(LOG2);
         assertX(2);
+
+        leftoverStackElements = 2;
+    }
+
+    public void test_LOG2_complex() {
+        type(-1);
+        cmd(LOG2);
+        assertX("0+4.532360141827194i");
+        
+        enter(1, 1);
+        cmd(LOG2);
+        assertX("0.5+1.133090035456798i");
 
         leftoverStackElements = 2;
     }
@@ -1115,6 +1164,12 @@ public class CalcEngineTest extends TestCase {
         assertX(4);
 
         leftoverStackElements = 2;
+    }
+
+    public void test_EXP2_complex() {
+        enter(1, 1);
+        cmd(EXP2);
+        assertX("1.538477802728+1.277922552627i");
     }
 
     public void test_PYX() {
@@ -1332,6 +1387,12 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 2;
     }
 
+    public void test_SIN_complex() {
+        enter(1, 1);
+        cmd(SIN);
+        assertX("1.298457581416+0.634963914785i");
+    }
+
     public void test_COS() {
         type(0);
         cmd(COS);
@@ -1344,6 +1405,12 @@ public class CalcEngineTest extends TestCase {
         assertX(0);
 
         leftoverStackElements = 2;
+    }
+
+    public void test_COS_complex() {
+        enter(1, 1);
+        cmd(COS);
+        assertX("0.833730025131-0.988897705763i");
     }
 
     public void test_TAN() {
@@ -1360,6 +1427,12 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 2;
     }
 
+    public void test_TAN_complex() {
+        enter(1, 1);
+        cmd(TAN);
+        assertX("0.27175258532+1.0839233273387i");
+    }
+
     public void test_ASIN() {
         type(0);
         cmd(ASIN);
@@ -1368,6 +1441,18 @@ public class CalcEngineTest extends TestCase {
         type(1);
         cmd(ASIN);
         assertX("1.570796326794897");
+
+        leftoverStackElements = 2;
+    }
+
+    public void test_ASIN_complex() {
+        enter(1, 1);
+        cmd(ASIN);
+        assertX("0.666239432493+1.061275061905i");
+
+        enter(2);
+        cmd(ASIN);
+        assertX("1.570796326795+1.316957896925i");
 
         leftoverStackElements = 2;
     }
@@ -1384,6 +1469,18 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 2;
     }
 
+    public void test_ACOS_complex() {
+        enter(1, 1);
+        cmd(ACOS);
+        assertX("0.904556894302-1.061275061905i");
+
+        type(2);
+        cmd(ACOS);
+        assertX("0-1.316957896924817i");
+
+        leftoverStackElements = 2;
+    }
+
     public void test_ATAN() {
         type(0);
         cmd(ATAN);
@@ -1394,6 +1491,12 @@ public class CalcEngineTest extends TestCase {
         assertX("0.7853981633974483");
 
         leftoverStackElements = 2;
+    }
+
+    public void test_ATAN_complex() {
+        enter(1, 1);
+        cmd(ATAN);
+        assertX("1.017221967898+0.402359478109i");
     }
 
     public void test_SINH() {
@@ -1408,6 +1511,12 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 2;
     }
 
+    public void test_SINH_complex() {
+        enter(1, 1);
+        cmd(SINH);
+        assertX("0.634963914785+1.298457581416i");
+    }
+
     public void test_COSH() {
         type(0);
         cmd(COSH);
@@ -1418,6 +1527,12 @@ public class CalcEngineTest extends TestCase {
         assertX("1.543080634815244");
 
         leftoverStackElements = 2;
+    }
+
+    public void test_COSH_complex() {
+        enter(1, 1);
+        cmd(COSH);
+        assertX("0.833730025131+0.988897705763i");
     }
 
     public void test_TANH() {
@@ -1432,6 +1547,12 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 2;
     }
 
+    public void test_TANH_complex() {
+        enter(1, 1);
+        cmd(TANH);
+        assertX("1.0839233273387+0.27175258532i");
+    }
+
     public void test_ASINH() {
         type(0);
         cmd(ASINH);
@@ -1442,6 +1563,12 @@ public class CalcEngineTest extends TestCase {
         assertX("0.881373587019543");
 
         leftoverStackElements = 2;
+    }
+
+    public void test_ASINH_complex() {
+        enter(1, 1);
+        cmd(ASINH);
+        assertX("1.061275061905+0.666239432493i");
     }
 
     public void test_ACOSH() {
@@ -1456,6 +1583,18 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 2;
     }
 
+    public void test_ACOSH_complex() {
+        enter(1, 1);
+        cmd(ACOSH);
+        assertX("1.061275061905+0.904556894302i");
+
+        type(0);
+        cmd(ACOSH);
+        assertX("0+1.570796326794897i");
+
+        leftoverStackElements = 2;
+    }
+
     public void test_ATANH() {
         type(0);
         cmd(ATANH);
@@ -1464,6 +1603,18 @@ public class CalcEngineTest extends TestCase {
         type(0.5);
         cmd(ATANH);
         assertX("0.5493061443340548");
+
+        leftoverStackElements = 2;
+    }
+
+    public void test_ATANH_complex() {
+        enter(1, 1);
+        cmd(ATANH);
+        assertX("0.402359478109+1.017221967898i");
+
+        type(2);
+        cmd(ATANH);
+        assertX("0.549306144334+1.570796326795i");
 
         leftoverStackElements = 2;
     }
@@ -1539,6 +1690,28 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 6;
     }
 
+    public void test_RP_complex() {
+        enter(2, 2);
+        type(0);
+        cmd(RP);
+        assertY("nan");
+        assertX("nan");
+
+        leftoverStackElements = 2;
+    }
+
+    public void test_RP_unit() {
+        assertFalse(calc.degrees);
+        assertFalse(calc.grad);
+        enter(2, "m");
+        enter(0, "m");
+        cmd(RP);
+        assertY("1.570796326794897");
+        assertX(2, "m");
+
+        leftoverStackElements = 2;
+    }
+
     public void test_PR() {
         assertFalse(calc.degrees);
         assertFalse(calc.grad);
@@ -1571,34 +1744,87 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 6;
     }
 
+    public void test_PR_unit() {
+        assertFalse(calc.degrees);
+        assertFalse(calc.grad);
+        cmd(PI);
+        type(2);
+        cmd(DIV);
+        enter(2, "m");
+        cmd(PR);
+        assertY(2, "m");
+        assertX(0, "m");
+
+        cmd(PI);
+        type(2);
+        cmd(DIV);
+        cmd(UNIT_SET, findUnit("s"));
+        enter(2, "m");
+        cmd(PR);
+        assertY(2, Unit.ERR);
+        assertX(0, Unit.ERR);
+
+        leftoverStackElements = 4;
+    }
+
     public void test_ROUND() {
         type(3.5);
         cmd(ROUND);
         assertX(4);
+
+        enter(3.5, -2.5);
+        cmd(ROUND);
+        assertX(4, -3);
+
+        leftoverStackElements = 2;
     }
 
     public void test_CEIL() {
         type(3.4);
         cmd(CEIL);
         assertX(4);
+
+        enter(3.4, -2.6);
+        cmd(CEIL);
+        assertX(4, -2);
+
+        leftoverStackElements = 2;
     }
 
     public void test_FLOOR() {
         type(-3.6);
         cmd(FLOOR);
         assertX(-4);
+
+        enter(3.6, -2.4);
+        cmd(FLOOR);
+        assertX(3, -3);
+
+        leftoverStackElements = 2;
     }
 
     public void test_TRUNC() {
         type(-3.6);
         cmd(TRUNC);
         assertX(-3);
+
+        enter(3.5, -2.5);
+        cmd(TRUNC);
+        assertX(3, -2);
+
+        leftoverStackElements = 2;
     }
 
     public void test_FRAC() {
         type(-3.6);
         cmd(FRAC);
         assertX(-0.6);
+
+        enter(3.5, -2.5);
+        cmd(FRAC);
+        assertX(0.5, -0.5);
+
+        leftoverStackElements = 2;
     }
 
     public void test_AND() {
@@ -1963,8 +2189,11 @@ public class CalcEngineTest extends TestCase {
         type(2);
         cmd(MATRIX_ROW);
         assertX(new double[][] {{3,4}});
+        enter(2, 2);
+        cmd(MATRIX_ROW);
+        assertX("nan");
 
-        leftoverStackElements = 2;
+        leftoverStackElements = 3;
     }
 
     public void test_MATRIX_COL() {
@@ -1972,8 +2201,11 @@ public class CalcEngineTest extends TestCase {
         type(2);
         cmd(MATRIX_COL);
         assertX(new double[][] {{2},{4}});
+        enter(2, 2);
+        cmd(MATRIX_COL);
+        assertX("nan");
 
-        leftoverStackElements = 2;
+        leftoverStackElements = 3;
     }
 
     public void test_MATRIX_STO() {
@@ -2142,14 +2374,46 @@ public class CalcEngineTest extends TestCase {
 
     public void test_UNIT_SET_INV() {
         type(3);
-        cmd(UNIT_SET_INV, findUnit("kg"));
-        assertX(3, "kg¹"); // meaning: kg^-1
+        cmd(UNIT_SET_INV, findUnit("m"));
+        assertX(3, "m¹"); // meaning: m^-1
+        
+        cmd(UNIT_SET_INV, findUnit("m"));
+        assertX(3, "/m²"); // meaning: m^-2
+        cmd(UNIT_SET_INV, findUnit("m"));
+        assertX(3, "/m³");
+        cmd(UNIT_SET_INV, findUnit("m"));
+        assertX(3, "/m¼"); // meaning: m^-4
+        cmd(SQR);
+        assertX(9, Unit.OFL); // can't display m^-8
+        cmd(SQRT);
+        assertX(3, "/m¼"); // everything ok
+        cmd(UNIT_SET_INV, findUnit("s"));
+        assertX(3, "/m¼·s");
+        cmd(UNIT_SET, findUnit("m"));
+        cmd(UNIT_SET, findUnit("m"));
+        cmd(UNIT_SET, findUnit("m"));
+        assertX(3, "m¹·s¹"); // meaning: m^-1*s^-1
+        type(9);
+        cmd(YPOWX);
+        assertX(19683, Unit.OFL); // definitely overflow
+    }
+
+    public void test_UNIT_SET_INV_complex() {
+        enter(3, 2);
+        cmd(UNIT_SET_INV, findUnit("m"));
+        assertX(3, 2, "m¹"); // meaning: m^-1
     }
 
     public void test_UNIT_CONVERT() {
         enter(3, "kg");
         cmd(UNIT_CONVERT, findUnit("g"));
         assertX(3000, "g");
+    }
+
+    public void test_UNIT_CONVERT_complex() {
+        enter(3, 2, "kg");
+        cmd(UNIT_CONVERT, findUnit("g"));
+        assertX(3000, 2000, "g");
     }
 
     public void test_UNIT_CLEAR() {
@@ -2162,6 +2426,40 @@ public class CalcEngineTest extends TestCase {
         enter(2, "kg");
         cmd(UNIT_DESCRIBE);
         assertEquals("The unit shown is the simplest form of the unit: kg", calc.getMessage());
+
+        enter(2);
+        cmd(UNIT_SET_INV, findUnit("m"));
+        assertX(2, "m¹"); // meaning: m^-1
+        cmd(UNIT_DESCRIBE);
+        assertEquals("The unit shown is the simplest form of the unit: 1/m", calc.getMessage());
+
+        leftoverStackElements = 2;
+    }
+    
+    public void test_unit_error_handling() {
+        enter(16, "m³");
+        cmd(SQRT);
+        assertX(4, Unit.ERR); // Can't sqrt m³
+        cmd(ENTER); // Save the unit error
+
+        cmd(SQRT);
+        assertX(2); // Repeated unit errors "evaporate" 
+
+        cmd(UNIT_SET, findUnit("m"));
+        assertX(2, "m");
+        cmd(ADD);
+        assertX(6, Unit.ERR); // unit + err = err
+        
+        type(3);
+        cmd(SUB);
+        assertX(3); // no-unit + err = no-unit
+
+        cmd(UNIT_SET, findUnit("m"));
+        assertX(3, "m");
+        cmd(FACT);
+        assertX(3*2*1, Unit.ERR);
+        cmd(FACT);
+        assertX(6*5*4*3*2*1); // Repeated unit errors "evaporate"
     }
 
     public void test_XCHG() {
@@ -2314,10 +2612,10 @@ public class CalcEngineTest extends TestCase {
         cmd(STO, 5);
         clx();
         type(4);
+        cmd(MONITOR_MEM, 10);
         cmd(XCHGMEM, 5);
         assertX(-3.6);
         assertNull(calc.getStack().label(0, 0));
-        cmd(MONITOR_MEM, 10);
         assertEquals("4", calc.getMonitor().element(5, 0, numDigits));
         assertEquals("M5", calc.getMonitor().label(5, 0));
     }
@@ -3896,16 +4194,62 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 0;
     }
 
+    public void test_MONITOR_UP_matrix() {
+        enter(new double[2][2]);
+        cmd(MONITOR_MATRIX, 5);
+        cmd(MONITOR_ENTER);
+        assertTrue(calc.isInsideMonitor);
+        assertEquals(0, calc.monitorRow);
+        assertEquals(0, calc.monitorCol);
+        cmd(MONITOR_UP);
+        assertEquals(1, calc.monitorRow);
+        assertEquals(0, calc.monitorCol);
+
+        cmd(MONITOR_EXIT);
+    }
+
     public void test_MONITOR_DOWN() {
         cmd(MONITOR_MEM, 5);
         cmd(MONITOR_ENTER);
         assertTrue(calc.isInsideMonitor);
         assertEquals(0, calc.monitorRow);
+        assertEquals(0, calc.monitorCol);
         cmd(MONITOR_DOWN);
         assertEquals(1, calc.monitorRow);
+        for (int i=0; i<14; i++)
+            cmd(MONITOR_DOWN);
+        assertEquals(15, calc.monitorRow);
+        cmd(MONITOR_DOWN);
+        assertEquals(0, calc.monitorRow);
+        assertEquals(0, calc.monitorCol);
 
         cmd(MONITOR_EXIT);
         leftoverStackElements = 0;
+    }
+
+    public void test_MONITOR_DOWN_matrix() {
+        enter(new double[2][2]);
+        cmd(MONITOR_MATRIX, 5);
+        cmd(MONITOR_ENTER);
+        assertTrue(calc.isInsideMonitor);
+        assertEquals(0, calc.monitorRow);
+        assertEquals(0, calc.monitorCol);
+        assertEquals("Col:1", calc.getMonitor().caption(calc.monitorCol));
+        cmd(MONITOR_DOWN);
+        assertEquals(1, calc.monitorRow);
+        assertEquals(0, calc.monitorCol);
+        cmd(MONITOR_DOWN);
+        assertEquals(0, calc.monitorRow);
+        assertEquals(1, calc.monitorCol);
+        assertEquals("Col:2", calc.getMonitor().caption(calc.monitorCol));
+        cmd(MONITOR_DOWN);
+        assertEquals(1, calc.monitorRow);
+        assertEquals(1, calc.monitorCol);
+        cmd(MONITOR_DOWN);
+        assertEquals(0, calc.monitorRow);
+        assertEquals(1, calc.monitorCol);
+
+        cmd(MONITOR_EXIT);
     }
 
     public void test_MONITOR_LEFT() {
@@ -3936,6 +4280,15 @@ public class CalcEngineTest extends TestCase {
         assertEquals(0, calc.monitorRow);
         assertEquals(1, calc.monitorCol);
         assertEquals("Col:2", calc.getMonitor().caption(calc.monitorCol));
+        cmd(MONITOR_RIGHT);
+        assertEquals(1, calc.monitorRow);
+        assertEquals(0, calc.monitorCol);
+        cmd(MONITOR_RIGHT);
+        assertEquals(1, calc.monitorRow);
+        assertEquals(1, calc.monitorCol);
+        cmd(MONITOR_RIGHT);
+        assertEquals(1, calc.monitorRow);
+        assertEquals(0, calc.monitorCol);
 
         cmd(MONITOR_EXIT);
     }
@@ -4446,6 +4799,22 @@ public class CalcEngineTest extends TestCase {
         type(5);
         cmd(PROG_RUN, 0);
         assertX(5, "m");
+
+        leftoverStackElements = 2;
+    }
+    
+    public void test_setDisplayProperties() {
+        cmd(PI);
+        assertX("3.141592653589793");
+        type(2);
+        assertTrue(calc.inputInProgress);
+
+        numDigits = 10;
+        calc.setDisplayProperties(numDigits, 3);
+
+        assertFalse(calc.inputInProgress);
+        assertY("3.14159265");
+        assertX(2);
 
         leftoverStackElements = 2;
     }
