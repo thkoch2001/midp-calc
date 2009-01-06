@@ -266,13 +266,6 @@ final class SysFont extends UniFont {
         return true;
     }
 
-    private static boolean plainString(StringBuffer string, int start) {
-        for (int i = start; i < string.length(); i++)
-            if ("^~¸­`«¿ß¡¶ÞãëÐ£¹¼Ø»ð".indexOf(string.charAt(i)) >= 0)
-                return false;
-        return true;
-    }
-
     public int substringWidth(String string, int start, int end) {
         if (monospaced) {
             // NB! Assuming that special characters will not be drawn monospaced
@@ -333,7 +326,7 @@ final class SysFont extends UniFont {
             return x + font.substringWidth(string, start, end-start);
         }
         
-        subscript = superscript = overline = false;
+        italic = subscript = superscript = overline = false;
         
         for (int i = 0; i < start; i++) {
             processChar(string.charAt(i), true);
@@ -345,29 +338,7 @@ final class SysFont extends UniFont {
     }
 
     public int drawString(Graphics g, int x, int y, StringBuffer string, int start) {
-        int end = string.length();
-        
-        if (!monospaced && plainString(string,start)) {
-            String s = string.toString();
-            Font font = currentFont();
-            g.setFont(font);
-            g.setColor(Colors.c[bg]);
-            g.fillRect(x, y, substringWidth(s, start, end), charHeight);
-            g.setColor(Colors.c[fg]);
-            g.drawSubstring(s, start, end - start, x, y, Graphics.TOP
-                    | Graphics.LEFT);
-            return x + font.substringWidth(s, start, end - start);
-        }
-        
-        italic = subscript = superscript = overline = false;
-        
-        g.setColor(Colors.c[fg]);
-        for (int i = 0; i < start; i++) {
-            processChar(string.charAt(i), true);
-        }
-        for (int i = start; i < end; i++) {
-            x += drawSpecialChar(g, x, y, string.charAt(i));
-        }
-        return x;
+        String s = string.toString();
+        return drawSubstring(g, x, y, s, start, string.length());
     }
 }
