@@ -1763,6 +1763,11 @@ public final class CalcEngine
             case TO_CPLX:
                 complexOk = true;
                 complex = true;
+                if (unit) {
+                    unitOk = true;
+                    y.unit = Unit.add(y.unit, x.unit, rTmp, null);
+                    y.r.mul(rTmp);
+                }
                 y.i.assign(y.r);
                 y.r.assign(x.r);
                 break;
@@ -2129,13 +2134,18 @@ public final class CalcEngine
 
             case TRANSP:
             case TRANSP_CONJ:
+                unitOk = true;
                 if (matrix) {
                     matrixOk = true;
                     x.M = Matrix.transp(x.M,cmd==TRANSP_CONJ);
+                } else if (complex && cmd==TRANSP_CONJ) {
+                    // It is like a 1x1 matrix, after all
+                    x.i.neg();
                 } // else do nothing
                 break;
 
             case DETERM:
+                unitOk = true;
                 if (matrix) {
                     x.M.det(x.r,x.i);
                     matrix = false;
@@ -2144,6 +2154,7 @@ public final class CalcEngine
                 break;
 
             case TRACE:
+                unitOk = true;
                 if (matrix) {
                     x.M.trace(x.r,x.i);
                     matrix = false;
@@ -2204,6 +2215,7 @@ public final class CalcEngine
                 break;
 
             case CPLX_CONJ:
+                unitOk = true;
                 if (matrix) {
                     matrixOk = true;
                     x.M = Matrix.conj(x.M);
@@ -2680,7 +2692,7 @@ public final class CalcEngine
                         return;
                     }
                 }
-                setMessage("GTO", "Nonexistent label");
+                setMessage(cmd == GTO ? "GTO" : "GSB", "Nonexistent label");
                 break;
             case RTN:
                 if (returnStackDepth > 0) {
@@ -2720,6 +2732,7 @@ public final class CalcEngine
                     n += step == 0 ? 1 : step;
                     skipIf(n>limit);
                 }
+                neg = n<0;
                 n = Math.abs(n);
                 n = (n*1000 + limit)*100 + step;
                 if (neg) {
@@ -2746,23 +2759,23 @@ public final class CalcEngine
             case SELECT:
                 // Calculate x*y + (1-x)*z
                 if (x.isZero()) {
-                    if (x.hasUnit()) {
+                    complex = z.isComplex();
+                    matrix = z.isMatrix();
+                    if (x.hasUnit())
                         z.unit = Unit.unitError;
-                    }
                 } else if (x.r.equalTo(Real.ONE) && !x.isComplex()) {
-                    z.set(y.r, y.i);
-                    if (x.hasUnit()) {
+                    z.copy(y);
+                    complex = y.isComplex();
+                    matrix = y.isMatrix();
+                    if (x.hasUnit())
                         z.unit = Unit.unitError;
-                    } else {
-                        z.unit = y.unit;
-                    }
                 } else {
                     if (x.hasUnit() || y.unit != z.unit) {
                         z.unit = Unit.unitError;
                     }
                     if (matrix) {
                         if (x.isMatrix()) {
-                            if (x.M.cols != x.M.rows || (y.isMatrix() != x.isMatrix())) {
+                            if (x.M.cols != x.M.rows || (y.isMatrix() != z.isMatrix())) {
                                 matrix = false;
                                 z.r.makeNan();
                             } else {
@@ -2773,17 +2786,17 @@ public final class CalcEngine
                                 Tmp = Matrix.sub(Tmp,x.M);
                                 if (!y.isMatrix() /*&& !z.isMatrix() */) {
                                     // X*y + (I-X)*z
-                                    x.M = Matrix.mul(Tmp,z.r,z.i);
+                                    z.M = Matrix.mul(Tmp,z.r,z.i);
                                     y.M = Matrix.mul(x.M,y.r,y.i);
                                 } else {
                                     // X*Y + (I-X)*Z
-                                    x.M = Matrix.mul(Tmp,x.M);
+                                    z.M = Matrix.mul(Tmp,z.M);
                                     y.M = Matrix.mul(x.M,y.M);
                                 }
-                                z.M = Matrix.add(x.M,y.M);
+                                z.M = Matrix.add(y.M,z.M);
                             }
                         } else {
-                            if (!y.isMatrix() || !x.isMatrix()) {
+                            if (!y.isMatrix() || !z.isMatrix()) {
                                 matrix = false;
                                 z.r.makeNan();
                             } else {
@@ -2792,9 +2805,9 @@ public final class CalcEngine
                                 rTmp3.sub(x.r);
                                 rTmp4.assign(x.i);
                                 rTmp4.neg();
-                                x.M = Matrix.mul(x.M,rTmp3,rTmp4);
+                                z.M = Matrix.mul(z.M,rTmp3,rTmp4);
                                 y.M = Matrix.mul(y.M,x.r,x.i);
-                                z.M = Matrix.add(x.M,y.M);
+                                z.M = Matrix.add(y.M,z.M);
                             }
                         }
                     } else {
