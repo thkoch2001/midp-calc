@@ -2023,11 +2023,28 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 6;
     }
 
+    public void test_FACTORIZE_complex() {
+        enter(2,2);
+        cmd(FACTORIZE);
+        assertY(2,2);
+        assertX("nan");
+        assertNotNull(calc.getMessage()); // I.e. the error message
+
+        leftoverStackElements = 2;
+    }
+    
     public void test_TO_CPLX() {
         enter(3);
         type(4);
         cmd(TO_CPLX);
         assertX(4, 3);
+
+        enter(300, "cm");
+        enter(4, "m");
+        cmd(TO_CPLX);
+        assertX(4, 3, "m");
+
+        leftoverStackElements = 2;
     }
 
     public void test_CPLX_SPLIT() {
@@ -2280,6 +2297,17 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 3;
     }
 
+    public void test_MATRIX_SIZE_no_matrix() {
+        cmd(CLS);
+        type(1);
+        cmd(MATRIX_SIZE);
+        assertZ(1);
+        assertY("nan");
+        assertX("nan");
+
+        stackPreserved = false;
+    }
+
     public void test_MATRIX_AIJ() {
         enter(new double[][] {{1,2},{3,4}});
         enter(1);
@@ -2338,6 +2366,12 @@ public class CalcEngineTest extends TestCase {
         assertX(new double [][][] {{{1,-6},{3,-4},{5,-2}},{{2,-5},{4,-3},{6,-1}}});
 
         leftoverStackElements = 2;
+    }
+
+    public void test_TRANSP_CONJ_complex() {
+        enter(4, 3);
+        cmd(TRANSP_CONJ);
+        assertX(4, -3);
     }
 
     public void test_MATRIX_MIN() {
@@ -2507,7 +2541,22 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 3;
     }
 
-    public void test_UNDO() {
+    public void test_UNDO_NONE() {
+        cmd(CLS);
+        cmd(UNDO); // Can't undo this
+        assertX("");
+        
+        stackPreserved = false;
+    }
+
+    public void test_UNDO_UNARY() {
+        type(2);
+        cmd(SQR);
+        cmd(UNDO);
+        assertX(2);
+    }
+
+    public void test_UNDO_BINARY() {
         enter(12);
         type(2);
         cmd(ADD);
@@ -2515,6 +2564,76 @@ public class CalcEngineTest extends TestCase {
         assertY(12);
         assertX(2);
 
+        leftoverStackElements = 2;
+    }
+
+    public void test_UNDO_TRINARY() {
+        enter(12);
+        enter(9);
+        type(1);
+        cmd(SELECT);
+        cmd(UNDO);
+        assertZ(12);
+        assertY(9);
+        assertX(1);
+
+        leftoverStackElements = 3;
+    }
+
+    public void test_UNDO_PUSH() {
+        enter(12);
+        cmd(PI);
+        cmd(UNDO);
+        assertX(12);
+    }
+
+    public void test_UNDO_PUSH2() {
+        enter(new double[][]{{1,2}});
+        cmd(MATRIX_SIZE);
+        cmd(UNDO);
+        assertX(new double[][]{{1,2}});
+    }
+
+    public void test_UNDO_XY() {
+        enter(2);
+        enter(3);
+        cmd(RP);
+        cmd(UNDO);
+        assertY(2);
+        assertX(3);
+        
+        leftoverStackElements = 2;
+    }
+
+    public void test_UNDO_PUSHXY() {
+        enter(4, 5);
+        cmd(CPLX_SPLIT);
+        cmd(UNDO);
+        assertX(4, 5);
+    }
+
+    public void test_UNDO_ROLLUP() {
+        type(45);
+        cmd(ROLLUP);
+        cmd(UNDO);
+        assertX(45);
+    }
+
+    public void test_UNDO_ROLLDN() {
+        type(54);
+        cmd(ROLLDN);
+        cmd(UNDO);
+        assertX(54);
+    }
+    
+    public void test_UNDO_XCHGST() {
+        enter(2);
+        type(3);
+        cmd(XCHG);
+        cmd(UNDO);
+        assertY(2);
+        assertX(3);
+        
         leftoverStackElements = 2;
     }
 
@@ -2607,6 +2726,46 @@ public class CalcEngineTest extends TestCase {
         assertX(-3.6);
     }
 
+    public void test_STP_complex() {
+        enter(-3.6, 1.1);
+        cmd(STO, 5);
+        cmd(STP, 5);
+        clx();
+        cmd(RCL, 5);
+        assertX(-7.2, 2.2);
+    }
+
+    public void test_STP_unit() {
+        enter(-3.6, 1.1, "m");
+        cmd(STO, 5);
+        clx();
+        enter(-360, 110, "cm");
+        cmd(STP, 5);
+        clx();
+        cmd(RCL, 5);
+        assertX(-720, 220, "cm");
+    }
+
+    public void test_STP_matrix() {
+        enter(new double[][]{{1,2,3,4}});
+        cmd(STO, 5);
+        cmd(STP, 5);
+        clx();
+        cmd(RCL, 5);
+        assertX(new double[][]{{2,4,6,8}});
+
+        enter(new double[][]{{1,2,3,4}});
+        cmd(STO, 5);
+        clx();
+        enter(5);
+        cmd(STP, 5);
+        clx();
+        cmd(RCL, 5);
+        assertX("nan");
+
+        leftoverStackElements = 2;
+    }
+
     public void test_XCHGMEM() {
         type(-3.6);
         cmd(STO, 5);
@@ -2692,17 +2851,21 @@ public class CalcEngineTest extends TestCase {
         enter(2);
         type(3);
         cmd(SUMPL);
-        clx();
+        enter(1);
+        type(2);
+        cmd(SUMPL);
+        enter(2);
+        type(3);
         cmd(SUMMI);
         assertZ(2);
         assertY(3);
-        assertX(0);
+        assertX(1);
         cmd(SUMX);
-        assertX(0);
+        assertX(2);
         cmd(SUMY);
-        assertX(0);
+        assertX(1);
 
-        leftoverStackElements = 5;
+        leftoverStackElements = 11;
     }
 
     private void enterSomeStatistics() {
@@ -3161,6 +3324,50 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 8;
     }
 
+    public void test_FINANCE_SOLVE_begin() {
+        cmd(FINANCE_BGNEND);
+        assertTrue(calc.begin);
+        type(3);
+        cmd(FINANCE_STO, 2);   // np
+        type(50);
+        cmd(FINANCE_STO, 3);   // pmt
+        type(5);
+        cmd(FINANCE_STO, 4);   // ir%
+        cmd(FINANCE_SOLVE, 1); // fv
+        assertX(-((50*1.05+50)*1.05+50)*1.05);
+        cmd(FINANCE_SOLVE, 0); // pv
+        assertX(0);
+        cmd(FINANCE_SOLVE, 2); // np
+        assertX(3);
+        cmd(FINANCE_SOLVE, 3); // pmt
+        assertX(50);
+        cmd(FINANCE_SOLVE, 4); // ir%
+        assertX(5);
+
+        leftoverStackElements = 8;
+    }
+
+    public void test_FINANCE_SOLVE_ir_0() {
+        type(3);
+        cmd(FINANCE_STO, 2);   // np
+        type(50);
+        cmd(FINANCE_STO, 3);   // pmt
+        type(0);
+        cmd(FINANCE_STO, 4);   // ir%
+        cmd(FINANCE_SOLVE, 1); // fv
+        assertX(-(50+50+50));
+        cmd(FINANCE_SOLVE, 0); // pv
+        assertX(0);
+        cmd(FINANCE_SOLVE, 2); // np
+        assertX(3);
+        cmd(FINANCE_SOLVE, 3); // pmt
+        assertX(50);
+        cmd(FINANCE_SOLVE, 4); // ir%
+        assertXLessThan(0.0000001);
+
+        leftoverStackElements = 8;
+    }
+
     public void test_FINANCE_CLEAR() {
         type(-3.6);
         cmd(FINANCE_STO, 3);
@@ -3510,6 +3717,128 @@ public class CalcEngineTest extends TestCase {
         type(0.75);
         cmd(SELECT);
         assertX(3.5);
+    }
+
+    public void test_SELECT_0() {
+        enter(2, 2, "V");
+        enter(new double[][]{{1,2}});
+        type(0);
+        cmd(SELECT);
+        assertX(2, 2, "V");
+
+        enter(2, 2, "V");
+        enter(new double[][]{{1,2}});
+        enter(0, "m");
+        cmd(SELECT);
+        assertX(2, 2, Unit.ERR);
+
+        enter(new double[][]{{1,2}});
+        enter(2, 2, "V");
+        enter(0, "m");
+        cmd(SELECT);
+        assertX(new double[][]{{1,2}});
+
+        leftoverStackElements = 3;
+    }
+
+    public void test_SELECT_1() {
+        enter(new double[][]{{1,2}});
+        enter(2, 2, "V");
+        type(1);
+        cmd(SELECT);
+        assertX(2, 2, "V");
+
+        enter(new double[][]{{1,2}});
+        enter(2, 2, "V");
+        enter(1, "m");
+        cmd(SELECT);
+        assertX(2, 2, Unit.ERR);
+
+        enter(2, 2, "V");
+        enter(new double[][]{{1,2}});
+        enter(1, "m");
+        cmd(SELECT);
+        assertX(new double[][]{{1,2}});
+
+        leftoverStackElements = 3;
+    }
+
+    public void test_SELECT_complex() {
+        enter(2, 4);
+        enter(4, 2);
+        type(0.75);
+        cmd(SELECT);
+        assertX(3.5, 2.5);
+
+        enter(2, 4);
+        enter(4, 2);
+        enter(0.5, 0.5);
+        cmd(SELECT);
+        assertX(4, 4);
+
+        leftoverStackElements = 2;
+    }
+
+    public void test_SELECT_unit() {
+        enter(2, "m");
+        enter(4, "m");
+        type(0.75);
+        cmd(SELECT);
+        assertX(3.5, "m");
+
+        enter(2, "m");
+        enter(4, "km");
+        type(0.75);
+        cmd(SELECT);
+        assertX(3.5, Unit.ERR);
+
+        enter(2, "m");
+        enter(4, "m");
+        enter(0.75, "m");
+        cmd(SELECT);
+        assertX(3.5, Unit.ERR);
+
+        leftoverStackElements = 3;
+    }
+
+    public void test_SELECT_matrix() {
+        enter(new double[][]{{1,2,3,4}});
+        enter(new double[][]{{4,3,2,1}});
+        type(0.75);
+        cmd(SELECT);
+        assertX(new double[][]{{3.25,2.75,2.25,1.75}});
+
+        enter(1);
+        enter(new double[][]{{1,2}});
+        type(0.75);
+        cmd(SELECT);
+        assertX("nan");
+
+        enter(1);
+        enter(2);
+        enter(new double[][]{{0.5,0.25},{0.75,0.5}});
+        cmd(SELECT);
+        assertX(new double[][]{{1.5,0.25},{0.75,1.5}});
+
+        enter(1);
+        enter(2);
+        enter(new double[][]{{0.5,0.25,0.75,0.5}});
+        cmd(SELECT);
+        assertX("nan");
+
+        enter(1);
+        enter(new double[][]{{1,2},{3,4}});
+        enter(new double[][]{{0.5,0.25},{0.75,0.5}});
+        cmd(SELECT);
+        assertX("nan");
+
+        enter(new double[][]{{1},{2}});
+        enter(new double[][]{{4},{3}});
+        enter(new double[][]{{0.75,0},{0,0.75}});
+        cmd(SELECT);
+        assertX(new double[][]{{3.25},{2.75}});
+
+        leftoverStackElements = 6;
     }
 
     public void test_SGN() {
@@ -3930,6 +4259,19 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 4;
     }
 
+    public void test_GTO_nonexistent() {
+        calc.newProgramName = "tst";
+        cmd(PROG_NEW, 0);
+        cmd(GTO, 5);
+        cmd(PROG_FINISH);
+
+        cmd(PROG_RUN, 0);
+        assertEquals("Nonexistent label", calc.getMessage());
+        assertEquals("GTO", calc.getMessageCaption());
+
+        leftoverStackElements = 0;
+    }
+
     public void test_STOP() {
         calc.newProgramName = "tst";
         cmd(PROG_NEW, 0);
@@ -3969,6 +4311,46 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 4;
     }
 
+    public void test_GSB_nonexistent() {
+        calc.newProgramName = "tst";
+        cmd(PROG_NEW, 0);
+        cmd(GSB, 5);
+        cmd(PROG_FINISH);
+
+        cmd(PROG_RUN, 0);
+        assertEquals("Nonexistent label", calc.getMessage());
+        assertEquals("GSB", calc.getMessageCaption());
+
+        leftoverStackElements = 0;
+    }
+
+    public void test_GSB_overflow() {
+        type(0); // Avoid messing up existing stack elements while programming
+
+        calc.newProgramName = "tst";
+        cmd(PROG_NEW, 0);
+        cmd(LBL, 0);
+        type(1);
+        cmd(SUB);
+        cmd(IF_NEQUAL_Z);
+        cmd(GSB, 0);
+        cmd(RTN);
+        cmd(PROG_FINISH);
+
+        type(17);
+        cmd(PROG_RUN, 0);
+        assertX(0);
+        assertNull(calc.getMessage());
+
+        type(18);
+        cmd(PROG_RUN, 0);
+        assertX(1);
+        assertEquals("Return stack overflow", calc.getMessage());
+        assertEquals("GSB", calc.getMessageCaption());
+
+        leftoverStackElements = 3;
+    }
+
     public void test_RTN() {
         calc.newProgramName = "tst";
         cmd(PROG_NEW, 0);
@@ -3995,6 +4377,25 @@ public class CalcEngineTest extends TestCase {
         leftoverStackElements = 7;
     }
 
+    public void test_RTN_no_GSB() {
+        calc.newProgramName = "tst";
+        cmd(PROG_NEW, 0);
+        cmd(IF_EQUAL_Z);
+        cmd(RTN);
+        type(100);
+        cmd(PROG_FINISH);
+
+        type(2);
+        cmd(PROG_RUN, 0);
+        assertX(100);
+        
+        type(0);
+        cmd(PROG_RUN, 0);
+        assertX(0);
+        
+        leftoverStackElements = 4;
+    }
+
     public void test_DSE() {
         type(2); // Avoid messing up existing stack elements while programming
 
@@ -4011,8 +4412,18 @@ public class CalcEngineTest extends TestCase {
         type(2);
         cmd(PROG_RUN, 0);
         assertX(16);
-        
-        leftoverStackElements = 3;
+        cmd(RCL, 2);
+        assertX(802.90099);
+
+        type(2);
+        cmd(STO, 2);
+        type(2);
+        cmd(PROG_RUN, 0);
+        assertX(16);
+        cmd(RCL, 2);
+        assertX(0);
+
+        leftoverStackElements = 7;
     }
 
     public void test_ISG() {
@@ -4031,8 +4442,18 @@ public class CalcEngineTest extends TestCase {
         type(2);
         cmd(PROG_RUN, 0);
         assertX(16);
-        
-        leftoverStackElements = 3;
+        cmd(RCL, 2);
+        assertX(240.16080);
+
+        type(-2.00100);
+        cmd(STO, 2);
+        type(2);
+        cmd(PROG_RUN, 0);
+        assertX(65536);
+        cmd(RCL, 2);
+        assertX(2.00100);
+
+        leftoverStackElements = 7;
     }
 
     public void test_PROG_DIFF() {
@@ -4048,6 +4469,11 @@ public class CalcEngineTest extends TestCase {
         assertX(4);
         
         leftoverStackElements = 3;
+    }
+    
+    public void test_VERSION() {
+        cmd(VERSION);
+        assertX(4.50);
     }
 
     public void test_MONITOR_NONE() {
