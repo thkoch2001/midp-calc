@@ -1654,6 +1654,8 @@ public final class CalcEngine
                 break;
 
             case PYX:
+            {
+                boolean integral = x.r.isIntegral() && y.r.isIntegral();
                 if (y.r.isNegative() && x.r.isIntegral()) {
                     // Special case
                     // Py,x = (-1)^x * fact(-y-1+x)/fact(-y-1)
@@ -1674,9 +1676,14 @@ public final class CalcEngine
                     y.r.fact();
                     y.r.div(x.r);
                 }
+                if (integral)
+                    y.r.round();
                 break;
+            }
 
             case CYX:
+            {
+                boolean integral = x.r.isIntegral() && y.r.isIntegral();
                 if (y.r.isNegative() && x.r.isIntegral()) {
                     // Special case
                     // Cy,x = (-1)^x * fact(-y-1+x)/(fact(-y-1) * fact(x))
@@ -1703,7 +1710,10 @@ public final class CalcEngine
                     y.r.fact();
                     y.r.div(x.r);
                 }
+                if (integral)
+                    y.r.round();
                 break;
+            }
 
             case ATAN2:
                 if (unit) {

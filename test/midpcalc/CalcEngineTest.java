@@ -1182,8 +1182,20 @@ public class CalcEngineTest extends TestCase {
         type(1);
         cmd(PYX);
         assertX(-4);
+        
+        enter(1000);
+        enter();
+        type(1);
+        cmd(PYX);
+        cmd(SUB); // 1000!/(1000-1)! - 1000 == 0
+        assertX(0);
+        
+        enter(3.5);
+        type(1);
+        cmd(PYX);
+        assertX(3.5);
 
-        leftoverStackElements = 2;
+        leftoverStackElements = 4;
     }
 
     public void test_CYX() {
@@ -1197,7 +1209,19 @@ public class CalcEngineTest extends TestCase {
         cmd(CYX);
         assertX(-4);
 
-        leftoverStackElements = 2;
+        enter(1000);
+        enter();
+        type(999);
+        cmd(CYX);
+        cmd(SUB); // 1000!/((1000-999)!*999!) - 1000 == 0
+        assertX(0);
+
+        enter(3.5);
+        type(2.5);
+        cmd(CYX);
+        assertX(3.5);
+
+        leftoverStackElements = 4;
     }
 
     public void test_FACT() {
