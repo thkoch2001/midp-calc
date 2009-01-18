@@ -2704,6 +2704,33 @@ public class CalcEngineTest extends TestCase {
         stackPreserved = false;
     }
 
+    public void test_ROLLDN_N() {
+        cmd(CLS);
+        cmd(ROLLDN_N, 1);
+        assertX("");
+        enter(1);
+        enter(2);
+        type(3);
+        cmd(ROLLDN_N, 0);
+        assertZ(1);
+        assertY(2);
+        assertX(3);
+        cmd(ROLLDN_N, 1);
+        assertZ(1);
+        assertY(3);
+        assertX(2);
+        cmd(ROLLDN_N, 2);
+        assertZ(2);
+        assertY(1);
+        assertX(3);
+        cmd(ROLLDN_N, 3);
+        assertZ(2);
+        assertY(1);
+        assertX(3);
+
+        stackPreserved = false;
+    }
+
     public void test_ROLLUP() {
         cmd(CLS);
         cmd(ROLLUP);
@@ -2723,6 +2750,31 @@ public class CalcEngineTest extends TestCase {
         assertZ(1);
         assertY(2);
         assertX(3);
+
+        stackPreserved = false;
+    }
+
+    public void test_ROLLUP_N() {
+        cmd(CLS);
+        enter(1);
+        enter(2);
+        type(3);
+        cmd(ROLLUP_N, 0);
+        assertZ(1);
+        assertY(2);
+        assertX(3);
+        cmd(ROLLUP_N, 1);
+        assertZ(1);
+        assertY(3);
+        assertX(2);
+        cmd(ROLLUP_N, 2);
+        assertZ(3);
+        assertY(2);
+        assertX(1);
+        cmd(ROLLUP_N, 3);
+        assertZ(3);
+        assertY(2);
+        assertX(1);
 
         stackPreserved = false;
     }

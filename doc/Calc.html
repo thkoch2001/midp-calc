@@ -792,6 +792,12 @@ instead of math/trig in HEX/OCT/BIN mode)</a></h3>
     <li><b>rollup</b>: Roll stack up
     <li><b>RCL st#</b>: Copy any stack location into x
     <li><b>x&harr;st#</b>: Exchange x with any stack element (y is element 1)
+    <li><b>move dn#</b>: Move down any stack location into x. This is
+    equivalent to a <b>rollup</b> operation where only the (n+1) lowest stack
+    elements are involved.
+    <li><b>move up#</b>: Move x up to any stack location. This is equivalent
+    to a <b>rolldn</b> operation where only the (n+1) lowest stack elements are
+    involved.
     <li><b>clear</b>: Clear the stack
   </ul>
   <li><a id="Memory" name="Memory">Memory</a>

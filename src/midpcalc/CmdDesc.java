@@ -171,6 +171,8 @@ public final class CmdDesc
             case CalcEngine.XCHGST:return brief ? "x«st#" : "stack/x«st#";
             case CalcEngine.ROLLDN:return brief ? "rolldn" : "stack/rolldn";
             case CalcEngine.ROLLUP:return brief ? "rollup" : "stack/rollup";
+            case CalcEngine.ROLLDN_N:return brief ? "move up#" : "stack/move up#";
+            case CalcEngine.ROLLUP_N:return brief ? "move dn#" : "stack/move dn#";
             case CalcEngine.CONST_c:return brief ? "c" : "const/univ/c";
             case CalcEngine.CONST_h:return brief ? "h" : "const/univ/h";
             case CalcEngine.CONST_mu_0:return brief ? "µ¸0" : "const/univ/µ¸0";
@@ -381,6 +383,8 @@ public final class CmdDesc
             case CalcEngine.GSB:
             case CalcEngine.DSE:
             case CalcEngine.ISG:
+            case CalcEngine.ROLLDN_N:
+            case CalcEngine.ROLLUP_N:
                 return NUMBER_REQUIRED;
 
             case CalcEngine.POINT_DOT:

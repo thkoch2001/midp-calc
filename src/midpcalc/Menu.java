@@ -112,7 +112,13 @@ class Menu
                     command(CalcEngine.RCLST),
                     command(CalcEngine.ROLLDN),
                     command(CalcEngine.ROLLUP),
-                    command(CalcEngine.XCHGST)
+                    command(CalcEngine.XCHGST),
+                    subMenu("more", CmdDesc.TITLE_SKIP,
+                        command(CalcEngine.ROLLUP_N),
+                        null,
+                        null,
+                        command(CalcEngine.ROLLDN_N)
+                    )
                 ),
                 command(CalcEngine.CLS)
             ),

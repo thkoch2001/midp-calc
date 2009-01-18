@@ -294,7 +294,9 @@ public final class CalcEngine
     public static final int MATRIX_MIN     = 282;
     public static final int MATRIX_MAX     = 283;
     public static final int UNIT_CLEAR     = 284;
-    public static final int UNIT_DESCRIBE   = 285;
+    public static final int UNIT_DESCRIBE  = 285;
+    public static final int ROLLDN_N       = 286;
+    public static final int ROLLUP_N       = 287;
 
     public static final int MATRIX_STO     = 0x0200; // Special bit pattern
     public static final int MATRIX_RCL     = 0x0300; // Special bit pattern
@@ -383,7 +385,7 @@ public final class CalcEngine
     private static final int UNDO_ROLLUP = 9;
     private static final int UNDO_XCHGST =10;
     private int undoOp = UNDO_NONE;
-    private int xchgParam = 0;
+    private int undoParam = 0;
 
     public boolean progRecording;
     public boolean progRunning;
@@ -1188,7 +1190,7 @@ public final class CalcEngine
                 if (inputBuf.length()==0) {
                     inputInProgress = false;
                     // This will undo the rollUp that input started with
-                    rollDown(true);
+                    rollDown(0, true);
                     return;
                 }
                 inputBuf.setLength(inputBuf.length()-1);
@@ -1305,7 +1307,7 @@ public final class CalcEngine
         // If routine has not returned yet, we have new input data
         if (!inputInProgress) {
             inputInProgress = true;
-            rollUp(true);
+            rollUp(0, true);
         } else {
             repaint(1);
         }
@@ -1331,12 +1333,11 @@ public final class CalcEngine
         inputInProgress = false;
     }
 
-    private void rollUp(boolean whole) {
-        int top;
+    private void rollUp(int top, boolean whole) {
         if (whole) {
             top = STACK_SIZE-1;
         } else {
-            top = getStackHeight()-1;
+            top = Math.min(top, getStackHeight()-1);
             if (top<=0)
                 return;
         }
@@ -1349,12 +1350,11 @@ public final class CalcEngine
         repaintAll();
     }
 
-    private void rollDown(boolean whole) {
-        int top;
+    private void rollDown(int top, boolean whole) {
         if (whole) {
             top = STACK_SIZE-1;
         } else {
-            top = getStackHeight()-1;
+            top = Math.min(top, getStackHeight()-1);
             if (top<=0)
                 return;
         }
@@ -1373,7 +1373,7 @@ public final class CalcEngine
     }
 
     private void enter() {
-        rollUp(true);
+        rollUp(0, true);
         saveUndo(UNDO_PUSH, null, stack[0], null);
         stack[0].copy(stack[1]);
     }
@@ -1874,7 +1874,7 @@ public final class CalcEngine
         grad = Complex.grad;
 
         x.makeEmpty();
-        rollDown(true);
+        rollDown(0, true);
     }
 
     void statAB(Real a, Real b, Real SUMx, Real SUMx2,
@@ -2595,7 +2595,7 @@ public final class CalcEngine
     }
 
     void push(Real r, Real i, long unit) {
-        rollUp(true);
+        rollUp(0, true);
         saveUndo(UNDO_PUSH, null, stack[0], null);
         stack[0].set(r, i, unit);
     }
@@ -2618,7 +2618,7 @@ public final class CalcEngine
     }
     
     void push(Matrix M) {
-        rollUp(true);
+        rollUp(0, true);
         saveUndo(UNDO_PUSH, null, stack[0], null);
         stack[0].set(M);
     }
@@ -2843,8 +2843,8 @@ public final class CalcEngine
 
         x.makeEmpty();
         y.makeEmpty();
-        rollDown(true);
-        rollDown(true);
+        rollDown(0, true);
+        rollDown(0, true);
     }
 
     private void sum(int cmd) {
@@ -2958,8 +2958,8 @@ public final class CalcEngine
     }
 
     private void stat2(int cmd) {
-        rollUp(true);
-        rollUp(true);
+        rollUp(0, true);
+        rollUp(0, true);
         ComplexMatrixElement x = stack[0];
         ComplexMatrixElement y = stack[1];
         saveUndo(UNDO_PUSH2, null, x, y);
@@ -3065,7 +3065,7 @@ public final class CalcEngine
 
     private void stat1(int cmd) {
         allocStat();
-        rollUp(true);
+        rollUp(0, true);
         ComplexMatrixElement x = stack[0];
         saveUndo(UNDO_PUSH, null, x, null);
         x.clear();
@@ -3332,14 +3332,14 @@ public final class CalcEngine
                 break;
 
             case UNDO_BINARY:
-                rollUp(true);
+                rollUp(0, true);
                 stack[0].copy(lastx);
                 stack[1].copy(lasty);
                 break;
 
             case UNDO_TRINARY:
-                rollUp(true);
-                rollUp(true);
+                rollUp(0, true);
+                rollUp(0, true);
                 stack[0].copy(lastx);
                 stack[1].copy(lasty);
                 stack[2].copy(lastz);
@@ -3347,14 +3347,14 @@ public final class CalcEngine
 
             case UNDO_PUSH:
                 stack[0].copy(lasty);
-                rollDown(true);
+                rollDown(0, true);
                 break;
 
             case UNDO_PUSH2:
                 stack[0].copy(lasty);
                 stack[1].copy(lastz);
-                rollDown(true);
-                rollDown(true);
+                rollDown(0, true);
+                rollDown(0, true);
                 break;
 
             case UNDO_XY:
@@ -3366,19 +3366,19 @@ public final class CalcEngine
             case UNDO_PUSHXY:
                 stack[0].copy(lasty);
                 stack[1].copy(lastx);
-                rollDown(true);
+                rollDown(0, true);
                 break;
 
             case UNDO_ROLLDN:
-                rollUp(false);
+                rollUp(undoParam, false);
                 break;
 
             case UNDO_ROLLUP:
-                rollDown(false);
+                rollDown(undoParam, false);
                 break;
 
             case UNDO_XCHGST:
-                xchgSt(xchgParam);
+                xchgSt(undoParam);
                 break;
         }
         saveUndo(UNDO_NONE /* Can't undo any more */, null, null, null);
@@ -3850,13 +3850,25 @@ public final class CalcEngine
                 break;
 
             case ROLLDN:
-                rollDown(false);
-                saveUndo(UNDO_ROLLDN, null, null, null);
+                param = getStackHeight()-1;
+                // fall-through to next case...
+            case ROLLDN_N:
+                if (param > 0 && !stack[param].isEmpty()) {
+                    rollDown(param, false);
+                    saveUndo(UNDO_ROLLDN, null, null, null);
+                    undoParam = param; // Extra undo information!
+                }
                 break;
 
             case ROLLUP:
-                rollUp(false);
-                saveUndo(UNDO_ROLLUP, null, null, null);
+                param = getStackHeight()-1;
+                // fall-through to next case...
+            case ROLLUP_N:
+                if (param > 0 && !stack[param].isEmpty()) {
+                    rollUp(param, false);
+                    saveUndo(UNDO_ROLLUP, null, null, null);
+                    undoParam = param; // Extra undo information!
+                }
                 break;
 
             case XCHG:
@@ -3866,7 +3878,7 @@ public final class CalcEngine
                 if (param != 0 && !stack[param].isEmpty()) {
                     xchgSt(param);
                     saveUndo(UNDO_XCHGST, null, null, null);
-                    xchgParam = param; // Extra undo information!
+                    undoParam = param; // Extra undo information!
                 }
                 break;
 
@@ -4008,7 +4020,7 @@ public final class CalcEngine
                                "complex or greater than 2^31-1.");
                     push(Real.NAN);
                 } else {
-                    rollUp(true);
+                    rollUp(0, true);
                     saveUndo(UNDO_PUSHXY, stack[1], stack[0], null);
                     int a = rTmp.toInteger();
                     int b = greatestFactor(a);
@@ -4024,7 +4036,7 @@ public final class CalcEngine
                 break;
 
             case CPLX_SPLIT:
-                rollUp(true);
+                rollUp(0, true);
                 saveUndo(UNDO_PUSHXY, stack[1], stack[0], null);
                 // What if matrix?
                 stack[0].r.assign(stack[1].r);
@@ -4296,8 +4308,8 @@ public final class CalcEngine
                 break;
 
             case FREE_MEM:
-                rollUp(true);
-                rollUp(true);
+                rollUp(0, true);
+                rollUp(0, true);
                 Runtime.getRuntime().gc();
                 stack[0].clear();
                 stack[1].clear();
@@ -5240,7 +5252,7 @@ public final class CalcEngine
                 } else if (graphCmd == PROG_DRAWZZ) {
                     if (zzN >= (1<<zzNbits)) {
                         try {
-                            Thread.sleep(500);
+                            Thread.sleep(100);
                         } catch (InterruptedException e) {}
                         return;
                     }
@@ -5463,7 +5475,7 @@ public final class CalcEngine
                     g.setColor(random(0x1000000));
                     g.drawLine(x1,y1,x2,y2);
                 }
-                return; // Return directly, since continueProgram runs for 500ms
+                return; // Return directly, since continueProgram runs for 100ms
             }
             else // Must be min/max
             {
@@ -5540,7 +5552,7 @@ public final class CalcEngine
                 }
             }
         }
-        while (System.currentTimeMillis()-progRunStart < 500);
+        while (System.currentTimeMillis()-progRunStart < 100);
 
         if (graphCmd == PROG_SOLVE || graphCmd == PROG_MINMAX) {
             // Draw progress
