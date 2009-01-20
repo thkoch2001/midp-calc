@@ -638,13 +638,16 @@ href="Calc.html#Notes">notes</a> section.
     <li>Create matrix
     <ul>
       <li><b>new</b>: Create new matrix with y rows and x columns
-      <li><b>&rarr;M</b>: Build a new matrix with the given dimensions using
+      <li><b>&rarr;M</b>: Build a new matrix with dimensions selected from
+      submenu, using
       elements taken from the stack. Before executing the operation, enter the
       matrix elements to the stack, a<sub>11</sub> first, then a<sub>12</sub>,
       one row at a time. You cannot undo this operation
-      <li><b>&rarr;row</b>: Build a new row matrix with the given dimension
+      <li><b>&rarr;row</b>: Build a new row matrix with dimension selected
+      from submenu,
       using elements taken from the stack. You cannot undo this operation
-      <li><b>&rarr;col</b>: Build a new column matrix with the given dimension
+      <li><b>&rarr;col</b>: Build a new column matrix with dimension selected
+      from submenu,
       using elements taken from the stack. You cannot undo this operation
     </ul>
     <li>Matrix parts
@@ -660,7 +663,8 @@ href="Calc.html#Notes">notes</a> section.
       <li><b>a<sub>yx</sub></b>: Pops the column (x) and the row (y) off
   the stack, then pushes the element identified by this row and
   column, taken from the <em>lowest</em> matrix on the stack
-      <li><b>break up</b>: Break up the matrix in x and push the elements on
+      <li><b>break up</b>: Break up the matrix in x and push the individual
+      elements on
       the stack. You cannot undo this operation, although the previous matrix
       is stored in "LAST x". This operation does the opposite of the
       "&rarr;M", "&rarr;row" and "&rarr;col" operations.
@@ -1343,7 +1347,7 @@ complex result. Alternatively, a complex number can be created from x
 and y using the "r&rarr;cplx" operation.<br>
 
 <br>
-Most operations that logically extends to complex arguments have been
+Most operations that logically extend to complex arguments have been
 implemented for complex numbers, i.e. all basic operations, all simple
 operations except "%chg", all power operations and all trigonometric
 operations. For convenience, integer operations (rounding and
@@ -1396,9 +1400,9 @@ operations "matrix/stack" and "matrix/concat" to combine two normal
 numbers.<br>
 
 <br>
-Most operations that logically extends to matrix arguments have been
-implemented for matrices, i.e. all basic operations, "1/x" and
-"x²", and y<sup>x</sup> for integer x.<br>
+Most operations that logically extend to matrix arguments have been
+implemented for matrices, i.e. all basic operations, "1/x",
+"x²", and "y<sup>x</sup>" for square matrices and integer x.<br>
 
 <br>
 All stack and memory operations handle matrices
@@ -1409,13 +1413,14 @@ have not been implemented yet, returns <tt>nan</tt> when used with
 matrix input(s).<br>
 
 <br>
-Matrices are displayed on one line as e.g. M:[3x4]. This indicates a
+Matrices are displayed on one line as e.g. "M:[3x4]". This indicates a
 matrix of 3 rows and 4 columns. A 1x1 matrix is automatically
-converted to a normal number.<br>
-
-<br>
+converted to a normal number. Matrices can contain complex numbers and some
+complex operations are supported. Matrices can not contain numbers with
+units, and not other matrices.
 With a matrix on the stack you can press "mode/monitor/matrix" to view and
-edit the matrix (see <a href="Calc.html#MonitorNote"><b>(*)</b></a>).<br>
+edit the <em>lowest</em> matrix on the stack
+(see <a href="Calc.html#MonitorNote"><b>(*)</b></a>).<br>
 
 <br>
 <em>Matrix limitations:</em> There are a few limits to the size of the
@@ -1424,11 +1429,11 @@ matrices with "new" with more than 65536 rows or columns. Even if you
 manage to create an even larger matrix than this by concatenating or
 stacking such matrices, the matrix would not be saved when the
 calculator exited. Due to a limitation when storing programs, matrix
-element editing (through the matrix monitor) of elements beyond column
-64 or row 128 will not be stored in a program.<br>
+element editing (through the matrix monitor) of elements beyond row 64 or
+column 64 will not be stored in a program.<br>
 
 <br>
-Apart from these limitations in the program itself, it is the
+Apart from these limitations, it is the
 limitations of the host (i.e. you phone) that may be the most
 severe. When creating especially large matrices you may experience
 "Out of memory error". If you get this, is advised to exit the program
@@ -1456,8 +1461,8 @@ automatically appear with their proper SI unit.<br>
 
 <br>
 Unit arithmetic works for most operations that logically extend to arguments
-with units, i.e. all basic operations, simple operations, and y<sup>x</sup>
-and <sup>x</sup>&#8730;<span style="text-decoration: overline;">y</span> for
+with units, i.e. all basic operations, simple operations, and "y<sup>x</sup>"
+and "<sup>x</sup>&#8730;<span style="text-decoration: overline;">y</span>" for
 integer x. Matrices can not have units, but complex numbers can (e.g. when
 calculating electric potential, V).<br>
 
