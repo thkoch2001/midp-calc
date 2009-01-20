@@ -204,7 +204,6 @@ public final class CalcCanvas
     private boolean internalRepaint = false;
     private int offX, offY, offYMonitor, nDigits, maxLines, maxLinesMonitor, numberFontWidth, numberFontHeight;
     private int monitorOffY, monitorOffX, nMonitorDigits, maxMonitorLines, monitorFontWidth, monitorFontHeight;
-    private boolean evenFrame = true;
     private int menuX,menuY,menuW,menuH;
     private int header,footer;
     private static final int TOP_LEFT = Graphics.TOP | Graphics.LEFT;
@@ -490,7 +489,7 @@ public final class CalcCanvas
         sizeChanged(getWidth(),getHeight());
     }
 
-    public void drawModeIndicators(Graphics g, boolean toggleRun, boolean stop)
+    public void drawModeIndicators(Graphics g, boolean blinkRun, boolean stop)
     {
         g.setColor(Colors.c[Colors.FOREGROUND]);
         g.fillRect(0,0,getWidth(),header-1);
@@ -500,6 +499,9 @@ public final class CalcCanvas
         if (calc.begin && (calc.progRecording || calc.progRunning)) {
             n = 5;
         }
+
+        if (blinkRun)
+            blinkRun = ((System.currentTimeMillis()/500) & 1) != 0;
 
         UniFont font = menuFont.smallerFont;
         int w = font.stringWidth("ENG");
@@ -552,12 +554,8 @@ public final class CalcCanvas
             if (x+w-1>getWidth())
                 x = getWidth()-w-1;
             font.drawString(g,x,y,"STOP");      
-        } else if (calc.progRunning && (evenFrame || !toggleRun)) {
+        } else if (calc.progRunning && !blinkRun) {
             font.drawString(g,x,y,"RUN");
-        }
-        
-        if (toggleRun) {
-            evenFrame = !evenFrame;
         }
     }
 
@@ -1056,7 +1054,6 @@ public final class CalcCanvas
     
     public void prepareGraph(int graphCommand, int graphParam) {
         if (calc.prepareGraph(graphCommand,graphParam)) {
-            evenFrame = true;
             midlet.displayGraph(0,header-1,getWidth(),
                                 getHeight()-header+1);
             numRepaintLines = 100;
