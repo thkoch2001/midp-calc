@@ -311,6 +311,10 @@ public final class CmdDesc
             case CalcEngine.UNIT_CLEAR:return brief ? "clear" : "conv/unit/clear";
             case CalcEngine.UNIT_DESCRIBE:return brief ? "describe" : "conv/unit/describe";
             case CalcEngine.VERSION:return brief ? "ver." : "mode/sys/ver.";
+            case CalcEngine.TO_ROW:return brief ? "­row" : "matrix/­M";
+            case CalcEngine.TO_COL:return brief ? "­col" : "matrix/­M";
+            case CalcEngine.TO_MATRIX:return brief ? "­M" : "matrix/­M";
+            case CalcEngine.BREAK_MATRIX:return brief ? "break up" : "matrix/break up";
             default:
                 return "[nop]";
         }
@@ -324,12 +328,14 @@ public final class CmdDesc
     public static final short FONT_REQUIRED = 8;
     public static final short UNIT_REQUIRED = 16;
     public static final short UNIT_CONVERT_REQUIRED = 32;
-    public static final short SUBMENU_REQUIRED = 63;
-    public static final short TITLE_SKIP = 64;
-    public static final short NO_REPEAT = 128;
-    public static final short REPEAT_PARENT = 256;
-    public static final short NO_PROG = 512;
-  
+    public static final short ROW_SIZE_REQUIRED = 64;
+    public static final short COL_SIZE_REQUIRED = 128;
+    public static final short MATRIX_SIZE_REQUIRED = 256;
+    public static final short SUBMENU_REQUIRED = 511;
+    public static final short TITLE_SKIP = 512;
+    public static final short NO_REPEAT = 1024;
+    public static final short REPEAT_PARENT = 2048;
+    public static final short NO_PROG = 4096;
 
     public static short getFlags( int id ) {
         switch (id) {
@@ -441,6 +447,15 @@ public final class CmdDesc
             case CalcEngine.UNIT_CONVERT:
                 return UNIT_CONVERT_REQUIRED;
  
+            case CalcEngine.TO_ROW:
+                return ROW_SIZE_REQUIRED|REPEAT_PARENT;
+
+            case CalcEngine.TO_COL:
+                return COL_SIZE_REQUIRED|REPEAT_PARENT;
+
+            case CalcEngine.TO_MATRIX:
+                return MATRIX_SIZE_REQUIRED|REPEAT_PARENT;
+
             default:
                 return 0;
         }

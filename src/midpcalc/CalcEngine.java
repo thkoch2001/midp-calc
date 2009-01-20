@@ -297,6 +297,10 @@ public final class CalcEngine
     public static final int UNIT_DESCRIBE  = 285;
     public static final int ROLLDN_N       = 286;
     public static final int ROLLUP_N       = 287;
+    public static final int TO_ROW         = 288;
+    public static final int TO_COL         = 289;
+    public static final int TO_MATRIX      = 290;
+    public static final int BREAK_MATRIX   = 291;
 
     public static final int MATRIX_STO     = 0x0200; // Special bit pattern
     public static final int MATRIX_RCL     = 0x0300; // Special bit pattern
@@ -3305,7 +3309,65 @@ public final class CalcEngine
         }
         push(finance[which]);
     }
-    
+
+    public static int getMatrixSize(int param) {
+        int rows = 0, cols = 0;
+        switch (param) {
+            case 0: rows = 2; cols = 2; break;
+            case 1: rows = 2; cols = 3; break;
+            case 2: rows = 3; cols = 2; break;
+            case 3: rows = 3; cols = 3; break;
+            case 4: rows = 2; cols = 4; break;
+            case 5: rows = 3; cols = 4; break;
+            case 6: rows = 4; cols = 3; break;
+            case 7: rows = 4; cols = 2; break;
+            case 8: rows = 4; cols = 4; break;
+            case 9: rows = 2; cols = 5; break;
+            case 10: rows = 3; cols = 5; break;
+            case 11: rows = 5; cols = 3; break;
+            case 12: rows = 5; cols = 2; break;
+            case 13: rows = 2; cols = 6; break;
+            case 14: rows = 2; cols = 7; break;
+            case 15: rows = 7; cols = 2; break;
+            case 16: rows = 6; cols = 2; break;
+            case 17: rows = 2; cols = 8; break;
+            case 18: rows = 8; cols = 2; break;
+        }
+        return (rows << 16) + cols;
+    }
+
+    private void buildMatrix(int cmd, int param) {
+        int rows = 0, cols = 0;
+
+        saveUndo(UNDO_NONE, null, null, null);
+
+        switch (cmd) {
+            case TO_ROW:
+                rows = 1;
+                cols = param;
+                break;
+            case TO_COL:
+                rows = param;
+                cols = 1;
+                break;
+            case TO_MATRIX:
+                int s = getMatrixSize(param);
+                rows = s >> 16;
+                cols = s & 0xffff;
+                break;
+        }
+        Matrix M = new Matrix(rows,cols);
+        for (int i = 0; i < rows*cols; i++) {
+            int row = (rows*cols-i-1)/cols;
+            int col = (rows*cols-i-1)%cols;
+            M.setElement(row, col, stack[0].r, stack[0].i);
+            stack[0].makeEmpty();
+            rollDown(0, true);
+        }
+        stack[0].M = M;
+        stack[0].postProcess(false, false, true, true, false, false, 0);
+    }
+
     private void saveUndo(int op, ComplexMatrixElement x, ComplexMatrixElement y, ComplexMatrixElement z) {
         if (x != null)
             lastx.copy(x);
@@ -3717,6 +3779,10 @@ public final class CalcEngine
                 unary(cmd);
                 break;
 
+            case TO_ROW: case TO_COL: case TO_MATRIX:
+                buildMatrix(cmd,param);
+                break;
+
             case PI:          push(Real.PI);                         break;
             case CONST_c:     push(0x4000001c, 0x4779e12800000000L, uTmp.unity().m(1).s(-1).pack()); break;
             case CONST_h:     push(0x3fffff91, 0x6e182e2c4f8769d7L, uTmp.unity().J(1).s(1).pack()); break;
@@ -4047,6 +4113,21 @@ public final class CalcEngine
                 stack[0].str = null;
                 stack[1].str = null;
                 stack[0].unitStr = stack[1].unitStr;
+                break;
+
+            case BREAK_MATRIX:
+                saveUndo(UNDO_NONE, stack[0], null, null);
+                if (stack[0].isMatrix()) {
+                    Matrix M = stack[0].M;
+                    stack[0].makeEmpty();
+                    rollDown(0, true);
+                    for (int row = 0; row < M.rows; row++)
+                        for (int col = 0; col < M.cols; col++) {
+                            M.getElement(row, col, rTmp, rTmp2);
+                            rollUp(0, true);
+                            stack[0].set(rTmp, rTmp2);
+                        }
+                }
                 break;
 
             case FINANCE_STO:

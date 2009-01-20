@@ -412,26 +412,36 @@ class Menu
             intMenu
         ),
         subMenu("matrix",
-            command(CalcEngine.MATRIX_NEW),
-            command(CalcEngine.MATRIX_STACK),
-            command(CalcEngine.MATRIX_SPLIT),
-            command(CalcEngine.MATRIX_CONCAT),
-            subMenu("more", CmdDesc.TITLE_SKIP,
+            subMenu("create", CmdDesc.TITLE_SKIP,
+                command(CalcEngine.MATRIX_NEW),
+                command(CalcEngine.TO_ROW),
+                command(CalcEngine.TO_COL),
+                command(CalcEngine.TO_MATRIX)
+            ),
+            subMenu("parts", CmdDesc.TITLE_SKIP,
+                command(CalcEngine.MATRIX_SPLIT),
+                command(CalcEngine.MATRIX_ROW),
+                command(CalcEngine.MATRIX_COL),
+                command(CalcEngine.BREAK_MATRIX),
+                command(CalcEngine.MATRIX_AIJ)
+            ),
+            subMenu("math", CmdDesc.TITLE_SKIP,
                 command(CalcEngine.DETERM),
                 command(CalcEngine.TRANSP),
                 command(CalcEngine.TRACE),
                 command(CalcEngine.TRANSP_CONJ),
                 subMenu("more", CmdDesc.TITLE_SKIP,
                     command(CalcEngine.ABS),
-                    command(CalcEngine.MATRIX_SIZE),
-                    command(CalcEngine.MATRIX_ROW),
-                    command(CalcEngine.MATRIX_COL),
-                    subMenu("more", CmdDesc.TITLE_SKIP,
-                        command(CalcEngine.MATRIX_AIJ),
-                        command(CalcEngine.MATRIX_MAX),
-                        command(CalcEngine.MATRIX_MIN)
-                    )
+                    command(CalcEngine.MATRIX_MAX),
+                    command(CalcEngine.MATRIX_MIN),
+                    command(CalcEngine.MATRIX_SIZE)
                 )
+            ),
+            subMenu("combine", CmdDesc.TITLE_SKIP,
+                command(CalcEngine.MATRIX_CONCAT),
+                null,
+                null,
+                command(CalcEngine.MATRIX_STACK)
             )
         ),
         subMenu("prob",
@@ -570,6 +580,94 @@ class Menu
             command(CalcEngine.STO_X),
             null,
             command(CalcEngine.STP_X)
+        )
+    );
+    
+    static Menu rowSizeMenu = subMenu(null,
+        subMenu("[2-4]", CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,
+            null,
+            command("[1x2]", CalcCanvas.NUMBER_2, CmdDesc.REPEAT_PARENT),
+            command("[1x3]", CalcCanvas.NUMBER_3, CmdDesc.REPEAT_PARENT),
+            command("[1x4]", CalcCanvas.NUMBER_4, CmdDesc.REPEAT_PARENT)
+        ),
+        subMenu("[5-8]", CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,
+            command("[1x5]", CalcCanvas.NUMBER_5, CmdDesc.REPEAT_PARENT),
+            command("[1x6]", CalcCanvas.NUMBER_6, CmdDesc.REPEAT_PARENT),
+            command("[1x7]", CalcCanvas.NUMBER_7, CmdDesc.REPEAT_PARENT),
+            command("[1x8]", CalcCanvas.NUMBER_8, CmdDesc.REPEAT_PARENT)
+        ),
+        subMenu("[9-12]", CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,
+            command("[1x9]", CalcCanvas.NUMBER_9, CmdDesc.REPEAT_PARENT),
+            command("[1x10]", CalcCanvas.NUMBER_10, CmdDesc.REPEAT_PARENT),
+            command("[1x11]", CalcCanvas.NUMBER_11, CmdDesc.REPEAT_PARENT),
+            command("[1x12]", CalcCanvas.NUMBER_12, CmdDesc.REPEAT_PARENT)
+        ),
+        subMenu("[13-16]", CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,
+            command("[1x13]", CalcCanvas.NUMBER_13, CmdDesc.REPEAT_PARENT),
+            command("[1x14]", CalcCanvas.NUMBER_14, CmdDesc.REPEAT_PARENT),
+            command("[1x15]", CalcCanvas.NUMBER_15, CmdDesc.REPEAT_PARENT),
+            command("[1x16]", CalcCanvas.NUMBER_0+16, CmdDesc.REPEAT_PARENT)
+        )
+    );
+
+    static Menu colSizeMenu = subMenu(null,
+        subMenu("[2-4]", CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,
+            null,
+            command("[2x1]", CalcCanvas.NUMBER_2, CmdDesc.REPEAT_PARENT),
+            command("[3x1]", CalcCanvas.NUMBER_3, CmdDesc.REPEAT_PARENT),
+            command("[4x1]", CalcCanvas.NUMBER_4, CmdDesc.REPEAT_PARENT)
+        ),
+        subMenu("[5-8]", CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,
+            command("[5x1]", CalcCanvas.NUMBER_5, CmdDesc.REPEAT_PARENT),
+            command("[6x1]", CalcCanvas.NUMBER_6, CmdDesc.REPEAT_PARENT),
+            command("[7x1]", CalcCanvas.NUMBER_7, CmdDesc.REPEAT_PARENT),
+            command("[8x1]", CalcCanvas.NUMBER_8, CmdDesc.REPEAT_PARENT)
+        ),
+        subMenu("[9-12]", CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,
+            command("[9x1]", CalcCanvas.NUMBER_9, CmdDesc.REPEAT_PARENT),
+            command("[10x1]", CalcCanvas.NUMBER_10, CmdDesc.REPEAT_PARENT),
+            command("[11x1]", CalcCanvas.NUMBER_11, CmdDesc.REPEAT_PARENT),
+            command("[12x1]", CalcCanvas.NUMBER_12, CmdDesc.REPEAT_PARENT)
+        ),
+        subMenu("[13-16]", CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,
+            command("[13x1]", CalcCanvas.NUMBER_13, CmdDesc.REPEAT_PARENT),
+            command("[14x1]", CalcCanvas.NUMBER_14, CmdDesc.REPEAT_PARENT),
+            command("[15x1]", CalcCanvas.NUMBER_15, CmdDesc.REPEAT_PARENT),
+            command("[16x1]", CalcCanvas.NUMBER_0+16, CmdDesc.REPEAT_PARENT)
+        )
+    );
+
+    static Menu matrixSizeMenu = subMenu(null,
+        subMenu("[2-3]", CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,
+            command("[2x2]", CalcCanvas.NUMBER_0, CmdDesc.REPEAT_PARENT),
+            command("[2x3]", CalcCanvas.NUMBER_1, CmdDesc.REPEAT_PARENT),
+            command("[3x2]", CalcCanvas.NUMBER_2, CmdDesc.REPEAT_PARENT),
+            command("[3x3]", CalcCanvas.NUMBER_3, CmdDesc.REPEAT_PARENT)
+        ),
+        subMenu("[4]", CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,
+            command("[2x4]", CalcCanvas.NUMBER_4, CmdDesc.REPEAT_PARENT),
+            command("[3x4]", CalcCanvas.NUMBER_5, CmdDesc.REPEAT_PARENT),
+            command("[4x3]", CalcCanvas.NUMBER_6, CmdDesc.REPEAT_PARENT),
+            command("[4x2]", CalcCanvas.NUMBER_7, CmdDesc.REPEAT_PARENT),
+            command("[4x4]", CalcCanvas.NUMBER_8, CmdDesc.REPEAT_PARENT)
+        ),
+        subMenu("[5]", CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,
+            command("[2x5]", CalcCanvas.NUMBER_9, CmdDesc.REPEAT_PARENT),
+            command("[3x5]", CalcCanvas.NUMBER_10, CmdDesc.REPEAT_PARENT),
+            command("[5x3]", CalcCanvas.NUMBER_11, CmdDesc.REPEAT_PARENT),
+            command("[5x2]", CalcCanvas.NUMBER_12, CmdDesc.REPEAT_PARENT)
+        ),
+        subMenu("[6-7]", CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,
+            command("[2x6]", CalcCanvas.NUMBER_13, CmdDesc.REPEAT_PARENT),
+            command("[2x7]", CalcCanvas.NUMBER_14, CmdDesc.REPEAT_PARENT),
+            command("[7x2]", CalcCanvas.NUMBER_15, CmdDesc.REPEAT_PARENT),
+            command("[6x2]", CalcCanvas.NUMBER_0+16, CmdDesc.REPEAT_PARENT)
+        ),
+        subMenu("[8]", CmdDesc.TITLE_SKIP|CmdDesc.REPEAT_PARENT,
+            command("[2x8]", CalcCanvas.NUMBER_0+17, CmdDesc.REPEAT_PARENT),
+            null,
+            null,
+            command("[8x2]", CalcCanvas.NUMBER_0+18, CmdDesc.REPEAT_PARENT)
         )
     );
 

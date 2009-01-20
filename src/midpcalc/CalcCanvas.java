@@ -971,7 +971,10 @@ public final class CalcCanvas
                     (subItem.getFlags()&CmdDesc.FONT_REQUIRED)   !=0 ? Menu.fontMenu :
                     (subItem.getFlags()&CmdDesc.PROG_REQUIRED)   !=0 ? Menu.progMenu :
                     (subItem.getFlags()&CmdDesc.UNIT_REQUIRED)   !=0 ? Menu.unitMenu :
-                   Menu.unitConvertMenu;
+                    (subItem.getFlags()&CmdDesc.UNIT_CONVERT_REQUIRED)!=0 ? Menu.unitConvertMenu :
+                    (subItem.getFlags()&CmdDesc.ROW_SIZE_REQUIRED)!=0 ? Menu.rowSizeMenu :
+                    (subItem.getFlags()&CmdDesc.COL_SIZE_REQUIRED)!=0 ? Menu.colSizeMenu :
+                    Menu.matrixSizeMenu;
                 // Set correct labels
                 if (sub == Menu.progMenu)
                     for (int i=0; i<4; i++)

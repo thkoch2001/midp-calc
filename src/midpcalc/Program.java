@@ -440,6 +440,15 @@ public class Program implements Monitorable {
             return cmdStr + " " + CalcEngine.statLabels[decoded.param];
         } else if ((CmdDesc.getFlags(decoded.cmd) & CmdDesc.PROG_REQUIRED) != 0) {
             return cmdStr + " " + progLabels[decoded.param]; // for future extensions
+        } else if ((CmdDesc.getFlags(decoded.cmd) & CmdDesc.ROW_SIZE_REQUIRED) != 0) {
+            return cmdStr + "[1x" + decoded.param + "]";
+        } else if ((CmdDesc.getFlags(decoded.cmd) & CmdDesc.COL_SIZE_REQUIRED) != 0) {
+            return cmdStr + "[" + decoded.param + "x1]";
+        } else if ((CmdDesc.getFlags(decoded.cmd) & CmdDesc.MATRIX_SIZE_REQUIRED) != 0) {
+            int s = CalcEngine.getMatrixSize(decoded.param);
+            int rows = s >> 16;
+            int cols = s & 0xffff;
+            return cmdStr + "[" + rows + "x" + cols + "]";
         }
         return cmdStr;
     }

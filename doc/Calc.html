@@ -635,39 +635,63 @@ href="Calc.html#Notes">notes</a> section.
   </ul>
   <li>Matrix <a href="Calc.html#MatrixNote"><b>(*)</b></a>
   <ul>
-    <li><b>new</b>: Create new matrix with y rows and x columns
-    <li><b>concat</b>: Concatenate matrix in y and matrix in x. Plain
-  numbers can be concatenated into row vectors
-    <li><b>stack</b>: Stack matrix in y on top of matrix in x. Plain
-  numbers can be stacked into column vectors
-    <li><b>split</b>: Split matrix in y at row or column specified by
+    <li>Create matrix
+    <ul>
+      <li><b>new</b>: Create new matrix with y rows and x columns
+      <li><b>&rarr;M</b>: Build a new matrix with the given dimensions using
+      elements taken from the stack. Before executing the operation, enter the
+      matrix elements to the stack, a<sub>11</sub> first, then a<sub>12</sub>,
+      one row at a time. You cannot undo this operation
+      <li><b>&rarr;row</b>: Build a new row matrix with the given dimension
+      using elements taken from the stack. You cannot undo this operation
+      <li><b>&rarr;col</b>: Build a new column matrix with the given dimension
+      using elements taken from the stack. You cannot undo this operation
+    </ul>
+    <li>Matrix parts
+    <ul>
+      <li><b>split</b>: Split matrix in y at row or column specified by
   x. If x is positive, matrix is split horizontally after x rows. If x
   is negative, matrix is split vertically after -x columns
-    <li><b>det</b>: Calculate determinant of matrix in x. (This
+      <li><b>col<sub>x</sub></b>: Pops the column number off the stack, then
+  pushes a copy of the x'th column, taken from the <em>lowest</em> matrix on
+  the stack
+      <li><b>row<sub>x</sub></b>: Pops the row number off the stack, then pushes
+  a copy of the x'th row, taken from the <em>lowest</em> matrix on the stack
+      <li><b>a<sub>yx</sub></b>: Pops the column (x) and the row (y) off
+  the stack, then pushes the element identified by this row and
+  column, taken from the <em>lowest</em> matrix on the stack
+      <li><b>break up</b>: Break up the matrix in x and push the elements on
+      the stack. You cannot undo this operation, although the previous matrix
+      is stored in "LAST x". This operation does the opposite of the
+      "&rarr;M", "&rarr;row" and "&rarr;col" operations.
+    </ul>
+    <li>Combine matrices
+    <ul>
+      <li><b>concat</b>: Concatenate matrix in y and matrix in x. Plain
+  numbers can be concatenated into row vectors
+      <li><b>stack</b>: Stack matrix in y on top of matrix in x. Plain
+  numbers can be stacked into column vectors
+    </ul>
+    <li>Matrix math
+    <ul>
+      <li><b>det</b>: Calculate determinant of matrix in x. (This
   operation is just as slow as calculating the inverse by "1/x")
-    <li><b>Tr</b>: Calculate the trace of matrix in x, i.e. the sum of
+      <li><b>Tr</b>: Calculate the trace of matrix in x, i.e. the sum of
   all the elements along the diagonal
-    <li><b>A<sup>T</sup></b>: Transpose matrix in x
-    <li><b><span style="text-decoration:
+      <li><b>A<sup>T</sup></b>: Transpose matrix in x
+      <li><b><span style="text-decoration:
   overline;">A</span><sup>T</sup></b>: Transpose and conjungate matrix in x
-    <li><b>|A|<sub>F</sub></b>: Calculate the Frobenius norm of matrix
+      <li><b>abs</b>: Calculate the Frobenius norm of matrix
   in x, i.e. the square root of the sum of the squares of all the
   matrix elements. For row and column vectors this calculates the
   length of the vector
-    <li><b>size</b>: Pushes the number of rows and columns of the
+      <li><b>a<sub>max</sub></b>: Finds the matrix element with the maximum
+  value, taken from the <em>lowest</em> matrix on the stack
+      <li><b>a<sub>min</sub></b>: Finds the matrix element with the minimum
+  value, taken from the <em>lowest</em> matrix on the stack
+      <li><b>size</b>: Pushes the number of rows and columns of the
   <em>lowest</em> matrix on the stack
-    <li><b>col<sub>x</sub></b>: Pops the column number off the stack, then
-  pushes a copy of the x'th column, taken from the <em>lowest</em> matrix on
-  the stack
-    <li><b>row<sub>x</sub></b>: Pops the row number off the stack, then pushes
-  a copy of the x'th row, taken from the <em>lowest</em> matrix on the stack
-    <li><b>a<sub>yx</sub></b>: Pops the column (x) and the row (y) off
-  the stack, then pushes the element identified by this row and
-  column, taken from the <em>lowest</em> matrix on the stack
-    <li><b>a<sub>max</sub></b>: Finds the matrix element with the maximum
-  value, taken from the <em>lowest</em> matrix on the stack
-    <li><b>a<sub>min</sub></b>: Finds the matrix element with the minimum
-  value, taken from the <em>lowest</em> matrix on the stack
+    </ul>
   </ul>
   <li>Miscellaneous
   <ul>
@@ -1367,7 +1391,7 @@ number to view it.<br>
 <hr>
 <h3><a id="MatrixNote" name="MatrixNote">Matrix arithmetic</a></h3>
 
-Matrices can be created using the "matrix/new" operation or by using the
+Matrices can be created using the "matrix/create" operations or by using the
 operations "matrix/stack" and "matrix/concat" to combine two normal
 numbers.<br>
 
@@ -1390,27 +1414,8 @@ matrix of 3 rows and 4 columns. A 1x1 matrix is automatically
 converted to a normal number.<br>
 
 <br>
-There are two methods for filling a matrix with numbers. In the first
-method, you enter the two first numbers of the matrix and then either
-"matrix/concat" or "matrix/stack" the two numbers into a row or column
-vector. Continue concating or stacking more numbers until your first
-vector is complete. Then do the next vectors. Finally, you either
-stack together your row vectors or you concat together your column
-vectors until the matrix is complete. If you use the "repeat"
-operation on the basic menu this method requires the fewest button
-clicks.<br>
-
-<br>
-Alternatively, you can create an empty matrix by "matrix/new", and
-then press "mode/monitor/matrix" to edit the matrix (see <a
-href="Calc.html#MonitorNote"><b>(*)</b></a>). When monitoring is
-active you can go into the monitor area by pressing the middle button
-from the "basic" menu. If you enter a number on the stack before you
-go into the matrix, you can press the middle button again to move this
-number from the stack into the highlighted matrix element. This brings
-you out of matrix editing again and you can enter a new number. Repeat
-this (number, up-middle-middle) until the matrix is complete. This
-method requires a few more button clicks, but it is more visual.<br>
+With a matrix on the stack you can press "mode/monitor/matrix" to view and
+edit the matrix (see <a href="Calc.html#MonitorNote"><b>(*)</b></a>).<br>
 
 <br>
 <em>Matrix limitations:</em> There are a few limits to the size of the
