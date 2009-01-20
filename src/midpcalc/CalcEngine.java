@@ -768,7 +768,7 @@ public final class CalcEngine
             if (matrices[i] != null) {
                 Matrix M = matrices[i];
                 if (M.rows<0xffff && M.cols<0xffff) {
-                    out.writeShort(2+2+M.rows*M.cols*(12+(M.DI!=null?12:0)));
+                    out.writeShort(2+2+M.rows*M.cols*(12+(M.isComplex()?12:0)));
                     out.writeShort((short)M.rows);
                     out.writeShort((short)M.cols);
                     for (int c=0; c<M.cols; c++)
@@ -777,7 +777,7 @@ public final class CalcEngine
                             rTmp.toBytes(realBuf,0);
                             out.write(realBuf);
                         }
-                    if (M.DI != null)
+                    if (M.isComplex())
                         for (int c=0; c<M.cols; c++)
                             for (int r=0; r<M.rows; r++) {
                                 M.getElement(r,c,null,rTmp);
@@ -1109,8 +1109,8 @@ public final class CalcEngine
         ComplexMatrixElement x = stack[0];
         ComplexMatrixElement y = stack[1];
         return x.isComplex() || y.isComplex() ||
-            (x.isMatrix() && x.M.DI != null) ||
-            (y.isMatrix() && y.M.DI != null);
+            (x.isMatrix() && x.M.isComplex()) ||
+            (y.isMatrix() && y.M.isComplex());
     }
 
     public void setDisplayProperties(int nDigits, int maxDisplayedMonitorSize) {
@@ -1775,15 +1775,22 @@ public final class CalcEngine
                 break;
 
             case TO_CPLX:
-                complexOk = true;
-                complex = true;
-                if (unit) {
-                    unitOk = true;
-                    y.unit = Unit.add(y.unit, x.unit, rTmp, null);
-                    y.r.mul(rTmp);
+                if (matrix) {
+                    if (x.isMatrix() && y.isMatrix()) {
+                        matrixOk = true;
+                        y.M = Matrix.toComplex(x.M, y.M);
+                    }
+                } else {
+                    complexOk = true;
+                    complex = true;
+                    if (unit) {
+                        unitOk = true;
+                        y.unit = Unit.add(y.unit, x.unit, rTmp, null);
+                        y.r.mul(rTmp);
+                    }
+                    y.i.assign(y.r);
+                    y.r.assign(x.r);
                 }
-                y.i.assign(y.r);
-                y.r.assign(x.r);
                 break;
 
             case MIN:
@@ -3358,11 +3365,13 @@ public final class CalcEngine
         }
         Matrix M = new Matrix(rows,cols);
         for (int i = 0; i < rows*cols; i++) {
+            if (i > 0) {
+                stack[0].makeEmpty();
+                rollDown(0, true);
+            }
             int row = (rows*cols-i-1)/cols;
             int col = (rows*cols-i-1)%cols;
             M.setElement(row, col, stack[0].r, stack[0].i);
-            stack[0].makeEmpty();
-            rollDown(0, true);
         }
         stack[0].M = M;
         stack[0].postProcess(false, false, true, true, false, false, 0);
@@ -4090,29 +4099,25 @@ public final class CalcEngine
                     saveUndo(UNDO_PUSHXY, stack[1], stack[0], null);
                     int a = rTmp.toInteger();
                     int b = greatestFactor(a);
-                    stack[0].r.assign((b!=0) ? a/b : 0);
-                    stack[1].r.assign(b);
-                    stack[0].i.makeZero();
-                    stack[1].i.makeZero();
-                    stack[0].unit = stack[1].unit;
-                    stack[1].unit = 0;
-                    stack[0].clearStrings();
-                    stack[1].clearStrings();
+                    rTmp.assign((b!=0) ? a/b : 0);
+                    stack[0].set(rTmp, null, stack[1].unit);
+                    rTmp.assign(b);
+                    stack[1].set(rTmp);
                 }
                 break;
 
             case CPLX_SPLIT:
                 rollUp(0, true);
                 saveUndo(UNDO_PUSHXY, stack[1], stack[0], null);
-                // What if matrix?
-                stack[0].r.assign(stack[1].r);
-                stack[1].r.assign(stack[1].i);
-                stack[0].i.makeZero();
-                stack[1].i.makeZero();
-                stack[0].unit = stack[1].unit;
-                stack[0].str = null;
-                stack[1].str = null;
-                stack[0].unitStr = stack[1].unitStr;
+                if (stack[1].isMatrix()) {
+                    Matrix M = stack[1].M;
+                    stack[0].set(Matrix.re(M));
+                    stack[1].set(Matrix.im(M));
+                } else {
+                    rTmp.assign(stack[1].i);
+                    stack[0].set(stack[1].r, null, stack[1].unit);
+                    stack[1].set(rTmp, null, stack[1].unit);
+                }
                 break;
 
             case BREAK_MATRIX:
@@ -5333,7 +5338,7 @@ public final class CalcEngine
                 } else if (graphCmd == PROG_DRAWZZ) {
                     if (zzN >= (1<<zzNbits)) {
                         try {
-                            Thread.sleep(100);
+                            Thread.sleep(500);
                         } catch (InterruptedException e) {}
                         return;
                     }

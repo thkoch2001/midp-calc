@@ -291,6 +291,29 @@ public final class Matrix
         return M;
     }
 
+    public static Matrix re(Matrix A) {
+        if (isInvalid(A))
+            return INVALID;
+
+        Matrix M = new Matrix(A.rows, A.cols);
+        for (int c=0; c<M.cols; c++)
+            for (int r=0; r<M.rows; r++)
+                M.D[c][r].assign(A.D[c][r]);
+        return M;
+    }
+
+    public static Matrix im(Matrix A) {
+        if (isInvalid(A))
+            return INVALID;
+
+        Matrix M = new Matrix(A.rows, A.cols);
+        if (A.isComplex())
+            for (int c=0; c<M.cols; c++)
+                for (int r=0; r<M.rows; r++)
+                    M.D[c][r].assign(A.DI[c][r]);
+        return M;
+    }
+
     public static boolean equals(Matrix A, Matrix B) {
         if (isInvalid(A) || isInvalid(B) || A.rows!=B.rows || A.cols!=B.cols)
             return false;
@@ -637,6 +660,21 @@ public final class Matrix
         Matrix M = new Matrix(2,1);
         M.setElement(0,0,a,aI);
         M.setElement(1,0,b,bI);
+        return M;
+    }
+
+    public static Matrix toComplex(Matrix A, Matrix B) {
+        if (isInvalid(A) || isInvalid(B) || A.rows!=B.rows || A.cols!=B.cols)
+            return INVALID;
+
+        Matrix M = new Matrix(A.rows, A.cols);
+        M.allocImag();
+        for (int c=0; c<M.cols; c++)
+            for (int r=0; r<M.rows; r++) {
+                M.D[c][r].assign(A.D[c][r]);
+                M.DI[c][r].assign(B.D[c][r]);
+            }
+        M.normalize();
         return M;
     }
 }

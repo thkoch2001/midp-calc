@@ -2062,20 +2062,36 @@ public class CalcEngineTest extends TestCase {
         type(4);
         cmd(TO_CPLX);
         assertX(4, 3);
-
+    }
+    
+    public void test_TO_CPLX_unit() {
         enter(300, "cm");
         enter(4, "m");
         cmd(TO_CPLX);
         assertX(4, 3, "m");
+    }
+
+    public void test_TO_CPLX_matrix() {
+        enter(new double[][]{{1,2},{3,4}});
+        enter(new double[][]{{4,3},{2,1}});
+        cmd(TO_CPLX);
+        assertX(new double[][][]{{{4,1},{3,2}},{{2,3},{1,4}}});
+    }
+
+    public void test_CPLX_SPLIT() {
+        enter(4, 3, "m");
+        cmd(CPLX_SPLIT);
+        assertY(3, "m");
+        assertX(4, "m");
 
         leftoverStackElements = 2;
     }
 
-    public void test_CPLX_SPLIT() {
-        enter(4, 3);
+    public void test_CPLX_SPLIT_matrix() {
+        enter(new double[][][]{{{4,1},{3,2}},{{2,3},{1,4}}});
         cmd(CPLX_SPLIT);
-        assertY(3);
-        assertX(4);
+        assertY(new double[][]{{1,2},{3,4}});
+        assertX(new double[][]{{4,3},{2,1}});
 
         leftoverStackElements = 2;
     }
@@ -2150,6 +2166,80 @@ public class CalcEngineTest extends TestCase {
         assertX("nan");
 
         leftoverStackElements = 3;
+    }
+
+    public void test_TO_ROW() {
+        enter(1);
+        enter(2);
+        cmd(TO_ROW, 2);
+        assertX(new double[][]{{1,2}});
+    }
+
+    public void test_TO_ROW_16() {
+        for (int i=1; i<=16; i++)
+            enter(i);
+        cmd(TO_ROW, 16);
+        assertX(new double[][]{{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16}});
+
+        stackPreserved = false;
+    }
+
+    public void test_TO_COL() {
+        enter(1);
+        enter(2);
+        cmd(TO_COL, 2);
+        assertX(new double[][]{{1},{2}});
+    }
+
+    public void test_TO_COL_16() {
+        for (int i=1; i<=16; i++)
+            enter(i);
+        cmd(TO_COL, 16);
+        assertX(new double[][]{{1},{2},{3},{4},{5},{6},{7},{8},{9},{10},{11},{12},{13},{14},{15},{16}});
+
+        stackPreserved = false;
+    }
+
+    public void test_TO_MATRIX() {
+        enter(1);
+        enter(2);
+        enter(3);
+        type(4);
+        cmd(TO_MATRIX, 0); // 2x2
+        assertX(new double[][]{{1,2},{3,4}});
+    }
+
+    public void test_TO_MATRIX_all() {
+        for (int i=0; i<19; i++) {
+            int size = CalcEngine.getMatrixSize(i);
+            int rows = size >> 16;
+            int cols = size & 0xffff;
+            double[][] result = new double[rows][cols];
+            for (int row=0; row<rows; row++)
+                for (int col=0; col<cols; col++) {
+                    result[row][col] = row*cols+col+1;
+                    enter(result[row][col]);
+                }
+            cmd(TO_MATRIX, i);
+            assertX(result);
+        }
+
+        stackPreserved = false;
+    }
+    
+    public void test_BREAK_MATRIX() {
+        enter(new double[][]{{1,2,3},{4,5,6}});
+        cmd(BREAK_MATRIX);
+        assertStackElement(5, 1);
+        assertStackElement(4, 2);
+        assertStackElement(3, 3);
+        assertZ(4);
+        assertY(5);
+        assertX(6);
+        cmd(LASTX);
+        assertX(new double[][]{{1,2,3},{4,5,6}});
+
+        leftoverStackElements = 7;
     }
 
     public void test_MATRIX_CONCAT() {
