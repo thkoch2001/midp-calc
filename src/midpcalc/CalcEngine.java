@@ -301,6 +301,9 @@ public final class CalcEngine
     public static final int TO_COL         = 289;
     public static final int TO_MATRIX      = 290;
     public static final int BREAK_MATRIX   = 291;
+    public static final int GCD            = 292;
+    public static final int TO_PRIME       = 293;
+    public static final int IS_PRIME       = 294;
 
     public static final int MATRIX_STO     = 0x0200; // Special bit pattern
     public static final int MATRIX_RCL     = 0x0300; // Special bit pattern
@@ -1396,40 +1399,6 @@ public final class CalcEngine
         }
     }
 
-    private static int greatestFactor(int a) {
-        if (a==-1)
-            return a;
-        if (a<0) a = -a;
-        if (a<=3)
-            return a;
-        while ((a&1) == 0) {
-            a >>= 1;
-            if (a<2*2) return a;
-        }
-        while (a%3 == 0) {
-            a /= 3;
-            if (a<3*3) return a;
-        }
-        int x=5;
-        int s=5*5;
-        if (a<s) return a;
-        do {
-            while (a%x == 0) {
-                a /= x;
-                if (a<s) return a;
-            }
-            x += 2;
-            s = x*x;
-            while (a%x == 0) {
-                a /= x;
-                if (a<s) return a;
-            }
-            x += 4;
-            s = x*x;
-        } while (a>=s && x<46343);
-        return a;
-    }
-
     private void compare(Real result, ComplexMatrixElement x, ComplexMatrixElement y, boolean testEquality, int cmd) {
         result.makeNan(); // Default "nan" return value specifies incomparable numbers
 
@@ -1876,6 +1845,23 @@ public final class CalcEngine
                     M.getElement(row,col,y.r,y.i);
                 }
                 break;
+
+            case GCD:
+                if (x.isAbnormalOrComplex() || x.r.isNegative() || x.r.exponent > 0x4000003e ||
+                    y.isAbnormalOrComplex() || y.r.isNegative() || y.r.exponent > 0x4000003e)
+                {
+                    setMessage("GCD","Arguments must not be abnormal, "+
+                        "complex, negative or greater than 2^63-1.");
+                    y.makeNan();
+                } else {
+                    x.r.round();
+                    y.r.round();
+                    long a = x.r.toLong();
+                    long b = y.r.toLong();
+                    rTmp.assign(Utils.gcd(a, b));
+                    y.set(rTmp);
+                }
+                break;
         }
 
         if (cmd != CLEAR)
@@ -2072,6 +2058,24 @@ public final class CalcEngine
                 x.r.sub(rTmp3);
                 x.r.div(rTmp2);
                 x.r.exp();
+                break;
+
+            case TO_PRIME:
+                if (x.isAbnormalOrComplex() || x.r.exponent > 0x4000003e)
+                {
+                    setMessage("To prime","Argument must not be abnormal, "+
+                        "complex, negative or greater than 2^63-1.");
+                    x.makeNan();
+                } else {
+                    x.r.round();
+                    long a = x.r.toLong();
+                    a = Utils.nextPrime(a);
+                    if (a < 0) // Overflow
+                        rTmp.makeNan();
+                    else
+                        rTmp.assign(a);
+                    x.set(rTmp);
+                }
                 break;
         }
 
@@ -3754,6 +3758,7 @@ public final class CalcEngine
             case MIN:   case MAX:
             case MATRIX_NEW: case MATRIX_CONCAT:case MATRIX_STACK:
             case MATRIX_AIJ:
+            case GCD:
                 binary(cmd);
                 break;
 
@@ -3785,6 +3790,7 @@ public final class CalcEngine
             case LIN_YEST: case LIN_XEST: case LOG_YEST: case LOG_XEST:
             case EXP_YEST: case EXP_XEST: case POW_YEST: case POW_XEST:
             case CONV_C_F: case CONV_F_C:
+            case TO_PRIME:
                 unary(cmd);
                 break;
 
@@ -4088,21 +4094,42 @@ public final class CalcEngine
             case FACTORIZE:
                 rTmp.assign(stack[0].r);
                 rTmp.round();
-                if (rTmp.exponent > 0x4000001e || !rTmp.isFinite() ||
+                if (rTmp.exponent > 0x4000003e || !rTmp.isFinite() ||
                     stack[0].isComplex())
                 {
                     setMessage("Factorize","Argument must not be abnormal, "+
-                               "complex or greater than 2^31-1.");
+                               "complex or greater than 2^63-1.");
                     push(Real.NAN);
                 } else {
                     rollUp(0, true);
                     saveUndo(UNDO_PUSHXY, stack[1], stack[0], null);
-                    int a = rTmp.toInteger();
-                    int b = greatestFactor(a);
+                    rTmp.round();
+                    long a = rTmp.toLong();
+                    long b = Utils.greatestFactor(a);
                     rTmp.assign((b!=0) ? a/b : 0);
                     stack[0].set(rTmp, null, stack[1].unit);
                     rTmp.assign(b);
                     stack[1].set(rTmp);
+                }
+                break;
+
+            case IS_PRIME:
+                rTmp.assign(stack[0].r);
+                rTmp.round();
+                if (rTmp.exponent > 0x4000003e || !rTmp.isFinite() ||
+                    stack[0].isComplex())
+                {
+                    setMessage("Prime?","Argument must not be abnormal, "+
+                               "complex or greater than 2^63-1.");
+                    push(Real.NAN);
+                } else {
+                    rollUp(0, true);
+                    saveUndo(UNDO_PUSHXY, stack[1], stack[0], null);
+                    rTmp.round();
+                    long a = rTmp.toLong();
+                    stack[1].set(rTmp, null, stack[1].unit);
+                    rTmp.assign(Utils.isPrime(a) ? 1 : 0);
+                    stack[0].set(rTmp);
                 }
                 break;
 

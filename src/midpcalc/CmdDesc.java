@@ -151,7 +151,7 @@ public final class CmdDesc
             case CalcEngine.DHMS_PLUS:return brief ? "DH.MS+": "conv/time/DH.MS+";
             case CalcEngine.TIME:return brief ? "time" : "conv/time/time";
             case CalcEngine.DATE:return brief ? "date" : "conv/time/date";
-            case CalcEngine.FACTORIZE:return brief ? "factorize" : "math/factorize";
+            case CalcEngine.FACTORIZE:return brief ? "factorize" : "math/misc/factorize";
             case CalcEngine.FINANCE_STO:return brief ? "STO" : "finance/STO";
             case CalcEngine.FINANCE_RCL:return brief ? "RCL" : "finance/RCL";
             case CalcEngine.FINANCE_SOLVE:return brief ? "solve" : "finance/solve";
@@ -315,6 +315,9 @@ public final class CmdDesc
             case CalcEngine.TO_COL:return brief ? "­col" : "matrix/­M";
             case CalcEngine.TO_MATRIX:return brief ? "­M" : "matrix/­M";
             case CalcEngine.BREAK_MATRIX:return brief ? "break up" : "matrix/break up";
+            case CalcEngine.GCD:return brief ? "gcd" : "math/misc/gcd";
+            case CalcEngine.TO_PRIME: return brief ? "­prime" : "math/misc/­prime";
+            case CalcEngine.IS_PRIME: return brief ? "prime?" : "math/misc/prime?";
             default:
                 return "[nop]";
         }

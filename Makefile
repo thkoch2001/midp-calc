@@ -50,6 +50,7 @@ JAVAFILES =  src/midpcalc/Calc.java \
              src/midpcalc/Matrix.java \
              src/midpcalc/Unit.java \
              src/midpcalc/Guess.java \
+             src/midpcalc/Utils.java \
              src/midpcalc/Colors.java \
              src/midpcalc/GFontBase.java \
              src/midpcalc/GFont.java \

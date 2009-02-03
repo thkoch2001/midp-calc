@@ -707,13 +707,20 @@ href="Calc.html#Notes">notes</a> section.
   x. Actually, floor(y/x)
     <li><b>random</b>: Calculate a random number uniformly distributed
     in the range [0.0, 1.0)
-    <li><b>factorize</b>: Find greatest prime factor (of integer input
-  less than 2³¹). This factor and the original number
+    <li><b>factorize</b>: Find greatest prime factor of x (integer
+  less than 2<sup>63</sup>). This factor and the original number
   divided by the factor is placed on the stack... repeat! If input is
-  not integer, it is rounded. If input is too large, the result will
-  be <tt>nan</tt> <a href="Calc.html#AbnormalNote"><b>(*)</b></a>. Factorizing
-  large random numbers is fun: Press "31", "2<sup>x</sup>", "random",
-  "*", "factorize", "factorize", ...
+  not integer, it is rounded. If the factorization is difficult
+  (x&nbsp;&gt;&nbsp;2<sup>31</sup>), it will give up after 5 seconds and
+  push the greatest factor found so far (might be 1). The interrupted state is
+  saved so if you repeat it will continue trying.
+    <li><b>gcd</b>: Calculate the greatest common divisor of x and y (integers
+  less than 2<sup>63</sup>). If inputs are not integer they are rounded.
+    <li><b>prime?</b>: Test if x is prime (integer less than
+  2<sup>63</sup>). If x is prime, 1 is pushed, otherwise 0. If input is not
+  integer it is rounded.
+    <li><b>&rarr;prime</b>: Find next prime &ge;&nbsp;x (integer less than
+  2<sup>63</sup>). If input is not integer it is rounded.
     <li>Integer operations
     <ul>
       <li><b>round</b>: Round x to nearest integer

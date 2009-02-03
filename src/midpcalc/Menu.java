@@ -408,7 +408,12 @@ class Menu
             command(CalcEngine.RANDOM),
             command(CalcEngine.MOD),
             command(CalcEngine.DIVF),
-            command(CalcEngine.FACTORIZE),
+            subMenu("factors",
+                command(CalcEngine.TO_PRIME),
+                command(CalcEngine.GCD),
+                command(CalcEngine.IS_PRIME),
+                command(CalcEngine.FACTORIZE)
+            ),
             intMenu
         ),
         subMenu("matrix",
