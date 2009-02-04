@@ -62,18 +62,6 @@ public class UtilsTest extends TestCase {
         }
     }
     
-    public void testIsPrime() {
-        Random random = new Random();
-        long time0 = System.currentTimeMillis();
-        random.setSeed(0);
-        for (int i=0; i<10000000; i++) {
-            int n = (random.nextInt() & 0x7fffffff) | 1;
-            Utils.isPrime(n);
-        }
-        long time1 = System.currentTimeMillis();
-        System.out.println(time1-time0);
-    }
-    
     public void testNextPrime_small() {
         for (int i=-3; i<199; i++) {
             int j;
