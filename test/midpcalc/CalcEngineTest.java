@@ -2046,17 +2046,118 @@ public class CalcEngineTest extends TestCase {
 
         leftoverStackElements = 6;
     }
-
-    public void test_FACTORIZE_complex() {
+    
+    public void test_FACTORIZE_exceptions() {
         enter(2,2);
         cmd(FACTORIZE);
         assertY(2,2);
         assertX("nan");
         assertNotNull(calc.getMessage()); // I.e. the error message
 
+        type(63);
+        cmd(EXP2);
+        cmd(FACTORIZE);
+        assertX("nan");
+        assertNotNull(calc.getMessage()); // I.e. the error message
+
+        type(0);
+        cmd(FACTORIZE);
+        assertY(0);
+        assertX(0);
+
+        leftoverStackElements = 6;
+    }
+
+    public void test_GCD() {
+        enter(548.99);
+        type(7747.01);
+        cmd(GCD);
+        assertX(61);
+    }
+
+    public void test_GCD_exceptions() {
+        enter(549);
+        type(63);
+        cmd(EXP2);
+        cmd(GCD);
+        assertX("nan");
+        assertNotNull(calc.getMessage()); // I.e. the error message
+
+        enter(549);
+        enter(2, 2);
+        cmd(GCD);
+        assertX("nan");
+        assertNotNull(calc.getMessage()); // I.e. the error message
+
+        enter(-549);
+        type(7749);
+        cmd(GCD);
+        assertX("nan");
+        assertNotNull(calc.getMessage()); // I.e. the error message
+
+        leftoverStackElements = 3;
+    }
+
+    public void test_IS_PRIME() {
+        enter(127);
+        cmd(IS_PRIME);
+        assertY(127);
+        assertX(1);
+
+        enter(255.3);
+        cmd(IS_PRIME);
+        assertY(255);
+        assertX(0);
+
+        leftoverStackElements = 4;
+    }
+
+    public void test_IS_PRIME_exceptions() {
+        enter(127,2);
+        cmd(IS_PRIME);
+        assertY(127,2);
+        assertX("nan");
+
+        enter(63);
+        cmd(EXP2);
+        cmd(IS_PRIME);
+        assertX("nan");
+
+        leftoverStackElements = 4;
+    }
+
+    public void test_TO_PRIME() {
+        enter(113.5);
+        cmd(TO_PRIME);
+        assertX(127);
+
+        enter(127.4);
+        cmd(TO_PRIME);
+        assertX(127);
+
         leftoverStackElements = 2;
     }
-    
+
+    public void test_TO_PRIME_exceptions() {
+        enter(127,2);
+        cmd(TO_PRIME);
+        assertX("nan");
+
+        enter(63);
+        cmd(EXP2);
+        cmd(TO_PRIME);
+        assertX("nan");
+
+        enter(63);
+        cmd(EXP2);
+        enter(24);
+        cmd(SUB);
+        cmd(TO_PRIME);
+        assertX("nan");
+
+        leftoverStackElements = 3;
+    }
+
     public void test_TO_CPLX() {
         enter(3);
         type(4);
