@@ -141,7 +141,6 @@ class GFontData {
 
     private GFontData(int style, boolean largeCache, CanvasAccess canvas) throws IOException {
         String charBitsResource = null;
-        String charXOffStr, charWidthStr, charItalicOffsetStr;
 
         canvasWidth = canvas.getWidth();
         canvasHeight = canvas.getHeight();
@@ -155,27 +154,18 @@ class GFontData {
                 charHeight = GFontBase.smallCharHeight;
                 charBitsResource = GFontBase.smallCharBitsResource;
                 charSet = GFontBase.smallCharSet;
-                charXOffStr = GFontBase.smallCharXOff;
-                charWidthStr = GFontBase.smallCharWidth;
-                charItalicOffsetStr = GFontBase.smallCharItalicOffset;
                 break;
             case UniFont.MEDIUM:
                 charMaxWidth = GFontBase.mediumCharMaxWidth;
                 charHeight = GFontBase.mediumCharHeight;
                 charBitsResource = GFontBase.mediumCharBitsResource;
                 charSet = GFontBase.mediumCharSet;
-                charXOffStr = GFontBase.mediumCharXOff;
-                charWidthStr = GFontBase.mediumCharWidth;
-                charItalicOffsetStr = GFontBase.mediumCharItalicOffset;
                 break;
             case UniFont.LARGE: case UniFont.XXLARGE:
                 charMaxWidth = GFontBase.largeCharMaxWidth;
                 charHeight = GFontBase.largeCharHeight;
                 charBitsResource = GFontBase.largeCharBitsResource;
                 charSet = GFontBase.largeCharSet;
-                charXOffStr = GFontBase.largeCharXOff;
-                charWidthStr = GFontBase.largeCharWidth;
-                charItalicOffsetStr = GFontBase.largeCharItalicOffset;
                 sizeX2 = size==UniFont.XXLARGE;
                 break;
             case UniFont.XLARGE: case UniFont.XXXLARGE:
@@ -183,18 +173,16 @@ class GFontData {
                 charHeight = GFontBase.xlargeCharHeight;
                 charBitsResource = GFontBase.xlargeCharBitsResource;
                 charSet = GFontBase.xlargeCharSet;
-                charXOffStr = GFontBase.xlargeCharXOff;
-                charWidthStr = GFontBase.xlargeCharWidth;
-                charItalicOffsetStr = GFontBase.xlargeCharItalicOffset;
                 sizeX2 = size==UniFont.XXXLARGE;
                 break;
         }
 
         InputStream in = getClass().getResourceAsStream(charBitsResource);
-        byte[] bits = new byte[charSet.length()
-                * ((charHeight * charMaxWidth * 2 * 2 + 7) / 8)];
-        for (int pos = 0; pos < bits.length;)
-            pos += in.read(bits, pos, bits.length - pos);
+        charBits = readFully(in, charSet.length()
+                * ((charHeight * charMaxWidth * 2 * 2 + 7) / 8));
+        byte[] charXOffRes = readFully(in, charSet.length());
+        byte[] charWidthRes = readFully(in, charSet.length());
+        byte[] charItalicOffsetRes = readFully(in, charSet.length());
         in.close();
         charXOff = new byte[256];
         charWidth = new byte[256];
@@ -204,9 +192,9 @@ class GFontData {
             if (pos<0) {
                 pos = charSet.indexOf('?');
             }
-            charXOff[i] = (byte)charXOffStr.charAt(pos);
-            charWidth[i] = (byte)charWidthStr.charAt(pos);
-            charItalicOffset[i] = (byte)charItalicOffsetStr.charAt(pos);
+            charXOff[i] = charXOffRes[pos];
+            charWidth[i] = charWidthRes[pos];
+            charItalicOffset[i] = charItalicOffsetRes[pos];
         }
         lineBuf1 = new int[charMaxWidth*2];
         if (sizeX2) {
@@ -218,8 +206,14 @@ class GFontData {
                 charWidth[i] *= 2;
             }
         }
-        charBits = bits;
         setLargeCache(largeCache);
+    }
+
+    private byte[] readFully(InputStream in, int size) throws IOException {
+        byte[] bits = new byte[size];
+        for (int pos = 0; pos < bits.length;)
+            pos += in.read(bits, pos, size - pos);
+        return bits;
     }
 
     public boolean hasLargeCache() {

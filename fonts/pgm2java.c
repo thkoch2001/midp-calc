@@ -256,8 +256,13 @@ int main(int argc, char *argv[])
     getItalicOffset(image,charSet[c],char_height,char_width,
                     charXOff[c],charWidth[c],&charItalicOffset[c]);
     fwrite(bits,1,nBytes,f);
-    fflush(f);
   }
+  for (c=0; c<(int)strlen(charSet); c++)
+	  fwrite(charXOff+c,1,1,f);
+  for (c=0; c<(int)strlen(charSet); c++)
+	  fwrite(charWidth+c,1,1,f);
+  for (c=0; c<(int)strlen(charSet); c++)
+	  fwrite(charItalicOffset+c,1,1,f);
   fclose(f);
 
   printf("    static final String %sCharBitsResource = \"/%s\";\n",prefix,
@@ -269,18 +274,6 @@ int main(int argc, char *argv[])
   printf("    static final String %sCharSet =\n        \"",prefix);
   for (c=0; c<(int)strlen(charSet); c++)
     printStringChar(charSet[c]);
-  printf("\";\n");
-  printf("    static final String %sCharXOff =\n        \"",prefix);
-  for (c=0; c<(int)strlen(charSet); c++)
-    printStringChar(charXOff[c]);
-  printf("\";\n");
-  printf("    static final String %sCharWidth =\n        \"",prefix);
-  for (c=0; c<(int)strlen(charSet); c++)
-    printStringChar(charWidth[c]);
-  printf("\";\n");
-  printf("    static final String %sCharItalicOffset =\n        \"",prefix);
-  for (c=0; c<(int)strlen(charSet); c++)
-    printStringChar(charItalicOffset[c]);
   printf("\";\n\n");
   return 0;
 }
