@@ -85,7 +85,7 @@ public class CalcEngineTest extends TestCase {
             clx();
     }
 
-    private String doubleToString(double n) {
+    public static String doubleToString(double n) {
         String s = String.valueOf(n);
         s = s.replace('E', 'e');
         s = s.replaceFirst(".0(?=$|e)", "");
