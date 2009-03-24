@@ -5511,4 +5511,12 @@ public class CalcEngineTest extends TestCase {
 
         leftoverStackElements = 2;
     }
+
+    public void test_MONITOR_0_bug() {
+        cmd(MONITOR_MEM, 0);
+        // Would not turn off monitor
+        assertNull(calc.getMonitor());
+
+        leftoverStackElements = 0;
+    }
 }

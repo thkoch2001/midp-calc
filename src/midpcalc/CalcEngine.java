@@ -1081,8 +1081,10 @@ public final class CalcEngine
 
     private void setMonitoring(int mode, int requestedSize, Monitorable monitor) {
         monitorMode = mode;
-        if (requestedSize == 0)
+        if (requestedSize == 0) {
             mode = MONITOR_NONE;
+            monitor = null;
+        }
         if (mode == MONITOR_MEM)
             allocMem();
         else if (mode == MONITOR_STAT)
