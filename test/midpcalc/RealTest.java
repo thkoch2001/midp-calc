@@ -335,4 +335,11 @@ public class RealTest extends TestCase {
         a.sub(b);
         assertA(0);
     }
+    
+    
+    public void test_001_display_bug() {
+        a.assign("0.01");
+        // Would display 0
+        assertA("0.01");
+    }
 }
