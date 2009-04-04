@@ -4740,7 +4740,7 @@ public class CalcEngineTest extends TestCase {
     
     public void test_VERSION() {
         cmd(VERSION);
-        assertX(4.50);
+        assertX(4.51);
     }
 
     public void test_MONITOR_NONE() {

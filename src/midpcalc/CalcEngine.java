@@ -4432,7 +4432,7 @@ public final class CalcEngine
                 stack[1].r.assign(Runtime.getRuntime().totalMemory());
                 break;
 	
-            case VERSION: push(0x40000002,0x4800000000000000L); break;
+            case VERSION: push(0x40000002,0x4828F5C28F5C28F6L); break;
 
             case PROG_APPEND:
                 if (programs.isEmpty(param))
