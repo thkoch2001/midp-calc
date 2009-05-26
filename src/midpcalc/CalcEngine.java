@@ -3262,22 +3262,30 @@ public final class CalcEngine
                 Real Y1 = new Real();
                 Real X2 = new Real();
                 Real Y2 = new Real();
-                for (int n=0; n<20; n++) {
+                for (int n=0; n<60; n++) {
                     if (n>=2) {
-                        // Calculate secant approximation:
-                        // ir = X1 - Y1*(X1-X2)/(Y1-Y2)
-                        rTmp.assign(X1);
-                        rTmp.sub(X2);
-                        rTmp2.assign(Y1);
-                        rTmp2.sub(Y2);
-                        if (!rTmp.isFinite() || !rTmp2.isFinite() ||
-                            rTmp.exponent <= 0x40000000-56 ||
-                            rTmp2.exponent <= 0x40000000-46)
-                            break;
-                        rTmp.div(rTmp2);
-                        rTmp.mul(Y1);
-                        rTmp.neg();
-                        rTmp.add(X1);
+                        if ((n&1) == 1 && Y1.sign != Y2.sign) {
+                            // On odd n if the root is straddled,
+                            // bisect instead of approximate:
+                            rTmp.assign(X1);
+                            rTmp.add(X2);
+                            rTmp.scalbn(-1);
+                        } else {
+                            // Calculate secant approximation:
+                            // ir = X1 - Y1*(X1-X2)/(Y1-Y2)
+                            rTmp.assign(X1);
+                            rTmp.sub(X2);
+                            rTmp2.assign(Y1);
+                            rTmp2.sub(Y2);
+                            if (!rTmp.isFinite() || !rTmp2.isFinite() ||
+                                rTmp.exponent <= 0x40000000-56 ||
+                                rTmp2.exponent <= 0x40000000-46)
+                                break;
+                            rTmp.div(rTmp2);
+                            rTmp.mul(Y1);
+                            rTmp.neg();
+                            rTmp.add(X1);
+                        }
                         IR.assign(rTmp);
                     } else if (n==1) {
                         // Use ir and 2*ir as starting values
@@ -3307,12 +3315,17 @@ public final class CalcEngine
                     }
                     rTmp.add(FV);
 
-                    X2.assign(X1);
-                    Y2.assign(Y1);
+                    if (n < 2 || Y1.sign != rTmp.sign || Y2.sign == rTmp.sign) {
+                        X2.assign(X1);
+                        Y2.assign(Y1);
+                    }
                     X1.assign(IR);
                     Y1.assign(rTmp);
+                    if (!rTmp.isFinite() || !IR.isFinite() ||
+                        (n >= 30 && rTmp.exponent <= 0x40000000-16))
+                        break;
                 }
-                if (!Y1.isFinite() || Y1.exponent > 0x40000000-16) {
+                if (!rTmp.isFinite() || rTmp.exponent > 0x40000000-16) {
                     // We didn't reach zero
                     IR.makeNan();
                     break;

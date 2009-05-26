@@ -3586,9 +3586,35 @@ public class CalcEngineTest extends TestCase {
         cmd(FINANCE_SOLVE, 3); // pmt
         assertX(50);
         cmd(FINANCE_SOLVE, 4); // ir%
-        assertX(5);
+        cmd(FIX, 5);
+        assertX("5.00000");
 
         leftoverStackElements = 8;
+    }
+
+    public void solve_IR(double pv, double fv, double np, double pmt, double ir)
+    {
+        type(pv);
+        cmd(FINANCE_STO, 0);   // pv
+        type(fv);
+        cmd(FINANCE_STO, 1);   // fv
+        type(np);
+        cmd(FINANCE_STO, 2);   // np
+        type(pmt);
+        cmd(FINANCE_STO, 3);   // pmt
+        cmd(FINANCE_SOLVE, 4); // ir%
+        cmd(FIX, 2);
+        assertX(ir);
+    }
+
+    public void test_IR_SOLVE_bug() {
+        solve_IR( -100,    1000, 120,     0,  1.94);
+        solve_IR( -100,   10000, 120,     0,  3.91);
+        solve_IR( -100,  100000, 120,     0,  5.93);
+        solve_IR(-2000, 1000000,  84,     0,  7.68);
+        solve_IR(-2000, 1000000,  84,  -100,  6.99);
+        solve_IR(-2000, 1000000,  84,   -60,  7.24);
+        this.stackPreserved = false;
     }
 
     public void test_FINANCE_SOLVE_begin() {
