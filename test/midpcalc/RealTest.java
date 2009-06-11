@@ -342,4 +342,13 @@ public class RealTest extends TestCase {
         // Would display 0
         assertA("0.01");
     }
+    
+    public void test_999_display_bug() {
+        a.assign("9.99");
+        format.fse = Real.NumberFormat.FSE_FIX;
+        format.precision = 0;
+        // Would display 11
+        assertA("10");
+    }
+    
 }
