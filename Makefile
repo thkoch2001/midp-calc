@@ -1,5 +1,5 @@
 SHELL = /bin/sh
-VERSION = 4.51
+VERSION = 4.52
 SHORTVERSION = $(subst .,,$(VERSION))
 TARGETS = midp1/Calc.jad \
           midp1/target/Calc.jar \
