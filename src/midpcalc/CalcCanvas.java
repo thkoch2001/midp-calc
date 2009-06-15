@@ -202,6 +202,7 @@ public final class CalcCanvas
     private boolean repeating = false;
     private boolean unknownKeyPressed = false;
     private boolean internalRepaint = false;
+    private boolean closed = false;
     private int offX, offY, offYMonitor, nDigits, maxLines, maxLinesMonitor, numberFontWidth, numberFontHeight;
     private int monitorOffY, monitorOffX, nMonitorDigits, maxMonitorLines, monitorFontWidth, monitorFontHeight;
     private int menuX,menuY,menuW,menuH;
@@ -379,6 +380,7 @@ public final class CalcCanvas
 
     public void saveState(DataOutputStream out) {
         try {
+            closed = true;
             menuFont.close();
             numberFont.close();
             monitorFont.close();
@@ -791,6 +793,13 @@ public final class CalcCanvas
     }
 
     public void paint(Graphics g) {
+        if (closed) {
+            g.setColor(0);
+            g.fillRect(0,0,getWidth(),getHeight());
+            numRepaintLines = 0;
+            return;
+        }
+
         boolean cleared = false;
         String message;
 
