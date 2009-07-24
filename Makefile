@@ -90,7 +90,9 @@ IMAGES =     doc/images/Calc.jpg \
              doc/images/Calc_menu4.gif \
              doc/images/Calc_menu5.gif \
              doc/images/Calc_menu6.gif \
-             doc/images/Calc_menu7.gif
+             doc/images/Calc_menu7.gif \
+             doc/images/Mandelbrot.gif \
+             doc/images/Simplex.gif
 
 FONTS =      fonts/small.pgm \
              fonts/medium.pgm \
